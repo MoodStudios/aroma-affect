@@ -1,0 +1,99 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# Eclipse
+*.launch
+.settings/
+.metadata
+.classpath
+.project
+bin/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Cursor rules
+.cursor/rules/
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Minecraft
+run/
+logs/
+crash-reports/
+saves/
+screenshots/
+replay_recordings/
+local/
+options.txt
+optionsof.txt
+usernamecache.json
+usercache.json
+servers.dat
+realms_persistence.json
+patchouli_data.json
+*.log
+*.log.gz
+
+# Loom cache
+.loom-cache/
+remapped/
+
+# Fabric
+.fabric/
+remapped_mods/
+
+# NeoForge / Forge
+forge-*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+.cache/
+
+# Dependencies (downloaded by Gradle)
+libs/
+
+# Exclude runtime configurations (per-developer settings)
+run/config/
+run/downloads/
+run/mods/
+run/resourcepacks/
+run/shaderpacks/
+run/resources/
+run/defaultconfigs/
+run/data/
+
+# Loom specific
+.loom/
+*.loom/
+loom-cache/
+**/loom-cache/
+
+# Build outputs
+**/build/
+**/out/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Test outputs
+test-output/
+test-results/
+
