@@ -1,0 +1,20 @@
+{
+  "itemGroup.aromacraft": "AromaCraft",
+  
+  "item.aromacraft.basic_nose": "Basic Nose",
+  "item.aromacraft.iron_nose": "Iron Nose",
+  "item.aromacraft.gold_nose": "Golden Nose",
+  "item.aromacraft.diamond_nose": "Diamond Nose",
+  
+  "tooltip.aromacraft.nose.tier": "Tier: %s",
+  "tooltip.aromacraft.nose.durability": "Durability: %s",
+  "tooltip.aromacraft.nose.detects_blocks": "Detects Blocks:",
+  "tooltip.aromacraft.nose.detects_biomes": "Detects Biomes:",
+  "tooltip.aromacraft.nose.detects_structures": "Detects Structures:",
+  "tooltip.aromacraft.nose.abilities": "Abilities:",
+  
+  "ability.aromacraft.passive_scent": "Passive Scent Detection",
+  "ability.aromacraft.active_tracking": "Active Target Tracking",
+  "ability.aromacraft.structure_compass": "Structure Compass",
+  "ability.aromacraft.danger_sense": "Danger Sense"
+}

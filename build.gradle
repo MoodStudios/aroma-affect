@@ -29,6 +29,9 @@ subprojects {
         // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
         // See https://docs.gradle.org/current/userguide/declaring_repositories.html
         // for more information about repositories.
+        
+        // Lombok repository
+        mavenCentral()
     }
 
     loom {
@@ -38,6 +41,10 @@ subprojects {
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
         mappings loom.officialMojangMappings()
+        
+        // Lombok 1.18.42 - latest stable with JDK 21 support
+        compileOnly 'org.projectlombok:lombok:1.18.42'
+        annotationProcessor 'org.projectlombok:lombok:1.18.42'
     }
 
     java {
