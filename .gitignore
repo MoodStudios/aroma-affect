@@ -33,6 +33,7 @@ Thumbs.db
 desktop.ini
 
 # Minecraft
+implementations/
 run/
 logs/
 crash-reports/

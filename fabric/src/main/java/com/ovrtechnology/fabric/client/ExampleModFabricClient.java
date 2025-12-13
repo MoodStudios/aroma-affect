@@ -1,10 +1,12 @@
 package com.ovrtechnology.fabric.client;
 
+import com.ovrtechnology.AromaCraftClient;
 import net.fabricmc.api.ClientModInitializer;
 
 public final class ExampleModFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        // This entrypoint is suitable for setting up client-specific logic, such as rendering.
+        // Initialize client-side systems (menus, keybindings, rendering)
+        AromaCraftClient.init();
     }
 }

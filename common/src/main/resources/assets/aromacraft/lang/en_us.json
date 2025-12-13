@@ -16,5 +16,40 @@
   "ability.aromacraft.passive_scent": "Passive Scent Detection",
   "ability.aromacraft.active_tracking": "Active Target Tracking",
   "ability.aromacraft.structure_compass": "Structure Compass",
-  "ability.aromacraft.danger_sense": "Danger Sense"
+  "ability.aromacraft.danger_sense": "Danger Sense",
+  
+  "key.categories.aromacraft": "AromaCraft",
+  "key.aromacraft.open_radial_menu": "Open Scent Menu",
+  "key.aromacraft.open_config_menu": "Open Configuration",
+  
+  "menu.aromacraft.radial.title": "Scent Selection",
+  
+  "menu.aromacraft.category.blocks": "Blocks",
+  "menu.aromacraft.category.blocks.description": "Track specific blocks like ores and resources",
+  "menu.aromacraft.category.biomes": "Biomes",
+  "menu.aromacraft.category.biomes.description": "Track biome transitions and discoveries",
+  "menu.aromacraft.category.structures": "Structures",
+  "menu.aromacraft.category.structures.description": "Track structures like villages and dungeons",
+  
+  "menu.aromacraft.config.title": "AromaCraft Configuration",
+  "menu.aromacraft.config.placeholder": "Configuration options coming soon...",
+  "menu.aromacraft.config.instructions": "Press ESC to close",
+  "menu.aromacraft.config.tab.general": "General",
+  "menu.aromacraft.config.tab.devices": "OVR Devices",
+  "menu.aromacraft.config.tab.connection": "Connection",
+  "menu.aromacraft.config.tab.keybinds": "Keybindings",
+  "menu.aromacraft.config.tab.debug": "Debug",
+  
+  "menu.aromacraft.blocks.title": "Select Block to Track",
+  "menu.aromacraft.blocks.card.description": "Track %s",
+  
+  "menu.aromacraft.biomes.title": "Select Biome to Track",
+  "menu.aromacraft.biomes.card.description": "Navigate to %s",
+  
+  "menu.aromacraft.structures.title": "Select Structure to Track",
+  "menu.aromacraft.structures.card.description": "Find %s",
+  
+  "menu.aromacraft.selection.back_hint": "Press ESC to return to radial menu",
+  "menu.aromacraft.selection.locked": "Locked - Upgrade your Nose to unlock",
+  "menu.aromacraft.selection.selected": "Currently Tracking"
 }

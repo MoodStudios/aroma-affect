@@ -20,17 +20,14 @@ import java.util.List;
  * Loads nose definitions from JSON files.
  * Parses the data/aromacraft/noses/ directory for nose definitions.
  * Handles texture validation and fallback to basic_nose texture.
+ * 
+ * Note: Recipes are defined separately in data/aromacraft/recipe/ as standard Minecraft recipe JSON files.
  */
 public class NoseDefinitionLoader {
     
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
             .create();
-    
-    /**
-     * The path where nose definition JSON files are stored
-     */
-    private static final String NOSES_PATH = "data/aromacraft/noses/";
     
     /**
      * Default texture path for fallback
@@ -63,6 +60,7 @@ public class NoseDefinitionLoader {
                     if (nose != null && nose.isValid()) {
                         // Validate and apply fallbacks
                         validateAndApplyFallbacks(nose);
+                        
                         loadedNoses.add(nose);
                         AromaCraft.LOGGER.info("Loaded nose definition: {}", nose.getId());
                     } else {
@@ -98,7 +96,6 @@ public class NoseDefinitionLoader {
         String model = nose.getModel();
         if (model == null || model.isEmpty()) {
             AromaCraft.LOGGER.info("[{}] No model defined, using default: {}", noseId, DEFAULT_MODEL);
-            // Model getter already returns default, but let's be explicit
         }
         
         // Validate unlock references

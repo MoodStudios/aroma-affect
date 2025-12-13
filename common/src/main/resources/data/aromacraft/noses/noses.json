@@ -18,18 +18,6 @@
           "basic_scent"
         ],
         "noses": []
-      },
-      "recipe": {
-        "type": "shaped",
-        "pattern": [
-          "LLL",
-          "L L",
-          "  L"
-        ],
-        "key": {
-          "L": "minecraft:leather"
-        },
-        "count": 1
       }
     },
     {
@@ -55,19 +43,6 @@
         "noses": [
           "basic_nose"
         ]
-      },
-      "recipe": {
-        "type": "shaped",
-        "pattern": [
-          "III",
-          "INI",
-          "   "
-        ],
-        "key": {
-          "I": "minecraft:iron_ingot",
-          "N": "aromacraft:basic_nose"
-        },
-        "count": 1
       }
     },
     {
@@ -96,20 +71,6 @@
         "noses": [
           "iron_nose"
         ]
-      },
-      "recipe": {
-        "type": "shaped",
-        "pattern": [
-          "GGG",
-          "GNG",
-          " D "
-        ],
-        "key": {
-          "G": "minecraft:gold_ingot",
-          "N": "aromacraft:iron_nose",
-          "D": "minecraft:diamond"
-        },
-        "count": 1
       }
     },
     {
@@ -140,20 +101,6 @@
         "noses": [
           "gold_nose"
         ]
-      },
-      "recipe": {
-        "type": "shaped",
-        "pattern": [
-          "DED",
-          "DND",
-          "DDD"
-        ],
-        "key": {
-          "D": "minecraft:diamond",
-          "E": "minecraft:emerald",
-          "N": "aromacraft:gold_nose"
-        },
-        "count": 1
       }
     }
   ]

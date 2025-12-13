@@ -8,7 +8,8 @@ import lombok.experimental.Accessors;
 
 /**
  * Represents a nose item definition loaded from JSON.
- * Each nose has properties like tier, durability, unlock conditions, and recipes.
+ * Each nose has properties like tier, durability, and unlock conditions.
+ * Recipes are defined separately in data/aromacraft/recipe/ as standard Minecraft recipe JSON files.
  */
 @Getter
 @Setter
@@ -60,12 +61,6 @@ public class NoseDefinition {
      */
     @SerializedName("tier")
     private int tier;
-    
-    /**
-     * Recipe definition for crafting this nose
-     */
-    @SerializedName("recipe")
-    private NoseRecipe recipe;
     
     // Override getters with defaults
     

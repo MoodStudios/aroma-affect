@@ -17,6 +17,8 @@ import java.util.*;
  * - Registering nose items with Minecraft's registry system
  * - Providing access to registered nose items
  * - Initializing the ability resolver for inheritance
+ * 
+ * Note: Recipes are loaded from data/aromacraft/recipe/ as standard Minecraft recipe JSON files.
  */
 public final class NoseRegistry {
     
