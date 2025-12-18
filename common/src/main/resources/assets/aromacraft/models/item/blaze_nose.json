@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "aromacraft:item/diamond_nose"
+    "layer0": "aromacraft:item/blaze_nose"
   }
 }

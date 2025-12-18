@@ -1,10 +1,13 @@
 {
   "itemGroup.aromacraft": "AromaCraft",
   
-  "item.aromacraft.basic_nose": "Basic Nose",
-  "item.aromacraft.iron_nose": "Iron Nose",
-  "item.aromacraft.gold_nose": "Golden Nose",
-  "item.aromacraft.diamond_nose": "Diamond Nose",
+  "item.aromacraft.basic_nose": "Forager's Nose",
+  "item.aromacraft.gold_nose": "Prospector's Nose",
+  "item.aromacraft.diamond_nose": "Jeweler's Nose",
+  "item.aromacraft.blaze_nose": "Dimensional Nose",
+  "item.aromacraft.netherite_nose": "Ancient Nose",
+  "item.aromacraft.ultimate_nose": "Dragon's Nose",
+
   
   "tooltip.aromacraft.nose.tier": "Tier: %s",
   "tooltip.aromacraft.nose.durability": "Durability: %s",

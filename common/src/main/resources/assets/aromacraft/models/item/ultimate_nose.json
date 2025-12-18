@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "aromacraft:item/basic_nose"
+    "layer0": "aromacraft:item/ultimate_nose"
   }
 }
