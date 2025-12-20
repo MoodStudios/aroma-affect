@@ -18,7 +18,11 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -188,9 +192,16 @@ public class LookupSubCommand implements SubCommand {
             source.sendSuccess(() -> Component.literal(
                     "§7  Distance: §e" + result.getFormattedDistance() + " blocks"
             ), false);
-            source.sendSuccess(() -> Component.literal(
-                    String.format("§8  Teleport: §7/tp @s %d %d %d", pos.getX(), pos.getY(), pos.getZ())
-            ), false);
+            // Build clickable teleport command
+            String tpCommand = String.format("/tp @s %d %d %d", pos.getX(), pos.getY(), pos.getZ());
+            MutableComponent teleportText = Component.literal("§8  Teleport: ")
+                    .append(Component.literal("§b§n" + tpCommand)
+                            .withStyle(Style.EMPTY
+                                    .withClickEvent(new ClickEvent.RunCommand(tpCommand))
+                                    .withHoverEvent(new HoverEvent.ShowText(
+                                            Component.literal("§aClick to teleport!")))
+                            ));
+            source.sendSuccess(() -> teleportText, false);
             
             if (result.fromCache()) {
                 source.sendSuccess(() -> Component.literal("§8  (cached result)"), false);
