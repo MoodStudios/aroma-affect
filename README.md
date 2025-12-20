@@ -10,10 +10,10 @@
 
 <p align="center">
   <a href="https://github.com/MoodStudios/aroma-affect/wiki/Getting-Started">Getting Started</a> •
-  <a href="#features">Features</a> •
-  <a href="#requirements">Requirements</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#license">License</a>
+  <a href="#-features">Features</a> •
+  <a href="#-requirements">Requirements</a> •
+  <a href="#-installation">Installation</a> •
+  <a href="#-license">License</a>
 </p>
 
 <p align="center">
