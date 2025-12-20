@@ -27,7 +27,7 @@
 
 ## 🎮 About
 
-**Aroma Affect** is a gameplay-first Minecraft mod developed by [Mood Studios](https://moodstudios.io) for [OVR Technology](https://ovrtechnology.com) that integrates **real-world scent hardware** into Minecraft. With Aroma Affect, players can literally smell their Minecraft world - from the sulfur of nearby lava to the fresh air of a forest biome.
+**Aroma Affect** is a gameplay-first Minecraft mod developed by [Mood Studios](https://moodstudios.co) for [OVR Technology](https://ovrtechnology.com) that integrates **real-world scent hardware** into Minecraft. With Aroma Affect, players can literally smell their Minecraft world - from the sulfur of nearby lava to the fresh air of a forest biome.
 
 The mod works on two levels:
 
@@ -69,6 +69,14 @@ Built with compatibility in mind, Aroma Affect is designed to work seamlessly wi
 - **Minecraft** 1.21.10
 - **NeoForge** 21.10.50-beta or **Fabric Loader** 0.18.2
 - **Architectury API** 18.0.8 (automatically included)
+
+### 🌉 OVR Bridge (Optional)
+
+To experience real-world scents with OVR hardware, you'll need the **OVR Bridge** application. The Bridge handles communication between Aroma Affect and your OVR scent device.
+
+- [**Download OVR Bridge for Windows**](https://www.ovrtechnology.com/) *(Currently Windows only)*
+
+> **Note:** The mod works perfectly without the Bridge - you'll still enjoy all gameplay features, visual feedback, and tracking mechanics. The Bridge is only required for the physical scent hardware integration.
 
 ## 📦 Installation
 
@@ -125,5 +133,5 @@ This software is proprietary and confidential. See the [LICENSE](LICENSE) file f
 ---
 
 <p align="center">
-  Developed with ❤️ by <a href="https://moodstudios.io">Mood Studios</a> for <a href="https://ovrtechnology.com">OVR Technology</a>
+  Developed with ❤️ by <a href="https://moodstudios.co">Mood Studios</a> for <a href="https://ovrtechnology.com">OVR Technology</a>
 </p>
