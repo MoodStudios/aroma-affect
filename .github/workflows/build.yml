@@ -155,5 +155,4 @@ jobs:
           echo "- **Fabric**: \`AromaCraft-Fabric-${{ needs.build.outputs.mod_version }}+MC${{ needs.build.outputs.minecraft_version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "*Built with ❤️ by Mood Studios for OVR Technology*" >> $GITHUB_STEP_SUMMARY
 
