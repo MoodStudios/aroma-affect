@@ -1,11 +1,11 @@
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║                              AromaCraft CI/CD                                 ║
-# ║                                                                               ║
+# ║                              Aroma Affect CI/CD                              ║
+# ║                                                                              ║
 # ║  Automated build pipeline for NeoForge and Fabric mod artifacts              ║
-# ║  Architectury API                                                             ║
+# ║  Architectury API                                                            ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
-name: Build AromaCraft
+name: Build Aroma Affect
 
 on:
   push:
@@ -77,10 +77,10 @@ jobs:
         include:
           - platform: neoforge
             name: NeoForge
-            artifact_prefix: AromaCraft-NeoForge
+            artifact_prefix: AromaAffect-NeoForge
           - platform: fabric
             name: Fabric
-            artifact_prefix: AromaCraft-Fabric
+            artifact_prefix: AromaAffect-Fabric
     
     steps:
       # ────────────────────────────────────────────────────────────────────────
@@ -146,7 +146,7 @@ jobs:
     steps:
       - name: Generate Build Summary
         run: |
-          echo "# 🧪 AromaCraft Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "# 🧪 AromaAffect Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -160,7 +160,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | Artifact |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| NeoForge | \`AromaCraft-NeoForge-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Fabric | \`AromaCraft-Fabric-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| NeoForge | \`AromaAffect-NeoForge-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Fabric | \`AromaAffect-Fabric-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
