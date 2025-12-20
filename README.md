@@ -70,7 +70,7 @@ Built with compatibility in mind, Aroma Affect is designed to work seamlessly wi
 - **NeoForge** 21.10.50-beta or **Fabric Loader** 0.18.2
 - **Architectury API** 18.0.8 (automatically included)
 
-### 🌉 OVR Bridge (Optional)
+### 🌉 OVR Bridge
 
 To experience real-world scents with OVR hardware, you'll need the **OVR Bridge** application. The Bridge handles communication between Aroma Affect and your OVR scent device.
 
