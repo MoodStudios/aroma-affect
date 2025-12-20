@@ -14,6 +14,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.Comparator;
 import java.util.Map;
 
 /**
@@ -45,17 +46,16 @@ public final class ModCreativeTab {
                     // Fallback if no noses registered
                     return new ItemStack(Items.LEATHER_HELMET);
                 });
-                
+
                 // Set the tab title
                 builder.title(Component.translatable("itemGroup.aromacraft"));
-                
+
                 // Add all items from our mod to this tab
                 builder.displayItems((parameters, output) -> {
                     // Add all items registered under our mod ID
-                    BuiltInRegistries.ITEM.entrySet().stream()
-                            .filter(entry -> entry.getKey().location().getNamespace().equals(AromaCraft.MOD_ID))
-                            .map(Map.Entry::getValue)
-                            .forEach(item -> output.accept(new ItemStack(item)));
+                   NoseRegistry.getAllNosesAsList()
+                           .stream().sorted(Comparator.comparing(NoseItem::getTier))
+                           .forEach(nose -> output.accept(new ItemStack(nose)));
                 });
             })
     );

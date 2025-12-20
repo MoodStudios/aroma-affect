@@ -136,7 +136,15 @@ public final class NoseRegistry {
     public static Iterable<RegistrySupplier<NoseItem>> getAllNoses() {
         return noseItems.values();
     }
-    
+
+    /**
+     * Get all registered nose items as a list.
+     * @return A list of all registered nose items.
+     */
+    public static List<NoseItem> getAllNosesAsList() {
+        return new ArrayList<>(noseItems.values()).stream().map(RegistrySupplier::get).toList();
+    }
+
     /**
      * Get the number of registered noses
      */
