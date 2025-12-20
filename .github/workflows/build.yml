@@ -1,21 +1,23 @@
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║                              AromaCraft CI/CD                                 ║
-# ║                                                                               ║
+# ║                              Aroma Affect CI/CD                              ║
+# ║                                                                              ║
 # ║  Automated build pipeline for NeoForge and Fabric mod artifacts              ║
-# ║  Minecraft 1.21.10 | Architectury API                                        ║
-# ║                                                                               ║
-# ║  © Mood Studios for OVR Technology                                           ║
+# ║  Architectury API                                                            ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
-name: Build AromaCraft
+name: Build Aroma Affect
 
 on:
   push:
     branches:
       - main
+      - '[0-9]+.[0-9]+.[0-9]+'      # Version branches (e.g., 1.21.1, 1.20.4)
+      - '[0-9]+.[0-9]+.[0-9]+-*'    # Version branches with suffix (e.g., 1.21.1-beta)
   pull_request:
     branches:
       - main
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
 
 # Cancel in-progress runs for the same branch
 concurrency:
@@ -28,10 +30,10 @@ env:
 
 jobs:
   # ════════════════════════════════════════════════════════════════════════════
-  # Build Job - Compiles mod for all platforms
+  # Properties Job - Extract build properties once
   # ════════════════════════════════════════════════════════════════════════════
-  build:
-    name: Build
+  properties:
+    name: Extract Properties
     runs-on: ubuntu-latest
     
     outputs:
@@ -39,33 +41,16 @@ jobs:
       minecraft_version: ${{ steps.properties.outputs.minecraft_version }}
     
     steps:
-      # ────────────────────────────────────────────────────────────────────────
-      # Setup
-      # ────────────────────────────────────────────────────────────────────────
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: ☕ Setup JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - name: 🐘 Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-
-      # ────────────────────────────────────────────────────────────────────────
-      # Extract Properties
-      # ────────────────────────────────────────────────────────────────────────
-      - name: 📋 Extract Mod Properties
+      - name: Extract Mod Properties
         id: properties
         run: |
           echo "mod_version=$(grep -E '^mod_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
           echo "minecraft_version=$(grep -E '^minecraft_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
 
-      - name: 📝 Display Build Information
+      - name: Display Build Information
         run: |
           echo "╔══════════════════════════════════════════════════════════════╗"
           echo "║                    Build Configuration                       ║"
@@ -77,53 +62,75 @@ jobs:
           echo "║  Commit:            ${{ github.sha }}"
           echo "╚══════════════════════════════════════════════════════════════╝"
 
+  # ════════════════════════════════════════════════════════════════════════════
+  # Build Job - Compiles mod for all platforms IN PARALLEL
+  # ════════════════════════════════════════════════════════════════════════════
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    needs: properties
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [neoforge, fabric]
+        include:
+          - platform: neoforge
+            name: NeoForge
+            artifact_prefix: AromaAffect-NeoForge
+          - platform: fabric
+            name: Fabric
+            artifact_prefix: AromaAffect-Fabric
+    
+    steps:
+      # ────────────────────────────────────────────────────────────────────────
+      # Setup
+      # ────────────────────────────────────────────────────────────────────────
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
       # ────────────────────────────────────────────────────────────────────────
       # Grant Execute Permission
       # ────────────────────────────────────────────────────────────────────────
-      - name: 🔧 Grant Execute Permission for Gradlew
+      - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
       # ────────────────────────────────────────────────────────────────────────
-      # Build All Platforms
+      # Build Platform
       # ────────────────────────────────────────────────────────────────────────
-      - name: 🏗️ Build NeoForge
-        run: ./gradlew :neoforge:build --no-daemon --stacktrace
-
-      - name: 🏗️ Build Fabric
-        run: ./gradlew :fabric:build --no-daemon --stacktrace
+      - name: Build ${{ matrix.name }}
+        run: ./gradlew :${{ matrix.platform }}:build --no-daemon --stacktrace
 
       # ────────────────────────────────────────────────────────────────────────
       # Upload Artifacts
       # ────────────────────────────────────────────────────────────────────────
-      - name: 📦 Upload NeoForge Artifact
+      - name: Upload ${{ matrix.name }} Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AromaCraft-NeoForge-${{ steps.properties.outputs.mod_version }}+MC${{ steps.properties.outputs.minecraft_version }}
+          name: ${{ matrix.artifact_prefix }}-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}
           path: |
-            neoforge/build/libs/*.jar
-            !neoforge/build/libs/*-dev*.jar
-            !neoforge/build/libs/*-sources*.jar
+            ${{ matrix.platform }}/build/libs/*.jar
+            !${{ matrix.platform }}/build/libs/*-dev*.jar
+            !${{ matrix.platform }}/build/libs/*-sources*.jar
           if-no-files-found: error
           retention-days: 30
 
-      - name: 📦 Upload Fabric Artifact
+      - name: Upload ${{ matrix.name }} Sources
         uses: actions/upload-artifact@v4
         with:
-          name: AromaCraft-Fabric-${{ steps.properties.outputs.mod_version }}+MC${{ steps.properties.outputs.minecraft_version }}
-          path: |
-            fabric/build/libs/*.jar
-            !fabric/build/libs/*-dev*.jar
-            !fabric/build/libs/*-sources*.jar
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: 📦 Upload Sources (Combined)
-        uses: actions/upload-artifact@v4
-        with:
-          name: AromaCraft-Sources-${{ steps.properties.outputs.mod_version }}+MC${{ steps.properties.outputs.minecraft_version }}
-          path: |
-            neoforge/build/libs/*-sources*.jar
-            fabric/build/libs/*-sources*.jar
+          name: ${{ matrix.artifact_prefix }}-Sources-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}
+          path: ${{ matrix.platform }}/build/libs/*-sources*.jar
           if-no-files-found: warn
           retention-days: 30
 
@@ -133,26 +140,28 @@ jobs:
   summary:
     name: Build Summary
     runs-on: ubuntu-latest
-    needs: build
+    needs: [properties, build]
     if: always()
     
     steps:
-      - name: 📊 Generate Build Summary
+      - name: Generate Build Summary
         run: |
-          echo "# 🧪 AromaCraft Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "# 🧪 AromaAffect Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Mod Version** | \`${{ needs.build.outputs.mod_version }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Minecraft** | \`${{ needs.build.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Mod Version** | \`${{ needs.properties.outputs.mod_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Minecraft** | \`${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Build Status** | ${{ needs.build.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **NeoForge**: \`AromaCraft-NeoForge-${{ needs.build.outputs.mod_version }}+MC${{ needs.build.outputs.minecraft_version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Fabric**: \`AromaCraft-Fabric-${{ needs.build.outputs.mod_version }}+MC${{ needs.build.outputs.minecraft_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Artifact |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| NeoForge | \`AromaAffect-NeoForge-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Fabric | \`AromaAffect-Fabric-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
 
