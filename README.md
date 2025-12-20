@@ -89,7 +89,7 @@ For detailed setup instructions including OVR hardware configuration, see the [*
 
 ## 🏗️ Project Structure
 
-Aroma Affect uses the [Architectury](https://architectury.dev/) framework for cross-platform development:
+Aroma Affect uses the [Architectury](https://www.curseforge.com/minecraft/mc-mods/architectury-api) framework for cross-platform development:
 
 ```
 aroma-affect/
