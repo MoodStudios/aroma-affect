@@ -1,11 +1,11 @@
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║                           AromaCraft Release Pipeline                        ║
-# ║                                                                               ║
+# ║                           Aroma Affect Release Pipeline                      ║
+# ║                                                                              ║
 # ║  Manual dispatch workflow for creating versioned releases                    ║
 # ║  Reads Minecraft version from the selected branch's gradle.properties        ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
-name: Release AromaCraft
+name: Release Aroma Affect
 
 on:
   workflow_dispatch:
@@ -184,7 +184,7 @@ jobs:
       - name: Upload ${{ matrix.name }} Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AromaCraft-${{ matrix.name }}-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}
+          name: AromaAffect-${{ matrix.name }}-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}
           path: |
             ${{ matrix.platform }}/build/libs/*.jar
             !${{ matrix.platform }}/build/libs/*-dev*.jar
@@ -194,7 +194,7 @@ jobs:
       - name: Upload ${{ matrix.name }} Sources
         uses: actions/upload-artifact@v4
         with:
-          name: AromaCraft-${{ matrix.name }}-Sources-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}
+          name: AromaAffect-${{ matrix.name }}-Sources-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}
           path: ${{ matrix.platform }}/build/libs/*-sources*.jar
           if-no-files-found: warn
 
@@ -241,7 +241,7 @@ jobs:
           MC_VERSION="${{ needs.validate.outputs.minecraft_version }}"
           
           cat << 'EOF' > release_notes.md
-          # 🧪 AromaCraft ${{ needs.validate.outputs.version }}
+          # 🧪 AromaAffect ${{ needs.validate.outputs.version }}
           
           **Minecraft Version:** ${{ needs.validate.outputs.minecraft_version }}
           
@@ -249,8 +249,8 @@ jobs:
           
           | Platform | File |
           |----------|------|
-          | NeoForge | `aromacraft-neoforge-${{ needs.validate.outputs.version }}.jar` |
-          | Fabric | `aromacraft-fabric-${{ needs.validate.outputs.version }}.jar` |
+          | NeoForge | `aromaaffect-neoforge-${{ needs.validate.outputs.version }}.jar` |
+          | Fabric | `aromaaffect-fabric-${{ needs.validate.outputs.version }}.jar` |
           
           ## 📋 Requirements
           
@@ -266,7 +266,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.validate.outputs.tag_name }}
-          name: AromaCraft ${{ needs.validate.outputs.version }}
+          name: AromaAffect ${{ needs.validate.outputs.version }}
           body_path: release_notes.md
           draft: false
           prerelease: ${{ needs.validate.outputs.is_prerelease == 'true' }}
@@ -288,7 +288,7 @@ jobs:
     steps:
       - name: Generate Release Summary
         run: |
-          echo "# 🚀 AromaCraft Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "# 🚀 AromaAffect Release Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
