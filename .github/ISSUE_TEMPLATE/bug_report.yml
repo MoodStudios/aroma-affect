@@ -1,0 +1,156 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in Aroma Affect
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - ToxicSSJ
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for reporting a bug! 🐛
+        
+        Please fill out this form as completely as possible to help us fix the issue quickly.
+        
+        ---
+
+  - type: checkboxes
+    id: existing-issue
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues to ensure this bug hasn't been reported
+          required: true
+        - label: I am using the latest version of Aroma Affect
+          required: true
+        - label: I have read the documentation and this isn't expected behavior
+          required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which mod loader are you using?
+      options:
+        - NeoForge
+        - Fabric
+    validations:
+      required: true
+
+  - type: input
+    id: mod-version
+    attributes:
+      label: Aroma Affect Version
+      description: The version of the mod (e.g., 1.0.0)
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft Version
+      description: The Minecraft version you're playing on
+      placeholder: "1.21.10"
+    validations:
+      required: true
+
+  - type: input
+    id: loader-version
+    attributes:
+      label: Loader Version
+      description: NeoForge or Fabric Loader version
+      placeholder: "NeoForge 21.10.50-beta / Fabric 0.18.2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug
+      placeholder: Describe what went wrong...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what should have happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please paste any relevant log output (crash reports, console errors)
+      render: shell
+      placeholder: |
+        Paste logs here...
+        
+        You can find logs in:
+        - .minecraft/logs/latest.log
+        - .minecraft/crash-reports/
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other Mods Installed
+      description: List any other mods you have installed (if applicable)
+      placeholder: |
+        - Mod Name 1
+        - Mod Name 2
+        - ...
+
+  - type: dropdown
+    id: ovr-hardware
+    attributes:
+      label: OVR Hardware
+      description: Are you using OVR scent hardware?
+      options:
+        - "Yes - Connected and working"
+        - "Yes - Connected but not working"
+        - "No - Playing without hardware"
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots/Videos
+      description: If applicable, add screenshots or videos to help explain your problem
+      placeholder: Drag and drop images here or paste URLs...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that might be helpful
+      placeholder: Add any other context about the problem here...
+

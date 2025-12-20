@@ -1,0 +1,15 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/MoodStudios/aroma-affect/wiki
+    about: Check the wiki for guides, configuration, and FAQ
+
+  - name: 💬 General Questions
+    url: https://github.com/MoodStudios/aroma-affect/discussions
+    about: Ask questions and discuss ideas in GitHub Discussions
+
+  - name: 🔒 Security Vulnerabilities
+    url: https://github.com/MoodStudios/aroma-affect/security/policy
+    about: Report security issues privately (do not open public issues)
+

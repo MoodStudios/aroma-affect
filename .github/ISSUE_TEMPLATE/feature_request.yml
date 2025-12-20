@@ -1,0 +1,114 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for Aroma Affect
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+assignees:
+  - ToxicSSJ
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for suggesting a feature! ✨
+        
+        We appreciate your ideas for improving Aroma Affect. Please provide as much detail as possible.
+        
+        ---
+
+  - type: checkboxes
+    id: existing-request
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested
+          required: true
+        - label: This feature aligns with the mod's purpose (scent integration for Minecraft)
+          required: true
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Feature Area
+      description: Which area of the mod does this feature relate to?
+      options:
+        - Scent Mask / The Nose
+        - Passive Scenting
+        - Active Tracking
+        - Radial Menu / UI
+        - Sniffer Integration
+        - OVR Hardware Integration
+        - Configuration / Settings
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Describe it.
+      placeholder: |
+        A clear description of the problem.
+        Example: "I'm frustrated when..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature or solution you'd like
+      placeholder: |
+        A clear and concise description of what you want to happen.
+        Be as specific as possible about the expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or features?
+      placeholder: Describe any alternative solutions or features you've considered...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (Your Opinion)
+      description: How important is this feature to you?
+      options:
+        - 🟢 Nice to have
+        - 🟡 Would significantly improve experience
+        - 🔴 Critical for my use case
+    validations:
+      required: true
+
+  - type: dropdown
+    id: implementation
+    attributes:
+      label: Would you help implement this?
+      description: Are you willing to contribute code for this feature?
+      options:
+        - "Yes, I'd like to implement this myself"
+        - "Yes, I can help with testing"
+        - "No, but I can provide more details if needed"
+        - "No"
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / Examples
+      description: If applicable, add mockups, sketches, or examples from other mods/games
+      placeholder: Drag and drop images here or describe visual examples...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that might be helpful
+      placeholder: Add any other context, links, or references here...
+
