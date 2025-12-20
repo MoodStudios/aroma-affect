@@ -26,6 +26,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 
 /**
@@ -175,23 +176,31 @@ public class LookupSubCommand implements SubCommand {
         
         return Command.SINGLE_SUCCESS;
     }
-    
+
+
     /**
      * Sends the lookup result to the command source.
      */
     private void sendResult(CommandSourceStack source, LookupResult result) {
         if (result.isSuccess()) {
+
             BlockPos pos = result.getPosition();
-            
+
+            ServerLevel serverLevel = source.getLevel();
+
+            //get structure Y
+            int yLevel = LookupManager.getInstance().findYLevel(serverLevel, pos.getX(), pos.getZ(), result.target().type());
+
             // Build result message with position
             source.sendSuccess(() -> Component.literal("§6[AromaCraft] §aFound! "), false);
             source.sendSuccess(() -> Component.literal(
                     String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d", 
-                            pos.getX(), pos.getY(), pos.getZ())
+                            pos.getX(), yLevel, pos.getZ())
             ), false);
             source.sendSuccess(() -> Component.literal(
                     "§7  Distance: §e" + result.getFormattedDistance() + " blocks"
             ), false);
+          
             // Build clickable teleport command
             String tpCommand = String.format("/tp @s %d %d %d", pos.getX(), pos.getY(), pos.getZ());
             MutableComponent teleportText = Component.literal("§8  Teleport: ")

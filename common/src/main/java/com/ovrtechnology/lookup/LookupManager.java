@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -372,6 +373,66 @@ public final class LookupManager {
                 player.blockPosition(),
                 target
         );
+    }
+
+
+    /**
+     * Finds the appropriate Y level for structure placement at (x, z).
+     * <p>
+     * For STRUCTURE lookups, searches from top down for a solid block with air above.
+     * Falls back to highest solid block or sea level + 1.
+     * <p>
+     * For other lookup types, searches from sea level up for a solid block with air above.
+     * Falls back to heightmap or sea level + 1.
+     */
+    public int findYLevel(ServerLevel level, int x, int z, LookupType type) {
+        int minY = level.getMinY();
+        int maxY = level.getMaxY() - 1;
+        int seaLevel = level.getSeaLevel();
+
+        if (type == LookupType.STRUCTURE) {
+            for (int y = maxY; y >= minY; y--) {
+                BlockPos checkPos = new BlockPos(x, y, z);
+                BlockPos abovePos = new BlockPos(x, y + 1, z);
+
+                boolean currentSolid = !level.getBlockState(checkPos).isAir();
+                boolean aboveAir = (y + 1 <= maxY) && level.getBlockState(abovePos).isAir();
+
+                if (currentSolid && aboveAir) {
+                    return y + 1;
+                }
+            }
+
+            for (int y = maxY; y >= minY; y--) {
+                BlockPos checkPos = new BlockPos(x, y, z);
+                if (!level.getBlockState(checkPos).isAir()) {
+                    return Math.min(y + 1, maxY);
+                }
+            }
+
+            return Math.max(minY, seaLevel + 1);
+
+        } else {
+            for (int y = seaLevel; y < maxY; y++) {
+                BlockPos checkPos = new BlockPos(x, y, z);
+                BlockPos abovePos = new BlockPos(x, y + 1, z);
+
+                boolean currentSolid = !level.getBlockState(checkPos).isAir();
+                boolean aboveAir = level.getBlockState(abovePos).isAir();
+
+                if (currentSolid && aboveAir) {
+                    return y + 1;
+                }
+            }
+
+            try {
+                int height = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
+                if (height > minY) return height;
+            } catch (Exception ignored) {
+            }
+
+            return seaLevel + 1;
+        }
     }
     
     /**
