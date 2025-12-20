@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to **Aroma Affect**! This document provides guidelines and information for contributors.
 
-> **Note:** This is a proprietary project developed by [Mood Studios](https://moodstudios.io) for [OVR Technology](https://ovrtechnology.com). External contributions are welcome but subject to approval and licensing terms.
+> **Note:** This is a proprietary project developed by [Mood Studios](https://moodstudios.co) for [OVR Technology](https://ovrtechnology.com). External contributions are welcome but subject to approval and licensing terms.
 
 ---
 
@@ -230,6 +230,6 @@ For questions or contribution inquiries:
 
 <p align="center">
   <strong>© 2025 OVR Technology. All rights reserved.</strong><br>
-  Developed with ❤️ by <a href="https://moodstudios.io">Mood Studios</a>
+  Developed with ❤️ by <a href="https://moodstudios.co">Mood Studios</a>
 </p>
 

@@ -164,3 +164,4 @@ jobs:
           echo "| Fabric | \`AromaAffect-Fabric-${{ needs.properties.outputs.mod_version }}+MC${{ needs.properties.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
+
