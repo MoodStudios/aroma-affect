@@ -1,0 +1,307 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║                           Aroma Affect Release Pipeline                      ║
+# ║                                                                              ║
+# ║  Manual dispatch workflow for creating versioned releases                    ║
+# ║  Reads Minecraft version from the selected branch's gradle.properties        ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+name: Release Aroma Affect
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0, 1.2.3-beta.1)'
+        required: true
+        type: string
+      release_type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - release
+          - pre-release
+        default: 'release'
+      update_mod_version:
+        description: 'Update mod version in gradle.properties'
+        required: true
+        type: boolean
+        default: true
+      create_tag:
+        description: 'Create git tag'
+        required: true
+        type: boolean
+        default: true
+
+# Prevent concurrent releases
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+
+jobs:
+  # ════════════════════════════════════════════════════════════════════════════
+  # Validate Job - Validates version format and checks conditions
+  # ════════════════════════════════════════════════════════════════════════════
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+      minecraft_version: ${{ steps.properties.outputs.minecraft_version }}
+      tag_name: ${{ steps.validate.outputs.tag_name }}
+      is_prerelease: ${{ steps.validate.outputs.is_prerelease }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Extract Minecraft Version
+        id: properties
+        run: |
+          echo "minecraft_version=$(grep -E '^minecraft_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
+
+      - name: Validate Version Format
+        id: validate
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          MC_VERSION="${{ steps.properties.outputs.minecraft_version }}"
+          
+          # Validate semantic version format (x.y.z or x.y.z-prerelease.n)
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "   Expected: x.y.z or x.y.z-prerelease.n (e.g., 1.0.0, 1.2.3-beta.1)"
+            exit 1
+          fi
+          
+          echo "✅ Version format valid: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=v${VERSION}+MC${MC_VERSION}" >> $GITHUB_OUTPUT
+          echo "is_prerelease=${{ github.event.inputs.release_type == 'pre-release' }}" >> $GITHUB_OUTPUT
+
+      - name: Check if Tag Already Exists
+        if: ${{ github.event.inputs.create_tag == 'true' }}
+        run: |
+          TAG="${{ steps.validate.outputs.tag_name }}"
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "❌ Tag $TAG already exists!"
+            exit 1
+          fi
+          echo "✅ Tag $TAG is available"
+
+      - name: Display Release Information
+        run: |
+          echo "╔══════════════════════════════════════════════════════════════╗"
+          echo "║                    Release Configuration                     ║"
+          echo "╠══════════════════════════════════════════════════════════════╣"
+          echo "║  Version:           ${{ steps.validate.outputs.version }}"
+          echo "║  Minecraft:         ${{ steps.properties.outputs.minecraft_version }}"
+          echo "║  Tag:               ${{ steps.validate.outputs.tag_name }}"
+          echo "║  Type:              ${{ github.event.inputs.release_type }}"
+          echo "║  Update Version:    ${{ github.event.inputs.update_mod_version }}"
+          echo "║  Create Tag:        ${{ github.event.inputs.create_tag }}"
+          echo "╚══════════════════════════════════════════════════════════════╝"
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Update Version Job - Updates gradle.properties if requested
+  # ════════════════════════════════════════════════════════════════════════════
+  update-version:
+    name: Update Version
+    runs-on: ubuntu-latest
+    needs: validate
+    if: ${{ github.event.inputs.update_mod_version == 'true' }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update mod_version in gradle.properties
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          sed -i "s/^mod_version\s*=.*/mod_version = $VERSION/" gradle.properties
+          echo "✅ Updated mod_version to $VERSION"
+          cat gradle.properties | grep mod_version
+
+      - name: Commit Version Update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gradle.properties
+          git commit -m "🔖 Release v${{ needs.validate.outputs.version }}"
+          git push
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Build Job - Compiles mod for all platforms IN PARALLEL
+  # ════════════════════════════════════════════════════════════════════════════
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    needs: [validate, update-version]
+    if: always() && needs.validate.result == 'success' && (needs.update-version.result == 'success' || needs.update-version.result == 'skipped')
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [neoforge, fabric]
+        include:
+          - platform: neoforge
+            name: NeoForge
+          - platform: fabric
+            name: Fabric
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Pull Latest Changes
+        if: ${{ github.event.inputs.update_mod_version == 'true' }}
+        run: git pull origin ${{ github.ref_name }}
+
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build ${{ matrix.name }}
+        run: ./gradlew :${{ matrix.platform }}:build --no-daemon --stacktrace
+
+      - name: Upload ${{ matrix.name }} Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AromaAffect-${{ matrix.name }}-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}
+          path: |
+            ${{ matrix.platform }}/build/libs/*.jar
+            !${{ matrix.platform }}/build/libs/*-dev*.jar
+            !${{ matrix.platform }}/build/libs/*-sources*.jar
+          if-no-files-found: error
+
+      - name: Upload ${{ matrix.name }} Sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: AromaAffect-${{ matrix.name }}-Sources-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}
+          path: ${{ matrix.platform }}/build/libs/*-sources*.jar
+          if-no-files-found: warn
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Release Job - Creates GitHub Release with artifacts
+  # ════════════════════════════════════════════════════════════════════════════
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull Latest Changes
+        if: ${{ github.event.inputs.update_mod_version == 'true' }}
+        run: git pull origin ${{ github.ref_name }}
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: List Downloaded Artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          find release-artifacts -type f -name "*.jar" | head -20
+
+      - name: Create Git Tag
+        if: ${{ github.event.inputs.create_tag == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ needs.validate.outputs.tag_name }}" -m "Release ${{ needs.validate.outputs.version }}"
+          git push origin "${{ needs.validate.outputs.tag_name }}"
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          MC_VERSION="${{ needs.validate.outputs.minecraft_version }}"
+          
+          cat << 'EOF' > release_notes.md
+          # 🧪 AromaAffect ${{ needs.validate.outputs.version }}
+          
+          **Minecraft Version:** ${{ needs.validate.outputs.minecraft_version }}
+          
+          ## 📦 Downloads
+          
+          | Platform | File |
+          |----------|------|
+          | NeoForge | `aromaaffect-neoforge-${{ needs.validate.outputs.version }}.jar` |
+          | Fabric | `aromaaffect-fabric-${{ needs.validate.outputs.version }}.jar` |
+          
+          ## 📋 Requirements
+          
+          - **Minecraft:** ${{ needs.validate.outputs.minecraft_version }}
+          - **Java:** 21+
+          - **NeoForge:** 21.10.50+ (for NeoForge version)
+          - **Fabric Loader:** 0.18.2+ (for Fabric version)
+          - **Architectury API:** 18.0.8+
+          
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.validate.outputs.tag_name }}
+          name: AromaAffect ${{ needs.validate.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ needs.validate.outputs.is_prerelease == 'true' }}
+          files: |
+            release-artifacts/**/*.jar
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Summary Job - Provides release summary
+  # ════════════════════════════════════════════════════════════════════════════
+  summary:
+    name: Release Summary
+    runs-on: ubuntu-latest
+    needs: [validate, build, release]
+    if: always()
+    
+    steps:
+      - name: Generate Release Summary
+        run: |
+          echo "# 🚀 AromaAffect Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | \`${{ needs.validate.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Minecraft** | \`${{ needs.validate.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | \`${{ needs.validate.outputs.tag_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Type** | ${{ github.event.inputs.release_type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build Status** | ${{ needs.build.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Release Status** | ${{ needs.release.result == 'success' && '✅ Published' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Release](https://github.com/${{ github.repository }}/releases/tag/${{ needs.validate.outputs.tag_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+
