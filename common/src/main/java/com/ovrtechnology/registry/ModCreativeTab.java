@@ -31,8 +31,8 @@ public final class ModCreativeTab {
     /**
      * The main AromaCraft creative tab
      */
-    public static final RegistrySupplier<CreativeModeTab> AROMACRAFT_TAB = TABS.register(
-            "aromacraft_tab",
+    public static final RegistrySupplier<CreativeModeTab> AROMAAFFECT_TAB = TABS.register(
+            "aromaaffect_tab",
             () -> CreativeTabRegistry.create(builder -> {
                 // Set the tab icon
                 builder.icon(() -> {
@@ -47,7 +47,7 @@ public final class ModCreativeTab {
                 });
 
                 // Set the tab title
-                builder.title(Component.translatable("itemGroup.aromacraft"));
+                builder.title(Component.translatable("itemGroup.aromaaffect"));
 
                 // Add all items from our mod to this tab
                 builder.displayItems((parameters, output) -> {
@@ -65,6 +65,6 @@ public final class ModCreativeTab {
      */
     public static void init() {
         TABS.register();
-        AromaCraft.LOGGER.info("Registered AromaCraft creative tab");
+        AromaCraft.LOGGER.info("Registered AromaAffect creative tab");
     }
 }
