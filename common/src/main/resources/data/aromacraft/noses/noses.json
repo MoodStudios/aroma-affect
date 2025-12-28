@@ -131,7 +131,8 @@
         ],
         "abilities": [
           "structure_compass",
-          "danger_sense"
+          "danger_sense",
+          "precise_sniffer"
         ],
         "noses": [
           "gold_nose"
