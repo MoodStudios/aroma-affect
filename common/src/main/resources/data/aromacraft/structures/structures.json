@@ -1,0 +1,329 @@
+{
+  "structures": [
+    {
+      "structure_id": "minecraft:village_plains",
+      "image": "structure/village",
+      "fallback_name": "Plains Village",
+      "color_html": "#8B7355",
+      "scent_id": "kindred",
+      "blocks": [
+        "minecraft:hay_block",
+        "minecraft:bell",
+        "minecraft:composter"
+      ]
+    },
+    {
+      "structure_id": "minecraft:village_desert",
+      "image": "structure/village",
+      "fallback_name": "Desert Village",
+      "color_html": "#C2B280",
+      "scent_id": "desert",
+      "blocks": [
+        "minecraft:sandstone",
+        "minecraft:bell",
+        "minecraft:terracotta"
+      ]
+    },
+    {
+      "structure_id": "minecraft:village_savanna",
+      "image": "structure/village",
+      "fallback_name": "Savanna Village",
+      "color_html": "#BDB76B",
+      "scent_id": "kindred",
+      "blocks": [
+        "minecraft:acacia_log",
+        "minecraft:bell"
+      ]
+    },
+    {
+      "structure_id": "minecraft:village_snowy",
+      "image": "structure/village",
+      "fallback_name": "Snowy Village",
+      "color_html": "#E0FFFF",
+      "scent_id": "winter",
+      "blocks": [
+        "minecraft:snow_block",
+        "minecraft:bell",
+        "minecraft:spruce_planks"
+      ]
+    },
+    {
+      "structure_id": "minecraft:village_taiga",
+      "image": "structure/village",
+      "fallback_name": "Taiga Village",
+      "color_html": "#228B22",
+      "scent_id": "evergreen",
+      "blocks": [
+        "minecraft:spruce_log",
+        "minecraft:bell",
+        "minecraft:cobblestone"
+      ]
+    },
+    {
+      "structure_id": "minecraft:stronghold",
+      "image": "structure/stronghold",
+      "fallback_name": "Stronghold",
+      "color_html": "#4A4A4A",
+      "scent_id": "terra_silva",
+      "blocks": [
+        "minecraft:end_portal_frame",
+        "minecraft:stone_bricks",
+        "minecraft:mossy_stone_bricks",
+        "minecraft:cracked_stone_bricks"
+      ]
+    },
+    {
+      "structure_id": "minecraft:ancient_city",
+      "image": "structure/ancient_city",
+      "fallback_name": "Ancient City",
+      "color_html": "#1C1C2A",
+      "scent_id": "machina",
+      "blocks": [
+        "minecraft:sculk",
+        "minecraft:sculk_catalyst",
+        "minecraft:sculk_shrieker",
+        "minecraft:deepslate_tiles"
+      ]
+    },
+    {
+      "structure_id": "minecraft:monument",
+      "image": "structure/monument",
+      "fallback_name": "Ocean Monument",
+      "color_html": "#00CED1",
+      "scent_id": "marine",
+      "blocks": [
+        "minecraft:prismarine",
+        "minecraft:prismarine_bricks",
+        "minecraft:dark_prismarine",
+        "minecraft:sea_lantern"
+      ]
+    },
+    {
+      "structure_id": "minecraft:mansion",
+      "image": "structure/mansion",
+      "fallback_name": "Woodland Mansion",
+      "color_html": "#4A3728",
+      "scent_id": "timber",
+      "blocks": [
+        "minecraft:dark_oak_planks",
+        "minecraft:dark_oak_log",
+        "minecraft:cobblestone"
+      ]
+    },
+    {
+      "structure_id": "minecraft:mineshaft",
+      "image": "structure/mineshaft",
+      "fallback_name": "Mineshaft",
+      "color_html": "#6B4423",
+      "scent_id": "terra_silva",
+      "blocks": [
+        "minecraft:oak_planks",
+        "minecraft:oak_fence",
+        "minecraft:rail",
+        "minecraft:cobweb"
+      ]
+    },
+    {
+      "structure_id": "minecraft:mineshaft_mesa",
+      "image": "structure/mineshaft",
+      "fallback_name": "Mesa Mineshaft",
+      "color_html": "#CD853F",
+      "scent_id": "desert",
+      "blocks": [
+        "minecraft:dark_oak_planks",
+        "minecraft:dark_oak_fence",
+        "minecraft:rail"
+      ]
+    },
+    {
+      "structure_id": "minecraft:fortress",
+      "image": "structure/fortress",
+      "fallback_name": "Nether Fortress",
+      "color_html": "#4A0000",
+      "scent_id": "smoky",
+      "blocks": [
+        "minecraft:nether_bricks",
+        "minecraft:nether_brick_fence",
+        "minecraft:blaze_spawner"
+      ]
+    },
+    {
+      "structure_id": "minecraft:bastion_remnant",
+      "image": "structure/bastion",
+      "fallback_name": "Bastion Remnant",
+      "color_html": "#2F2F2F",
+      "scent_id": "smoky",
+      "blocks": [
+        "minecraft:blackstone",
+        "minecraft:polished_blackstone_bricks",
+        "minecraft:gilded_blackstone",
+        "minecraft:gold_block"
+      ]
+    },
+    {
+      "structure_id": "minecraft:end_city",
+      "image": "structure/end_city",
+      "fallback_name": "End City",
+      "color_html": "#DDA0DD",
+      "scent_id": "floral",
+      "blocks": [
+        "minecraft:purpur_block",
+        "minecraft:purpur_pillar",
+        "minecraft:end_stone_bricks"
+      ]
+    },
+    {
+      "structure_id": "minecraft:buried_treasure",
+      "image": "structure/treasure",
+      "fallback_name": "Buried Treasure",
+      "color_html": "#FFD700",
+      "scent_id": "beach",
+      "blocks": [
+        "minecraft:chest"
+      ]
+    },
+    {
+      "structure_id": "minecraft:shipwreck",
+      "image": "structure/shipwreck",
+      "fallback_name": "Shipwreck",
+      "color_html": "#8B4513",
+      "scent_id": "marine",
+      "blocks": [
+        "minecraft:oak_planks",
+        "minecraft:spruce_planks",
+        "minecraft:chest"
+      ]
+    },
+    {
+      "structure_id": "minecraft:ocean_ruin_cold",
+      "image": "structure/ocean_ruin",
+      "fallback_name": "Cold Ocean Ruins",
+      "color_html": "#5F9EA0",
+      "scent_id": "marine",
+      "blocks": [
+        "minecraft:stone_bricks",
+        "minecraft:mossy_stone_bricks",
+        "minecraft:gravel"
+      ]
+    },
+    {
+      "structure_id": "minecraft:ocean_ruin_warm",
+      "image": "structure/ocean_ruin",
+      "fallback_name": "Warm Ocean Ruins",
+      "color_html": "#F4A460",
+      "scent_id": "marine",
+      "blocks": [
+        "minecraft:sandstone",
+        "minecraft:polished_granite",
+        "minecraft:sand"
+      ]
+    },
+    {
+      "structure_id": "minecraft:desert_pyramid",
+      "image": "structure/desert_pyramid",
+      "fallback_name": "Desert Pyramid",
+      "color_html": "#D2691E",
+      "scent_id": "desert",
+      "blocks": [
+        "minecraft:sandstone",
+        "minecraft:chiseled_sandstone",
+        "minecraft:orange_terracotta"
+      ]
+    },
+    {
+      "structure_id": "minecraft:jungle_pyramid",
+      "image": "structure/jungle_pyramid",
+      "fallback_name": "Jungle Temple",
+      "color_html": "#556B2F",
+      "scent_id": "evergreen",
+      "blocks": [
+        "minecraft:cobblestone",
+        "minecraft:mossy_cobblestone",
+        "minecraft:chiseled_stone_bricks"
+      ]
+    },
+    {
+      "structure_id": "minecraft:igloo",
+      "image": "structure/igloo",
+      "fallback_name": "Igloo",
+      "color_html": "#FFFAFA",
+      "scent_id": "winter",
+      "blocks": [
+        "minecraft:snow_block",
+        "minecraft:white_carpet"
+      ]
+    },
+    {
+      "structure_id": "minecraft:swamp_hut",
+      "image": "structure/swamp_hut",
+      "fallback_name": "Witch Hut",
+      "color_html": "#2E8B57",
+      "scent_id": "petrichor",
+      "blocks": [
+        "minecraft:spruce_planks",
+        "minecraft:cauldron",
+        "minecraft:crafting_table"
+      ]
+    },
+    {
+      "structure_id": "minecraft:pillager_outpost",
+      "image": "structure/pillager_outpost",
+      "fallback_name": "Pillager Outpost",
+      "color_html": "#696969",
+      "scent_id": "timber",
+      "blocks": [
+        "minecraft:dark_oak_log",
+        "minecraft:birch_planks",
+        "minecraft:cobblestone"
+      ]
+    },
+    {
+      "structure_id": "minecraft:ruined_portal",
+      "image": "structure/ruined_portal",
+      "fallback_name": "Ruined Portal",
+      "color_html": "#8B008B",
+      "scent_id": "smoky",
+      "blocks": [
+        "minecraft:obsidian",
+        "minecraft:crying_obsidian",
+        "minecraft:netherrack"
+      ]
+    },
+    {
+      "structure_id": "minecraft:ruined_portal_nether",
+      "image": "structure/ruined_portal",
+      "fallback_name": "Nether Ruined Portal",
+      "color_html": "#8B0000",
+      "scent_id": "smoky",
+      "blocks": [
+        "minecraft:obsidian",
+        "minecraft:crying_obsidian"
+      ]
+    },
+    {
+      "structure_id": "minecraft:trail_ruins",
+      "image": "structure/trail_ruins",
+      "fallback_name": "Trail Ruins",
+      "color_html": "#A0522D",
+      "scent_id": "terra_silva",
+      "blocks": [
+        "minecraft:mud_bricks",
+        "minecraft:gravel",
+        "minecraft:suspicious_gravel"
+      ]
+    },
+    {
+      "structure_id": "minecraft:trial_chambers",
+      "image": "structure/trial_chambers",
+      "fallback_name": "Trial Chambers",
+      "color_html": "#4682B4",
+      "scent_id": "machina",
+      "blocks": [
+        "minecraft:copper_bulb",
+        "minecraft:trial_spawner",
+        "minecraft:tuff_bricks"
+      ]
+    }
+  ]
+}
+

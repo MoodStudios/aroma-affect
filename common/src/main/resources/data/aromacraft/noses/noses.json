@@ -38,7 +38,7 @@
         ],
         "structures": [
           "minecraft:village_plains",
-          "minecraft:dungeon"
+          "minecraft:mineshaft"
         ],
         "abilities": [
           "active_tracking"
