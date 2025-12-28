@@ -24,6 +24,7 @@
   "key.categories.aromacraft": "AromaCraft",
   "key.aromacraft.open_radial_menu": "Open Scent Menu",
   "key.aromacraft.open_config_menu": "Open Configuration",
+  "key.aromacraft.toggle_search": "Toggle Search Mode",
   
   "menu.aromacraft.radial.title": "Scent Selection",
   
@@ -54,5 +55,44 @@
   
   "menu.aromacraft.selection.back_hint": "Press ESC to return to radial menu",
   "menu.aromacraft.selection.locked": "Locked - Upgrade your Nose to unlock",
-  "menu.aromacraft.selection.selected": "Currently Tracking"
+  "menu.aromacraft.selection.selected": "Currently Tracking",
+  
+  "scent.aromacraft.winter": "Winter",
+  "scent.aromacraft.winter.description": "Breathing in cold air, soft snowstorm, notes of cool mint, ozone, and watery melon",
+  "scent.aromacraft.barnyard": "Barnyard",
+  "scent.aromacraft.barnyard.description": "Warm hay, farm animals, hint of fresh country air",
+  "scent.aromacraft.sweet": "Sweet",
+  "scent.aromacraft.sweet.description": "Freshly baked treat with notes of vanilla, cream, and chocolate",
+  "scent.aromacraft.floral": "Floral",
+  "scent.aromacraft.floral.description": "Wandering through a flower garden, catching wafts of different blooms",
+  "scent.aromacraft.beach": "Beach",
+  "scent.aromacraft.beach.description": "Relaxing in the sand with hints of sunscreen and coconut",
+  "scent.aromacraft.kindred": "Kindred",
+  "scent.aromacraft.kindred.description": "The warmth of human connection with gentle notes of baby powder and soothing lavender",
+  "scent.aromacraft.petrichor": "Petrichor",
+  "scent.aromacraft.petrichor.description": "Grey skies before a storm, rain hitting pavement, scent of drenched streets",
+  "scent.aromacraft.marine": "Marine",
+  "scent.aromacraft.marine.description": "Ocean spray and seaweed tangled in coastal vegetation with weathered driftwood",
+  "scent.aromacraft.evergreen": "Evergreen",
+  "scent.aromacraft.evergreen.description": "Exploring deep forests with notes of pine trees and lush greenery",
+  "scent.aromacraft.terra_silva": "Terra Silva",
+  "scent.aromacraft.terra_silva.description": "Fresh dirt, earthy minerals, wet moss, cold deep forest rivers with hints of plants",
+  "scent.aromacraft.citrus": "Citrus",
+  "scent.aromacraft.citrus.description": "Fresh citrus from a tree - bright, ripe, zesty with lemon, orange, and grapefruit",
+  "scent.aromacraft.desert": "Desert",
+  "scent.aromacraft.desert.description": "Dry, herbal, desert heat and sand",
+  "scent.aromacraft.savory_spice": "Savory Spice",
+  "scent.aromacraft.savory_spice.description": "A medley of spices for savory dishes - coriander, ginger, black pepper, paprika",
+  "scent.aromacraft.timber": "Timber",
+  "scent.aromacraft.timber.description": "Dried wood, entering a lumber yard with notes of sandalwood and cedarwood",
+  "scent.aromacraft.smoky": "Smoky",
+  "scent.aromacraft.smoky.description": "The crackling of a campfire with creosote and cedarwood",
+  "scent.aromacraft.machina": "Machina",
+  "scent.aromacraft.machina.description": "Diesel fuel, industrial parts of cities, slightly sulfurous",
+  
+  "websocket.aromacraft.status.disconnected": "OVR Hardware: Disconnected",
+  "websocket.aromacraft.status.connecting": "OVR Hardware: Connecting...",
+  "websocket.aromacraft.status.connected": "OVR Hardware: Connected",
+  "websocket.aromacraft.status.reconnecting": "OVR Hardware: Reconnecting...",
+  "websocket.aromacraft.status.failed": "OVR Hardware: Connection Failed"
 }

@@ -1,11 +1,11 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.keybind.AromaCraftKeyCategory;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
 import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
 
@@ -26,20 +26,13 @@ import org.lwjgl.glfw.GLFW;
 public final class MenuKeyBindings {
     
     /**
-     * The AromaCraft keybinding category.
-     */
-    private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
-            ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "keybinds")
-    );
-    
-    /**
      * Keybinding for opening the radial menu.
      */
     public static final KeyMapping OPEN_RADIAL_MENU = new KeyMapping(
             "key.aromacraft.open_radial_menu",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_R,
-            CATEGORY
+            AromaCraftKeyCategory.CATEGORY
     );
     
     /**
@@ -49,7 +42,7 @@ public final class MenuKeyBindings {
             "key.aromacraft.open_config_menu",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_C,
-            CATEGORY
+            AromaCraftKeyCategory.CATEGORY
     );
     
     /**
