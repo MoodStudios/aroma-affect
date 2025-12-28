@@ -1,11 +1,11 @@
 package com.ovrtechnology;
 
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
 import lombok.experimental.UtilityClass;
-import net.minecraft.server.commands.LocateCommand;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,10 @@ public final class AromaCraft {
         
         // Initialize lookup system
         LookupManager.init();
-        
+
+        // Initialize active path manager for persistent particle paths
+        ActivePathManager.init();
+
         // Initialize test commands
         AromaTestCommand.init();
         
