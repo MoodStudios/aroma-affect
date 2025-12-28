@@ -2,6 +2,7 @@ package com.ovrtechnology;
 
 import com.ovrtechnology.ability.AbilityHandler;
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
@@ -29,6 +30,9 @@ public final class AromaCraft {
 
         // Initialize lookup system
         LookupManager.init();
+
+        // Initialize active path manager for persistent particle paths
+        ActivePathManager.init();
 
         // Initialize ability system (Precise Sniffer, etc.)
         AbilityHandler.init();

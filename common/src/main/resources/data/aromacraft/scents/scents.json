@@ -1,0 +1,101 @@
+{
+  "scents": [
+    {
+      "id": "winter",
+      "fallback_name": "Winter",
+      "description": "Breathing in cold air, soft snowstorm, notes of cool mint, ozone, and watery melon",
+      "priority": 5
+    },
+    {
+      "id": "barnyard",
+      "fallback_name": "Barnyard",
+      "description": "Warm hay, farm animals, hint of fresh country air",
+      "priority": 4
+    },
+    {
+      "id": "sweet",
+      "fallback_name": "Sweet",
+      "description": "Freshly baked treat with notes of vanilla, cream, and chocolate",
+      "priority": 6
+    },
+    {
+      "id": "floral",
+      "fallback_name": "Floral",
+      "description": "Wandering through a flower garden, catching wafts of different blooms",
+      "priority": 4
+    },
+    {
+      "id": "beach",
+      "fallback_name": "Beach",
+      "description": "Relaxing in the sand with hints of sunscreen and coconut",
+      "priority": 5
+    },
+    {
+      "id": "kindred",
+      "fallback_name": "Kindred",
+      "description": "The warmth of human connection with gentle notes of baby powder and soothing lavender",
+      "priority": 5
+    },
+    {
+      "id": "petrichor",
+      "fallback_name": "Petrichor",
+      "description": "Grey skies before a storm, rain hitting pavement, scent of drenched streets",
+      "priority": 5
+    },
+    {
+      "id": "marine",
+      "fallback_name": "Marine",
+      "description": "Ocean spray and seaweed tangled in coastal vegetation with weathered driftwood",
+      "priority": 5
+    },
+    {
+      "id": "evergreen",
+      "fallback_name": "Evergreen",
+      "description": "Exploring deep forests with notes of pine trees and lush greenery",
+      "priority": 4
+    },
+    {
+      "id": "terra_silva",
+      "fallback_name": "Terra Silva",
+      "description": "Fresh dirt, earthy minerals, wet moss, cold deep forest rivers with hints of plants",
+      "priority": 4
+    },
+    {
+      "id": "citrus",
+      "fallback_name": "Citrus",
+      "description": "Fresh citrus from a tree - bright, ripe, zesty with lemon, orange, and grapefruit",
+      "priority": 5
+    },
+    {
+      "id": "desert",
+      "fallback_name": "Desert",
+      "description": "Dry, herbal, desert heat and sand",
+      "priority": 5
+    },
+    {
+      "id": "savory_spice",
+      "fallback_name": "Savory Spice",
+      "description": "A medley of spices for savory dishes - coriander, ginger, black pepper, paprika",
+      "priority": 5
+    },
+    {
+      "id": "timber",
+      "fallback_name": "Timber",
+      "description": "Dried wood, entering a lumber yard with notes of sandalwood and cedarwood",
+      "priority": 4
+    },
+    {
+      "id": "smoky",
+      "fallback_name": "Smoky",
+      "description": "The crackling of a campfire with creosote and cedarwood",
+      "priority": 7
+    },
+    {
+      "id": "machina",
+      "fallback_name": "Machina",
+      "description": "Diesel fuel, industrial parts of cities, slightly sulfurous",
+      "priority": 6
+    }
+  ]
+}
+

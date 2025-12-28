@@ -6,6 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.biome.BiomeRegistry;
+import com.ovrtechnology.block.BlockRegistry;
+import com.ovrtechnology.structure.StructureRegistry;
 import lombok.Getter;
 
 import java.io.InputStream;
@@ -100,9 +103,60 @@ public class NoseDefinitionLoader {
         
         // Validate unlock references
         NoseUnlock unlock = nose.getUnlock();
-        if (unlock != null && unlock.hasNoseInheritance()) {
-            for (String inheritedNoseId : unlock.getNoses()) {
-                AromaCraft.LOGGER.debug("[{}] Inherits abilities from: {}", noseId, inheritedNoseId);
+        if (unlock != null) {
+            // Validate nose inheritance
+            if (unlock.hasNoseInheritance()) {
+                for (String inheritedNoseId : unlock.getNoses()) {
+                    AromaCraft.LOGGER.debug("[{}] Inherits abilities from: {}", noseId, inheritedNoseId);
+                }
+            }
+            
+            // Validate and filter block references against BlockRegistry
+            if (unlock.hasBlockUnlocks() && BlockRegistry.isInitialized()) {
+                List<String> invalidBlocks = BlockRegistry.validateBlockIds(unlock.getBlocks());
+                if (!invalidBlocks.isEmpty()) {
+                    for (String invalidBlock : invalidBlocks) {
+                        AromaCraft.LOGGER.warn("[{}] Skipping unregistered block: '{}' - block must be defined in blocks.json", 
+                                noseId, invalidBlock);
+                    }
+                    // Filter out invalid blocks
+                    List<String> validBlocks = new ArrayList<>(unlock.getBlocks());
+                    validBlocks.removeAll(invalidBlocks);
+                    unlock.setBlocks(validBlocks);
+                    AromaCraft.LOGGER.info("[{}] Kept {} valid block references after filtering", noseId, validBlocks.size());
+                }
+            }
+            
+            // Validate and filter structure references against StructureRegistry
+            if (unlock.hasStructureUnlocks() && StructureRegistry.isInitialized()) {
+                List<String> invalidStructures = StructureRegistry.validateStructureIds(unlock.getStructures());
+                if (!invalidStructures.isEmpty()) {
+                    for (String invalidStructure : invalidStructures) {
+                        AromaCraft.LOGGER.warn("[{}] Skipping unregistered structure: '{}' - structure must be defined in structures.json", 
+                                noseId, invalidStructure);
+                    }
+                    // Filter out invalid structures
+                    List<String> validStructures = new ArrayList<>(unlock.getStructures());
+                    validStructures.removeAll(invalidStructures);
+                    unlock.setStructures(validStructures);
+                    AromaCraft.LOGGER.info("[{}] Kept {} valid structure references after filtering", noseId, validStructures.size());
+                }
+            }
+            
+            // Validate and filter biome references against BiomeRegistry
+            if (unlock.hasBiomeUnlocks() && BiomeRegistry.isInitialized()) {
+                List<String> invalidBiomes = BiomeRegistry.validateBiomeIds(unlock.getBiomes());
+                if (!invalidBiomes.isEmpty()) {
+                    for (String invalidBiome : invalidBiomes) {
+                        AromaCraft.LOGGER.warn("[{}] Skipping unregistered biome: '{}' - biome must be defined in biomes.json", 
+                                noseId, invalidBiome);
+                    }
+                    // Filter out invalid biomes
+                    List<String> validBiomes = new ArrayList<>(unlock.getBiomes());
+                    validBiomes.removeAll(invalidBiomes);
+                    unlock.setBiomes(validBiomes);
+                    AromaCraft.LOGGER.info("[{}] Kept {} valid biome references after filtering", noseId, validBiomes.size());
+                }
             }
         }
     }

@@ -1,6 +1,9 @@
 package com.ovrtechnology;
 
 import com.ovrtechnology.menu.MenuKeyBindings;
+import com.ovrtechnology.search.SearchKeyBindings;
+import com.ovrtechnology.websocket.OvrWebSocketClient;
+import com.ovrtechnology.websocket.WebSocketConfig;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -33,6 +36,13 @@ public final class AromaCraftClient {
         // Initialize menu keybindings
         MenuKeyBindings.init();
         
+        // Initialize search keybindings (for activating search with Nose equipped)
+        SearchKeyBindings.init();
+        
+        // Initialize OVR WebSocket client for scent hardware integration
+        // The connection is optional - the mod works without it
+        initWebSocketClient();
+        
         // TODO: Initialize other client systems
         // - HUD overlays for tracking
         // - Particle effects
@@ -40,5 +50,50 @@ public final class AromaCraftClient {
         
         initialized = true;
         AromaCraft.LOGGER.info("AromaCraft client initialized successfully!");
+    }
+    
+    /**
+     * Initializes the OVR WebSocket client with default configuration.
+     * 
+     * <p>The WebSocket connection is optional and used for communicating with
+     * OVR's scent hardware. The mod works perfectly without it - the connection
+     * will simply retry in the background.</p>
+     */
+    private static void initWebSocketClient() {
+        // TODO: Load config from file when configuration system is set up
+        // For now, use default config (localhost:8080)
+        WebSocketConfig config = WebSocketConfig.builder()
+                .host("localhost")
+                .port(8080)
+                .autoConnect(true)       // Try to connect on startup
+                .autoReconnect(true)     // Keep trying if connection fails
+                .debugLogging(false)     // Set to true for development debugging
+                .build();
+        
+        OvrWebSocketClient.init(config);
+        
+        // Register a listener to log connection events
+        OvrWebSocketClient.getInstance().addConnectionListener(
+                new com.ovrtechnology.websocket.WebSocketConnectionListener() {
+                    @Override
+                    public void onConnected() {
+                        AromaCraft.LOGGER.info("[OVR] Connected to scent hardware bridge!");
+                    }
+                    
+                    @Override
+                    public void onDisconnected(String reason, boolean wasClean) {
+                        if (!wasClean) {
+                            AromaCraft.LOGGER.warn("[OVR] Disconnected from hardware bridge: {}", reason);
+                        }
+                    }
+                    
+                    @Override
+                    public void onReconnecting(int attemptNumber, long delayMs) {
+                        if (attemptNumber == 1) {
+                            AromaCraft.LOGGER.info("[OVR] Hardware bridge not available, will retry in background...");
+                        }
+                    }
+                }
+        );
     }
 }
