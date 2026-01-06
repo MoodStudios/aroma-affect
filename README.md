@@ -116,9 +116,9 @@ cd aroma-affect
 Visit the [**Wiki**](https://github.com/MoodStudios/aroma-affect/wiki) for comprehensive documentation:
 
 - [Getting Started](https://github.com/MoodStudios/aroma-affect/wiki/Getting-Started)
-- [The Nose System](https://github.com/MoodStudios/aroma-affect/wiki/The-Nose-System)
-- [Configuration Guide](https://github.com/MoodStudios/aroma-affect/wiki/Configuration)
-- [OVR Hardware Setup](https://github.com/MoodStudios/aroma-affect/wiki/OVR-Hardware-Setup)
+- [Dependencies](https://github.com/MoodStudios/aroma-affect/wiki/Dependencies)
+- [Fabric Installation](https://github.com/MoodStudios/aroma-affect/wiki/Fabric-Installation)
+- [Neoforge Installation](https://github.com/MoodStudios/aroma-affect/wiki/NeoForge-Installation)
 
 ## 🤝 Contributing
 
