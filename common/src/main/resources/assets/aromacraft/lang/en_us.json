@@ -10,7 +10,26 @@
 
   "item.aromacraft.enhanced_sniffer_nose": "Enhanced Sniffer Nose",
 
-  
+  "item.aromacraft.winter_scent": "Winter Scent",
+  "item.aromacraft.barnyard_scent": "Barnyard Scent",
+  "item.aromacraft.sweet_scent": "Sweet Scent",
+  "item.aromacraft.floral_scent": "Floral Scent",
+  "item.aromacraft.beach_scent": "Beach Scent",
+  "item.aromacraft.kindred_scent": "Kindred Scent",
+  "item.aromacraft.petrichor_scent": "Petrichor Scent",
+  "item.aromacraft.marine_scent": "Marine Scent",
+  "item.aromacraft.evergreen_scent": "Evergreen Scent",
+  "item.aromacraft.terra_silva_scent": "Terra Silva Scent",
+  "item.aromacraft.citrus_scent": "Citrus Scent",
+  "item.aromacraft.desert_scent": "Desert Scent",
+  "item.aromacraft.savory_spice_scent": "Savory Spice Scent",
+  "item.aromacraft.timber_scent": "Timber Scent",
+  "item.aromacraft.smoky_scent": "Smoky Scent",
+  "item.aromacraft.machina_scent": "Machina Scent",
+  "item.aromacraft.nether_scent": "Nether Scent",
+  "item.aromacraft.end_scent": "End Scent",
+  "item.aromacraft.overworld_scent": "Overworld Scent",
+
   "tooltip.aromacraft.nose.tier": "Tier: %s",
   "tooltip.aromacraft.nose.durability": "Durability: %s",
   "tooltip.aromacraft.nose.detects_blocks": "Detects Blocks:",
