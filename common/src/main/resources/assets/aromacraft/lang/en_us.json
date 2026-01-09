@@ -29,6 +29,7 @@
   "item.aromacraft.nether_scent": "Nether Scent",
   "item.aromacraft.end_scent": "End Scent",
   "item.aromacraft.overworld_scent": "Overworld Scent",
+  "item.aromacraft.scent_container": "Scent Container",
 
   "tooltip.aromacraft.nose.tier": "Tier: %s",
   "tooltip.aromacraft.nose.durability": "Durability: %s",

@@ -151,6 +151,14 @@
         "fallback_name": "Overworld Scent",
         "description": "The fresh, earthy air of the Overworld with hints of grass and flowers",
         "priority": 5
+      },
+      {
+        "id": "scent_container",
+        "image": "item/scent_container",
+        "model": "minecraft:glass_bottle",
+        "fallback_name": "Scent Container",
+        "description": "A container for storing scents",
+        "priority": 5
       }
     ]
   }

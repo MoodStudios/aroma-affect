@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "utilities",
+  "pattern": [
+    " N ",
+    "NGN",
+    "NNN"
+  ],
+  "key": {
+    "G": "minecraft:glass_bottle",
+    "N": "minecraft:iron_nugget"
+  },
+  "result": {
+    "id": "aromacraft:scent_container",
+    "count": 1
+  }
+}
