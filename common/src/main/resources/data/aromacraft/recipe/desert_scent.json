@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:dead_bush",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:yellow_dye",
+    "C": "minecraft:orange_dye",
+    "E": "minecraft:brown_dye"
+  },
+  "result": {
+    "id": "aromacraft:desert_scent",
+    "count": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:honey_bottle",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:pink_dye",
+    "C": "minecraft:magenta_dye",
+    "E": "minecraft:white_dye"
+  },
+  "result": {
+    "id": "aromacraft:sweet_scent",
+    "count": 1
+  }
+}

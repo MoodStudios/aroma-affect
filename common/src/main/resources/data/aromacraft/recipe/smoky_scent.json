@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:charcoal",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:gray_dye",
+    "C": "minecraft:black_dye",
+    "E": "minecraft:orange_dye"
+  },
+  "result": {
+    "id": "aromacraft:smoky_scent",
+    "count": 1
+  }
+}

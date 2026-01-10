@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:white_wool",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:pink_dye",
+    "C": "minecraft:white_dye",
+    "E": "minecraft:light_blue_dye"
+  },
+  "result": {
+    "id": "aromacraft:kindred_scent",
+    "count": 1
+  }
+}

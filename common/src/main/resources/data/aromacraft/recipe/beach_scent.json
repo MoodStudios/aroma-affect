@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:nautilus_shell",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:yellow_dye",
+    "C": "minecraft:cyan_dye",
+    "E": "minecraft:white_dye"
+  },
+  "result": {
+    "id": "aromacraft:beach_scent",
+    "count": 1
+  }
+}
