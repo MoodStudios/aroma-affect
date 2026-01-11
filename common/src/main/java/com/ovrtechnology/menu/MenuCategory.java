@@ -11,22 +11,39 @@ import net.minecraft.world.item.Items;
  */
 public enum MenuCategory {
     /**
-     * Blocks category - for tracking specific blocks like ores.
+     * Structures category - for tracking structures like villages, strongholds, etc.
+     * Icon: Village/Bell representing civilization and structures.
      */
-    BLOCKS("blocks", LookupType.BLOCK, Items.DIAMOND_ORE.getDefaultInstance(), 
+    STRUCTURES("structures", LookupType.STRUCTURE, Items.BELL.getDefaultInstance(),
+               "menu.aromacraft.category.structures", "menu.aromacraft.category.structures.description"),
+    
+    /**
+     * Entities category - for tracking mobs and NPCs.
+     * Icon: Villager spawn egg representing living entities.
+     */
+    ENTITIES("entities", null, Items.VILLAGER_SPAWN_EGG.getDefaultInstance(),
+             "menu.aromacraft.category.entities", "menu.aromacraft.category.entities.description"),
+    
+    /**
+     * Flora category - for tracking flowers, plants, and vegetation.
+     * Icon: Poppy representing plant life.
+     */
+    FLORA("flora", null, Items.POPPY.getDefaultInstance(),
+          "menu.aromacraft.category.flora", "menu.aromacraft.category.flora.description"),
+    
+    /**
+     * Blocks category - for tracking specific blocks like ores.
+     * Icon: Filled map representing exploration and discovery.
+     */
+    BLOCKS("blocks", LookupType.BLOCK, Items.FILLED_MAP.getDefaultInstance(), 
            "menu.aromacraft.category.blocks", "menu.aromacraft.category.blocks.description"),
     
     /**
      * Biomes category - for tracking biome transitions.
+     * Icon: Grass block representing terrain and biomes.
      */
-    BIOMES("biomes", LookupType.BIOME, Items.OAK_SAPLING.getDefaultInstance(),
-           "menu.aromacraft.category.biomes", "menu.aromacraft.category.biomes.description"),
-    
-    /**
-     * Structures category - for tracking structures like villages, strongholds, etc.
-     */
-    STRUCTURES("structures", LookupType.STRUCTURE, Items.BELL.getDefaultInstance(),
-               "menu.aromacraft.category.structures", "menu.aromacraft.category.structures.description");
+    BIOMES("biomes", LookupType.BIOME, Items.GRASS_BLOCK.getDefaultInstance(),
+           "menu.aromacraft.category.biomes", "menu.aromacraft.category.biomes.description");
     
     private final String id;
     private final LookupType lookupType;
@@ -52,9 +69,18 @@ public enum MenuCategory {
     
     /**
      * Gets the corresponding lookup type for this category.
+     * May return null for categories not yet implemented.
      */
     public LookupType getLookupType() {
         return lookupType;
+    }
+    
+    /**
+     * Checks if this category has a valid lookup type implementation.
+     * Categories without implementations show as "coming soon" in the UI.
+     */
+    public boolean isImplemented() {
+        return lookupType != null;
     }
     
     /**

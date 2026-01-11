@@ -2,6 +2,8 @@ package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaCraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -12,112 +14,97 @@ import java.util.List;
  * Radial menu screen for selecting tracking categories.
  * 
  * <p>This is the main navigation menu of AromaCraft, activated by pressing the radial menu hotkey (default: R).
- * It displays three category options (Blocks, Biomes, Structures) arranged in a radial pattern,
- * with two options at the top and one at the bottom.</p>
+ * It displays a circular ring with category segments, matching the OVR Technology aesthetic.</p>
  * 
  * <p>Features:</p>
  * <ul>
+ *   <li>Circular ring design with segment highlighting</li>
  *   <li>Smooth opening/closing animations with easing</li>
- *   <li>Hover highlighting with scaling effects</li>
- *   <li>Category icons using ItemStack rendering</li>
- *   <li>Visual feedback on selection</li>
+ *   <li>Hover highlighting with glow effects</li>
+ *   <li>Category icons rendered on the ring</li>
+ *   <li>OVR Technology branding at the top</li>
  * </ul>
  */
 public class RadialMenuScreen extends BaseMenuScreen {
     
-    /**
-     * Radius of the radial menu from center to category icons.
-     */
-    private static final int MENU_RADIUS = 80;
+    // ==================== RING DIMENSIONS ====================
     
-    /**
-     * Size of each category button/slot.
-     */
-    private static final int SLOT_SIZE = 48;
+    /** Outer radius of the ring in pixels. */
+    private static final int OUTER_RADIUS = 95;
     
-    /**
-     * Size of the item icon within each slot.
-     */
-    private static final int ICON_SIZE = 32;
+    /** Inner radius of the ring (creates the hollow center). */
+    private static final int INNER_RADIUS = 55;
     
-    /**
-     * Size of the center indicator circle.
-     */
-    private static final int CENTER_SIZE = 24;
+    // ==================== COLORS ====================
     
-    /**
-     * Color for unselected slots (semi-transparent dark).
-     */
-    private static final int SLOT_COLOR = 0xB0222222;
+    /** Base color for ring segments (semi-transparent dark blue). */
+    private static final int SEGMENT_BASE_COLOR = 0xA0202840;
     
-    /**
-     * Color for hovered slots.
-     */
-    private static final int SLOT_HOVER_COLOR = 0xE0444488;
+    /** Hovered segment color (purple-blue highlight). */
+    private static final int SEGMENT_HOVER_COLOR = 0xD0445588;
     
-    /**
-     * Color for the slot border.
-     */
-    private static final int SLOT_BORDER_COLOR = 0xFF666666;
+    /** Inner ring edge glow color. */
+    private static final int INNER_GLOW_COLOR = 0x606080B0;
     
-    /**
-     * Color for the hovered slot border.
-     */
-    private static final int SLOT_HOVER_BORDER_COLOR = 0xFFAAAAFF;
+    /** Outer ring edge glow color. */
+    private static final int OUTER_GLOW_COLOR = 0x808090C0;
     
-    /**
-     * Color for the center indicator.
-     */
-    private static final int CENTER_COLOR = 0xC0333333;
+    /** Segment divider line color. */
+    private static final int DIVIDER_COLOR = 0xC0607090;
     
-    /**
-     * The category slots to display.
-     */
-    private final List<RadialSlot> slots = new ArrayList<>();
+    // ==================== STATE ====================
     
-    /**
-     * Currently hovered slot index, or -1 if none.
-     */
-    private int hoveredSlotIndex = -1;
+    /** The category segments to display. */
+    private final List<RingSegment> segments = new ArrayList<>();
     
-    /**
-     * The previously hovered slot for animation purposes.
-     */
-    private int previousHoveredSlot = -1;
+    /** Currently hovered segment index, or -1 if none. */
+    private int hoveredSegmentIndex = -1;
     
-    /**
-     * Individual slot animation progress for hover effects.
-     */
-    private final float[] slotHoverProgress = new float[MenuCategory.values().length];
+    /** Individual segment animation progress for hover effects. */
+    private final float[] segmentHoverProgress;
+    
+    /** Number of segments to render. */
+    private final int segmentCount;
     
     public RadialMenuScreen() {
         super(Component.translatable("menu.aromacraft.radial.title"));
-        initializeSlots();
+        
+        MenuCategory[] categories = MenuCategory.values();
+        this.segmentCount = categories.length;
+        this.segmentHoverProgress = new float[segmentCount];
+        
+        initializeSegments();
     }
     
     /**
-     * Initializes the radial slots with their positions.
-     * Layout: Blocks (top-left), Biomes (top-right), Structures (bottom-center)
+     * Initializes the ring segments with their angular positions.
+     * Segments are evenly distributed around the ring starting from the top.
      */
-    private void initializeSlots() {
-        slots.clear();
+    private void initializeSegments() {
+        segments.clear();
         
-        // Calculate angles for 3 slots: top-left, top-right, bottom-center
-        // Angles in degrees: -135 (top-left), -45 (top-right), 90 (bottom)
-        double[] angles = { -135, -45, 90 };
-        MenuCategory[] categories = { MenuCategory.BLOCKS, MenuCategory.BIOMES, MenuCategory.STRUCTURES };
+        MenuCategory[] categories = MenuCategory.values();
+        double anglePerSegment = 360.0 / segmentCount;
+        
+        // Start from top (-90 degrees) and distribute evenly
+        // Offset by half a segment so icons sit at segment centers
+        double startAngle = -90.0 - (anglePerSegment / 2.0);
         
         for (int i = 0; i < categories.length; i++) {
-            slots.add(new RadialSlot(categories[i], angles[i]));
+            double segmentStartAngle = startAngle + (i * anglePerSegment);
+            double segmentEndAngle = segmentStartAngle + anglePerSegment;
+            double iconAngle = segmentStartAngle + (anglePerSegment / 2.0);
+            
+            segments.add(new RingSegment(categories[i], segmentStartAngle, segmentEndAngle, iconAngle));
         }
     }
     
     @Override
     protected void init() {
         super.init();
-        // Reset slot hover progress
-        for (int i = 0; i < slotHoverProgress.length; i++) {
-            slotHoverProgress[i] = 0.0f;
+        // Reset segment hover progress
+        for (int i = 0; i < segmentHoverProgress.length; i++) {
+            segmentHoverProgress[i] = 0.0f;
         }
     }
     
@@ -125,12 +112,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
     public void tick() {
         super.tick();
         
-        // Update slot hover animations
-        for (int i = 0; i < slots.size(); i++) {
-            if (i == hoveredSlotIndex) {
-                slotHoverProgress[i] = Math.min(1.0f, slotHoverProgress[i] + 0.2f);
+        // Update segment hover animations
+        for (int i = 0; i < segments.size(); i++) {
+            if (i == hoveredSegmentIndex) {
+                segmentHoverProgress[i] = Math.min(1.0f, segmentHoverProgress[i] + 0.2f);
             } else {
-                slotHoverProgress[i] = Math.max(0.0f, slotHoverProgress[i] - 0.15f);
+                segmentHoverProgress[i] = Math.max(0.0f, segmentHoverProgress[i] - 0.15f);
             }
         }
     }
@@ -141,250 +128,350 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int centerX = width / 2;
         int centerY = height / 2;
         
-        // Calculate animated radius (expands outward during animation)
-        float animatedRadius = MENU_RADIUS * animProgress;
+        // Calculate animated radii (ring expands outward during animation)
+        float animatedOuterRadius = OUTER_RADIUS * animProgress;
+        float animatedInnerRadius = INNER_RADIUS * animProgress;
         
-        // Calculate scale for the entire menu
-        float menuScale = 0.5f + 0.5f * animProgress;
+        // Update hovered segment based on mouse position
+        updateHoveredSegment(mouseX, mouseY, centerX, centerY, animatedOuterRadius, animatedInnerRadius);
         
-        // Update hovered slot based on mouse position
-        updateHoveredSlot(mouseX, mouseY, centerX, centerY, animatedRadius);
+        // Render OVR logo at top
+        renderOvrLogo(graphics, centerX, animProgress);
         
-        // Render center indicator
-        renderCenterIndicator(graphics, centerX, centerY, animProgress);
+        // Render the ring segments
+        renderRingSegments(graphics, centerX, centerY, animatedOuterRadius, animatedInnerRadius, 
+                          animProgress, partialTick);
         
-        // Render each slot
-        for (int i = 0; i < slots.size(); i++) {
-            RadialSlot slot = slots.get(i);
+        // Render segment icons
+        renderSegmentIcons(graphics, centerX, centerY, animProgress, partialTick);
+        
+        // Render ring borders/glow
+        renderRingBorders(graphics, centerX, centerY, animatedOuterRadius, animatedInnerRadius, animProgress);
+        
+        // Render hovered segment tooltip
+        if (hoveredSegmentIndex >= 0 && animProgress > 0.5f) {
+            RingSegment hoveredSegment = segments.get(hoveredSegmentIndex);
+            renderSegmentTooltip(graphics, hoveredSegment, centerX, centerY, animProgress);
+        }
+    }
+    
+    /**
+     * Renders the OVR Technology logo at the top of the screen.
+     */
+    private void renderOvrLogo(GuiGraphics graphics, int centerX, float animProgress) {
+        if (animProgress < 0.3f) return;
+        
+        float logoAlpha = (animProgress - 0.3f) / 0.7f;
+        int logoY = 20;
+        
+        // Render text-based logo with OVR branding
+        // Using text rendering as fallback - a proper texture can be added later
+        int textColor = ((int)(255 * logoAlpha) << 24) | 0xFFFFFF;
+        graphics.drawCenteredString(font, "OVR", centerX, logoY, textColor);
+        
+        int subTextColor = ((int)(180 * logoAlpha) << 24) | 0xBBBBBB;
+        graphics.drawCenteredString(font, "technology", centerX, logoY + 12, subTextColor);
+    }
+    
+    /**
+     * Renders all ring segments with proper coloring and hover effects.
+     */
+    private void renderRingSegments(GuiGraphics graphics, int centerX, int centerY,
+                                     float outerRadius, float innerRadius,
+                                     float animProgress, float partialTick) {
+        for (int i = 0; i < segments.size(); i++) {
+            RingSegment segment = segments.get(i);
             float hoverProgress = getInterpolatedHoverProgress(i, partialTick);
-            renderSlot(graphics, slot, i, centerX, centerY, animatedRadius, 
-                      animProgress, hoverProgress, partialTick);
-        }
-        
-        // Render connecting lines from center to slots
-        renderConnectingLines(graphics, centerX, centerY, animatedRadius, animProgress);
-        
-        // Render hovered slot tooltip
-        if (hoveredSlotIndex >= 0 && animProgress > 0.5f) {
-            RadialSlot hoveredSlot = slots.get(hoveredSlotIndex);
-            renderSlotTooltip(graphics, hoveredSlot, mouseX, mouseY, animProgress);
+            
+            renderSegment(graphics, segment, i, centerX, centerY, outerRadius, innerRadius,
+                         animProgress, hoverProgress);
         }
     }
     
     /**
-     * Renders the center indicator of the radial menu.
+     * Renders a single ring segment.
      */
-    private void renderCenterIndicator(GuiGraphics graphics, int centerX, int centerY, float animProgress) {
-        int size = (int) (CENTER_SIZE * animProgress);
-        int halfSize = size / 2;
-        
-        // Draw center circle background
-        int alpha = (int) (192 * animProgress);
-        int centerColor = (alpha << 24) | 0x333333;
-        
-        graphics.fill(centerX - halfSize, centerY - halfSize, 
-                     centerX + halfSize, centerY + halfSize, centerColor);
-        
-        // Draw center border
-        int borderAlpha = (int) (255 * animProgress);
-        int borderColor = (borderAlpha << 24) | 0x888888;
-        drawRectBorder(graphics, centerX - halfSize, centerY - halfSize, 
-                      centerX + halfSize, centerY + halfSize, borderColor);
-    }
-    
-    /**
-     * Renders a single radial slot.
-     */
-    private void renderSlot(GuiGraphics graphics, RadialSlot slot, int index,
-                           int centerX, int centerY, float radius,
-                           float animProgress, float hoverProgress, float partialTick) {
-        // Calculate slot position
-        double angleRad = Math.toRadians(slot.angle);
-        int slotX = centerX + (int) (radius * Math.cos(angleRad));
-        int slotY = centerY + (int) (radius * Math.sin(angleRad));
-        
-        // Calculate animated slot size (slightly larger when hovered)
-        float scaleBonus = hoverProgress * 0.15f;
-        float scale = animProgress * (1.0f + scaleBonus);
-        int currentSlotSize = (int) (SLOT_SIZE * scale);
-        int halfSlot = currentSlotSize / 2;
-        
-        // Determine colors based on hover state
-        int slotColor = lerpColor(SLOT_COLOR, SLOT_HOVER_COLOR, hoverProgress);
-        int borderColor = lerpColor(SLOT_BORDER_COLOR, SLOT_HOVER_BORDER_COLOR, hoverProgress);
+    private void renderSegment(GuiGraphics graphics, RingSegment segment, int index,
+                               int centerX, int centerY, float outerRadius, float innerRadius,
+                               float animProgress, float hoverProgress) {
+        // Calculate segment color with hover interpolation
+        int baseColor = segment.category.isImplemented() ? SEGMENT_BASE_COLOR : 
+                        (SEGMENT_BASE_COLOR & 0x00FFFFFF) | 0x60000000; // Dimmer for unimplemented
+        int hoverColor = segment.category.isImplemented() ? SEGMENT_HOVER_COLOR :
+                        (SEGMENT_HOVER_COLOR & 0x00FFFFFF) | 0x80000000;
+        int segmentColor = lerpColor(baseColor, hoverColor, hoverProgress);
         
         // Apply animation alpha
-        int slotAlpha = (int) (((slotColor >> 24) & 0xFF) * animProgress);
-        slotColor = (slotAlpha << 24) | (slotColor & 0x00FFFFFF);
-        int borderAlpha = (int) (((borderColor >> 24) & 0xFF) * animProgress);
-        borderColor = (borderAlpha << 24) | (borderColor & 0x00FFFFFF);
+        int alpha = (int)(((segmentColor >> 24) & 0xFF) * animProgress);
+        segmentColor = (alpha << 24) | (segmentColor & 0x00FFFFFF);
         
-        // Draw slot background
-        graphics.fill(slotX - halfSlot, slotY - halfSlot, 
-                     slotX + halfSlot, slotY + halfSlot, slotColor);
+        // Draw the segment as a filled arc
+        drawFilledArc(graphics, centerX, centerY, innerRadius, outerRadius,
+                     segment.startAngle, segment.endAngle, segmentColor);
         
-        // Draw slot border
-        drawRectBorder(graphics, slotX - halfSlot, slotY - halfSlot, 
-                      slotX + halfSlot, slotY + halfSlot, borderColor);
-        
-        // Render item icon
-        if (animProgress > 0.3f) {
-            float iconAlpha = (animProgress - 0.3f) / 0.7f;
-            int iconSize = (int) (ICON_SIZE * scale * iconAlpha);
-            int iconOffset = iconSize / 2;
+        // Draw segment divider lines
+        if (animProgress > 0.5f) {
+            float dividerAlpha = (animProgress - 0.5f) / 0.5f;
+            int dividerColor = (int)(((DIVIDER_COLOR >> 24) & 0xFF) * dividerAlpha) << 24 | 
+                              (DIVIDER_COLOR & 0x00FFFFFF);
             
-            // Use pose stack for scaling the item
+            drawRadialLine(graphics, centerX, centerY, innerRadius, outerRadius, 
+                          segment.startAngle, dividerColor);
+        }
+    }
+    
+    /**
+     * Renders category icons on the ring.
+     */
+    private void renderSegmentIcons(GuiGraphics graphics, int centerX, int centerY,
+                                     float animProgress, float partialTick) {
+        if (animProgress < 0.4f) return;
+        
+        float iconAlpha = (animProgress - 0.4f) / 0.6f;
+        float iconRadius = (OUTER_RADIUS + INNER_RADIUS) / 2.0f * animProgress;
+        
+        for (int i = 0; i < segments.size(); i++) {
+            RingSegment segment = segments.get(i);
+            float hoverProgress = getInterpolatedHoverProgress(i, partialTick);
+            
+            // Calculate icon position on the ring
+            double angleRad = Math.toRadians(segment.iconAngle);
+            int iconX = centerX + (int)(iconRadius * Math.cos(angleRad));
+            int iconY = centerY + (int)(iconRadius * Math.sin(angleRad));
+            
+            // Scale icons slightly when hovered
+            float scale = iconAlpha * (1.0f + hoverProgress * 0.15f);
+            
             graphics.pose().pushMatrix();
-            float itemScale = scale * iconAlpha;
-            graphics.pose().translate(slotX, slotY);
-            graphics.pose().scale(itemScale, itemScale);
+            graphics.pose().translate(iconX, iconY);
+            graphics.pose().scale(scale, scale);
             
-            // Render the item at the center (offset to center the 16x16 item)
-            graphics.renderItem(slot.category.getIconItem(), -8, -8);
+            // Render the item icon (centered at 0,0 since we translated)
+            graphics.renderItem(segment.category.getIconItem(), -8, -8);
             
             graphics.pose().popMatrix();
         }
-        
-        // Render category label below the slot
-        if (animProgress > 0.6f) {
-            float labelAlpha = (animProgress - 0.6f) / 0.4f;
-            Component label = slot.category.getDisplayName();
-            int labelWidth = font.width(label);
-            int labelY = slotY + halfSlot + 4;
-            int labelColor = (int) (255 * labelAlpha) << 24 | 0xFFFFFF;
-            
-            graphics.drawCenteredString(font, label, slotX, labelY, labelColor);
-        }
     }
     
     /**
-     * Renders connecting lines from the center to each slot.
+     * Renders the inner and outer ring borders with glow effect.
      */
-    private void renderConnectingLines(GuiGraphics graphics, int centerX, int centerY, 
-                                        float radius, float animProgress) {
+    private void renderRingBorders(GuiGraphics graphics, int centerX, int centerY,
+                                    float outerRadius, float innerRadius, float animProgress) {
         if (animProgress < 0.2f) return;
         
-        float lineProgress = (animProgress - 0.2f) / 0.8f;
-        int lineAlpha = (int) (100 * lineProgress);
-        int lineColor = (lineAlpha << 24) | 0x888888;
+        float borderAlpha = (animProgress - 0.2f) / 0.8f;
         
-        for (RadialSlot slot : slots) {
-            double angleRad = Math.toRadians(slot.angle);
-            int endX = centerX + (int) (radius * 0.6f * Math.cos(angleRad));
-            int endY = centerY + (int) (radius * 0.6f * Math.sin(angleRad));
-            
-            // Draw a simple line (1 pixel wide)
-            drawLine(graphics, centerX, centerY, endX, endY, lineColor);
-        }
+        // Outer ring glow
+        int outerColor = (int)(((OUTER_GLOW_COLOR >> 24) & 0xFF) * borderAlpha) << 24 |
+                        (OUTER_GLOW_COLOR & 0x00FFFFFF);
+        drawCircle(graphics, centerX, centerY, outerRadius, outerColor);
+        drawCircle(graphics, centerX, centerY, outerRadius + 1, (outerColor & 0x00FFFFFF) | 0x40000000);
+        
+        // Inner ring glow
+        int innerColor = (int)(((INNER_GLOW_COLOR >> 24) & 0xFF) * borderAlpha) << 24 |
+                        (INNER_GLOW_COLOR & 0x00FFFFFF);
+        drawCircle(graphics, centerX, centerY, innerRadius, innerColor);
+        drawCircle(graphics, centerX, centerY, innerRadius - 1, (innerColor & 0x00FFFFFF) | 0x40000000);
     }
     
     /**
-     * Renders the tooltip for a hovered slot.
+     * Renders the tooltip for a hovered segment.
      */
-    private void renderSlotTooltip(GuiGraphics graphics, RadialSlot slot, 
-                                    int mouseX, int mouseY, float animProgress) {
-        Component description = slot.category.getDescription();
+    private void renderSegmentTooltip(GuiGraphics graphics, RingSegment segment,
+                                       int centerX, int centerY, float animProgress) {
         float tooltipAlpha = (animProgress - 0.5f) / 0.5f;
         
-        // Render description below the radial menu
-        int descY = height / 2 + MENU_RADIUS + SLOT_SIZE + 20;
-        int descColor = (int) (255 * tooltipAlpha) << 24 | 0xCCCCCC;
+        Component name = segment.category.getDisplayName();
+        Component description = segment.category.getDescription();
         
-        graphics.drawCenteredString(font, description, width / 2, descY, descColor);
+        // Render category name above center
+        int nameY = centerY - 8;
+        int nameColor = segment.category.isImplemented() ? 
+                       ((int)(255 * tooltipAlpha) << 24 | 0xFFFFFF) :
+                       ((int)(255 * tooltipAlpha) << 24 | 0x888888);
+        graphics.drawCenteredString(font, name, centerX, nameY, nameColor);
+        
+        // Render description below the ring
+        int descY = centerY + OUTER_RADIUS + 20;
+        int descColor = (int)(255 * tooltipAlpha) << 24 | 0xCCCCCC;
+        graphics.drawCenteredString(font, description, centerX, descY, descColor);
     }
     
     /**
-     * Updates which slot is currently hovered based on mouse position.
+     * Updates which segment is currently hovered based on mouse position.
      */
-    private void updateHoveredSlot(int mouseX, int mouseY, int centerX, int centerY, float radius) {
-        previousHoveredSlot = hoveredSlotIndex;
-        hoveredSlotIndex = -1;
+    private void updateHoveredSegment(int mouseX, int mouseY, int centerX, int centerY,
+                                       float outerRadius, float innerRadius) {
+        hoveredSegmentIndex = -1;
         
-        for (int i = 0; i < slots.size(); i++) {
-            RadialSlot slot = slots.get(i);
-            double angleRad = Math.toRadians(slot.angle);
-            int slotX = centerX + (int) (radius * Math.cos(angleRad));
-            int slotY = centerY + (int) (radius * Math.sin(angleRad));
-            
-            int halfSlot = SLOT_SIZE / 2;
-            if (mouseX >= slotX - halfSlot && mouseX <= slotX + halfSlot &&
-                mouseY >= slotY - halfSlot && mouseY <= slotY + halfSlot) {
-                hoveredSlotIndex = i;
+        // Calculate distance from center
+        float dx = mouseX - centerX;
+        float dy = mouseY - centerY;
+        float distance = (float)Math.sqrt(dx * dx + dy * dy);
+        
+        // Check if within ring
+        if (distance < innerRadius || distance > outerRadius) {
+            return;
+        }
+        
+        // Calculate angle (convert to degrees, adjust for coordinate system)
+        double angle = Math.toDegrees(Math.atan2(dy, dx));
+        
+        // Find which segment contains this angle
+        for (int i = 0; i < segments.size(); i++) {
+            RingSegment segment = segments.get(i);
+            if (isAngleInSegment(angle, segment.startAngle, segment.endAngle)) {
+                hoveredSegmentIndex = i;
                 break;
             }
         }
     }
     
     /**
+     * Checks if an angle falls within a segment's angular range.
+     */
+    private boolean isAngleInSegment(double angle, double startAngle, double endAngle) {
+        // Normalize angles to 0-360 range
+        angle = normalizeAngle(angle);
+        double start = normalizeAngle(startAngle);
+        double end = normalizeAngle(endAngle);
+        
+        if (start <= end) {
+            return angle >= start && angle < end;
+        } else {
+            // Segment wraps around 360
+            return angle >= start || angle < end;
+        }
+    }
+    
+    /**
+     * Normalizes an angle to the 0-360 range.
+     */
+    private double normalizeAngle(double angle) {
+        angle = angle % 360.0;
+        if (angle < 0) angle += 360.0;
+        return angle;
+    }
+    
+    /**
      * Gets the interpolated hover progress for smooth animations.
      */
-    private float getInterpolatedHoverProgress(int slotIndex, float partialTick) {
-        float current = slotHoverProgress[slotIndex];
-        float target = (slotIndex == hoveredSlotIndex) ? 1.0f : 0.0f;
+    private float getInterpolatedHoverProgress(int segmentIndex, float partialTick) {
+        if (segmentIndex >= segmentHoverProgress.length) return 0.0f;
+        
+        float current = segmentHoverProgress[segmentIndex];
+        float target = (segmentIndex == hoveredSegmentIndex) ? 1.0f : 0.0f;
         float speed = (target > current) ? 0.2f : 0.15f;
         return Mth.lerp(partialTick * speed, current, target);
     }
     
-    /**
-     * Handles mouse click events.
-     */
-    public boolean handleMouseClick(double mouseX, double mouseY, int button) {
-        if (button == 0 && hoveredSlotIndex >= 0) { // Left click
-            RadialSlot slot = slots.get(hoveredSlotIndex);
-            onCategorySelected(slot.category);
-            return true;
-        }
-        return false;
-    }
+    // ==================== DRAWING UTILITIES ====================
     
     /**
-     * Handles key press events.
+     * Draws a filled arc (pie slice with hollow center).
      */
-    public boolean handleKeyPress(int keyCode, int scanCode, int modifiers) {
-        // Close on escape or the radial menu key
-        if (keyCode == 256) { // Escape
-            onClose();
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Called when a category is selected.
-     * Opens the corresponding category menu.
-     */
-    protected void onCategorySelected(MenuCategory category) {
-        AromaCraft.LOGGER.debug("Selected category: {}", category.getId());
+    private void drawFilledArc(GuiGraphics graphics, int centerX, int centerY,
+                                float innerRadius, float outerRadius,
+                                double startAngle, double endAngle, int color) {
+        // Draw arc by rendering many small triangular segments
+        int segments = 32;
+        double angleRange = endAngle - startAngle;
+        double angleStep = angleRange / segments;
         
-        // Open the appropriate menu for the selected category
-        switch (category) {
-            case BLOCKS:
-                MenuManager.openBlocksMenu();
-                break;
-            case BIOMES:
-                MenuManager.openBiomesMenu();
-                break;
-            case STRUCTURES:
-                MenuManager.openStructuresMenu();
-                break;
+        for (int i = 0; i < segments; i++) {
+            double a1 = Math.toRadians(startAngle + i * angleStep);
+            double a2 = Math.toRadians(startAngle + (i + 1) * angleStep);
+            
+            // Calculate the four corners of this segment quad
+            int ox1 = centerX + (int)(outerRadius * Math.cos(a1));
+            int oy1 = centerY + (int)(outerRadius * Math.sin(a1));
+            int ox2 = centerX + (int)(outerRadius * Math.cos(a2));
+            int oy2 = centerY + (int)(outerRadius * Math.sin(a2));
+            int ix1 = centerX + (int)(innerRadius * Math.cos(a1));
+            int iy1 = centerY + (int)(innerRadius * Math.sin(a1));
+            int ix2 = centerX + (int)(innerRadius * Math.cos(a2));
+            int iy2 = centerY + (int)(innerRadius * Math.sin(a2));
+            
+            // Draw as two triangles forming a quad
+            drawTriangle(graphics, ox1, oy1, ox2, oy2, ix1, iy1, color);
+            drawTriangle(graphics, ix1, iy1, ox2, oy2, ix2, iy2, color);
         }
     }
     
     /**
-     * Draws a rectangular border.
+     * Draws a radial line from inner to outer radius.
      */
-    private void drawRectBorder(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        graphics.fill(x1, y1, x2, y1 + 1, color); // Top
-        graphics.fill(x1, y2 - 1, x2, y2, color); // Bottom
-        graphics.fill(x1, y1, x1 + 1, y2, color); // Left
-        graphics.fill(x2 - 1, y1, x2, y2, color); // Right
+    private void drawRadialLine(GuiGraphics graphics, int centerX, int centerY,
+                                 float innerRadius, float outerRadius,
+                                 double angle, int color) {
+        double angleRad = Math.toRadians(angle);
+        int x1 = centerX + (int)(innerRadius * Math.cos(angleRad));
+        int y1 = centerY + (int)(innerRadius * Math.sin(angleRad));
+        int x2 = centerX + (int)(outerRadius * Math.cos(angleRad));
+        int y2 = centerY + (int)(outerRadius * Math.sin(angleRad));
+        
+        drawLine(graphics, x1, y1, x2, y2, color);
+    }
+    
+    /**
+     * Draws a circle outline.
+     */
+    private void drawCircle(GuiGraphics graphics, int centerX, int centerY, float radius, int color) {
+        int segments = 64;
+        double angleStep = 360.0 / segments;
+        
+        for (int i = 0; i < segments; i++) {
+            double a1 = Math.toRadians(i * angleStep);
+            double a2 = Math.toRadians((i + 1) * angleStep);
+            
+            int x1 = centerX + (int)(radius * Math.cos(a1));
+            int y1 = centerY + (int)(radius * Math.sin(a1));
+            int x2 = centerX + (int)(radius * Math.cos(a2));
+            int y2 = centerY + (int)(radius * Math.sin(a2));
+            
+            drawLine(graphics, x1, y1, x2, y2, color);
+        }
+    }
+    
+    /**
+     * Draws a filled triangle.
+     */
+    private void drawTriangle(GuiGraphics graphics, int x1, int y1, int x2, int y2, int x3, int y3, int color) {
+        // Use a scanline approach for simple triangle fill
+        int minY = Math.min(y1, Math.min(y2, y3));
+        int maxY = Math.max(y1, Math.max(y2, y3));
+        
+        for (int y = minY; y <= maxY; y++) {
+            int minX = Integer.MAX_VALUE;
+            int maxX = Integer.MIN_VALUE;
+            
+            // Find intersections with triangle edges
+            int[] edges = {x1, y1, x2, y2, x2, y2, x3, y3, x3, y3, x1, y1};
+            for (int i = 0; i < 3; i++) {
+                int ex1 = edges[i * 4];
+                int ey1 = edges[i * 4 + 1];
+                int ex2 = edges[i * 4 + 2];
+                int ey2 = edges[i * 4 + 3];
+                
+                if ((ey1 <= y && ey2 > y) || (ey2 <= y && ey1 > y)) {
+                    float t = (float)(y - ey1) / (ey2 - ey1);
+                    int x = ex1 + (int)(t * (ex2 - ex1));
+                    minX = Math.min(minX, x);
+                    maxX = Math.max(maxX, x);
+                }
+            }
+            
+            if (minX <= maxX) {
+                graphics.fill(minX, y, maxX + 1, y + 1, color);
+            }
+        }
     }
     
     /**
      * Draws a simple line between two points.
      */
     private void drawLine(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        // Simple line drawing using fill for horizontal/vertical or diagonal approximation
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
         int steps = Math.max(dx, dy);
@@ -394,12 +481,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return;
         }
         
-        float xStep = (float) (x2 - x1) / steps;
-        float yStep = (float) (y2 - y1) / steps;
+        float xStep = (float)(x2 - x1) / steps;
+        float yStep = (float)(y2 - y1) / steps;
         
         for (int i = 0; i <= steps; i++) {
-            int px = x1 + (int) (xStep * i);
-            int py = y1 + (int) (yStep * i);
+            int px = x1 + (int)(xStep * i);
+            int py = y1 + (int)(yStep * i);
             graphics.fill(px, py, px + 1, py + 1, color);
         }
     }
@@ -418,24 +505,73 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int g2 = (color2 >> 8) & 0xFF;
         int b2 = color2 & 0xFF;
         
-        int a = (int) Mth.lerp(t, a1, a2);
-        int r = (int) Mth.lerp(t, r1, r2);
-        int g = (int) Mth.lerp(t, g1, g2);
-        int b = (int) Mth.lerp(t, b1, b2);
+        int a = (int)Mth.lerp(t, a1, a2);
+        int r = (int)Mth.lerp(t, r1, r2);
+        int g = (int)Mth.lerp(t, g1, g2);
+        int b = (int)Mth.lerp(t, b1, b2);
         
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
     
+    // ==================== INPUT HANDLING ====================
+    
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 0 && hoveredSegmentIndex >= 0) {
+            RingSegment segment = segments.get(hoveredSegmentIndex);
+            onCategorySelected(segment.category);
+            return true;
+        }
+        return super.mouseClicked(event, doubleClick);
+    }
+    
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (event.key() == 256) { // Escape
+            onClose();
+            return true;
+        }
+        return super.keyPressed(event);
+    }
+    
     /**
-     * Internal class representing a slot in the radial menu.
+     * Called when a category is selected.
+     * Opens the corresponding category menu or shows "coming soon" for unimplemented categories.
      */
-    private static class RadialSlot {
-        final MenuCategory category;
-        final double angle;
+    protected void onCategorySelected(MenuCategory category) {
+        AromaCraft.LOGGER.debug("Selected category: {}", category.getId());
         
-        RadialSlot(MenuCategory category, double angle) {
+        if (!category.isImplemented()) {
+            // TODO: Show "coming soon" toast or notification
+            AromaCraft.LOGGER.info("Category {} is not yet implemented", category.getId());
+            return;
+        }
+        
+        // Open the appropriate menu for the selected category
+        switch (category) {
+            case BLOCKS -> MenuManager.openBlocksMenu();
+            case BIOMES -> MenuManager.openBiomesMenu();
+            case STRUCTURES -> MenuManager.openStructuresMenu();
+            default -> AromaCraft.LOGGER.warn("No menu handler for category: {}", category.getId());
+        }
+    }
+    
+    // ==================== INTERNAL CLASSES ====================
+    
+    /**
+     * Represents a segment in the radial ring menu.
+     */
+    private static class RingSegment {
+        final MenuCategory category;
+        final double startAngle;
+        final double endAngle;
+        final double iconAngle;
+        
+        RingSegment(MenuCategory category, double startAngle, double endAngle, double iconAngle) {
             this.category = category;
-            this.angle = angle;
+            this.startAngle = startAngle;
+            this.endAngle = endAngle;
+            this.iconAngle = iconAngle;
         }
     }
 }

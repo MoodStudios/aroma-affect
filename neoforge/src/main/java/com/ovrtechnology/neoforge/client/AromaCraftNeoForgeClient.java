@@ -2,6 +2,7 @@ package com.ovrtechnology.neoforge.client;
 
 import com.ovrtechnology.AromaCraft;
 import com.ovrtechnology.AromaCraftClient;
+import com.ovrtechnology.client.Renderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -24,6 +25,9 @@ public final class AromaCraftNeoForgeClient {
         event.enqueueWork(() -> {
             // Initialize common client systems (menus, keybindings)
             AromaCraftClient.init();
+
+            // Global client renderer
+            Renderer.register();
         });
     }
 }

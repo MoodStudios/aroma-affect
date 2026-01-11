@@ -28,12 +28,16 @@
   
   "menu.aromacraft.radial.title": "Scent Selection",
   
+  "menu.aromacraft.category.structures": "Structures",
+  "menu.aromacraft.category.structures.description": "Track structures like villages and dungeons",
+  "menu.aromacraft.category.entities": "Entities",
+  "menu.aromacraft.category.entities.description": "Track mobs and NPCs (Coming Soon)",
+  "menu.aromacraft.category.flora": "Flora",
+  "menu.aromacraft.category.flora.description": "Track flowers and vegetation (Coming Soon)",
   "menu.aromacraft.category.blocks": "Blocks",
   "menu.aromacraft.category.blocks.description": "Track specific blocks like ores and resources",
   "menu.aromacraft.category.biomes": "Biomes",
   "menu.aromacraft.category.biomes.description": "Track biome transitions and discoveries",
-  "menu.aromacraft.category.structures": "Structures",
-  "menu.aromacraft.category.structures.description": "Track structures like villages and dungeons",
   
   "menu.aromacraft.config.title": "AromaCraft Configuration",
   "menu.aromacraft.config.placeholder": "Configuration options coming soon...",

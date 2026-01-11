@@ -1,0 +1,218 @@
+package com.ovrtechnology.client.model;
+
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.function.Function;
+
+/**
+ * A custom head-only model for rendering hat/helmet overlays on humanoid entities.
+ * 
+ * <p>This model extends {@link HumanoidModel} but only renders the head part,
+ * making it useful for custom headwear like the Nose masks in AromaCraft.
+ * 
+ * <p>In Minecraft 1.21+, HumanoidModel no longer uses headParts()/bodyParts() methods.
+ * Instead, we hide all body parts in the constructor, leaving only the head visible.
+ * 
+ * <p>Contains static factory methods for creating various hat mesh definitions
+ * (drinking hat, night vision goggles, snorkel, cowboy hat, etc.).
+ */
+public class HeadModel extends HumanoidModel<HumanoidRenderState> {
+
+    public HeadModel(ModelPart part, Function<ResourceLocation, RenderType> renderType) {
+        super(part, renderType);
+        // Hide all body parts - we only want to render the head/hat
+        hideBodyParts();
+    }
+
+    public HeadModel(ModelPart part) {
+        this(part, RenderType::entityCutoutNoCull);
+    }
+    
+    /**
+     * Hides all body parts so only the head is rendered.
+     * This is the Minecraft 1.21+ way of achieving what headParts()/bodyParts() 
+     * did in earlier versions.
+     */
+    private void hideBodyParts() {
+        this.body.visible = false;
+        this.leftArm.visible = false;
+        this.rightArm.visible = false;
+        this.leftLeg.visible = false;
+        this.rightLeg.visible = false;
+    }
+    
+    @Override
+    public void setAllVisible(boolean visible) {
+        super.setAllVisible(visible);
+        // When setting visibility, always keep body parts hidden
+        // Only the head should be visible for this model
+        if (visible) {
+            hideBodyParts();
+        }
+    }
+
+    public static MeshDefinition createEmptyHat(CubeListBuilder head) {
+        MeshDefinition mesh = createMesh(CubeDeformation.NONE, 0);
+
+        mesh.getRoot().addOrReplaceChild(
+                "head",
+                head,
+                PartPose.ZERO
+        );
+
+        return mesh;
+    }
+
+    public static MeshDefinition createHat(CubeListBuilder head) {
+        CubeDeformation deformation = new CubeDeformation(0.51F);
+
+        head.texOffs(0, 0);
+        head.addBox(-4, -8, -4, 8, 8, 8, deformation);
+
+        return createEmptyHat(head);
+    }
+
+    public static MeshDefinition createDiagonalHat(CubeListBuilder head, CubeListBuilder diagonalParts, String partName) {
+        MeshDefinition mesh = createHat(head);
+
+        mesh.getRoot().getChild("head").addOrReplaceChild(
+                partName,
+                diagonalParts,
+                PartPose.rotation(45 * (float) Math.PI / 180, 0, 0)
+        );
+
+        return mesh;
+    }
+
+    public static MeshDefinition createDrinkingHat() {
+        CubeListBuilder head = CubeListBuilder.create();
+        CubeListBuilder straws = CubeListBuilder.create();
+
+        // hat shade
+        head.texOffs(32, 11);
+        head.addBox(-4, -6, -8, 8, 1, 4);
+
+        // cans
+        head.texOffs(32, 0);
+        head.addBox(4, -11, -1, 3, 6, 3);
+        head.texOffs(44, 0);
+        head.addBox(-7, -11, -1, 3, 6, 3);
+
+        // middle straw
+        head.texOffs(32, 9);
+        head.addBox(-6, -1, -5, 12, 1, 1);
+
+        // side straws
+        straws.texOffs(0, 16);
+        straws.addBox(5, -4, -3, 1, 1, 8);
+        straws.texOffs(18, 16);
+        straws.addBox(-6, -4, -3, 1, 1, 8);
+
+        return createDiagonalHat(head, straws, "straws");
+    }
+
+    public static MeshDefinition createNightVisionGoggles() {
+        CubeListBuilder head = CubeListBuilder.create();
+
+        // plate
+        head.texOffs(0, 21);
+        head.addBox(-4, -6, -5 + 0.05F, 8, 4, 1);
+
+        // eyeholes
+        head.texOffs(0, 16);
+        head.addBox(1.5F, -5, -8 + 0.05F, 2, 2, 3);
+        head.texOffs(10, 16);
+        head.addBox(-3.5F, -5, -8 + 0.05F, 2, 2, 3);
+
+        return createHat(head);
+    }
+
+    public static MeshDefinition createSnorkel() {
+        CubeListBuilder head = CubeListBuilder.create();
+        CubeListBuilder tube = CubeListBuilder.create();
+
+        // mouth thingy
+        head.texOffs(32, 0);
+        head.addBox(-2, -1.5F, -6, 8, 2, 2);
+
+        // tube
+        tube.texOffs(0, 16);
+        tube.addBox(4.01F, -5, -3, 2, 2, 12);
+
+        return createDiagonalHat(head, tube, "tube");
+    }
+
+    public static MeshDefinition createSuperstitiousHat() {
+        CubeListBuilder head = CubeListBuilder.create();
+
+        head.texOffs(0, 0);
+        head.addBox(-4, -16, -4, 8, 8, 8);
+        head.texOffs(0, 16);
+        head.addBox(-5, -9, -5, 10, 1, 10);
+
+        return createEmptyHat(head);
+    }
+
+    public static MeshDefinition createBrimmedHat(CubeListBuilder head) {
+        head.texOffs(0, 16);
+        head.addBox(-8, -5.125F, -8, 16, 0, 16);
+
+        return createHat(head);
+    }
+
+    public static MeshDefinition createWhoopeeCushion() {
+        CubeListBuilder head = CubeListBuilder.create();
+
+        // cushion
+        head.texOffs(0, 0);
+        head.addBox(-3, -10, -3, 6, 2, 6);
+
+        // flap
+        head.texOffs(0, 8);
+        head.addBox(-2, -9.25F, 3, 4, 0, 4);
+
+        return createEmptyHat(head);
+    }
+
+    public static MeshDefinition createCowboyHat() {
+        CubeListBuilder head = CubeListBuilder.create();
+        CubeListBuilder leftBrim = CubeListBuilder.create();
+        CubeListBuilder rightBrim = CubeListBuilder.create();
+
+        head.texOffs(-16, 16);
+        head.addBox(-6, -5.125F, -8, 12, 0, 16);
+        leftBrim.texOffs(24 - 16, 16);
+        leftBrim.addBox(0, 0, 0, 2, 0, 16);
+        rightBrim.texOffs(28 - 16, 16);
+        rightBrim.addBox(0, 0, 0, 2, 0, 16);
+
+        MeshDefinition mesh = createHat(head);
+
+        mesh.getRoot().getChild("head").addOrReplaceChild("left_brim", leftBrim,
+                PartPose.offsetAndRotation(6, -5.125F, -8, 0, 0, - 45 * (float) Math.PI / 180)
+        );
+        mesh.getRoot().getChild("head").addOrReplaceChild("right_brim", rightBrim,
+                PartPose.offsetAndRotation(-6 - 1.41421F, -5.125F - 1.41421F, -8, 0, 0, 45 * (float) Math.PI / 180)
+        );
+
+        return mesh;
+    }
+
+    public static MeshDefinition createAnglersHat() {
+        CubeListBuilder head = CubeListBuilder.create();
+        CubeDeformation deformation = new CubeDeformation(0, 0.51F, 0.2505F);
+
+        head.texOffs(24, -4);
+        head.addBox(4 + 0.51F, -13.125F - 0.51F, 0.2505F, 0, 8, 4, deformation);
+
+        return createBrimmedHat(head);
+    }
+}
