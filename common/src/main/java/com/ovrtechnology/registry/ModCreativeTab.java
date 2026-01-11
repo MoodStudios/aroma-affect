@@ -3,6 +3,9 @@ package com.ovrtechnology.registry;
 import com.ovrtechnology.AromaCraft;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
+import com.ovrtechnology.scentitem.ScentItemRegistry;
+import com.ovrtechnology.sniffernose.SnifferNoseItem;
+import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
@@ -14,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.Comparator;
-import java.util.Map;
 
 /**
  * Registers the creative mode tab for AromaCraft items.
@@ -51,10 +53,19 @@ public final class ModCreativeTab {
 
                 // Add all items from our mod to this tab
                 builder.displayItems((parameters, output) -> {
-                    // Add all items registered under our mod ID
-                   NoseRegistry.getAllNosesAsList()
-                           .stream().sorted(Comparator.comparing(NoseItem::getTier))
-                           .forEach(nose -> output.accept(new ItemStack(nose)));
+                    // Add all player-equippable nose items sorted by tier
+                    NoseRegistry.getAllNosesAsList()
+                            .stream().sorted(Comparator.comparing(NoseItem::getTier))
+                            .forEach(nose -> output.accept(new ItemStack(nose)));
+                    
+                    // Add all sniffer nose items sorted by tier
+                    SnifferNoseRegistry.getAllSnifferNosesAsList()
+                            .stream().sorted(Comparator.comparing(SnifferNoseItem::getTier))
+                            .forEach(snifferNose -> output.accept(new ItemStack(snifferNose)));
+                    
+                    // Add all scent items sorted by priority
+                    ScentItemRegistry.getScentItemsSortedByPriority()
+                            .forEach(scentItem -> output.accept(new ItemStack(scentItem)));
                 });
             })
     );

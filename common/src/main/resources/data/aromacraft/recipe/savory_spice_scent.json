@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:ginger_root",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:orange_dye",
+    "C": "minecraft:red_dye",
+    "E": "minecraft:brown_dye"
+  },
+  "result": {
+    "id": "aromacraft:savory_spice_scent",
+    "count": 1
+  }
+}

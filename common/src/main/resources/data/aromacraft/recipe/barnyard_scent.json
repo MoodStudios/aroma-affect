@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ACA"
+  ],
+  "key": {
+    "B": "minecraft:hay_block",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:yellow_dye",
+    "C": "minecraft:brown_dye"
+  },
+  "result": {
+    "id": "aromacraft:barnyard_scent",
+    "count": 1
+  }
+}

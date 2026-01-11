@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:rose_bush",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:pink_dye",
+    "C": "minecraft:red_dye",
+    "E": "minecraft:magenta_dye"
+  },
+  "result": {
+    "id": "aromacraft:floral_scent",
+    "count": 1
+  }
+}

@@ -1,0 +1,21 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "equipment",
+    "pattern": [
+      " O ",
+      "NUE",
+      " D "
+    ],
+    "key": {
+      "U": "aromacraft:ultimate_nose",
+      "O": "aromacraft:overworld_scent",
+      "E": "aromacraft:end_scent",
+      "N": "aromacraft:nether_scent",
+      "D": "minecraft:diamond"
+    },
+    "result": {
+      "id": "aromacraft:enhanced_sniffer_nose",
+      "count": 1
+    }
+  }
+  

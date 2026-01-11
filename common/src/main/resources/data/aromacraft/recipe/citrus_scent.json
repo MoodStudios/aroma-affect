@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:melon_slice",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:orange_dye",
+    "C": "minecraft:yellow_dye",
+    "E": "minecraft:lime_dye"
+  },
+  "result": {
+    "id": "aromacraft:citrus_scent",
+    "count": 1
+  }
+}

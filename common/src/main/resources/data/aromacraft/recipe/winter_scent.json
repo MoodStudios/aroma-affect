@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ACA"
+  ],
+  "key": {
+    "B": "minecraft:blue_ice",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:light_blue_dye",
+    "C": "minecraft:white_dye"
+  },
+  "result": {
+    "id": "aromacraft:winter_scent",
+    "count": 1
+  }
+}

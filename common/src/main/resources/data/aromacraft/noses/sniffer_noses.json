@@ -1,0 +1,34 @@
+{
+    "sniffer_noses": [
+        {
+            "id": "enhanced_sniffer_nose",
+            "image": "item/enhanced_sniffer_nose",
+            "model": "minecraft:leather_helmet",
+            "tier": 1,
+            "durability": 100,
+            "repair": "minecraft:diamond",
+            "unlock": {
+                "blocks": [
+                    "minecraft:diamond_ore",
+                    "minecraft:ancient_debris"
+                ],
+                "biomes": [
+                    "minecraft:jungle",
+                    "minecraft:badlands",
+                    "minecraft:nether_wastes"
+                ],
+                "structures": [
+                    "minecraft:stronghold",
+                    "minecraft:ancient_city"
+                ],
+                "abilities": [
+                    "structure_compass",
+                    "danger_sense"
+                ],
+                "noses": [
+                    "gold_nose"
+                ]
+            }
+        }
+    ]
+}

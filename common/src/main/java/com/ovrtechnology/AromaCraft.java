@@ -6,13 +6,16 @@ import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
+import com.ovrtechnology.scentitem.ScentItemRegistry;
+import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Main entry point for the AromaCraft mod.
- * This mod integrates OVR's scent hardware into Minecraft through the "Nose" system.
+ * This mod integrates OVR's scent hardware into Minecraft through the "Nose"
+ * system.
  */
 @UtilityClass
 public final class AromaCraft {
@@ -24,6 +27,12 @@ public final class AromaCraft {
 
         // Initialize the nose registry system (includes ability resolver)
         NoseRegistry.init();
+
+        // Initialize the sniffer nose registry system (items for Sniffer mob)
+        SnifferNoseRegistry.init();
+
+        // Initialize the scent item registry system
+        ScentItemRegistry.init();
 
         // Initialize creative tab
         ModCreativeTab.init();

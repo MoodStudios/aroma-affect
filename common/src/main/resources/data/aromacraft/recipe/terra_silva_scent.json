@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ECE"
+  ],
+  "key": {
+    "B": "minecraft:moss_block",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:green_dye",
+    "C": "minecraft:brown_dye",
+    "E": "minecraft:lime_dye"
+  },
+  "result": {
+    "id": "aromacraft:terra_silva_scent",
+    "count": 1
+  }
+}

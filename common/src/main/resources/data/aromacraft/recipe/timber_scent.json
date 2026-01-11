@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "ADA",
+    "AAA"
+  ],
+  "key": {
+    "B": "minecraft:oak_log",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:brown_dye"
+  },
+  "result": {
+    "id": "aromacraft:timber_scent",
+    "count": 1
+  }
+}

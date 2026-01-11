@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ACA"
+  ],
+  "key": {
+    "B": "minecraft:spruce_sapling",
+    "D": "aromacraft:scent_container",
+    "A": "minecraft:green_dye",
+    "C": "minecraft:lime_dye"
+  },
+  "result": {
+    "id": "aromacraft:evergreen_scent",
+    "count": 1
+  }
+}
