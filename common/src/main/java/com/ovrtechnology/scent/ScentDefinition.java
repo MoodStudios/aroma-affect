@@ -53,18 +53,9 @@ public class ScentDefinition {
     private String description;
     
     /**
-     * Priority level for scent emission (1-10, higher = more important).
-     * Used by OVR's scent priority system to determine which scents
-     * should override others when multiple are active.
-     */
-    @SerializedName("priority")
-    private int priority;
-    
-    /**
      * Default constructor for GSON deserialization.
      */
     public ScentDefinition() {
-        this.priority = 5; // Default middle priority
     }
     
     /**
@@ -76,7 +67,6 @@ public class ScentDefinition {
     public ScentDefinition(String id, String fallbackName) {
         this.id = id;
         this.fallbackName = fallbackName;
-        this.priority = 5;
     }
     
     /**
@@ -93,15 +83,6 @@ public class ScentDefinition {
             return formatIdAsName(id);
         }
         return "Unknown Scent";
-    }
-    
-    /**
-     * Get the priority with bounds checking.
-     * 
-     * @return Priority clamped between 1 and 10
-     */
-    public int getPriority() {
-        return Math.max(1, Math.min(10, priority > 0 ? priority : 5));
     }
     
     /**

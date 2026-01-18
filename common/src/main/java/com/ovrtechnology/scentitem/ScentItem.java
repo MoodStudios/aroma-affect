@@ -1,17 +1,28 @@
 package com.ovrtechnology.scentitem;
 
 import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.trigger.ScentTrigger;
+import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.trigger.config.ItemTriggerDefinition;
+import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import lombok.Getter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -80,6 +91,91 @@ public class ScentItem extends Item {
         } else {
             return Rarity.COMMON;
         }
+    }
+    
+    /**
+     * Handle item use (right-click).
+     * 
+     * <p>This triggers the associated scent on OVR hardware if:</p>
+     * <ul>
+     *   <li>A trigger is configured for this item in scent_triggers.json</li>
+     *   <li>The scent is not on cooldown</li>
+     * </ul>
+     * 
+     * <p>If the scent is on cooldown, the item is NOT consumed and a message is shown.</p>
+     */
+    @Override
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        
+        // Only process on client side (WebSocket is client-side)
+        if (!level.isClientSide()) {
+            return InteractionResult.PASS;
+        }
+        
+        // Get the full item ID
+        String fullItemId = AromaCraft.MOD_ID + ":" + itemId;
+        
+        // Look up trigger configuration
+        Optional<ItemTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getItemTrigger(fullItemId);
+        
+        if (triggerOpt.isEmpty()) {
+            // No trigger configured for this item
+            AromaCraft.LOGGER.debug("No trigger configured for item: {}", fullItemId);
+            return InteractionResult.PASS;
+        }
+        
+        ItemTriggerDefinition triggerDef = triggerOpt.get();
+        
+        // Only process USE triggers
+        if (!triggerDef.isUseTriggered()) {
+            return InteractionResult.PASS;
+        }
+        
+        String scentName = triggerDef.getScentName();
+        long cooldownMs = triggerDef.getCooldownMsOrDefault();
+        
+        // Check cooldown BEFORE consuming the item
+        if (!ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs)) {
+            // Show cooldown message to player
+            long remaining = ScentTriggerManager.getInstance().getRemainingCooldown(scentName);
+            player.displayClientMessage(
+                Component.translatable("message.aromacraft.scent_cooldown", 
+                    String.format("%.1f", remaining / 1000.0)),
+                true
+            );
+            return InteractionResult.FAIL; // Don't consume item
+        }
+        
+        // Create and execute the trigger
+        ScentTrigger trigger = ScentTrigger.fromItemUse(
+            scentName,
+            triggerDef.getDurationTicks()
+        );
+        
+        boolean triggered = ScentTriggerManager.getInstance().trigger(trigger);
+        
+        if (triggered) {
+            // Consume the item (if not in creative mode)
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
+            
+            // Play a sound effect
+            level.playSound(
+                player, 
+                player.blockPosition(), 
+                SoundEvents.BOTTLE_EMPTY,
+                SoundSource.PLAYERS, 
+                1.0f, 
+                1.0f + (level.random.nextFloat() - 0.5f) * 0.2f
+            );
+            
+            AromaCraft.LOGGER.debug("Item {} triggered scent '{}'", fullItemId, scentName);
+            return InteractionResult.SUCCESS;
+        }
+        
+        return InteractionResult.PASS;
     }
     
     /**

@@ -151,6 +151,9 @@
   "scent.aromacraft.overworld_scent": "Overworld Scent",
   "scent.aromacraft.overworld_scent.description": "The fresh, earthy air of the Overworld with hints of grass and flowers",
   
+  "message.aromacraft.scent_cooldown": "Scent on cooldown (%s seconds remaining)",
+  "message.aromacraft.scent_triggered": "Scent triggered!",
+  
   "websocket.aromacraft.status.disconnected": "OVR Hardware: Disconnected",
   "websocket.aromacraft.status.connecting": "OVR Hardware: Connecting...",
   "websocket.aromacraft.status.connected": "OVR Hardware: Connected",
