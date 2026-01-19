@@ -2,16 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
+    "ASA",
+    "BDB",
     "ECE"
   ],
   "key": {
-    "B": "minecraft:honey_bottle",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
-    "A": "minecraft:pink_dye",
-    "C": "minecraft:magenta_dye",
-    "E": "minecraft:white_dye"
+    "B": "minecraft:honey_block",
+    "A": "minecraft:yellow_dye",
+    "C": "minecraft:orange_dye",
+    "E": "minecraft:pink_dye"
   },
   "result": {
     "id": "aromacraft:sweet_scent",

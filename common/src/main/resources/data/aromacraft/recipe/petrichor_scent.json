@@ -2,16 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
+    "ASA",
+    "BDB",
     "ECE"
   ],
   "key": {
-    "B": "minecraft:clay",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:clay",
     "A": "minecraft:gray_dye",
-    "C": "minecraft:blue_dye",
-    "E": "minecraft:light_gray_dye"
+    "C": "minecraft:brown_dye",
+    "E": "minecraft:blue_dye"
   },
   "result": {
     "id": "aromacraft:petrichor_scent",

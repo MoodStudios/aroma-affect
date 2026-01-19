@@ -2,16 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
-    "ECE"
+    "ASA",
+    "BDB",
+    "ACA"
   ],
   "key": {
-    "B": "minecraft:kelp",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:kelp",
     "A": "minecraft:cyan_dye",
-    "C": "minecraft:blue_dye",
-    "E": "minecraft:green_dye"
+    "C": "minecraft:blue_dye"
   },
   "result": {
     "id": "aromacraft:marine_scent",

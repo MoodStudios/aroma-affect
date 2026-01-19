@@ -2,16 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
-    "ECE"
+    "ASA",
+    "BDB",
+    "ACA"
   ],
   "key": {
-    "B": "minecraft:dead_bush",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:sand",
     "A": "minecraft:yellow_dye",
-    "C": "minecraft:orange_dye",
-    "E": "minecraft:brown_dye"
+    "C": "minecraft:orange_dye"
   },
   "result": {
     "id": "aromacraft:desert_scent",

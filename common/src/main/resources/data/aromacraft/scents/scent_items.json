@@ -167,6 +167,14 @@
         "fallback_name": "Scent Pile",
         "description": "A pile of raw scent materials ready for processing",
         "priority": 3
+      },
+      {
+        "id": "scent_base",
+        "image": "item/scent_base",
+        "model": "minecraft:glass_bottle",
+        "fallback_name": "Scent Base",
+        "description": "A base for storing scents",
+        "priority": 5
       }
     ]
   }

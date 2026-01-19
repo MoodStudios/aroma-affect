@@ -2,13 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
+    "ASA",
+    "BDB",
     "ECE"
   ],
   "key": {
-    "B": "minecraft:melon_slice",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:melon_slice",
     "A": "minecraft:orange_dye",
     "C": "minecraft:yellow_dye",
     "E": "minecraft:lime_dye"

@@ -9,6 +9,9 @@ import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
+import com.ovrtechnology.trigger.ScentTriggerHandler;
+import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,11 @@ public final class AromaCraft {
 
         // Initialize ability system (Precise Sniffer, etc.)
         AbilityHandler.init();
+
+        // Initialize scent trigger system
+        ScentTriggerConfigLoader.init();
+        ScentTriggerManager.init();
+        ScentTriggerHandler.init();
 
         // Initialize test commands
         AromaTestCommand.init();
