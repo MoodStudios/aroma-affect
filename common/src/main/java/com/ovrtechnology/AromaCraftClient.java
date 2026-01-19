@@ -67,7 +67,8 @@ public final class AromaCraftClient {
                 .port(8080)
                 .autoConnect(true)       // Try to connect on startup
                 .autoReconnect(true)     // Keep trying if connection fails
-                .debugLogging(false)     // Set to true for development debugging
+                .debugLogging(true)      // DEBUG: enabled for troubleshooting OVR connection
+                .healthCheckIntervalMs(0) // DEBUG: disabled health check to test connection stability
                 .build();
         
         OvrWebSocketClient.init(config);
