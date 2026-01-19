@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:block/oak_log"
+    "layer0": "aromacraft:item/timber_scent"
   }
 }

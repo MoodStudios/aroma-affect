@@ -1,6 +1,7 @@
 package com.ovrtechnology.registry;
 
 import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.entity.NoseSmithRegistry;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
@@ -66,6 +67,11 @@ public final class ModCreativeTab {
                     // Add all scent items sorted by priority
                     ScentItemRegistry.getScentItemsSortedByPriority()
                             .forEach(scentItem -> output.accept(new ItemStack(scentItem)));
+                    
+                    // Add spawn eggs
+                    if (NoseSmithRegistry.getNOSE_SMITH_SPAWN_EGG().isPresent()) {
+                        output.accept(new ItemStack(NoseSmithRegistry.getNOSE_SMITH_SPAWN_EGG().get()));
+                    }
                 });
             })
     );

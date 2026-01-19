@@ -26,7 +26,13 @@ public enum MenuCategory {
      * Structures category - for tracking structures like villages, strongholds, etc.
      */
     STRUCTURES("structures", LookupType.STRUCTURE, Items.BELL.getDefaultInstance(),
-               "menu.aromacraft.category.structures", "menu.aromacraft.category.structures.description");
+               "menu.aromacraft.category.structures", "menu.aromacraft.category.structures.description"),
+    
+    /**
+     * Flowers/Flora category - for tracking flower-type blocks and plants.
+     */
+    FLOWERS("flowers", LookupType.FLOWER, Items.POPPY.getDefaultInstance(),
+            "menu.aromacraft.category.flowers", "menu.aromacraft.category.flowers.description");
     
     private final String id;
     private final LookupType lookupType;

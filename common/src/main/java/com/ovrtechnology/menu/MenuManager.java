@@ -94,6 +94,34 @@ public final class MenuManager {
     }
     
     /**
+     * Opens the flowers/flora selection menu.
+     */
+    public static void openFlowersMenu() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaCraft.LOGGER.debug("Cannot open flowers menu: no player");
+            return;
+        }
+        
+        AromaCraft.LOGGER.debug("Opening flowers menu");
+        minecraft.setScreen(new FlowersMenuScreen());
+    }
+    
+    /**
+     * Opens the compass/tracking menu.
+     */
+    public static void openCompassMenu() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaCraft.LOGGER.debug("Cannot open compass menu: no player");
+            return;
+        }
+        
+        AromaCraft.LOGGER.debug("Opening compass menu");
+        minecraft.setScreen(new CompassMenuScreen());
+    }
+    
+    /**
      * Opens a menu by category.
      * 
      * @param category the category to open a menu for
@@ -103,6 +131,7 @@ public final class MenuManager {
             case BLOCKS -> openBlocksMenu();
             case BIOMES -> openBiomesMenu();
             case STRUCTURES -> openStructuresMenu();
+            case FLOWERS -> openFlowersMenu();
         }
     }
     

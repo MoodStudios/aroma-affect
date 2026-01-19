@@ -1,6 +1,8 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaCraft;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -95,6 +97,54 @@ public abstract class BaseMenuScreen extends Screen {
         
         // Render widgets on top
         super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
+        if (handleMouseClick(event.x(), event.y(), event.button())) {
+            return true;
+        }
+        return super.mouseClicked(event, isValidClickButton);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (handleMouseScroll(mouseX, mouseY, scrollX, scrollY)) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (handleKeyPress(event.key(), event.scancode(), event.modifiers())) {
+            return true;
+        }
+        return super.keyPressed(event);
+    }
+
+    /**
+     * Handles mouse click events for this menu.
+     * Override in subclasses to implement custom click behavior.
+     */
+    protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
+        return false;
+    }
+
+    /**
+     * Handles mouse scroll events for this menu.
+     * Override in subclasses to implement custom scrolling behavior.
+     */
+    protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
+        return false;
+    }
+
+    /**
+     * Handles key press events for this menu.
+     * Override in subclasses to implement custom key behavior.
+     */
+    protected boolean handleKeyPress(int keyCode, int scanCode, int modifiers) {
+        return false;
     }
     
     /**

@@ -102,7 +102,8 @@ public class ConfigScreen extends BaseMenuScreen {
     /**
      * Handles key press events.
      */
-    public boolean handleKeyPress(int keyCode, int scanCode, int modifiers) {
+    @Override
+    protected boolean handleKeyPress(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 256) { // Escape
             onClose();
             return true;

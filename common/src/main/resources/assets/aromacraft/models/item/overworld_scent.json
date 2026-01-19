@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:block/grass_block_side"
+    "layer0": "aromacraft:item/overworld_scent"
   }
 }

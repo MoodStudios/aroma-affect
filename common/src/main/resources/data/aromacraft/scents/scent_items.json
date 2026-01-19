@@ -159,6 +159,14 @@
         "fallback_name": "Scent Container",
         "description": "A container for storing scents",
         "priority": 5
+      },
+      {
+        "id": "scent_pile",
+        "image": "item/scent_pile",
+        "model": "minecraft:gunpowder",
+        "fallback_name": "Scent Pile",
+        "description": "A pile of raw scent materials ready for processing",
+        "priority": 3
       }
     ]
   }

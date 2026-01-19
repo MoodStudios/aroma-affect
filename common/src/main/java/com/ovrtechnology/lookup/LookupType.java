@@ -21,7 +21,13 @@ public enum LookupType {
      * Block lookup using custom spiral chunk scanning.
      * Most expensive operation - uses async processing.
      */
-    BLOCK("block");
+    BLOCK("block"),
+    
+    /**
+     * Flower/flora lookup using block scanning for flower-type blocks.
+     * Similar to block lookup but filters for flower/plant blocks.
+     */
+    FLOWER("flower");
     
     private final String id;
     

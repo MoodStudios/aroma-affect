@@ -1,6 +1,8 @@
 package com.ovrtechnology;
 
+import com.ovrtechnology.entity.client.NoseSmithClientRegistry;
 import com.ovrtechnology.menu.MenuKeyBindings;
+import com.ovrtechnology.nose.client.NoseInventoryUi;
 import com.ovrtechnology.search.SearchKeyBindings;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
@@ -33,11 +35,17 @@ public final class AromaCraftClient {
         
         AromaCraft.LOGGER.info("Initializing AromaCraft client...");
         
+        // Initialize entity renderers
+        NoseSmithClientRegistry.init();
+        
         // Initialize menu keybindings
         MenuKeyBindings.init();
         
         // Initialize search keybindings (for activating search with Nose equipped)
         SearchKeyBindings.init();
+
+        // Inventory UI integration (strap toggle button, etc.)
+        NoseInventoryUi.init();
         
         // Initialize OVR WebSocket client for scent hardware integration
         // The connection is optional - the mod works without it
