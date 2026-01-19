@@ -167,29 +167,13 @@ public final class ScentRegistry {
     }
     
     /**
-     * Get scents with priority greater than or equal to the specified value.
+     * Get scents sorted by ID alphabetically.
      * 
-     * @param minPriority Minimum priority (inclusive)
-     * @return List of scents meeting the priority threshold
+     * @return List of scents sorted by ID
      */
-    public static List<ScentDefinition> getScentsByMinPriority(int minPriority) {
-        List<ScentDefinition> result = new ArrayList<>();
-        for (ScentDefinition scent : scentDefinitions.values()) {
-            if (scent.getPriority() >= minPriority) {
-                result.add(scent);
-            }
-        }
-        return result;
-    }
-    
-    /**
-     * Get scents sorted by priority (highest first).
-     * 
-     * @return List of scents sorted by priority descending
-     */
-    public static List<ScentDefinition> getScentsSortedByPriority() {
+    public static List<ScentDefinition> getScentsSortedById() {
         List<ScentDefinition> result = new ArrayList<>(scentDefinitions.values());
-        result.sort((a, b) -> Integer.compare(b.getPriority(), a.getPriority()));
+        result.sort((a, b) -> a.getId().compareTo(b.getId()));
         return result;
     }
     

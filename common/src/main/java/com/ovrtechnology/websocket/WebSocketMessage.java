@@ -130,6 +130,39 @@ public class WebSocketMessage {
     }
     
     /**
+     * Creates a play scent message using the OVR protocol format.
+     * 
+     * <p>Sends: {@code {"reset":false,"scent":"ScentName"}}</p>
+     * 
+     * <p>This is the canonical format for starting a scent on OVR hardware.
+     * The scent name must match exactly (case-sensitive) with the names
+     * supported by the OVR bridge.</p>
+     * 
+     * @param scentName the exact OVR scent name (e.g., "Winter", "Terra Silva")
+     * @return a new play scent message
+     */
+    public static WebSocketMessage playScent(String scentName) {
+        String payload = String.format("{\"reset\":false,\"scent\":\"%s\"}", scentName);
+        return new WebSocketMessage("scent", payload);
+    }
+    
+    /**
+     * Creates a stop scent message using the OVR protocol format.
+     * 
+     * <p>Sends: {@code {"reset":true,"scent":"ScentName"}}</p>
+     * 
+     * <p>This is the canonical format for stopping a scent on OVR hardware.
+     * The scent name must match the scent that was previously started.</p>
+     * 
+     * @param scentName the exact OVR scent name to stop
+     * @return a new stop scent message
+     */
+    public static WebSocketMessage stopScent(String scentName) {
+        String payload = String.format("{\"reset\":true,\"scent\":\"%s\"}", scentName);
+        return new WebSocketMessage("scent", payload);
+    }
+    
+    /**
      * Parses a raw text message received from WebSocket.
      * 
      * <p>Expected format: type:payload or just type if no payload.</p>

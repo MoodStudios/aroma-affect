@@ -136,12 +136,6 @@ public class ScentDefinitionLoader {
         if (scent.getFallbackName() == null || scent.getFallbackName().isEmpty()) {
             AromaCraft.LOGGER.warn("[{}] No fallback_name defined, will use auto-generated name", id);
         }
-        
-        // Check priority bounds
-        int priority = scent.getPriority();
-        if (priority < 1 || priority > 10) {
-            AromaCraft.LOGGER.warn("[{}] Priority {} out of bounds (1-10), will be clamped", id, priority);
-        }
     }
     
     /**
