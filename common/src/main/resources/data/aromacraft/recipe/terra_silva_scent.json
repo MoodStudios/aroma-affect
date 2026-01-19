@@ -2,13 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
+    "ASA",
+    "BDB",
     "ECE"
   ],
   "key": {
-    "B": "minecraft:moss_block",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:moss_block",
     "A": "minecraft:green_dye",
     "C": "minecraft:brown_dye",
     "E": "minecraft:lime_dye"

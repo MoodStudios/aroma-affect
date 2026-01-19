@@ -2,16 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
-    "ECE"
+    "ASA",
+    "BDB",
+    "ACA"
   ],
   "key": {
-    "B": "minecraft:ginger_root",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
-    "A": "minecraft:orange_dye",
-    "C": "minecraft:red_dye",
-    "E": "minecraft:brown_dye"
+    "B": "minecraft:dried_kelp",
+    "A": "minecraft:brown_dye",
+    "C": "minecraft:orange_dye"
   },
   "result": {
     "id": "aromacraft:savory_spice_scent",

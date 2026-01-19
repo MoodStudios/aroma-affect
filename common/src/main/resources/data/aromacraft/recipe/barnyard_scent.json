@@ -2,13 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
+    "ASA",
+    "BDB",
     "ACA"
   ],
   "key": {
-    "B": "minecraft:hay_block",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:hay_block",
     "A": "minecraft:yellow_dye",
     "C": "minecraft:brown_dye"
   },

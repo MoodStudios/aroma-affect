@@ -2,16 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
+    "ASA",
+    "BDB",
     "ECE"
   ],
   "key": {
-    "B": "minecraft:nautilus_shell",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
-    "A": "minecraft:yellow_dye",
-    "C": "minecraft:cyan_dye",
-    "E": "minecraft:white_dye"
+    "B": "minecraft:nautilus_shell",
+    "A": "minecraft:cyan_dye",
+    "C": "minecraft:light_blue_dye",
+    "E": "minecraft:yellow_dye"
   },
   "result": {
     "id": "aromacraft:beach_scent",

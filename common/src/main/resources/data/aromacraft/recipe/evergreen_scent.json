@@ -2,15 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
-    "ACA"
+    "ASA",
+    "BDB",
+    "ECE"
   ],
   "key": {
-    "B": "minecraft:spruce_sapling",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:spruce_leaves",
     "A": "minecraft:green_dye",
-    "C": "minecraft:lime_dye"
+    "C": "minecraft:lime_dye",
+    "E": "minecraft:cyan_dye"
   },
   "result": {
     "id": "aromacraft:evergreen_scent",
