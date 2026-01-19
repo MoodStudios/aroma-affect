@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/ginger_root"
+    "layer0": "aromacraft:item/savory_spice_scent"
   }
 }

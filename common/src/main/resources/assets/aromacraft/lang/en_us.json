@@ -1,6 +1,9 @@
 {
   "itemGroup.aromacraft": "AromaCraft",
   
+  "entity.aromacraft.nose_smith": "Nose Smith",
+  "item.aromacraft.nose_smith_spawn_egg": "Nose Smith Spawn Egg",
+  
   "item.aromacraft.basic_nose": "Forager's Nose",
   "item.aromacraft.gold_nose": "Prospector's Nose",
   "item.aromacraft.diamond_nose": "Jeweler's Nose",
@@ -31,7 +34,6 @@
   "item.aromacraft.overworld_scent": "Overworld Scent",
   "item.aromacraft.scent_container": "Scent Container",
   "item.aromacraft.scent_base": "Scent Base",
-
   "tooltip.aromacraft.nose.tier": "Tier: %s",
   "tooltip.aromacraft.nose.durability": "Durability: %s",
   "tooltip.aromacraft.nose.detects_blocks": "Detects Blocks:",
@@ -48,6 +50,10 @@
   "key.aromacraft.open_radial_menu": "Open Scent Menu",
   "key.aromacraft.open_config_menu": "Open Configuration",
   "key.aromacraft.toggle_search": "Toggle Search Mode",
+
+  "gui.aromacraft.nose_strap.on": "Strap: ON",
+  "gui.aromacraft.nose_strap.off": "Strap: OFF",
+  "gui.aromacraft.nose_strap.tooltip": "Toggle nose strap rendering",
   
   "menu.aromacraft.radial.title": "Scent Selection",
   
@@ -57,6 +63,14 @@
   "menu.aromacraft.category.biomes.description": "Track biome transitions and discoveries",
   "menu.aromacraft.category.structures": "Structures",
   "menu.aromacraft.category.structures.description": "Track structures like villages and dungeons",
+  "menu.aromacraft.category.flowers": "Flowers",
+  "menu.aromacraft.category.flowers.description": "Track flowers and flora in the world",
+
+  "menu.aromacraft.category.settings": "Settings",
+  "menu.aromacraft.category.settings.description": "Configure AromaCraft and connected devices",
+  
+  "menu.aromacraft.button.config": "Settings",
+  "menu.aromacraft.button.compass": "Compass",
   
   "menu.aromacraft.config.title": "AromaCraft Configuration",
   "menu.aromacraft.config.placeholder": "Configuration options coming soon...",
@@ -75,6 +89,14 @@
   
   "menu.aromacraft.structures.title": "Select Structure to Track",
   "menu.aromacraft.structures.card.description": "Find %s",
+  
+  "menu.aromacraft.flowers.title": "Select Flower to Track",
+  "menu.aromacraft.flowers.card.description": "Track %s",
+  
+  "menu.aromacraft.compass.title": "Tracking Compass",
+  "menu.aromacraft.compass.target": "Current Target:",
+  "menu.aromacraft.compass.no_target": "No active target",
+  "menu.aromacraft.compass.hint": "Select a target from the radial menu",
   
   "menu.aromacraft.selection.back_hint": "Press ESC to return to radial menu",
   "menu.aromacraft.selection.locked": "Locked - Upgrade your Nose to unlock",
@@ -151,11 +173,12 @@
   "scent.aromacraft.end_scent.description": "The ethereal, otherworldly air of the End with hints of purple and gold",
   "scent.aromacraft.overworld_scent": "Overworld Scent",
   "scent.aromacraft.overworld_scent.description": "The fresh, earthy air of the Overworld with hints of grass and flowers",
+  "scent.aromacraft.scent_container": "Scent Container",
+  "scent.aromacraft.scent_container.description": "A container for storing scents",
   "scent.aromacraft.scent_base": "Scent Base",
   "scent.aromacraft.scent_base.description": "A base for storing scents",
   "message.aromacraft.scent_cooldown": "Scent on cooldown (%s seconds remaining)",
   "message.aromacraft.scent_triggered": "Scent triggered!",
-  
   "websocket.aromacraft.status.disconnected": "OVR Hardware: Disconnected",
   "websocket.aromacraft.status.connecting": "OVR Hardware: Connecting...",
   "websocket.aromacraft.status.connected": "OVR Hardware: Connected",

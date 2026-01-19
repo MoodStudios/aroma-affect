@@ -256,7 +256,8 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     /**
      * Handles mouse click events for card selection.
      */
-    public boolean handleMouseClick(double mouseX, double mouseY, int button) {
+    @Override
+    protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
         if (button == 0 && hoveredCardIndex >= 0) {
             SelectionCard card = cards.get(hoveredCardIndex);
             if (card.isUnlocked) {
@@ -270,7 +271,8 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     /**
      * Handles mouse scroll events for scrolling the card grid.
      */
-    public boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
+    @Override
+    protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
         int maxScroll = Math.max(0, (cards.size() / CARDS_PER_ROW + 1) * (CARD_SIZE + CARD_GAP) - (height - 120));
         scrollOffset = (int) Math.max(0, Math.min(maxScroll, scrollOffset - scrollY * 20));
         return true;
@@ -279,7 +281,8 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     /**
      * Handles key press events.
      */
-    public boolean handleKeyPress(int keyCode, int scanCode, int modifiers) {
+    @Override
+    protected boolean handleKeyPress(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 256) { // Escape
             MenuManager.returnToRadialMenu();
             return true;

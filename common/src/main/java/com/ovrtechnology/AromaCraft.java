@@ -3,6 +3,7 @@ package com.ovrtechnology;
 import com.ovrtechnology.ability.AbilityHandler;
 import com.ovrtechnology.command.AromaTestCommand;
 import com.ovrtechnology.command.path.ActivePathManager;
+import com.ovrtechnology.entity.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
@@ -36,6 +37,9 @@ public final class AromaCraft {
 
         // Initialize the scent item registry system
         ScentItemRegistry.init();
+
+        // Initialize the Nose Smith entity registry
+        NoseSmithRegistry.init();
 
         // Initialize creative tab
         ModCreativeTab.init();
