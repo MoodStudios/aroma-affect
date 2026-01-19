@@ -2,13 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
+    "ASA",
+    "BDB",
     "ACA"
   ],
   "key": {
-    "B": "minecraft:blue_ice",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:blue_ice",
     "A": "minecraft:light_blue_dye",
     "C": "minecraft:white_dye"
   },

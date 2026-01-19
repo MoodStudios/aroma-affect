@@ -2,16 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ABA",
-    "CDC",
-    "ECE"
+    "ASA",
+    "BDB",
+    "ACA"
   ],
   "key": {
-    "B": "minecraft:copper_ingot",
+    "S": "aromacraft:scent_base",
     "D": "aromacraft:scent_container",
+    "B": "minecraft:iron_ingot",
     "A": "minecraft:gray_dye",
-    "C": "minecraft:black_dye",
-    "E": "minecraft:red_dye"
+    "C": "minecraft:black_dye"
   },
   "result": {
     "id": "aromacraft:machina_scent",

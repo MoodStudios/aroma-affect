@@ -30,6 +30,7 @@
   "item.aromacraft.end_scent": "End Scent",
   "item.aromacraft.overworld_scent": "Overworld Scent",
   "item.aromacraft.scent_container": "Scent Container",
+  "item.aromacraft.scent_base": "Scent Base",
 
   "tooltip.aromacraft.nose.tier": "Tier: %s",
   "tooltip.aromacraft.nose.durability": "Durability: %s",
@@ -150,7 +151,8 @@
   "scent.aromacraft.end_scent.description": "The ethereal, otherworldly air of the End with hints of purple and gold",
   "scent.aromacraft.overworld_scent": "Overworld Scent",
   "scent.aromacraft.overworld_scent.description": "The fresh, earthy air of the Overworld with hints of grass and flowers",
-  
+  "scent.aromacraft.scent_base": "Scent Base",
+  "scent.aromacraft.scent_base.description": "A base for storing scents",
   "message.aromacraft.scent_cooldown": "Scent on cooldown (%s seconds remaining)",
   "message.aromacraft.scent_triggered": "Scent triggered!",
   
