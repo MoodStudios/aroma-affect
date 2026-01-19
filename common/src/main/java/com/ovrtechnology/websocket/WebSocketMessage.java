@@ -132,7 +132,7 @@ public class WebSocketMessage {
     /**
      * Creates a play scent message using the OVR protocol format.
      * 
-     * <p>Sends: {@code {"reset":false,"scent":"ScentName"}}</p>
+     * <p>Sends directly: {@code {"reset":false,"scent":"ScentName"}}</p>
      * 
      * <p>This is the canonical format for starting a scent on OVR hardware.
      * The scent name must match exactly (case-sensitive) with the names
@@ -143,13 +143,14 @@ public class WebSocketMessage {
      */
     public static WebSocketMessage playScent(String scentName) {
         String payload = String.format("{\"reset\":false,\"scent\":\"%s\"}", scentName);
-        return new WebSocketMessage("scent", payload);
+        // Use "raw" type so toRawText() sends the JSON directly without a type prefix
+        return new WebSocketMessage("raw", payload);
     }
     
     /**
      * Creates a stop scent message using the OVR protocol format.
      * 
-     * <p>Sends: {@code {"reset":true,"scent":"ScentName"}}</p>
+     * <p>Sends directly: {@code {"reset":true,"scent":"ScentName"}}</p>
      * 
      * <p>This is the canonical format for stopping a scent on OVR hardware.
      * The scent name must match the scent that was previously started.</p>
@@ -159,7 +160,8 @@ public class WebSocketMessage {
      */
     public static WebSocketMessage stopScent(String scentName) {
         String payload = String.format("{\"reset\":true,\"scent\":\"%s\"}", scentName);
-        return new WebSocketMessage("scent", payload);
+        // Use "raw" type so toRawText() sends the JSON directly without a type prefix
+        return new WebSocketMessage("raw", payload);
     }
     
     /**
@@ -188,11 +190,20 @@ public class WebSocketMessage {
     /**
      * Converts this message to raw text for sending.
      * 
-     * <p>Format: type:payload (or just type if payload is empty)</p>
+     * <p>Format depends on message type:</p>
+     * <ul>
+     *   <li><b>raw</b> - payload is sent directly without any wrapper</li>
+     *   <li><b>other types</b> - format is "type:payload" (or just type if payload is empty)</li>
+     * </ul>
      * 
      * @return the raw text representation
      */
     public String toRawText() {
+        // "raw" type messages send payload directly - used for OVR protocol messages
+        if ("raw".equals(type)) {
+            return payload != null ? payload : "";
+        }
+        
         if (payload == null || payload.isEmpty()) {
             return type;
         }
