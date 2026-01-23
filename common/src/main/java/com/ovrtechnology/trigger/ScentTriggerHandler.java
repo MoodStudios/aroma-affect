@@ -12,12 +12,12 @@ import dev.architectury.event.events.client.ClientTickEvent;
  * <h3>Currently Implemented:</h3>
  * <ul>
  *   <li>Client tick processing for scent durations</li>
+ *   <li>Passive-mode detection (proximity-based triggers when hardware connected and no nose equipped)</li>
  * </ul>
  * 
  * <h3>Future Implementations (Placeholders):</h3>
  * <ul>
  *   <li>Biome change detection</li>
- *   <li>Block proximity detection</li>
  *   <li>Mob proximity detection</li>
  * </ul>
  */
@@ -41,21 +41,27 @@ public final class ScentTriggerHandler {
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing ScentTriggerHandler...");
+        AromaCraft.LOGGER.info("[ScentTriggerHandler] Starting initialization...");
         
-        // Register client tick handler for processing scent durations
-        ClientTickEvent.CLIENT_POST.register(instance -> {
-            ScentTriggerManager.getInstance().tick();
-        });
-        
-        // Future: Register biome change listener
-        // BiomeChangeEvent.register(ScentTriggerHandler::onBiomeChange);
-        
-        // Future: Register proximity check on tick
-        // Can be added here when implementing block/mob proximity triggers
+        try {
+            // Register client tick handler for processing scent durations and passive-mode
+            ClientTickEvent.CLIENT_POST.register(minecraft -> {
+                // Process active scent durations
+                ScentTriggerManager.getInstance().tick();
+                
+                // Process passive-mode detection (only if player exists)
+                if (minecraft.player != null) {
+                    PassiveModeManager.tick(minecraft.player);
+                }
+            });
+            
+            AromaCraft.LOGGER.info("[ScentTriggerHandler] ClientTickEvent.CLIENT_POST registered successfully!");
+        } catch (Exception e) {
+            AromaCraft.LOGGER.error("[ScentTriggerHandler] Failed to register ClientTickEvent!", e);
+        }
         
         initialized = true;
-        AromaCraft.LOGGER.info("ScentTriggerHandler initialized");
+        AromaCraft.LOGGER.info("[ScentTriggerHandler] Initialization complete");
     }
     
     // ========================================

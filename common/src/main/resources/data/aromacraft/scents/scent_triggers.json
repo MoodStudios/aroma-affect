@@ -4,9 +4,9 @@
     "item_use_cooldown_ms": 5000,
     "biome_cooldown_ms": 10000,
     "block_cooldown_ms": 5000,
+    "structure_cooldown_ms": 15000,
     "mob_cooldown_ms": 5000
   },
-
   "item_triggers": [
     {
       "item_id": "aromacraft:winter_scent",
@@ -137,43 +137,760 @@
       "cooldown_ms": 5000
     }
   ],
-
   "biome_triggers": [
     {
-      "_comment": "PLACEHOLDER - Example structure for future implementation",
+      "biome_id": "minecraft:plains",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:sunflower_plains",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:snowy_plains",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:ice_spikes",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:desert",
+      "scent_name": "Desert",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:swamp",
+      "scent_name": "Petrichor",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:mangrove_swamp",
+      "scent_name": "Petrichor",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
       "biome_id": "minecraft:forest",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
       "priority": "MEDLOW"
     },
     {
-      "_comment": "PLACEHOLDER - Desert biome example",
-      "biome_id": "minecraft:desert",
+      "biome_id": "minecraft:flower_forest",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:birch_forest",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:dark_forest",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:old_growth_birch_forest",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:old_growth_pine_taiga",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:old_growth_spruce_taiga",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:taiga",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:snowy_taiga",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:savanna",
       "scent_name": "Desert",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:savanna_plateau",
+      "scent_name": "Desert",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:windswept_hills",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:windswept_gravelly_hills",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:windswept_forest",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:windswept_savanna",
+      "scent_name": "Desert",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:jungle",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:sparse_jungle",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:bamboo_jungle",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:badlands",
+      "scent_name": "Desert",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:eroded_badlands",
+      "scent_name": "Desert",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:wooded_badlands",
+      "scent_name": "Desert",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:meadow",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:cherry_grove",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:grove",
+      "scent_name": "Evergreen",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:snowy_slopes",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:frozen_peaks",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:jagged_peaks",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:stony_peaks",
+      "scent_name": "Terra Silva",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:river",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:frozen_river",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:beach",
+      "scent_name": "Beach",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:snowy_beach",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:stony_shore",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:warm_ocean",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:lukewarm_ocean",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:deep_lukewarm_ocean",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:ocean",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:deep_ocean",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:cold_ocean",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:deep_cold_ocean",
+      "scent_name": "Marine",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:frozen_ocean",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:deep_frozen_ocean",
+      "scent_name": "Winter",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:mushroom_fields",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:dripstone_caves",
+      "scent_name": "Terra Silva",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:lush_caves",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:deep_dark",
+      "scent_name": "Machina",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:nether_wastes",
+      "scent_name": "Smoky",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:warped_forest",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:crimson_forest",
+      "scent_name": "Smoky",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:soul_sand_valley",
+      "scent_name": "Smoky",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:basalt_deltas",
+      "scent_name": "Smoky",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:the_end",
+      "scent_name": "Machina",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:end_highlands",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:end_midlands",
+      "scent_name": "Floral",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:small_end_islands",
+      "scent_name": "Machina",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:end_barrens",
+      "scent_name": "Machina",
+      "mode": "AMBIENT",
+      "priority": "MEDLOW"
+    },
+    {
+      "biome_id": "minecraft:the_void",
+      "scent_name": "Machina",
       "mode": "AMBIENT",
       "priority": "MEDLOW"
     }
   ],
-
   "block_triggers": [
     {
-      "_comment": "PLACEHOLDER - Example structure for future implementation",
-      "block_id": "minecraft:campfire",
+      "block_id": "minecraft:water",
+      "scent_name": "Marine",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:lava",
+      "scent_name": "Smoky",
+      "trigger_on": "PROXIMITY",
+      "range": 8,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:gold_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_gold_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:emerald_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_emerald_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:diamond_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 6,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_diamond_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 6,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:ancient_debris",
+      "scent_name": "Smoky",
+      "trigger_on": "PROXIMITY",
+      "range": 6,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:iron_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_iron_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:coal_ore",
+      "scent_name": "Smoky",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_coal_ore",
+      "scent_name": "Smoky",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:copper_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_copper_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:redstone_ore",
+      "scent_name": "Machina",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_redstone_ore",
+      "scent_name": "Machina",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:lapis_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:deepslate_lapis_ore",
+      "scent_name": "Terra Silva",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:nether_gold_ore",
       "scent_name": "Smoky",
       "trigger_on": "PROXIMITY",
       "range": 5,
       "priority": "MEDIUM"
     },
     {
-      "_comment": "PLACEHOLDER - Furnace example",
-      "block_id": "minecraft:furnace",
+      "block_id": "minecraft:nether_quartz_ore",
       "scent_name": "Smoky",
       "trigger_on": "PROXIMITY",
-      "range": 3,
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:spawner",
+      "scent_name": "Machina",
+      "trigger_on": "PROXIMITY",
+      "range": 8,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:chest",
+      "scent_name": "Timber",
+      "trigger_on": "PROXIMITY",
+      "range": 5,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:amethyst_cluster",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:budding_amethyst",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
       "priority": "MEDIUM"
     }
   ],
-
+  "structure_triggers": [
+    {
+      "structure_id": "minecraft:village_plains",
+      "scent_name": "Kindred",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:village_desert",
+      "scent_name": "Desert",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:village_savanna",
+      "scent_name": "Kindred",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:village_snowy",
+      "scent_name": "Winter",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:village_taiga",
+      "scent_name": "Evergreen",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:stronghold",
+      "scent_name": "Terra Silva",
+      "mode": "PROXIMITY",
+      "range": 40,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:ancient_city",
+      "scent_name": "Machina",
+      "mode": "PROXIMITY",
+      "range": 60,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:monument",
+      "scent_name": "Marine",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:mansion",
+      "scent_name": "Timber",
+      "mode": "PROXIMITY",
+      "range": 60,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:mineshaft",
+      "scent_name": "Terra Silva",
+      "mode": "PROXIMITY",
+      "range": 30,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:mineshaft_mesa",
+      "scent_name": "Desert",
+      "mode": "PROXIMITY",
+      "range": 30,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:fortress",
+      "scent_name": "Smoky",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:bastion_remnant",
+      "scent_name": "Smoky",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:end_city",
+      "scent_name": "Floral",
+      "mode": "PROXIMITY",
+      "range": 50,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:buried_treasure",
+      "scent_name": "Beach",
+      "mode": "PROXIMITY",
+      "range": 20,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:shipwreck",
+      "scent_name": "Marine",
+      "mode": "PROXIMITY",
+      "range": 30,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:ocean_ruin_cold",
+      "scent_name": "Marine",
+      "mode": "PROXIMITY",
+      "range": 25,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:ocean_ruin_warm",
+      "scent_name": "Marine",
+      "mode": "PROXIMITY",
+      "range": 25,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:desert_pyramid",
+      "scent_name": "Desert",
+      "mode": "PROXIMITY",
+      "range": 40,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:jungle_pyramid",
+      "scent_name": "Evergreen",
+      "mode": "PROXIMITY",
+      "range": 35,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:igloo",
+      "scent_name": "Winter",
+      "mode": "PROXIMITY",
+      "range": 25,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:swamp_hut",
+      "scent_name": "Petrichor",
+      "mode": "PROXIMITY",
+      "range": 25,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:pillager_outpost",
+      "scent_name": "Timber",
+      "mode": "PROXIMITY",
+      "range": 40,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:ruined_portal",
+      "scent_name": "Smoky",
+      "mode": "PROXIMITY",
+      "range": 20,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:ruined_portal_nether",
+      "scent_name": "Smoky",
+      "mode": "PROXIMITY",
+      "range": 20,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:trail_ruins",
+      "scent_name": "Terra Silva",
+      "mode": "PROXIMITY",
+      "range": 25,
+      "priority": "MEDLOW"
+    },
+    {
+      "structure_id": "minecraft:trial_chambers",
+      "scent_name": "Machina",
+      "mode": "PROXIMITY",
+      "range": 40,
+      "priority": "MEDLOW"
+    }
+  ],
   "mob_triggers": [
     {
       "_comment": "PLACEHOLDER - Example structure for future implementation",

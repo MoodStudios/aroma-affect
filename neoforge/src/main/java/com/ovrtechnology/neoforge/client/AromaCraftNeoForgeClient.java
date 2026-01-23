@@ -30,10 +30,9 @@ public final class AromaCraftNeoForgeClient {
     }
     
     private void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            // Initialize common client systems (menus, keybindings)
-            AromaCraftClient.init();
-        });
+        // Initialize common client systems directly (not enqueued)
+        // This ensures Architectury events are registered at the right time
+        AromaCraftClient.init();
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
