@@ -1,6 +1,6 @@
 package com.ovrtechnology.lookup;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.strategy.BiomeLookupStrategy;
 import com.ovrtechnology.lookup.strategy.BlockLookupStrategy;
 import com.ovrtechnology.lookup.strategy.LookupStrategy;
@@ -85,7 +85,7 @@ public final class LookupManager {
                 60L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(100), // bounded queue
                 r -> {
-                    Thread t = new Thread(r, "AromaCraft-Lookup");
+                    Thread t = new Thread(r, "AromaAffect-Lookup");
                     t.setDaemon(true);
                     return t;
                 },
@@ -120,13 +120,13 @@ public final class LookupManager {
         // Initialize the structure search worker manager
         StructureSearchWorkerManager.init();
         
-        AromaCraft.LOGGER.info("Lookup system initialized");
+        AromaAffect.LOGGER.info("Lookup system initialized");
     }
     
     private void onServerStarting(MinecraftServer server) {
         this.server = server;
         this.cache.clearAll();
-        AromaCraft.LOGGER.debug("Lookup manager ready for server");
+        AromaAffect.LOGGER.debug("Lookup manager ready for server");
     }
     
     private void onServerStopping(MinecraftServer server) {

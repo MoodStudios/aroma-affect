@@ -1,6 +1,6 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -87,7 +87,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     protected static final int CARD_LOCKED_COLOR = 0x80000000;
     
     protected SelectionMenuScreen(MenuCategory category) {
-        super(Component.translatable("menu.aromacraft." + category.getId() + ".title"));
+        super(Component.translatable("menu.aromaaffect." + category.getId() + ".title"));
         this.category = category;
     }
     
@@ -249,7 +249,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         float alpha = animationProgress;
         int textColor = (int) (180 * alpha) << 24 | 0xAAAAAA;
         
-        Component backHint = Component.translatable("menu.aromacraft.selection.back_hint");
+        Component backHint = Component.translatable("menu.aromaaffect.selection.back_hint");
         graphics.drawCenteredString(font, backHint, centerX, height - 20, textColor);
     }
     

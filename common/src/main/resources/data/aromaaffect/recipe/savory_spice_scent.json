@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ASA",
+    "BDB",
+    "ACA"
+  ],
+  "key": {
+    "S": "aromaaffect:scent_base",
+    "D": "aromaaffect:scent_container",
+    "B": "minecraft:dried_kelp",
+    "A": "minecraft:brown_dye",
+    "C": "minecraft:orange_dye"
+  },
+  "result": {
+    "id": "aromaaffect:savory_spice_scent",
+    "count": 1
+  }
+}

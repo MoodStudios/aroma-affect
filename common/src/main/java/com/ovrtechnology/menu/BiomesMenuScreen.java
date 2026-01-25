@@ -1,6 +1,6 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -41,7 +41,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         
         Player player = Minecraft.getInstance().player;
         if (player == null) {
-            AromaCraft.LOGGER.debug("No player available for biomes menu");
+            AromaAffect.LOGGER.debug("No player available for biomes menu");
             return;
         }
         
@@ -57,7 +57,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
             }
         }
         
-        AromaCraft.LOGGER.debug("Loaded {} biome cards", cards.size());
+        AromaAffect.LOGGER.debug("Loaded {} biome cards", cards.size());
     }
     
     /**
@@ -123,7 +123,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         // TODO: Use proper biome translation keys when available
         // Component displayName = Component.translatable("biome." + biomeId.getNamespace() + "." + biomeId.getPath());
         
-        Component description = Component.translatable("menu.aromacraft.biomes.card.description", displayName);
+        Component description = Component.translatable("menu.aromaaffect.biomes.card.description", displayName);
         
         cards.add(new SelectionCard(biomeId, displayName, icon, isUnlocked, description));
     }
@@ -161,7 +161,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
     @Override
     protected void onCardSelected(SelectionCard card, int index) {
         selectedCardIndex = index;
-        AromaCraft.LOGGER.info("Selected biome for tracking: {}", card.id);
+        AromaAffect.LOGGER.info("Selected biome for tracking: {}", card.id);
         
         // TODO: Implement tracking activation
         // This should:

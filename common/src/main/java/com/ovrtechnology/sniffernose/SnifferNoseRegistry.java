@@ -1,6 +1,6 @@
 package com.ovrtechnology.sniffernose;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import net.minecraft.world.item.Item;
 import java.util.*;
 
 /**
- * Central registry for all sniffer nose items in AromaCraft.
+ * Central registry for all sniffer nose items in Aroma Affect.
  * 
  * <p>This class handles:</p>
  * <ul>
@@ -27,7 +27,7 @@ public final class SnifferNoseRegistry {
     /**
      * Deferred register for sniffer nose items
      */
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaCraft.MOD_ID, Registries.ITEM);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
     
     /**
      * Map of sniffer nose ID to registered item supplier
@@ -61,11 +61,11 @@ public final class SnifferNoseRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("SnifferNoseRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("SnifferNoseRegistry.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing SnifferNoseRegistry...");
+        AromaAffect.LOGGER.info("Initializing SnifferNoseRegistry...");
         
         // Load sniffer nose definitions from JSON
         List<SnifferNoseDefinition> definitions = SnifferNoseDefinitionLoader.loadAllSnifferNoses();
@@ -79,7 +79,7 @@ public final class SnifferNoseRegistry {
         ITEMS.register();
         
         initialized = true;
-        AromaCraft.LOGGER.info("SnifferNoseRegistry initialized with {} sniffer noses", snifferNoseItems.size());
+        AromaAffect.LOGGER.info("SnifferNoseRegistry initialized with {} sniffer noses", snifferNoseItems.size());
     }
     
     /**
@@ -89,7 +89,7 @@ public final class SnifferNoseRegistry {
         String id = definition.getId();
         
         if (snifferNoseItems.containsKey(id)) {
-            AromaCraft.LOGGER.warn("Duplicate sniffer nose ID: {}, skipping...", id);
+            AromaAffect.LOGGER.warn("Duplicate sniffer nose ID: {}, skipping...", id);
             return;
         }
         
@@ -101,7 +101,7 @@ public final class SnifferNoseRegistry {
         RegistrySupplier<SnifferNoseItem> supplier = ITEMS.register(id, () -> new SnifferNoseItem(definition, itemId));
         snifferNoseItems.put(id, supplier);
         
-        AromaCraft.LOGGER.debug("Registered sniffer nose item: {}", id);
+        AromaAffect.LOGGER.debug("Registered sniffer nose item: {}", id);
     }
     
     /**

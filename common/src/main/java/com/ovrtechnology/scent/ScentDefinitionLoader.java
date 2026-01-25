@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 
 import java.io.InputStream;
@@ -22,7 +22,7 @@ import java.util.Set;
  * Loads scent definitions from JSON files.
  * 
  * <p>This loader handles parsing the scent configuration from
- * {@code data/aromacraft/scents/scents.json} and provides validation
+ * {@code data/aromaaffect/scents/scents.json} and provides validation
  * for duplicate IDs and invalid entries.</p>
  * 
  * <p>The JSON format supports both array format and object with "scents" array:</p>
@@ -51,7 +51,7 @@ public class ScentDefinitionLoader {
     /**
      * Path to the scents JSON file
      */
-    private static final String SCENTS_RESOURCE_PATH = "data/aromacraft/scents/scents.json";
+    private static final String SCENTS_RESOURCE_PATH = "data/aromaaffect/scents/scents.json";
     
     /**
      * Cached list of loaded scent definitions
@@ -85,10 +85,10 @@ public class ScentDefinitionLoader {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to load scent definitions", e);
+            AromaAffect.LOGGER.error("Failed to load scent definitions", e);
         }
         
-        AromaCraft.LOGGER.info("Loaded {} scent definitions", loadedScents.size());
+        AromaAffect.LOGGER.info("Loaded {} scent definitions", loadedScents.size());
         return Collections.unmodifiableList(loadedScents);
     }
     
@@ -99,12 +99,12 @@ public class ScentDefinitionLoader {
      */
     private static void processScent(ScentDefinition scent) {
         if (scent == null) {
-            AromaCraft.LOGGER.warn("Null scent definition found, skipping...");
+            AromaAffect.LOGGER.warn("Null scent definition found, skipping...");
             return;
         }
         
         if (!scent.isValid()) {
-            AromaCraft.LOGGER.warn("Invalid scent definition found (missing id), skipping...");
+            AromaAffect.LOGGER.warn("Invalid scent definition found (missing id), skipping...");
             return;
         }
         
@@ -112,7 +112,7 @@ public class ScentDefinitionLoader {
         
         // Check for duplicate IDs
         if (loadedIds.contains(id)) {
-            AromaCraft.LOGGER.warn("Duplicate scent ID '{}' found, skipping...", id);
+            AromaAffect.LOGGER.warn("Duplicate scent ID '{}' found, skipping...", id);
             return;
         }
         
@@ -121,7 +121,7 @@ public class ScentDefinitionLoader {
         
         loadedIds.add(id);
         loadedScents.add(scent);
-        AromaCraft.LOGGER.debug("Loaded scent definition: {} ({})", id, scent.getFallbackName());
+        AromaAffect.LOGGER.debug("Loaded scent definition: {} ({})", id, scent.getFallbackName());
     }
     
     /**
@@ -134,7 +134,7 @@ public class ScentDefinitionLoader {
         
         // Check fallback name
         if (scent.getFallbackName() == null || scent.getFallbackName().isEmpty()) {
-            AromaCraft.LOGGER.warn("[{}] No fallback_name defined, will use auto-generated name", id);
+            AromaAffect.LOGGER.warn("[{}] No fallback_name defined, will use auto-generated name", id);
         }
     }
     
@@ -147,7 +147,7 @@ public class ScentDefinitionLoader {
     private static ScentDefinition[] loadScentsFromResource(String resourcePath) {
         try (InputStream inputStream = ScentDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                AromaCraft.LOGGER.warn("Scent definitions file not found: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Scent definitions file not found: {}", resourcePath);
                 return new ScentDefinition[0];
             }
             
@@ -164,11 +164,11 @@ public class ScentDefinitionLoader {
                     }
                 }
                 
-                AromaCraft.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'scents' key)", resourcePath);
+                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'scents' key)", resourcePath);
                 return new ScentDefinition[0];
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error parsing scent definitions from: {}", resourcePath, e);
+            AromaAffect.LOGGER.error("Error parsing scent definitions from: {}", resourcePath, e);
             return new ScentDefinition[0];
         }
     }
@@ -184,7 +184,7 @@ public class ScentDefinitionLoader {
         try {
             return GSON.fromJson(json, ScentDefinition.class);
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to parse scent definition from JSON", e);
+            AromaAffect.LOGGER.error("Failed to parse scent definition from JSON", e);
             return null;
         }
     }
@@ -240,7 +240,7 @@ public class ScentDefinitionLoader {
      * @return The reloaded list of scent definitions
      */
     public static List<ScentDefinition> reload() {
-        AromaCraft.LOGGER.info("Reloading scent definitions...");
+        AromaAffect.LOGGER.info("Reloading scent definitions...");
         return loadAllScents();
     }
 }

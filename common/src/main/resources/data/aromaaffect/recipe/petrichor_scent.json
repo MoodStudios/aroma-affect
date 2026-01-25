@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ASA",
+    "BDB",
+    "ECE"
+  ],
+  "key": {
+    "S": "aromaaffect:scent_base",
+    "D": "aromaaffect:scent_container",
+    "B": "minecraft:clay",
+    "A": "minecraft:gray_dye",
+    "C": "minecraft:brown_dye",
+    "E": "minecraft:blue_dye"
+  },
+  "result": {
+    "id": "aromaaffect:petrichor_scent",
+    "count": 1
+  }
+}

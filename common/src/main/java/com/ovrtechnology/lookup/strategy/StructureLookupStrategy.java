@@ -1,6 +1,6 @@
 package com.ovrtechnology.lookup.strategy;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.LookupResult;
 import com.ovrtechnology.lookup.LookupTarget;
 import com.ovrtechnology.lookup.LookupType;
@@ -109,7 +109,7 @@ public class StructureLookupStrategy implements LookupStrategy {
         
         // Return a "searching" indicator - caller should use async method instead
         // We can't block here or we'll freeze the game
-        AromaCraft.LOGGER.warn("Synchronous structure lookup called - this is not recommended. " +
+        AromaAffect.LOGGER.warn("Synchronous structure lookup called - this is not recommended. " +
                 "Use lookupWithCallback() for structure searches.");
         
         // Return immediately with a "not found yet" result
@@ -186,7 +186,7 @@ public class StructureLookupStrategy implements LookupStrategy {
             
             Structure structure = structureRegistry.getValue(target.resourceId());
             if (structure == null) {
-                AromaCraft.LOGGER.warn("Structure not found in registry: {}", target.resourceId());
+                AromaAffect.LOGGER.warn("Structure not found in registry: {}", target.resourceId());
                 callback.accept(LookupResult.failure(
                         target,
                         level.dimension(),
@@ -205,7 +205,7 @@ public class StructureLookupStrategy implements LookupStrategy {
                     .getPlacementsForStructure(structureHolder);
             
             if (placements.isEmpty()) {
-                AromaCraft.LOGGER.debug("No placements found for structure: {}", target.resourceId());
+                AromaAffect.LOGGER.debug("No placements found for structure: {}", target.resourceId());
                 callback.accept(LookupResult.notFound(
                         target,
                         level.dimension(),
@@ -267,13 +267,13 @@ public class StructureLookupStrategy implements LookupStrategy {
                 );
             }
             
-            AromaCraft.LOGGER.debug("Started {} structure search workers for {}",
+            AromaAffect.LOGGER.debug("Started {} structure search workers for {}",
                     placements.size(), target.resourceId());
             
             return true;
             
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error starting structure lookup for {}: {}",
+            AromaAffect.LOGGER.error("Error starting structure lookup for {}: {}",
                     target.resourceId(), e.getMessage());
             callback.accept(LookupResult.failure(
                     target,
@@ -299,7 +299,7 @@ public class StructureLookupStrategy implements LookupStrategy {
             Consumer<StructureSearchResult> callback
     ) {
         if (placement instanceof ConcentricRingsStructurePlacement concentricPlacement) {
-            AromaCraft.LOGGER.info("Starting ConcentricRings search for {} (radius={})",
+            AromaAffect.LOGGER.info("Starting ConcentricRings search for {} (radius={})",
                     structureId, maxRadius);
             StructureSearchWorkerManager.getInstance().addWorker(
                     new ConcentricRingsSearchWorker(
@@ -308,7 +308,7 @@ public class StructureLookupStrategy implements LookupStrategy {
                     )
             );
         } else if (placement instanceof RandomSpreadStructurePlacement randomPlacement) {
-            AromaCraft.LOGGER.info("Starting RandomSpread search for {} (spacing={}, separation={}, radius={})",
+            AromaAffect.LOGGER.info("Starting RandomSpread search for {} (spacing={}, separation={}, radius={})",
                     structureId, randomPlacement.spacing(), randomPlacement.separation(), maxRadius);
             StructureSearchWorkerManager.getInstance().addWorker(
                     new RandomSpreadSearchWorker(
@@ -317,7 +317,7 @@ public class StructureLookupStrategy implements LookupStrategy {
                     )
             );
         } else {
-            AromaCraft.LOGGER.info("Starting Generic search for {} (radius={})",
+            AromaAffect.LOGGER.info("Starting Generic search for {} (radius={})",
                     structureId, maxRadius);
             StructureSearchWorkerManager.getInstance().addWorker(
                     new GenericSearchWorker(

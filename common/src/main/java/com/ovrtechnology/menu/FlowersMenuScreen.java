@@ -1,6 +1,6 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -39,7 +39,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         
         Player player = Minecraft.getInstance().player;
         if (player == null) {
-            AromaCraft.LOGGER.debug("No player available for flowers menu");
+            AromaAffect.LOGGER.debug("No player available for flowers menu");
             return;
         }
         
@@ -55,7 +55,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             }
         }
         
-        AromaCraft.LOGGER.debug("Loaded {} flower cards", cards.size());
+        AromaAffect.LOGGER.debug("Loaded {} flower cards", cards.size());
     }
     
     /**
@@ -125,7 +125,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         // TODO: Use proper item translation keys when available
         // Component displayName = Component.translatable("block." + flowerId.getNamespace() + "." + flowerId.getPath());
         
-        Component description = Component.translatable("menu.aromacraft.flowers.card.description", displayName);
+        Component description = Component.translatable("menu.aromaaffect.flowers.card.description", displayName);
         
         cards.add(new SelectionCard(flowerId, displayName, icon, isUnlocked, description));
     }
@@ -163,7 +163,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
     @Override
     protected void onCardSelected(SelectionCard card, int index) {
         selectedCardIndex = index;
-        AromaCraft.LOGGER.info("Selected flower for tracking: {}", card.id);
+        AromaAffect.LOGGER.info("Selected flower for tracking: {}", card.id);
         
         // TODO: Implement tracking activation
         // This should:

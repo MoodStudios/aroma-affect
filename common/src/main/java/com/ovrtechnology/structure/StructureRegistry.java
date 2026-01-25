@@ -1,6 +1,6 @@
 package com.ovrtechnology.structure;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.util.*;
 
 /**
- * Central registry for all trackable structure definitions in AromaCraft.
+ * Central registry for all trackable structure definitions in Aroma Affect.
  * 
  * <p>This class provides the main API for other systems to access structure information.
  * Structures define which Minecraft structures can be tracked by the Nose system, along with
@@ -66,16 +66,16 @@ public final class StructureRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("StructureRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("StructureRegistry.init() called multiple times!");
             return;
         }
         
         // Warn if dependencies are not initialized
         if (!ScentRegistry.isInitialized()) {
-            AromaCraft.LOGGER.warn("StructureRegistry.init() called before ScentRegistry! Scent validation may fail.");
+            AromaAffect.LOGGER.warn("StructureRegistry.init() called before ScentRegistry! Scent validation may fail.");
         }
         
-        AromaCraft.LOGGER.info("Initializing StructureRegistry...");
+        AromaAffect.LOGGER.info("Initializing StructureRegistry...");
         
         // Load structure definitions from JSON
         List<StructureDefinition> definitions = StructureDefinitionLoader.loadAllStructures();
@@ -86,7 +86,7 @@ public final class StructureRegistry {
         }
         
         initialized = true;
-        AromaCraft.LOGGER.info("StructureRegistry initialized with {} structures", structureDefinitions.size());
+        AromaAffect.LOGGER.info("StructureRegistry initialized with {} structures", structureDefinitions.size());
     }
     
     /**
@@ -98,12 +98,12 @@ public final class StructureRegistry {
         String structureId = definition.getStructureId();
         
         if (structureDefinitions.containsKey(structureId)) {
-            AromaCraft.LOGGER.warn("Duplicate structure ID in registry: {}, skipping...", structureId);
+            AromaAffect.LOGGER.warn("Duplicate structure ID in registry: {}, skipping...", structureId);
             return;
         }
         
         structureDefinitions.put(structureId, definition);
-        AromaCraft.LOGGER.debug("Registered structure: {}", structureId);
+        AromaAffect.LOGGER.debug("Registered structure: {}", structureId);
     }
     
     /**
@@ -313,7 +313,7 @@ public final class StructureRegistry {
      * This clears the registry and reloads from the configuration file.
      */
     public static void reload() {
-        AromaCraft.LOGGER.info("Reloading StructureRegistry...");
+        AromaAffect.LOGGER.info("Reloading StructureRegistry...");
         structureDefinitions.clear();
         
         List<StructureDefinition> definitions = StructureDefinitionLoader.reload();
@@ -321,7 +321,7 @@ public final class StructureRegistry {
             registerStructure(definition);
         }
         
-        AromaCraft.LOGGER.info("StructureRegistry reloaded with {} structures", structureDefinitions.size());
+        AromaAffect.LOGGER.info("StructureRegistry reloaded with {} structures", structureDefinitions.size());
     }
     
     /**

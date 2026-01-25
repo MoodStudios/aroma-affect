@@ -1,6 +1,6 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -41,7 +41,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
         
         Player player = Minecraft.getInstance().player;
         if (player == null) {
-            AromaCraft.LOGGER.debug("No player available for structures menu");
+            AromaAffect.LOGGER.debug("No player available for structures menu");
             return;
         }
         
@@ -57,7 +57,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
             }
         }
         
-        AromaCraft.LOGGER.debug("Loaded {} structure cards", cards.size());
+        AromaAffect.LOGGER.debug("Loaded {} structure cards", cards.size());
     }
     
     /**
@@ -134,7 +134,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
     private void addStructureCardInternal(ResourceLocation structureId, ItemStack icon, 
                                           boolean isUnlocked, String displayName) {
         Component name = Component.literal(displayName);
-        Component description = Component.translatable("menu.aromacraft.structures.card.description", name);
+        Component description = Component.translatable("menu.aromaaffect.structures.card.description", name);
         
         cards.add(new SelectionCard(structureId, name, icon, isUnlocked, description));
     }
@@ -172,7 +172,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
     @Override
     protected void onCardSelected(SelectionCard card, int index) {
         selectedCardIndex = index;
-        AromaCraft.LOGGER.info("Selected structure for tracking: {}", card.id);
+        AromaAffect.LOGGER.info("Selected structure for tracking: {}", card.id);
         
         // TODO: Implement tracking activation
         // This should:

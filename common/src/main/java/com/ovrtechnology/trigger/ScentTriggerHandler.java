@@ -1,6 +1,6 @@
 package com.ovrtechnology.trigger;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.client.ClientTickEvent;
 
 /**
@@ -37,11 +37,11 @@ public final class ScentTriggerHandler {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("ScentTriggerHandler.init() called multiple times!");
+            AromaAffect.LOGGER.warn("ScentTriggerHandler.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("[ScentTriggerHandler] Starting initialization...");
+        AromaAffect.LOGGER.info("[ScentTriggerHandler] Starting initialization...");
         
         try {
             // Register client tick handler for processing scent durations and passive-mode
@@ -55,13 +55,13 @@ public final class ScentTriggerHandler {
                 }
             });
             
-            AromaCraft.LOGGER.info("[ScentTriggerHandler] ClientTickEvent.CLIENT_POST registered successfully!");
+            AromaAffect.LOGGER.info("[ScentTriggerHandler] ClientTickEvent.CLIENT_POST registered successfully!");
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("[ScentTriggerHandler] Failed to register ClientTickEvent!", e);
+            AromaAffect.LOGGER.error("[ScentTriggerHandler] Failed to register ClientTickEvent!", e);
         }
         
         initialized = true;
-        AromaCraft.LOGGER.info("[ScentTriggerHandler] Initialization complete");
+        AromaAffect.LOGGER.info("[ScentTriggerHandler] Initialization complete");
     }
     
     // ========================================

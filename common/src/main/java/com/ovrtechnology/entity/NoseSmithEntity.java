@@ -1,6 +1,6 @@
 package com.ovrtechnology.entity;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * The Nose Smith is an NPC that helps players acquire and unlock Scent Masks.
- * This character is central to the AromaCraft progression system, guiding players
+ * This character is central to the Aroma Affect progression system, guiding players
  * through the mask tier system and providing access to nose equipment.
  */
 public class NoseSmithEntity extends Villager {
@@ -25,7 +25,7 @@ public class NoseSmithEntity extends Villager {
     public NoseSmithEntity(EntityType<? extends Villager> entityType, Level level) {
         super(entityType, level);
         // Nose Smith doesn't need to worry about profession data as much
-        this.setCustomName(net.minecraft.network.chat.Component.translatable("entity.aromacraft.nose_smith"));
+        this.setCustomName(net.minecraft.network.chat.Component.translatable("entity.aromaaffect.nose_smith"));
         this.setCustomNameVisible(true);
     }
     

@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.entity.VillagerRenderer;
  * Uses the standard Villager model and textures.
  * 
  * Note: A custom texture can be added later at:
- * assets/aromacraft/textures/entity/nose_smith.png
+ * assets/aromaaffect/textures/entity/nose_smith.png
  */
 public class NoseSmithRenderer extends VillagerRenderer {
     

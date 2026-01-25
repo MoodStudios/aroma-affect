@@ -1,6 +1,6 @@
 package com.ovrtechnology.lookup.worker;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceLocation;
@@ -97,7 +97,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
     public void cancel() {
         cancelled = true;
         finished = true;
-        AromaCraft.LOGGER.debug("{}: Cancelled after {} samples", getId(), samples);
+        AromaAffect.LOGGER.debug("{}: Cancelled after {} samples", getId(), samples);
     }
     
     /**
@@ -106,7 +106,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
     protected void succeed(BlockPos pos) {
         finished = true;
         long duration = System.currentTimeMillis() - startTimeMs;
-        AromaCraft.LOGGER.info("{}: Found {} at {} after {} samples in {}ms",
+        AromaAffect.LOGGER.info("{}: Found {} at {} after {} samples in {}ms",
                 getId(), structureId, pos, samples, duration);
         callback.accept(StructureSearchResult.success(structureId, pos, samples, duration));
     }
@@ -117,7 +117,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
     protected void fail() {
         finished = true;
         long duration = System.currentTimeMillis() - startTimeMs;
-        AromaCraft.LOGGER.info("{}: Not found after {} samples in {}ms (notPresent={}, present={}, chunkLoads={})",
+        AromaAffect.LOGGER.info("{}: Not found after {} samples in {}ms (notPresent={}, present={}, chunkLoads={})",
                 getId(), samples, duration, notPresentCount, presentCount, chunkLoadCount);
         callback.accept(StructureSearchResult.notFound(samples, duration));
     }
@@ -130,7 +130,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
             lastLoggedProgress = samples;
             float progress = (float) samples / maxSamples * 100;
             long elapsed = System.currentTimeMillis() - startTimeMs;
-            AromaCraft.LOGGER.info("{}: {}% complete ({} samples, radius ~{} blocks, {}ms elapsed)",
+            AromaAffect.LOGGER.info("{}: {}% complete ({} samples, radius ~{} blocks, {}ms elapsed)",
                     getId(), String.format("%.1f", progress), samples, currentRadius, elapsed);
         }
     }
@@ -184,7 +184,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
             
             return null;
         } catch (Exception e) {
-            AromaCraft.LOGGER.debug("Error checking structure at {}: {}", chunkPos, e.getMessage());
+            AromaAffect.LOGGER.debug("Error checking structure at {}: {}", chunkPos, e.getMessage());
             return null;
         }
     }

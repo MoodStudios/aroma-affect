@@ -1,6 +1,6 @@
 package com.ovrtechnology.ability;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.world.InteractionResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -55,11 +55,11 @@ public final class AbilityHandler {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("AbilityHandler.init() called multiple times!");
+            AromaAffect.LOGGER.warn("AbilityHandler.init() called multiple times!");
             return;
         }
 
-        AromaCraft.LOGGER.info("Initializing AbilityHandler...");
+        AromaAffect.LOGGER.info("Initializing AbilityHandler...");
 
         // Register block interaction event
         InteractionEvent.RIGHT_CLICK_BLOCK.register(AbilityHandler::onRightClickBlock);
@@ -68,7 +68,7 @@ public final class AbilityHandler {
         TickEvent.SERVER_LEVEL_POST.register(AbilityHandler::onServerTick);
 
         initialized = true;
-        AromaCraft.LOGGER.info("AbilityHandler initialized");
+        AromaAffect.LOGGER.info("AbilityHandler initialized");
     }
 
     /**
@@ -113,7 +113,7 @@ public final class AbilityHandler {
             // Check if on cooldown and show feedback
             long cooldown = PreciseSnifferAbility.getRemainingCooldown(serverPlayer);
             if (cooldown > 0) {
-                AromaCraft.LOGGER.debug("Player {} on cooldown for {} more ticks",
+                AromaAffect.LOGGER.debug("Player {} on cooldown for {} more ticks",
                         player.getName().getString(), cooldown);
             }
             return InteractionResult.PASS;

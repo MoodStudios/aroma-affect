@@ -1,6 +1,6 @@
 package com.ovrtechnology.nose;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 
 import java.util.*;
@@ -28,11 +28,11 @@ public final class NoseAbilityResolver {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("NoseAbilityResolver.init() called multiple times!");
+            AromaAffect.LOGGER.warn("NoseAbilityResolver.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing NoseAbilityResolver...");
+        AromaAffect.LOGGER.info("Initializing NoseAbilityResolver...");
         
         // Resolve abilities for each nose
         for (String noseId : NoseRegistry.getAllNoseIds()) {
@@ -40,7 +40,7 @@ public final class NoseAbilityResolver {
         }
         
         initialized = true;
-        AromaCraft.LOGGER.info("NoseAbilityResolver initialized with {} cached entries", ABILITY_CACHE.size());
+        AromaAffect.LOGGER.info("NoseAbilityResolver initialized with {} cached entries", ABILITY_CACHE.size());
     }
     
     /**
@@ -64,7 +64,7 @@ public final class NoseAbilityResolver {
         
         // Report any circular dependencies found
         if (!circularDependencies.isEmpty()) {
-            AromaCraft.LOGGER.warn("Circular dependencies detected for nose '{}': {}", noseId, circularDependencies);
+            AromaAffect.LOGGER.warn("Circular dependencies detected for nose '{}': {}", noseId, circularDependencies);
         }
         
         ResolvedAbilities resolved = new ResolvedAbilities(
@@ -75,7 +75,7 @@ public final class NoseAbilityResolver {
         );
         
         ABILITY_CACHE.put(noseId, resolved);
-        AromaCraft.LOGGER.debug("Resolved abilities for '{}': {} abilities, {} blocks, {} biomes, {} structures",
+        AromaAffect.LOGGER.debug("Resolved abilities for '{}': {} abilities, {} blocks, {} biomes, {} structures",
                 noseId, abilities.size(), blocks.size(), biomes.size(), structures.size());
         
         return resolved;
@@ -96,7 +96,7 @@ public final class NoseAbilityResolver {
         // Circular dependency check
         if (visited.contains(noseId)) {
             circularDependencies.add(noseId);
-            AromaCraft.LOGGER.warn("Circular dependency detected: nose '{}' already in resolution chain", noseId);
+            AromaAffect.LOGGER.warn("Circular dependency detected: nose '{}' already in resolution chain", noseId);
             return;
         }
         
@@ -105,7 +105,7 @@ public final class NoseAbilityResolver {
         // Get the nose definition
         Optional<NoseDefinition> defOpt = NoseRegistry.getDefinition(noseId);
         if (defOpt.isEmpty()) {
-            AromaCraft.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
+            AromaAffect.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
             visited.remove(noseId);
             return;
         }
@@ -137,13 +137,13 @@ public final class NoseAbilityResolver {
      */
     public static ResolvedAbilities getResolvedAbilities(String noseId) {
         if (!initialized) {
-            AromaCraft.LOGGER.error("NoseAbilityResolver not initialized! Call init() first.");
+            AromaAffect.LOGGER.error("NoseAbilityResolver not initialized! Call init() first.");
             return ResolvedAbilities.EMPTY;
         }
         
         ResolvedAbilities resolved = ABILITY_CACHE.get(noseId);
         if (resolved == null) {
-            AromaCraft.LOGGER.warn("No resolved abilities found for nose: {}", noseId);
+            AromaAffect.LOGGER.warn("No resolved abilities found for nose: {}", noseId);
             return ResolvedAbilities.EMPTY;
         }
         
@@ -184,7 +184,7 @@ public final class NoseAbilityResolver {
     public static void clearCache() {
         ABILITY_CACHE.clear();
         initialized = false;
-        AromaCraft.LOGGER.info("NoseAbilityResolver cache cleared");
+        AromaAffect.LOGGER.info("NoseAbilityResolver cache cleared");
     }
     
     /**

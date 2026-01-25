@@ -1,5 +1,5 @@
 /**
- * Scent Item system for AromaCraft.
+ * Scent Item system for Aroma Affect.
  * 
  * <p>This package provides the scent item registration system, which creates
  * Minecraft items from JSON definitions. These items are separate from the
@@ -14,7 +14,7 @@
  * </ul>
  * 
  * <h2>JSON Configuration</h2>
- * <p>Scent items are defined in {@code data/aromacraft/scents/scent_items.json}:</p>
+ * <p>Scent items are defined in {@code data/aromaaffect/scents/scent_items.json}:</p>
  * <pre>
  * {
  *   "scents": [
@@ -32,7 +32,7 @@
  * 
  * <h2>Usage</h2>
  * <pre>
- * // Initialize during mod startup (in AromaCraft.init())
+ * // Initialize during mod startup (in Aroma Affect.init())
  * ScentItemRegistry.init();
  * 
  * // Access scent items

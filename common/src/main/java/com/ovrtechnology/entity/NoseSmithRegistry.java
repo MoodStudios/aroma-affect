@@ -1,6 +1,6 @@
 package com.ovrtechnology.entity;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
@@ -15,7 +15,7 @@ import net.minecraft.world.item.Item;
 
 /**
  * Registry for the Nose Smith entity and associated items.
- * The Nose Smith is the central NPC for the AromaCraft progression system.
+ * The Nose Smith is the central NPC for the Aroma Affect progression system.
  */
 @UtilityClass
 public final class NoseSmithRegistry {
@@ -34,13 +34,13 @@ public final class NoseSmithRegistry {
      * Deferred register for entity types
      */
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = 
-            DeferredRegister.create(AromaCraft.MOD_ID, Registries.ENTITY_TYPE);
+            DeferredRegister.create(AromaAffect.MOD_ID, Registries.ENTITY_TYPE);
     
     /**
      * Deferred register for items (spawn egg)
      */
     private static final DeferredRegister<Item> ITEMS = 
-            DeferredRegister.create(AromaCraft.MOD_ID, Registries.ITEM);
+            DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
     
     /**
      * The Nose Smith entity type
@@ -53,7 +53,7 @@ public final class NoseSmithRegistry {
                     .clientTrackingRange(10)
                     .build(ResourceKey.create(
                             Registries.ENTITY_TYPE,
-                            ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, NOSE_SMITH_ID)
+                            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_ID)
                     ))
             );
     
@@ -68,7 +68,7 @@ public final class NoseSmithRegistry {
                             .stacksTo(64)
                             .setId(ResourceKey.create(
                                     Registries.ITEM,
-                                    ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, NOSE_SMITH_SPAWN_EGG_ID)
+                                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_SPAWN_EGG_ID)
                             ))
             ));
     
@@ -84,11 +84,11 @@ public final class NoseSmithRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("NoseSmithRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("NoseSmithRegistry.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing NoseSmithRegistry...");
+        AromaAffect.LOGGER.info("Initializing NoseSmithRegistry...");
         
         // Register entity types
         ENTITY_TYPES.register();
@@ -100,13 +100,13 @@ public final class NoseSmithRegistry {
         EntityAttributeRegistry.register(NOSE_SMITH, NoseSmithEntity::createAttributes);
         
         initialized = true;
-        AromaCraft.LOGGER.info("NoseSmithRegistry initialized successfully!");
+        AromaAffect.LOGGER.info("NoseSmithRegistry initialized successfully!");
     }
     
     /**
      * Get the ResourceLocation for the Nose Smith entity
      */
     public static ResourceLocation getNoseSmithLocation() {
-        return ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, NOSE_SMITH_ID);
+        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_ID);
     }
 }

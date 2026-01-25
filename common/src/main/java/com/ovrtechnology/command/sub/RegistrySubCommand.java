@@ -59,7 +59,7 @@ public class RegistrySubCommand implements SubCommand {
     
     private int showUsage(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("§6[AromaCraft] §7Registry usage:"), false);
+        source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Registry usage:"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest registry structure §8- List structures"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest registry block §8- List blocks"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest registry biome §8- List biomes"), false);
@@ -76,14 +76,14 @@ public class RegistrySubCommand implements SubCommand {
         
         if (count == 0) {
             source.sendSuccess(() -> Component.literal(
-                    "§6[AromaCraft] §7No " + type.getDisplayName() + " registered."
+                    "§6[Aroma Affect] §7No " + type.getDisplayName() + " registered."
             ), false);
             return Command.SINGLE_SUCCESS;
         }
         
         // Header
         source.sendSuccess(() -> Component.literal(
-                "§6[AromaCraft] §7Registered " + type.getDisplayName() + " §8(§e" + count + "§8):"
+                "§6[Aroma Affect] §7Registered " + type.getDisplayName() + " §8(§e" + count + "§8):"
         ), false);
         
         // List IDs comma-separated

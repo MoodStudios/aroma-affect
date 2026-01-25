@@ -1,6 +1,6 @@
 package com.ovrtechnology.websocket;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.client.ClientTickEvent;
 import lombok.Getter;
 
@@ -113,7 +113,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 .build();
 
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "AromaCraft-WebSocket");
+            Thread t = new Thread(r, "AromaAffect-WebSocket");
             t.setDaemon(true);
             return t;
         });
@@ -148,16 +148,16 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
      */
     public static void init(WebSocketConfig config) {
         if (INSTANCE.initialized.getAndSet(true)) {
-            AromaCraft.LOGGER.warn("OvrWebSocketClient.init() called multiple times!");
+            AromaAffect.LOGGER.warn("OvrWebSocketClient.init() called multiple times!");
             return;
         }
 
         INSTANCE.config = config;
 
-        AromaCraft.LOGGER.info("Initializing OVR WebSocket client...");
-        AromaCraft.LOGGER.info("  Target: {}", config.getUri());
-        AromaCraft.LOGGER.info("  Auto-connect: {}", config.isAutoConnect());
-        AromaCraft.LOGGER.info("  Auto-reconnect: {}", config.isAutoReconnect());
+        AromaAffect.LOGGER.info("Initializing OVR WebSocket client...");
+        AromaAffect.LOGGER.info("  Target: {}", config.getUri());
+        AromaAffect.LOGGER.info("  Auto-connect: {}", config.isAutoConnect());
+        AromaAffect.LOGGER.info("  Auto-reconnect: {}", config.isAutoReconnect());
 
         // Register tick handler for main thread execution
         ClientTickEvent.CLIENT_POST.register(instance -> {
@@ -169,7 +169,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             INSTANCE.connectAsync();
         }
 
-        AromaCraft.LOGGER.info("OVR WebSocket client initialized");
+        AromaAffect.LOGGER.info("OVR WebSocket client initialized");
     }
 
     /**
@@ -184,7 +184,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         // If URI changed and we're connected, reconnect
         if (!oldConfig.getUri().equals(newConfig.getUri())) {
             if (state.get().isActiveOrPending()) {
-                AromaCraft.LOGGER.info("WebSocket URI changed, reconnecting...");
+                AromaAffect.LOGGER.info("WebSocket URI changed, reconnecting...");
                 disconnect();
                 if (newConfig.isAutoConnect()) {
                     connectAsync();
@@ -212,7 +212,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         ConnectionState currentState = state.get();
         if (currentState == ConnectionState.CONNECTING || currentState == ConnectionState.CONNECTED) {
             if (config.isDebugLogging()) {
-                AromaCraft.LOGGER.debug("Already {} - ignoring connect request", currentState);
+                AromaAffect.LOGGER.debug("Already {} - ignoring connect request", currentState);
             }
             return CompletableFuture.completedFuture(currentState == ConnectionState.CONNECTED);
         }
@@ -222,7 +222,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (config.isDebugLogging()) {
-                    AromaCraft.LOGGER.debug("Connecting to {}...", config.getUri());
+                    AromaAffect.LOGGER.debug("Connecting to {}...", config.getUri());
                 }
 
                 URI uri = URI.create(config.getUri());
@@ -239,13 +239,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 reconnectAttempts.set(0);
                 currentReconnectDelay.set(config.getInitialReconnectDelayMs());
 
-                AromaCraft.LOGGER.info("=== OVR WebSocket CONNECTED to {} ===", config.getUri());
+                AromaAffect.LOGGER.info("=== OVR WebSocket CONNECTED to {} ===", config.getUri());
 
                 // Start health monitoring (can be disabled for debugging by setting interval to 0)
                 if (config.getHealthCheckIntervalMs() > 0) {
                     startHealthMonitoring();
                 } else {
-                    AromaCraft.LOGGER.info("Health monitoring disabled (interval=0)");
+                    AromaAffect.LOGGER.info("Health monitoring disabled (interval=0)");
                 }
 
                 // Notify listeners on main thread
@@ -254,12 +254,12 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                         try {
                             listener.onConnected();
                         } catch (Exception e) {
-                            AromaCraft.LOGGER.error("Error in connection listener", e);
+                            AromaAffect.LOGGER.error("Error in connection listener", e);
                         }
                     }
                 });
 
-                AromaCraft.LOGGER.info("OVR WebSocket ready to send/receive messages");
+                AromaAffect.LOGGER.info("OVR WebSocket ready to send/receive messages");
                 return true;
 
             } catch (Exception e) {
@@ -299,7 +299,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, reason);
             } catch (Exception e) {
                 if (config.isDebugLogging()) {
-                    AromaCraft.LOGGER.debug("Error during disconnect: {}", e.getMessage());
+                    AromaAffect.LOGGER.debug("Error during disconnect: {}", e.getMessage());
                 }
             }
             this.webSocket = null;
@@ -313,12 +313,12 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 try {
                     listener.onDisconnected(finalReason, true);
                 } catch (Exception e) {
-                    AromaCraft.LOGGER.error("Error in connection listener", e);
+                    AromaAffect.LOGGER.error("Error in connection listener", e);
                 }
             }
         });
 
-        AromaCraft.LOGGER.info("Disconnected from OVR WebSocket: {}", reason);
+        AromaAffect.LOGGER.info("Disconnected from OVR WebSocket: {}", reason);
     }
 
     /**
@@ -326,7 +326,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
      * Should be called when the mod is being unloaded.
      */
     public void shutdown() {
-        AromaCraft.LOGGER.info("Shutting down OVR WebSocket client...");
+        AromaAffect.LOGGER.info("Shutting down OVR WebSocket client...");
 
         disconnect("Shutdown", true);
 
@@ -362,7 +362,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     public boolean send(WebSocketMessage message) {
         if (!state.get().canSendMessages()) {
             if (config.isDebugLogging()) {
-                AromaCraft.LOGGER.debug("Cannot send message - not connected. State: {}", state.get());
+                AromaAffect.LOGGER.debug("Cannot send message - not connected. State: {}", state.get());
             }
             return false;
         }
@@ -377,14 +377,14 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             ws.sendText(rawText, true);
 
             // Always log sent messages at info level for debugging OVR communication
-            AromaCraft.LOGGER.info("WebSocket SENT: {}", rawText);
+            AromaAffect.LOGGER.info("WebSocket SENT: {}", rawText);
             if (config.isDebugLogging()) {
-                AromaCraft.LOGGER.debug("Sent message object: {}", message);
+                AromaAffect.LOGGER.debug("Sent message object: {}", message);
             }
 
             return true;
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error sending message: {}", e.getMessage());
+            AromaAffect.LOGGER.error("Error sending message: {}", e.getMessage());
             return false;
         }
     }
@@ -479,7 +479,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     @Override
     public void onOpen(WebSocket webSocket) {
         if (config.isDebugLogging()) {
-            AromaCraft.LOGGER.debug("WebSocket opened");
+            AromaAffect.LOGGER.debug("WebSocket opened");
         }
         webSocket.request(1);
     }
@@ -495,7 +495,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             WebSocketMessage message = WebSocketMessage.fromRawText(fullMessage);
 
             if (config.isDebugLogging()) {
-                AromaCraft.LOGGER.debug("Received: {}", message);
+                AromaAffect.LOGGER.debug("Received: {}", message);
             }
 
             // Handle ping/pong internally
@@ -511,7 +511,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                         try {
                             handler.onMessage(message);
                         } catch (Exception e) {
-                            AromaCraft.LOGGER.error("Error in message handler", e);
+                            AromaAffect.LOGGER.error("Error in message handler", e);
                         }
                     }
                 });
@@ -526,7 +526,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
         // Binary messages are not expected, but handle gracefully
         if (config.isDebugLogging()) {
-            AromaCraft.LOGGER.debug("Received binary message ({} bytes)", data.remaining());
+            AromaAffect.LOGGER.debug("Received binary message ({} bytes)", data.remaining());
         }
         webSocket.request(1);
         return null;
@@ -535,7 +535,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     @Override
     public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer message) {
         if (config.isDebugLogging()) {
-            AromaCraft.LOGGER.debug("Received WebSocket ping");
+            AromaAffect.LOGGER.debug("Received WebSocket ping");
         }
         // java.net.http.WebSocket typically auto-responds to ping frames, but sending
         // an explicit pong can improve compatibility with some servers.
@@ -543,7 +543,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             webSocket.sendPong(message);
         } catch (Exception e) {
             if (config.isDebugLogging()) {
-                AromaCraft.LOGGER.debug("Failed to send WebSocket pong: {}", e.getMessage());
+                AromaAffect.LOGGER.debug("Failed to send WebSocket pong: {}", e.getMessage());
             }
         }
         webSocket.request(1);
@@ -555,7 +555,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         lastPongTime.set(System.currentTimeMillis());
         awaitingPong.set(false);
         if (config.isDebugLogging()) {
-            AromaCraft.LOGGER.debug("Received WebSocket pong");
+            AromaAffect.LOGGER.debug("Received WebSocket pong");
         }
         webSocket.request(1);
         return null;
@@ -563,7 +563,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-        AromaCraft.LOGGER.info("WebSocket closed: {} (code: {})", reason, statusCode);
+        AromaAffect.LOGGER.info("WebSocket closed: {} (code: {})", reason, statusCode);
 
         this.webSocket = null;
         stopHealthMonitoring();
@@ -575,7 +575,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 try {
                     listener.onDisconnected(reason, wasClean);
                 } catch (Exception e) {
-                    AromaCraft.LOGGER.error("Error in connection listener", e);
+                    AromaAffect.LOGGER.error("Error in connection listener", e);
                 }
             }
         });
@@ -591,14 +591,14 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-        AromaCraft.LOGGER.error("WebSocket error: {}", error.getMessage());
+        AromaAffect.LOGGER.error("WebSocket error: {}", error.getMessage());
 
         executeOnMainThread(() -> {
             for (WebSocketConnectionListener listener : connectionListeners) {
                 try {
                     listener.onError(error);
                 } catch (Exception e) {
-                    AromaCraft.LOGGER.error("Error in connection listener", e);
+                    AromaAffect.LOGGER.error("Error in connection listener", e);
                 }
             }
         });
@@ -613,7 +613,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
         // Only log once on first failure to avoid spam
         if (reconnectAttempts.get() == 0) {
-            AromaCraft.LOGGER.info("OVR WebSocket server is offline, will keep trying to reconnect...");
+            AromaAffect.LOGGER.info("OVR WebSocket server is offline, will keep trying to reconnect...");
         }
 
         if (config.isDebugLogging()) {
@@ -621,7 +621,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             if (e.getCause() != null) {
                 errorMsg = e.getCause().getMessage();
             }
-            AromaCraft.LOGGER.debug("Connection failure details: {}", errorMsg);
+            AromaAffect.LOGGER.debug("Connection failure details: {}", errorMsg);
         }
 
         executeOnMainThread(() -> {
@@ -629,7 +629,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 try {
                     listener.onError(e);
                 } catch (Exception ex) {
-                    AromaCraft.LOGGER.error("Error in connection listener", ex);
+                    AromaAffect.LOGGER.error("Error in connection listener", ex);
                 }
             }
         });
@@ -650,7 +650,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         int maxAttempts = config.getMaxReconnectAttempts();
 
         if (maxAttempts > 0 && attempts > maxAttempts) {
-            AromaCraft.LOGGER.warn("Max reconnection attempts ({}) reached. Giving up.", maxAttempts);
+            AromaAffect.LOGGER.warn("Max reconnection attempts ({}) reached. Giving up.", maxAttempts);
             setState(ConnectionState.DISCONNECTED);
             reconnectScheduled.set(false);
             return;
@@ -672,7 +672,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         final long finalDelay = delay;
 
         if (config.isDebugLogging()) {
-            AromaCraft.LOGGER.debug("Reconnecting in {} ms (attempt {})...", delay, attempts);
+            AromaAffect.LOGGER.debug("Reconnecting in {} ms (attempt {})...", delay, attempts);
         }
 
         setState(ConnectionState.RECONNECTING);
@@ -683,7 +683,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 try {
                     listener.onReconnecting(attempts, finalDelay);
                 } catch (Exception e) {
-                    AromaCraft.LOGGER.error("Error in connection listener", e);
+                    AromaAffect.LOGGER.error("Error in connection listener", e);
                 }
             }
         });
@@ -728,7 +728,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 TimeUnit.MILLISECONDS);
 
         if (config.isDebugLogging()) {
-            AromaCraft.LOGGER.debug("Health monitoring started (interval: {} ms)", config.getHealthCheckIntervalMs());
+            AromaAffect.LOGGER.debug("Health monitoring started (interval: {} ms)", config.getHealthCheckIntervalMs());
         }
     }
 
@@ -750,7 +750,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         if (awaitingPong.get()) {
             long elapsed = System.currentTimeMillis() - lastPingTime.get();
             if (elapsed > config.getHealthCheckIntervalMs() * 2) {
-                AromaCraft.LOGGER.warn("Health check failed: No pong received in {} ms", elapsed);
+                AromaAffect.LOGGER.warn("Health check failed: No pong received in {} ms", elapsed);
                 disconnect("Health check timeout", false);
                 if (config.isAutoReconnect()) {
                     scheduleReconnect();
@@ -772,11 +772,11 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         try {
             ws.sendPing(ByteBuffer.allocate(0));
         } catch (Exception e) {
-            AromaCraft.LOGGER.warn("Health check ping failed: {}", e.getMessage());
+            AromaAffect.LOGGER.warn("Health check ping failed: {}", e.getMessage());
         }
 
         if (config.isDebugLogging()) {
-            AromaCraft.LOGGER.debug("Health check: ping sent");
+            AromaAffect.LOGGER.debug("Health check: ping sent");
         }
     }
 
@@ -805,7 +805,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             try {
                 task.run();
             } catch (Exception e) {
-                AromaCraft.LOGGER.error("Error executing main thread task", e);
+                AromaAffect.LOGGER.error("Error executing main thread task", e);
             }
             processed++;
         }
@@ -820,7 +820,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
         if (oldState != newState) {
             if (config.isDebugLogging()) {
-                AromaCraft.LOGGER.debug("State changed: {} -> {}", oldState, newState);
+                AromaAffect.LOGGER.debug("State changed: {} -> {}", oldState, newState);
             }
 
             executeOnMainThread(() -> {
@@ -828,7 +828,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                     try {
                         listener.onStateChanged(oldState, newState);
                     } catch (Exception e) {
-                        AromaCraft.LOGGER.error("Error in connection listener", e);
+                        AromaAffect.LOGGER.error("Error in connection listener", e);
                     }
                 }
             });

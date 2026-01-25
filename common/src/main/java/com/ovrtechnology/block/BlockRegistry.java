@@ -1,6 +1,6 @@
 package com.ovrtechnology.block;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.util.*;
 
 /**
- * Central registry for all trackable block definitions in AromaCraft.
+ * Central registry for all trackable block definitions in Aroma Affect.
  * 
  * <p>This class provides the main API for other systems to access block information.
  * Blocks define which Minecraft blocks can be tracked by the Nose system, along with
@@ -61,16 +61,16 @@ public final class BlockRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("BlockRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("BlockRegistry.init() called multiple times!");
             return;
         }
         
         // Warn if ScentRegistry is not initialized
         if (!ScentRegistry.isInitialized()) {
-            AromaCraft.LOGGER.warn("BlockRegistry.init() called before ScentRegistry! Scent validation may fail.");
+            AromaAffect.LOGGER.warn("BlockRegistry.init() called before ScentRegistry! Scent validation may fail.");
         }
         
-        AromaCraft.LOGGER.info("Initializing BlockRegistry...");
+        AromaAffect.LOGGER.info("Initializing BlockRegistry...");
         
         // Load block definitions from JSON
         List<BlockDefinition> definitions = BlockDefinitionLoader.loadAllBlocks();
@@ -81,7 +81,7 @@ public final class BlockRegistry {
         }
         
         initialized = true;
-        AromaCraft.LOGGER.info("BlockRegistry initialized with {} blocks", blockDefinitions.size());
+        AromaAffect.LOGGER.info("BlockRegistry initialized with {} blocks", blockDefinitions.size());
     }
     
     /**
@@ -93,12 +93,12 @@ public final class BlockRegistry {
         String blockId = definition.getBlockId();
         
         if (blockDefinitions.containsKey(blockId)) {
-            AromaCraft.LOGGER.warn("Duplicate block ID in registry: {}, skipping...", blockId);
+            AromaAffect.LOGGER.warn("Duplicate block ID in registry: {}, skipping...", blockId);
             return;
         }
         
         blockDefinitions.put(blockId, definition);
-        AromaCraft.LOGGER.debug("Registered block: {}", blockId);
+        AromaAffect.LOGGER.debug("Registered block: {}", blockId);
     }
     
     /**
@@ -246,7 +246,7 @@ public final class BlockRegistry {
      * This clears the registry and reloads from the configuration file.
      */
     public static void reload() {
-        AromaCraft.LOGGER.info("Reloading BlockRegistry...");
+        AromaAffect.LOGGER.info("Reloading BlockRegistry...");
         blockDefinitions.clear();
         
         List<BlockDefinition> definitions = BlockDefinitionLoader.reload();
@@ -254,7 +254,7 @@ public final class BlockRegistry {
             registerBlock(definition);
         }
         
-        AromaCraft.LOGGER.info("BlockRegistry reloaded with {} blocks", blockDefinitions.size());
+        AromaAffect.LOGGER.info("BlockRegistry reloaded with {} blocks", blockDefinitions.size());
     }
     
     /**

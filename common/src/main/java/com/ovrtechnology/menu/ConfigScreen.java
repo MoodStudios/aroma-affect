@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 /**
- * Configuration screen for AromaCraft mod settings.
+ * Configuration screen for Aroma Affect mod settings.
  * 
  * <p>This screen provides access to:</p>
  * <ul>
@@ -37,11 +37,11 @@ public class ConfigScreen extends BaseMenuScreen {
      * Available configuration tabs.
      */
     public enum ConfigTab {
-        GENERAL("menu.aromacraft.config.tab.general"),
-        DEVICES("menu.aromacraft.config.tab.devices"),
-        CONNECTION("menu.aromacraft.config.tab.connection"),
-        KEYBINDS("menu.aromacraft.config.tab.keybinds"),
-        DEBUG("menu.aromacraft.config.tab.debug");
+        GENERAL("menu.aromaaffect.config.tab.general"),
+        DEVICES("menu.aromaaffect.config.tab.devices"),
+        CONNECTION("menu.aromaaffect.config.tab.connection"),
+        KEYBINDS("menu.aromaaffect.config.tab.keybinds"),
+        DEBUG("menu.aromaaffect.config.tab.debug");
         
         private final String translationKey;
         
@@ -55,7 +55,7 @@ public class ConfigScreen extends BaseMenuScreen {
     }
     
     public ConfigScreen() {
-        super(Component.translatable("menu.aromacraft.config.title"));
+        super(Component.translatable("menu.aromaaffect.config.title"));
     }
     
     @Override
@@ -79,11 +79,11 @@ public class ConfigScreen extends BaseMenuScreen {
         int subTextColor = (int) (255 * alpha) << 24 | 0xAAAAAA;
         
         // Title
-        Component title = Component.translatable("menu.aromacraft.config.title");
+        Component title = Component.translatable("menu.aromaaffect.config.title");
         graphics.drawCenteredString(font, title, centerX, centerY - 60, textColor);
         
         // Placeholder message
-        Component placeholder = Component.translatable("menu.aromacraft.config.placeholder");
+        Component placeholder = Component.translatable("menu.aromaaffect.config.placeholder");
         graphics.drawCenteredString(font, placeholder, centerX, centerY, subTextColor);
         
         // Tab names (for reference)
@@ -95,7 +95,7 @@ public class ConfigScreen extends BaseMenuScreen {
         }
         
         // Instructions
-        Component instructions = Component.translatable("menu.aromacraft.config.instructions");
+        Component instructions = Component.translatable("menu.aromaaffect.config.instructions");
         graphics.drawCenteredString(font, instructions, centerX, height - 30, subTextColor);
     }
     

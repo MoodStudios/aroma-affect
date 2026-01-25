@@ -1,7 +1,7 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
-import com.ovrtechnology.keybind.AromaCraftKeyCategory;
+import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.keybind.AromaAffectKeyCategory;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import net.minecraft.client.KeyMapping;
@@ -10,7 +10,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Handles keybinding registration and input handling for AromaCraft menus.
+ * Handles keybinding registration and input handling for Aroma Affect menus.
  * 
  * <p>This class uses Architectury's cross-platform keybinding API to register
  * and handle menu hotkeys on both Fabric and NeoForge.</p>
@@ -21,7 +21,7 @@ import org.lwjgl.glfw.GLFW;
  *   <li><b>Config Menu</b>: C (with Shift) - Opens the configuration screen</li>
  * </ul>
  * 
- * <p>All keybindings are configurable through Minecraft's controls menu under the "AromaCraft" category.</p>
+ * <p>All keybindings are configurable through Minecraft's controls menu under the "Aroma Affect" category.</p>
  */
 public final class MenuKeyBindings {
     
@@ -29,20 +29,20 @@ public final class MenuKeyBindings {
      * Keybinding for opening the radial menu.
      */
     public static final KeyMapping OPEN_RADIAL_MENU = new KeyMapping(
-            "key.aromacraft.open_radial_menu",
+            "key.aromaaffect.open_radial_menu",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_R,
-            AromaCraftKeyCategory.CATEGORY
+            AromaAffectKeyCategory.CATEGORY
     );
     
     /**
      * Keybinding for opening the configuration menu.
      */
     public static final KeyMapping OPEN_CONFIG_MENU = new KeyMapping(
-            "key.aromacraft.open_config_menu",
+            "key.aromaaffect.open_config_menu",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_C,
-            AromaCraftKeyCategory.CATEGORY
+            AromaAffectKeyCategory.CATEGORY
     );
     
     /**
@@ -60,11 +60,11 @@ public final class MenuKeyBindings {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("MenuKeyBindings.init() called multiple times!");
+            AromaAffect.LOGGER.warn("MenuKeyBindings.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing menu keybindings...");
+        AromaAffect.LOGGER.info("Initializing menu keybindings...");
         
         // Register keybindings using Architectury API
         KeyMappingRegistry.register(OPEN_RADIAL_MENU);
@@ -76,7 +76,7 @@ public final class MenuKeyBindings {
         });
         
         initialized = true;
-        AromaCraft.LOGGER.info("Menu keybindings initialized");
+        AromaAffect.LOGGER.info("Menu keybindings initialized");
     }
     
     /**

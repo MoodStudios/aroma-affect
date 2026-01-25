@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
  * <p>Each scent corresponds to an OVR hardware scent identifier and has a fallback
  * display name for when localization is not available. The actual display name
  * should be retrieved from Minecraft's localization system using the key format:
- * {@code scent.aromacraft.<id>}</p>
+ * {@code scent.aromaaffect.<id>}</p>
  * 
  * <p>Example JSON entry:</p>
  * <pre>
@@ -32,7 +32,7 @@ public class ScentDefinition {
      * Unique identifier for this scent.
      * This ID is used for:
      * - OVR hardware communication
-     * - Localization key lookup (scent.aromacraft.{id})
+     * - Localization key lookup (scent.aromaaffect.{id})
      * - Internal references and configuration
      */
     @SerializedName("id")
@@ -47,7 +47,7 @@ public class ScentDefinition {
     
     /**
      * Optional description of the scent for tooltips.
-     * If not provided, falls back to localization key: scent.aromacraft.{id}.description
+     * If not provided, falls back to localization key: scent.aromaaffect.{id}.description
      */
     @SerializedName("description")
     private String description;
@@ -88,19 +88,19 @@ public class ScentDefinition {
     /**
      * Get the localization key for this scent's name.
      * 
-     * @return The localization key in format "scent.aromacraft.{id}"
+     * @return The localization key in format "scent.aromaaffect.{id}"
      */
     public String getTranslationKey() {
-        return "scent.aromacraft." + id;
+        return "scent.aromaaffect." + id;
     }
     
     /**
      * Get the localization key for this scent's description.
      * 
-     * @return The localization key in format "scent.aromacraft.{id}.description"
+     * @return The localization key in format "scent.aromaaffect.{id}.description"
      */
     public String getDescriptionTranslationKey() {
-        return "scent.aromacraft." + id + ".description";
+        return "scent.aromaaffect." + id + ".description";
     }
     
     /**

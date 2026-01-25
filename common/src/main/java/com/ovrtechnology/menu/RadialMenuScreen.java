@@ -1,6 +1,6 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Radial menu screen for selecting AromaCraft modules/categories.
+ * Radial menu screen for selecting Aroma Affect modules/categories.
  *
  * <p>Design-focused implementation: renders a circular 4-slice radial menu, with an indicator pointing
  * to the currently selected slice (based on mouse angle). The renderer is data-driven so additional
@@ -61,17 +61,17 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private int selectedIndex = -1;
 
     public RadialMenuScreen() {
-        super(Component.translatable("menu.aromacraft.radial.title"));
+        super(Component.translatable("menu.aromaaffect.radial.title"));
         initializeEntries();
     }
 
     // Texture locations for radial menu icons
-    private static final ResourceLocation ICON_STRUCTURES = ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "textures/gui/sprites/radial/icon_structures.png");
-    private static final ResourceLocation ICON_BIOMES = ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png");
-    private static final ResourceLocation ICON_BLOCKS = ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
-    private static final ResourceLocation ICON_FLOWERS = ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
-    private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
-    private static final ResourceLocation ICON_COMPASS = ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "textures/gui/sprites/radial/icon_compass.png");
+    private static final ResourceLocation ICON_STRUCTURES = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png");
+    private static final ResourceLocation ICON_BIOMES = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png");
+    private static final ResourceLocation ICON_BLOCKS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
+    private static final ResourceLocation ICON_FLOWERS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
+    private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
+    private static final ResourceLocation ICON_COMPASS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_compass.png");
 
     // Icon display size (will be scaled from high-res textures)
     private static final int ICON_DISPLAY_SIZE = 32;
@@ -87,24 +87,24 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // 0: structures (top-left), 1: biomes (top-right), 2: blocks (bottom-right), 3: flowers (bottom-left)
         entries.add(new RadialEntry(
                 "structures",
-                Component.translatable("menu.aromacraft.category.structures"),
-                Component.translatable("menu.aromacraft.category.structures.description"),
+                Component.translatable("menu.aromaaffect.category.structures"),
+                Component.translatable("menu.aromaaffect.category.structures.description"),
                 ICON_STRUCTURES,
                 () -> MenuManager.openStructuresMenu()
         ));
 
         entries.add(new RadialEntry(
                 "biomes",
-                Component.translatable("menu.aromacraft.category.biomes"),
-                Component.translatable("menu.aromacraft.category.biomes.description"),
+                Component.translatable("menu.aromaaffect.category.biomes"),
+                Component.translatable("menu.aromaaffect.category.biomes.description"),
                 ICON_BIOMES,
                 () -> MenuManager.openBiomesMenu()
         ));
 
         entries.add(new RadialEntry(
                 "blocks",
-                Component.translatable("menu.aromacraft.category.blocks"),
-                Component.translatable("menu.aromacraft.category.blocks.description"),
+                Component.translatable("menu.aromaaffect.category.blocks"),
+                Component.translatable("menu.aromaaffect.category.blocks.description"),
                 ICON_BLOCKS,
                 () -> MenuManager.openBlocksMenu()
         ));
@@ -112,8 +112,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // 4th slice: Flowers/Flora
         entries.add(new RadialEntry(
                 "flowers",
-                Component.translatable("menu.aromacraft.category.flowers"),
-                Component.translatable("menu.aromacraft.category.flowers.description"),
+                Component.translatable("menu.aromaaffect.category.flowers"),
+                Component.translatable("menu.aromaaffect.category.flowers.description"),
                 ICON_FLOWERS,
                 () -> MenuManager.openFlowersMenu()
         ));
@@ -227,14 +227,14 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Render tooltips for corner buttons when hovered
         if (isHoveringConfig) {
-            graphics.drawString(font, Component.translatable("menu.aromacraft.button.config"),
-                    configX - font.width(Component.translatable("menu.aromacraft.button.config")) - 8,
+            graphics.drawString(font, Component.translatable("menu.aromaaffect.button.config"),
+                    configX - font.width(Component.translatable("menu.aromaaffect.button.config")) - 8,
                     configY + buttonSize / 2 - 4,
                     withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringCompass) {
-            graphics.drawString(font, Component.translatable("menu.aromacraft.button.compass"),
-                    compassX - font.width(Component.translatable("menu.aromacraft.button.compass")) - 8,
+            graphics.drawString(font, Component.translatable("menu.aromaaffect.button.compass"),
+                    compassX - font.width(Component.translatable("menu.aromaaffect.button.compass")) - 8,
                     compassY + buttonSize / 2 - 4,
                     withAlpha(0xFFFFFFFF, appear));
         }
@@ -266,12 +266,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Check corner buttons first
         if (isHoveringConfig) {
-            AromaCraft.LOGGER.debug("Config button clicked");
+            AromaAffect.LOGGER.debug("Config button clicked");
             MenuManager.openConfigMenu();
             return true;
         }
         if (isHoveringCompass) {
-            AromaCraft.LOGGER.debug("Compass button clicked");
+            AromaAffect.LOGGER.debug("Compass button clicked");
             MenuManager.openCompassMenu();
             return true;
         }
@@ -304,7 +304,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     private void onEntrySelected(RadialEntry entry) {
-        AromaCraft.LOGGER.debug("Radial menu selected: {}", entry.id);
+        AromaAffect.LOGGER.debug("Radial menu selected: {}", entry.id);
         entry.onSelect.run();
     }
 

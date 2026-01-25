@@ -1,6 +1,6 @@
 package com.ovrtechnology.scentitem;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ItemTriggerDefinition;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
- * Item class for scent items in AromaCraft.
+ * Item class for scent items in Aroma Affect.
  * 
  * <p>Scent items are collectible items that represent different scents.
  * They can be used in crafting recipes or as components for the nose system.</p>
@@ -67,7 +67,7 @@ public class ScentItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM, 
-                ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, itemId)
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
         ));
         
         // Scent items stack up to 64
@@ -115,14 +115,14 @@ public class ScentItem extends Item {
         }
         
         // Get the full item ID
-        String fullItemId = AromaCraft.MOD_ID + ":" + itemId;
+        String fullItemId = AromaAffect.MOD_ID + ":" + itemId;
         
         // Look up trigger configuration
         Optional<ItemTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getItemTrigger(fullItemId);
         
         if (triggerOpt.isEmpty()) {
             // No trigger configured for this item
-            AromaCraft.LOGGER.debug("No trigger configured for item: {}", fullItemId);
+            AromaAffect.LOGGER.debug("No trigger configured for item: {}", fullItemId);
             return InteractionResult.PASS;
         }
         
@@ -145,7 +145,7 @@ public class ScentItem extends Item {
             // Show cooldown message to player
             long remaining = ScentTriggerManager.getInstance().getRemainingCooldown(scentName);
             player.displayClientMessage(
-                Component.translatable("message.aromacraft.scent_cooldown", 
+                Component.translatable("message.aromaaffect.scent_cooldown", 
                     String.format("%.1f", remaining / 1000.0)),
                 true
             );
@@ -177,7 +177,7 @@ public class ScentItem extends Item {
                 1.0f + (level.random.nextFloat() - 0.5f) * 0.2f
             );
             
-            AromaCraft.LOGGER.debug("Item {} triggered scent '{}'", fullItemId, scentName);
+            AromaAffect.LOGGER.debug("Item {} triggered scent '{}'", fullItemId, scentName);
             return InteractionResult.SUCCESS;
         }
         

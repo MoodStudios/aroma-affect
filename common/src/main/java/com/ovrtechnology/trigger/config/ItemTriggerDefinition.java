@@ -15,7 +15,7 @@ import lombok.ToString;
  * <p>Example JSON:</p>
  * <pre>
  * {
- *   "item_id": "aromacraft:winter_scent",
+ *   "item_id": "aromaaffect:winter_scent",
  *   "scent_name": "Winter",
  *   "trigger_on": "USE",
  *   "duration_ticks": 200,
@@ -45,7 +45,7 @@ public class ItemTriggerDefinition {
     public static final long DEFAULT_COOLDOWN_MS = 5000;
     
     /**
-     * The full item ID including namespace (e.g., "aromacraft:winter_scent").
+     * The full item ID including namespace (e.g., "aromaaffect:winter_scent").
      */
     @SerializedName("item_id")
     private String itemId;

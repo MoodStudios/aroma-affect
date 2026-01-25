@@ -1,12 +1,12 @@
 package com.ovrtechnology.scent;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 
 import java.util.*;
 
 /**
- * Central registry for all scent definitions in AromaCraft.
+ * Central registry for all scent definitions in Aroma Affect.
  * 
  * <p>This class provides the main API for other systems to access scent information.
  * It handles:</p>
@@ -60,11 +60,11 @@ public final class ScentRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("ScentRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("ScentRegistry.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing ScentRegistry...");
+        AromaAffect.LOGGER.info("Initializing ScentRegistry...");
         
         // Load scent definitions from JSON
         List<ScentDefinition> definitions = ScentDefinitionLoader.loadAllScents();
@@ -75,7 +75,7 @@ public final class ScentRegistry {
         }
         
         initialized = true;
-        AromaCraft.LOGGER.info("ScentRegistry initialized with {} scents", scentDefinitions.size());
+        AromaAffect.LOGGER.info("ScentRegistry initialized with {} scents", scentDefinitions.size());
     }
     
     /**
@@ -87,12 +87,12 @@ public final class ScentRegistry {
         String id = definition.getId();
         
         if (scentDefinitions.containsKey(id)) {
-            AromaCraft.LOGGER.warn("Duplicate scent ID in registry: {}, skipping...", id);
+            AromaAffect.LOGGER.warn("Duplicate scent ID in registry: {}, skipping...", id);
             return;
         }
         
         scentDefinitions.put(id, definition);
-        AromaCraft.LOGGER.debug("Registered scent: {}", id);
+        AromaAffect.LOGGER.debug("Registered scent: {}", id);
     }
     
     /**
@@ -216,7 +216,7 @@ public final class ScentRegistry {
      * This clears the registry and reloads from the configuration file.
      */
     public static void reload() {
-        AromaCraft.LOGGER.info("Reloading ScentRegistry...");
+        AromaAffect.LOGGER.info("Reloading ScentRegistry...");
         scentDefinitions.clear();
         
         List<ScentDefinition> definitions = ScentDefinitionLoader.reload();
@@ -224,7 +224,7 @@ public final class ScentRegistry {
             registerScent(definition);
         }
         
-        AromaCraft.LOGGER.info("ScentRegistry reloaded with {} scents", scentDefinitions.size());
+        AromaAffect.LOGGER.info("ScentRegistry reloaded with {} scents", scentDefinitions.size());
     }
     
     /**

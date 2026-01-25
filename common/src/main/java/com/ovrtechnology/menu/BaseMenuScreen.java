@@ -1,6 +1,6 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Base class for all AromaCraft menu screens.
+ * Base class for all Aroma Affect menu screens.
  * Provides common functionality and styling for menu screens.
  */
 public abstract class BaseMenuScreen extends Screen {
@@ -260,9 +260,9 @@ public abstract class BaseMenuScreen extends Screen {
     }
     
     /**
-     * Creates a resource location for AromaCraft assets.
+     * Creates a resource location for Aroma Affect assets.
      */
     protected static ResourceLocation aromaLocation(String path) {
-        return ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, path);
     }
 }

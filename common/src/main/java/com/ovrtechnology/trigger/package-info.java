@@ -1,5 +1,5 @@
 /**
- * Scent Trigger System for AromaCraft.
+ * Scent Trigger System for Aroma Affect.
  * 
  * <p>This package provides a centralized system for triggering scents to OVR hardware
  * based on in-game events such as item use, biome changes, block interactions, etc.</p>
@@ -21,7 +21,7 @@
  * </ul>
  * 
  * <h2>Configuration</h2>
- * <p>Triggers are configured via {@code data/aromacraft/scents/scent_triggers.json}.
+ * <p>Triggers are configured via {@code data/aromaaffect/scents/scent_triggers.json}.
  * The config subpackage contains POJOs for loading this configuration.</p>
  * 
  * <h2>WebSocket Protocol</h2>

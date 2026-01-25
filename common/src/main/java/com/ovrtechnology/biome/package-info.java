@@ -1,5 +1,5 @@
 /**
- * Biome tracking system for AromaCraft.
+ * Biome tracking system for Aroma Affect.
  * 
  * <p>This package contains all classes related to trackable biome definitions.
  * Biomes define which Minecraft biomes can be detected by the Nose system,
@@ -13,7 +13,7 @@
  * </ul>
  * 
  * <h2>JSON Configuration</h2>
- * <p>Biomes are defined in JSON files located at {@code data/aromacraft/biomes/biomes.json}.
+ * <p>Biomes are defined in JSON files located at {@code data/aromaaffect/biomes/biomes.json}.
  * Each biome entry includes:</p>
  * <ul>
  *   <li>{@code biome_id} - Minecraft biome identifier (e.g., "minecraft:jungle")</li>

@@ -1,5 +1,5 @@
 /**
- * Scent system for AromaCraft.
+ * Scent system for Aroma Affect.
  * 
  * <p>This package contains all classes related to scent definitions and management.
  * Scents represent the different aromas that can be emitted through OVR Technology's
@@ -13,7 +13,7 @@
  * </ul>
  * 
  * <h2>JSON Configuration</h2>
- * <p>Scents are defined in JSON files located at {@code data/aromacraft/scents/scents.json}.
+ * <p>Scents are defined in JSON files located at {@code data/aromaaffect/scents/scents.json}.
  * Each scent entry includes:</p>
  * <ul>
  *   <li>{@code id} - Unique identifier used for OVR hardware communication and localization</li>
@@ -29,7 +29,7 @@
  * 
  * <h2>Localization</h2>
  * <p>Scent names can be localized using Minecraft's language system. The localization key
- * format is {@code scent.aromacraft.<id>} for names and {@code scent.aromacraft.<id>.description}
+ * format is {@code scent.aromaaffect.<id>} for names and {@code scent.aromaaffect.<id>.description}
  * for descriptions.</p>
  * 
  * <h2>Available Scents (OVR Common Scents Cassette)</h2>
