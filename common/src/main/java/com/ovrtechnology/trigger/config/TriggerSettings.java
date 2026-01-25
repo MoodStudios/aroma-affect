@@ -42,6 +42,44 @@ public class TriggerSettings {
     public static final long DEFAULT_MOB_COOLDOWN_MS = 5000;
     
     /**
+     * Default cooldown for structure proximity triggers (ms).
+     */
+    public static final long DEFAULT_STRUCTURE_COOLDOWN_MS = 15000;
+    
+    // ========================================
+    // Default intensities by trigger type
+    // ========================================
+    
+    /**
+     * Default intensity for item use triggers (more pronounced).
+     */
+    public static final double DEFAULT_ITEM_INTENSITY = 0.5;
+    
+    /**
+     * Default intensity for biome ambient triggers (subtle).
+     */
+    public static final double DEFAULT_BIOME_INTENSITY = 0.3;
+    
+    /**
+     * Default intensity for block proximity triggers.
+     */
+    public static final double DEFAULT_BLOCK_INTENSITY = 0.4;
+    
+    /**
+     * Default intensity for structure proximity triggers.
+     */
+    public static final double DEFAULT_STRUCTURE_INTENSITY = 0.35;
+    
+    /**
+     * Default intensity for mob proximity triggers.
+     */
+    public static final double DEFAULT_MOB_INTENSITY = 0.4;
+    
+    // ========================================
+    // Cooldown settings
+    // ========================================
+    
+    /**
      * Minimum time between any scent trigger (ms).
      * Protects hardware from rapid triggering.
      */
@@ -73,6 +111,46 @@ public class TriggerSettings {
     private long mobCooldownMs = DEFAULT_MOB_COOLDOWN_MS;
     
     /**
+     * Cooldown between structure proximity triggers (ms).
+     */
+    @SerializedName("structure_cooldown_ms")
+    private long structureCooldownMs = DEFAULT_STRUCTURE_COOLDOWN_MS;
+    
+    // ========================================
+    // Intensity settings
+    // ========================================
+    
+    /**
+     * Default intensity for item use triggers.
+     */
+    @SerializedName("item_intensity")
+    private double itemIntensity = DEFAULT_ITEM_INTENSITY;
+    
+    /**
+     * Default intensity for biome ambient triggers.
+     */
+    @SerializedName("biome_intensity")
+    private double biomeIntensity = DEFAULT_BIOME_INTENSITY;
+    
+    /**
+     * Default intensity for block proximity triggers.
+     */
+    @SerializedName("block_intensity")
+    private double blockIntensity = DEFAULT_BLOCK_INTENSITY;
+    
+    /**
+     * Default intensity for structure proximity triggers.
+     */
+    @SerializedName("structure_intensity")
+    private double structureIntensity = DEFAULT_STRUCTURE_INTENSITY;
+    
+    /**
+     * Default intensity for mob proximity triggers.
+     */
+    @SerializedName("mob_intensity")
+    private double mobIntensity = DEFAULT_MOB_INTENSITY;
+    
+    /**
      * Default constructor with default values.
      */
     public TriggerSettings() {
@@ -82,11 +160,30 @@ public class TriggerSettings {
      * Validates and applies defaults for any invalid values.
      */
     public void validate() {
+        // Validate cooldowns
         if (globalCooldownMs < 0) globalCooldownMs = DEFAULT_GLOBAL_COOLDOWN_MS;
         if (itemUseCooldownMs < 0) itemUseCooldownMs = DEFAULT_ITEM_USE_COOLDOWN_MS;
         if (biomeCooldownMs < 0) biomeCooldownMs = DEFAULT_BIOME_COOLDOWN_MS;
         if (blockCooldownMs < 0) blockCooldownMs = DEFAULT_BLOCK_COOLDOWN_MS;
         if (mobCooldownMs < 0) mobCooldownMs = DEFAULT_MOB_COOLDOWN_MS;
+        if (structureCooldownMs < 0) structureCooldownMs = DEFAULT_STRUCTURE_COOLDOWN_MS;
+        
+        // Validate intensities (clamp to 0.0 - 1.0)
+        itemIntensity = clampIntensity(itemIntensity, DEFAULT_ITEM_INTENSITY);
+        biomeIntensity = clampIntensity(biomeIntensity, DEFAULT_BIOME_INTENSITY);
+        blockIntensity = clampIntensity(blockIntensity, DEFAULT_BLOCK_INTENSITY);
+        structureIntensity = clampIntensity(structureIntensity, DEFAULT_STRUCTURE_INTENSITY);
+        mobIntensity = clampIntensity(mobIntensity, DEFAULT_MOB_INTENSITY);
+    }
+    
+    /**
+     * Clamps intensity to valid range (0.0 - 1.0).
+     */
+    private double clampIntensity(double value, double defaultValue) {
+        if (value < 0.0 || value > 1.0) {
+            return defaultValue;
+        }
+        return value;
     }
     
     /**

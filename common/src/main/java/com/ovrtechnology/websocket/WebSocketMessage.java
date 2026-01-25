@@ -132,36 +132,32 @@ public class WebSocketMessage {
     /**
      * Creates a play scent message using the OVR protocol format.
      * 
-     * <p>Sends directly: {@code {"reset":false,"scent":"ScentName"}}</p>
+     * <p>Sends directly: {@code {"odor":"ScentName","intensity":0.5}}</p>
      * 
-     * <p>This is the canonical format for starting a scent on OVR hardware.
+     * <p>This is the canonical format for triggering a scent on OVR hardware.
      * The scent name must match exactly (case-sensitive) with the names
      * supported by the OVR bridge.</p>
      * 
      * @param scentName the exact OVR scent name (e.g., "Winter", "Terra Silva")
+     * @param intensity the scent intensity (0.0 to 1.0)
      * @return a new play scent message
      */
-    public static WebSocketMessage playScent(String scentName) {
-        String payload = String.format("{\"reset\":false,\"scent\":\"%s\"}", scentName);
+    public static WebSocketMessage playScent(String scentName, double intensity) {
+        // Clamp intensity to valid range
+        double clampedIntensity = Math.max(0.0, Math.min(1.0, intensity));
+        String payload = String.format("{\"odor\":\"%s\",\"intensity\":%.2f}", scentName, clampedIntensity);
         // Use "raw" type so toRawText() sends the JSON directly without a type prefix
         return new WebSocketMessage("raw", payload);
     }
     
     /**
-     * Creates a stop scent message using the OVR protocol format.
+     * Creates a play scent message with default intensity (0.5).
      * 
-     * <p>Sends directly: {@code {"reset":true,"scent":"ScentName"}}</p>
-     * 
-     * <p>This is the canonical format for stopping a scent on OVR hardware.
-     * The scent name must match the scent that was previously started.</p>
-     * 
-     * @param scentName the exact OVR scent name to stop
-     * @return a new stop scent message
+     * @param scentName the exact OVR scent name
+     * @return a new play scent message
      */
-    public static WebSocketMessage stopScent(String scentName) {
-        String payload = String.format("{\"reset\":true,\"scent\":\"%s\"}", scentName);
-        // Use "raw" type so toRawText() sends the JSON directly without a type prefix
-        return new WebSocketMessage("raw", payload);
+    public static WebSocketMessage playScent(String scentName) {
+        return playScent(scentName, 0.5);
     }
     
     /**
