@@ -52,6 +52,12 @@ public class TriggerConfigRoot {
     private List<MobTriggerDefinition> mobTriggers = new ArrayList<>();
     
     /**
+     * List of structure-based triggers.
+     */
+    @SerializedName("structure_triggers")
+    private List<StructureTriggerDefinition> structureTriggers = new ArrayList<>();
+    
+    /**
      * Default constructor for GSON.
      */
     public TriggerConfigRoot() {
@@ -79,6 +85,9 @@ public class TriggerConfigRoot {
         if (mobTriggers == null) {
             mobTriggers = new ArrayList<>();
         }
+        if (structureTriggers == null) {
+            structureTriggers = new ArrayList<>();
+        }
     }
     
     /**
@@ -90,6 +99,7 @@ public class TriggerConfigRoot {
         return itemTriggers.size() 
             + biomeTriggers.size() 
             + blockTriggers.size() 
-            + mobTriggers.size();
+            + mobTriggers.size()
+            + structureTriggers.size();
     }
 }

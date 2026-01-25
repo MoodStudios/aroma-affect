@@ -61,5 +61,11 @@ public enum ScentTriggerSource {
      * Catch-all for special triggers.
      * (Future implementation)
      */
-    CUSTOM_EVENT
+    CUSTOM_EVENT,
+    
+    /**
+     * Passive mode - automatic scent emission when near blocks/biomes/structures.
+     * Only works when OVR hardware is connected and player doesn't have a nose equipped.
+     */
+    PASSIVE_MODE
 }

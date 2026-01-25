@@ -65,6 +65,11 @@ public final class ScentTriggerConfigLoader {
     private static final Map<String, MobTriggerDefinition> mobTriggerMap = new HashMap<>();
     
     /**
+     * Lookup map: structure_id -> StructureTriggerDefinition
+     */
+    private static final Map<String, StructureTriggerDefinition> structureTriggerMap = new HashMap<>();
+    
+    /**
      * Whether the loader has been initialized.
      */
     private static boolean initialized = false;
@@ -89,12 +94,13 @@ public final class ScentTriggerConfigLoader {
             if (config != null) {
                 config.validate();
                 buildLookupMaps();
-                AromaCraft.LOGGER.info("Loaded {} scent triggers ({} item, {} biome, {} block, {} mob)",
+                AromaCraft.LOGGER.info("Loaded {} scent triggers ({} item, {} biome, {} block, {} mob, {} structure)",
                         config.getTotalTriggerCount(),
                         config.getItemTriggers().size(),
                         config.getBiomeTriggers().size(),
                         config.getBlockTriggers().size(),
-                        config.getMobTriggers().size());
+                        config.getMobTriggers().size(),
+                        config.getStructureTriggers().size());
             } else {
                 AromaCraft.LOGGER.warn("Failed to load scent trigger configuration, using defaults");
                 config = new TriggerConfigRoot();
@@ -138,6 +144,7 @@ public final class ScentTriggerConfigLoader {
         biomeTriggerMap.clear();
         blockTriggerMap.clear();
         mobTriggerMap.clear();
+        structureTriggerMap.clear();
         
         // Build item trigger map
         for (ItemTriggerDefinition trigger : config.getItemTriggers()) {
@@ -151,33 +158,43 @@ public final class ScentTriggerConfigLoader {
             }
         }
         
-        // Build biome trigger map (placeholder, but log for awareness)
+        // Build biome trigger map
         for (BiomeTriggerDefinition trigger : config.getBiomeTriggers()) {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "biome", trigger.getBiomeId());
                 biomeTriggerMap.put(trigger.getBiomeId(), trigger);
-                AromaCraft.LOGGER.debug("Registered biome trigger: {} -> {} (placeholder)",
+                AromaCraft.LOGGER.debug("Registered biome trigger: {} -> {}",
                         trigger.getBiomeId(), trigger.getScentName());
             }
         }
         
-        // Build block trigger map (placeholder)
+        // Build block trigger map
         for (BlockTriggerDefinition trigger : config.getBlockTriggers()) {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "block", trigger.getBlockId());
                 blockTriggerMap.put(trigger.getBlockId(), trigger);
-                AromaCraft.LOGGER.debug("Registered block trigger: {} -> {} (placeholder)",
+                AromaCraft.LOGGER.debug("Registered block trigger: {} -> {}",
                         trigger.getBlockId(), trigger.getScentName());
             }
         }
         
-        // Build mob trigger map (placeholder)
+        // Build mob trigger map (placeholder - not used in passive mode)
         for (MobTriggerDefinition trigger : config.getMobTriggers()) {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "mob", trigger.getEntityType());
                 mobTriggerMap.put(trigger.getEntityType(), trigger);
-                AromaCraft.LOGGER.debug("Registered mob trigger: {} -> {} (placeholder)",
+                AromaCraft.LOGGER.debug("Registered mob trigger: {} -> {}",
                         trigger.getEntityType(), trigger.getScentName());
+            }
+        }
+        
+        // Build structure trigger map
+        for (StructureTriggerDefinition trigger : config.getStructureTriggers()) {
+            if (trigger.isValid()) {
+                validateScentName(trigger.getScentName(), "structure", trigger.getStructureId());
+                structureTriggerMap.put(trigger.getStructureId(), trigger);
+                AromaCraft.LOGGER.debug("Registered structure trigger: {} -> {}",
+                        trigger.getStructureId(), trigger.getScentName());
             }
         }
     }
@@ -256,7 +273,35 @@ public final class ScentTriggerConfigLoader {
     public static Collection<ItemTriggerDefinition> getAllItemTriggers() {
         return Collections.unmodifiableCollection(itemTriggerMap.values());
     }
+
+    /**
+     * Gets all blocks triggers.
+     *
+     * @return unmodifiable collection of blocks triggers
+     */
+    public static Collection<BlockTriggerDefinition> getAllBlockTriggers() {
+        return Collections.unmodifiableCollection(blockTriggerMap.values());
+    }
     
+    /**
+     * Gets the structure trigger definition for a given structure ID.
+     * 
+     * @param structureId the structure ID (e.g., "minecraft:village_plains")
+     * @return Optional containing the trigger if found
+     */
+    public static Optional<StructureTriggerDefinition> getStructureTrigger(String structureId) {
+        return Optional.ofNullable(structureTriggerMap.get(structureId));
+    }
+    
+    /**
+     * Gets all structure triggers.
+     *
+     * @return unmodifiable collection of structure triggers
+     */
+    public static Collection<StructureTriggerDefinition> getAllStructureTriggers() {
+        return Collections.unmodifiableCollection(structureTriggerMap.values());
+    }
+
     /**
      * Gets the global trigger settings.
      * 
