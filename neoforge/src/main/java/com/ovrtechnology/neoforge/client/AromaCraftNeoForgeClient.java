@@ -10,7 +10,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 
 /**
@@ -24,8 +23,10 @@ public final class AromaCraftNeoForgeClient {
         // Register shared model layers early (before NeoForge fires layer definition events).
         NoseClient.init();
 
-        // Register client setup event
-        modEventBus.addListener(this::onClientSetup);
+        // Initialize common client systems early so entity renderers exist before the world renders.
+        // (If this runs too late, missing renderers can hard-crash the client when entities are present.)
+        AromaCraftClient.init();
+
         modEventBus.addListener(this::onRegisterClientExtensions);
     }
     
