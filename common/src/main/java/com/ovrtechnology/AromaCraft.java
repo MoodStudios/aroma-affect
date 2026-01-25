@@ -61,7 +61,6 @@ public final class AromaCraft {
         // Initialize scent trigger system
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
-        ScentTriggerHandler.init();
 
         // Initialize test commands
         AromaTestCommand.init();

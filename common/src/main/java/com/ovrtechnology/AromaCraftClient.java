@@ -4,6 +4,7 @@ import com.ovrtechnology.entity.client.NoseSmithClientRegistry;
 import com.ovrtechnology.menu.MenuKeyBindings;
 import com.ovrtechnology.nose.client.NoseInventoryUi;
 import com.ovrtechnology.search.SearchKeyBindings;
+import com.ovrtechnology.trigger.ScentTriggerHandler;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
 import lombok.experimental.UtilityClass;
@@ -46,6 +47,9 @@ public final class AromaCraftClient {
 
         // Inventory UI integration (strap toggle button, etc.)
         NoseInventoryUi.init();
+
+        // Initialize scent trigger handler
+        ScentTriggerHandler.init();
         
         // Initialize OVR WebSocket client for scent hardware integration
         // The connection is optional - the mod works without it

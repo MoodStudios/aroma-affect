@@ -12,6 +12,7 @@ import java.util.Objects;
  * @param source        The source that triggered this scent
  * @param priority      The priority level for conflict resolution
  * @param durationTicks Duration in game ticks (-1 for indefinite)
+ * @param intensity     Scent intensity (0.0 to 1.0)
  * @param triggeredAt   Timestamp when this trigger was created (for tie-breaking)
  */
 public record ScentTrigger(
@@ -19,11 +20,43 @@ public record ScentTrigger(
     ScentTriggerSource source,
     ScentPriority priority,
     int durationTicks,
+    double intensity,
     long triggeredAt
 ) {
     
     /**
+     * Default intensity when not specified.
+     */
+    public static final double DEFAULT_INTENSITY = 0.5;
+    
+    /**
      * Creates a new scent trigger with the current timestamp.
+     * 
+     * @param scentName     The exact OVR scent name
+     * @param source        The source of the trigger
+     * @param priority      The priority level
+     * @param durationTicks Duration in ticks (-1 for indefinite)
+     * @param intensity     Scent intensity (0.0 to 1.0)
+     * @return a new ScentTrigger instance
+     */
+    public static ScentTrigger create(
+            String scentName,
+            ScentTriggerSource source,
+            ScentPriority priority,
+            int durationTicks,
+            double intensity) {
+        return new ScentTrigger(
+            Objects.requireNonNull(scentName, "scentName cannot be null"),
+            Objects.requireNonNull(source, "source cannot be null"),
+            Objects.requireNonNull(priority, "priority cannot be null"),
+            durationTicks,
+            Math.max(0.0, Math.min(1.0, intensity)),
+            System.currentTimeMillis()
+        );
+    }
+    
+    /**
+     * Creates a new scent trigger with default intensity (0.5).
      * 
      * @param scentName     The exact OVR scent name
      * @param source        The source of the trigger
@@ -36,13 +69,7 @@ public record ScentTrigger(
             ScentTriggerSource source,
             ScentPriority priority,
             int durationTicks) {
-        return new ScentTrigger(
-            Objects.requireNonNull(scentName, "scentName cannot be null"),
-            Objects.requireNonNull(source, "source cannot be null"),
-            Objects.requireNonNull(priority, "priority cannot be null"),
-            durationTicks,
-            System.currentTimeMillis()
-        );
+        return create(scentName, source, priority, durationTicks, DEFAULT_INTENSITY);
     }
     
     /**
@@ -50,10 +77,35 @@ public record ScentTrigger(
      * 
      * @param scentName     The exact OVR scent name
      * @param durationTicks Duration in ticks
+     * @param intensity     Scent intensity (0.0 to 1.0)
+     * @return a new ScentTrigger for item use
+     */
+    public static ScentTrigger fromItemUse(String scentName, int durationTicks, double intensity) {
+        return create(scentName, ScentTriggerSource.ITEM_USE, ScentPriority.HIGH, durationTicks, intensity);
+    }
+    
+    /**
+     * Creates a high-priority trigger from item use with default intensity.
+     * 
+     * @param scentName     The exact OVR scent name
+     * @param durationTicks Duration in ticks
      * @return a new ScentTrigger for item use
      */
     public static ScentTrigger fromItemUse(String scentName, int durationTicks) {
-        return create(scentName, ScentTriggerSource.ITEM_USE, ScentPriority.HIGH, durationTicks);
+        return fromItemUse(scentName, durationTicks, DEFAULT_INTENSITY);
+    }
+    
+    /**
+     * Creates a trigger from passive mode detection.
+     * 
+     * @param scentName     The exact OVR scent name
+     * @param priority      The priority level
+     * @param durationTicks Duration in ticks
+     * @param intensity     Scent intensity (0.0 to 1.0)
+     * @return a new ScentTrigger for passive mode
+     */
+    public static ScentTrigger fromPassiveMode(String scentName, ScentPriority priority, int durationTicks, double intensity) {
+        return create(scentName, ScentTriggerSource.PASSIVE_MODE, priority, durationTicks, intensity);
     }
     
     /**
@@ -102,6 +154,7 @@ public record ScentTrigger(
                 ", source=" + source +
                 ", priority=" + priority +
                 ", durationTicks=" + durationTicks +
+                ", intensity=" + intensity +
                 '}';
     }
 }

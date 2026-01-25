@@ -7,39 +7,37 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Defines a scent trigger associated with a block.
+ * Defines a scent trigger associated with a structure.
  * 
- * <p><b>PLACEHOLDER - Future implementation.</b></p>
- * 
- * <p>When a player interacts with or is near the specified block,
- * the configured scent will be triggered.</p>
+ * <p>When a player is near a structure, the configured scent will be triggered.</p>
  * 
  * <p>Example JSON:</p>
  * <pre>
  * {
- *   "block_id": "minecraft:campfire",
- *   "scent_name": "Smoky",
- *   "trigger_on": "PROXIMITY",
- *   "range": 5,
- *   "priority": "MEDIUM"
+ *   "structure_id": "minecraft:village_plains",
+ *   "scent_name": "Kindred",
+ *   "mode": "PROXIMITY",
+ *   "range": 50,
+ *   "priority": "MEDLOW"
  * }
  * </pre>
  */
 @Getter
 @Setter
 @ToString
-public class BlockTriggerDefinition {
+public class StructureTriggerDefinition {
     
     /**
-     * Default range for proximity triggers (in blocks).
+     * Default range for structure proximity triggers (in blocks).
+     * Structures are typically detected from farther away than blocks.
      */
-    public static final int DEFAULT_RANGE = 5;
+    public static final int DEFAULT_RANGE = 50;
     
     /**
-     * The Minecraft block ID (e.g., "minecraft:campfire").
+     * The Minecraft structure ID (e.g., "minecraft:village_plains").
      */
-    @SerializedName("block_id")
-    private String blockId;
+    @SerializedName("structure_id")
+    private String structureId;
     
     /**
      * The exact OVR scent name to trigger.
@@ -48,10 +46,10 @@ public class BlockTriggerDefinition {
     private String scentName;
     
     /**
-     * Trigger mode: "INTERACT" (on right-click) or "PROXIMITY" (when near).
+     * Trigger mode: "PROXIMITY" (when near structure).
      */
-    @SerializedName("trigger_on")
-    private String triggerOn = "PROXIMITY";
+    @SerializedName("mode")
+    private String mode = "PROXIMITY";
     
     /**
      * Range in blocks for proximity triggers.
@@ -63,11 +61,11 @@ public class BlockTriggerDefinition {
      * Priority level for this trigger.
      */
     @SerializedName("priority")
-    private ScentPriority priority = ScentPriority.MEDIUM;
+    private ScentPriority priority = ScentPriority.MEDLOW;
     
     /**
      * Scent intensity (0.0 to 1.0).
-     * If not specified, uses the global block_intensity from settings.
+     * If not specified, uses the global structure_intensity from settings.
      */
     @SerializedName("intensity")
     private Double intensity;
@@ -81,25 +79,16 @@ public class BlockTriggerDefinition {
     /**
      * Default constructor for GSON.
      */
-    public BlockTriggerDefinition() {
+    public StructureTriggerDefinition() {
     }
     
     /**
      * Checks if this is a proximity-based trigger.
      * 
-     * @return true if trigger_on is PROXIMITY
+     * @return true if mode is PROXIMITY
      */
     public boolean isProximityTrigger() {
-        return "PROXIMITY".equalsIgnoreCase(triggerOn);
-    }
-    
-    /**
-     * Checks if this is an interaction-based trigger.
-     * 
-     * @return true if trigger_on is INTERACT
-     */
-    public boolean isInteractTrigger() {
-        return "INTERACT".equalsIgnoreCase(triggerOn);
+        return "PROXIMITY".equalsIgnoreCase(mode);
     }
     
     /**
@@ -118,7 +107,8 @@ public class BlockTriggerDefinition {
      * @return true if valid
      */
     public boolean isValid() {
-        return blockId != null && !blockId.isEmpty()
+        return structureId != null && !structureId.isEmpty()
             && scentName != null && !scentName.isEmpty();
     }
 }
+

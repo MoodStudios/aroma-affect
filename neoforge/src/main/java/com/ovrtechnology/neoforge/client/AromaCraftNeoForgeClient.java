@@ -29,6 +29,12 @@ public final class AromaCraftNeoForgeClient {
 
         modEventBus.addListener(this::onRegisterClientExtensions);
     }
+    
+    private void onClientSetup(FMLClientSetupEvent event) {
+        // Initialize common client systems directly (not enqueued)
+        // This ensures Architectury events are registered at the right time
+        AromaCraftClient.init();
+    }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
         NoseItemClientExtensions extensions = new NoseItemClientExtensions();
