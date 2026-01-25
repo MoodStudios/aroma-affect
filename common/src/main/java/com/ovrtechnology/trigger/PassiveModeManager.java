@@ -6,6 +6,7 @@ import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
+import com.ovrtechnology.trigger.config.TriggerSettings;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -44,7 +45,7 @@ public final class PassiveModeManager {
      * Development mode flag - bypasses OVR hardware check.
      * Set to false for production builds.
      */
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     /**
      * How often to check for passive triggers (in ticks).
@@ -156,12 +157,16 @@ public final class PassiveModeManager {
                 if (!lastDetectedBlock.containsKey(blockId)) {
                     lastDetectedBlock.put(blockId, blockPos);
                     
+                    // Get intensity from trigger definition
+                    TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+                    double intensity = trigger.getIntensityOrDefault(settings.getBlockIntensity());
+                    
                     // Create and trigger scent
-                    ScentTrigger scentTrigger = ScentTrigger.create(
+                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
                         trigger.getScentName(),
-                        ScentTriggerSource.PASSIVE_MODE,
                         trigger.getPriority(),
-                        -1 // Indefinite - will last as long as player is nearby
+                        -1, // Indefinite - will last as long as player is nearby
+                        intensity
                     );
                     
                     ScentTriggerManager.getInstance().trigger(scentTrigger);
@@ -214,11 +219,15 @@ public final class PassiveModeManager {
             if (trigger.isAmbient()) {
                 // Continuous ambient scent while in biome
                 if (biomeChanged) {
-                    ScentTrigger scentTrigger = ScentTrigger.create(
+                    // Get intensity from trigger definition
+                    TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+                    double intensity = trigger.getIntensityOrDefault(settings.getBiomeIntensity());
+                    
+                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
                         trigger.getScentName(),
-                        ScentTriggerSource.PASSIVE_MODE,
                         trigger.getPriority(),
-                        -1 // Indefinite - lasts while in biome
+                        -1, // Indefinite - lasts while in biome
+                        intensity
                     );
                     
                     ScentTriggerManager.getInstance().trigger(scentTrigger);
@@ -238,11 +247,15 @@ public final class PassiveModeManager {
             } else if (trigger.isEnterTrigger()) {
                 // One-time trigger on entering biome
                 if (biomeChanged) {
-                    ScentTrigger scentTrigger = ScentTrigger.create(
+                    // Get intensity from trigger definition
+                    TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+                    double intensity = trigger.getIntensityOrDefault(settings.getBiomeIntensity());
+                    
+                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
                         trigger.getScentName(),
-                        ScentTriggerSource.PASSIVE_MODE,
                         trigger.getPriority(),
-                        100 // Short duration for entry scent
+                        100, // Short duration for entry scent
+                        intensity
                     );
                     
                     ScentTriggerManager.getInstance().trigger(scentTrigger);
@@ -311,12 +324,16 @@ public final class PassiveModeManager {
                 // New structure detected
                 lastDetectedStructure = foundStructureId;
                 
+                // Get intensity from trigger definition
+                TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+                double intensity = foundTrigger.getIntensityOrDefault(settings.getStructureIntensity());
+                
                 // Create and trigger scent
-                ScentTrigger scentTrigger = ScentTrigger.create(
+                ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
                     foundTrigger.getScentName(),
-                    ScentTriggerSource.PASSIVE_MODE,
                     foundTrigger.getPriority(),
-                    -1 // Indefinite - lasts while near structure
+                    -1, // Indefinite - lasts while near structure
+                    intensity
                 );
                 
                 ScentTriggerManager.getInstance().trigger(scentTrigger);

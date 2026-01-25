@@ -5,6 +5,7 @@ import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ItemTriggerDefinition;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.trigger.config.TriggerSettings;
 import lombok.Getter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -135,6 +136,10 @@ public class ScentItem extends Item {
         String scentName = triggerDef.getScentName();
         long cooldownMs = triggerDef.getCooldownMsOrDefault();
         
+        // Get intensity from trigger definition, falling back to global setting
+        TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+        double intensity = triggerDef.getIntensityOrDefault(settings.getItemIntensity());
+        
         // Check cooldown BEFORE consuming the item
         if (!ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs)) {
             // Show cooldown message to player
@@ -147,10 +152,11 @@ public class ScentItem extends Item {
             return InteractionResult.FAIL; // Don't consume item
         }
         
-        // Create and execute the trigger
+        // Create and execute the trigger with intensity
         ScentTrigger trigger = ScentTrigger.fromItemUse(
             scentName,
-            triggerDef.getDurationTicks()
+            triggerDef.getDurationTicks(),
+            intensity
         );
         
         boolean triggered = ScentTriggerManager.getInstance().trigger(trigger);

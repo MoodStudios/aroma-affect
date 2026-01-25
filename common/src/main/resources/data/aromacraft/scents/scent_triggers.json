@@ -5,7 +5,12 @@
     "biome_cooldown_ms": 10000,
     "block_cooldown_ms": 5000,
     "structure_cooldown_ms": 15000,
-    "mob_cooldown_ms": 5000
+    "mob_cooldown_ms": 5000,
+    "item_intensity": 0.5,
+    "biome_intensity": 0.3,
+    "block_intensity": 0.4,
+    "structure_intensity": 0.35,
+    "mob_intensity": 0.4
   },
   "item_triggers": [
     {

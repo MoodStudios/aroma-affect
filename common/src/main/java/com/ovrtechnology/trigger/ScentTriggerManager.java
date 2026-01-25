@@ -225,10 +225,7 @@ public final class ScentTriggerManager {
             return false;
         }
 
-        // Stop the previous scent if different
-        if (activeScent != null && !activeScent.scentName().equals(trigger.scentName())) {
-            sendStopToOvr(activeScent.scentName());
-        }
+        // Note: No need to send stop to previous scent - OVR client handles this automatically
 
         // Activate the new scent
         activeScent = trigger;
@@ -237,22 +234,22 @@ public final class ScentTriggerManager {
         // Update cooldowns
         updateCooldowns(trigger.scentName());
 
-        // Send to OVR
-        sendPlayToOvr(trigger.scentName());
+        // Send to OVR with intensity
+        sendPlayToOvr(trigger.scentName(), trigger.intensity());
 
-        AromaCraft.LOGGER.info("Triggered scent '{}' (priority: {}, duration: {} ticks)",
-                trigger.scentName(), trigger.priority(), trigger.durationTicks());
+        AromaCraft.LOGGER.info("Triggered scent '{}' (priority: {}, duration: {} ticks, intensity: {})",
+                trigger.scentName(), trigger.priority(), trigger.durationTicks(), trigger.intensity());
 
         return true;
     }
 
     /**
      * Stops the currently active scent.
+     * Note: OVR client handles automatic stop, this just clears local state.
      */
     public void stop() {
         if (activeScent != null) {
-            sendStopToOvr(activeScent.scentName());
-            AromaCraft.LOGGER.info("Stopped scent '{}'", activeScent.scentName());
+            AromaCraft.LOGGER.info("Stopped tracking scent '{}'", activeScent.scentName());
             activeScent = null;
             remainingTicks = 0;
         }
@@ -303,31 +300,16 @@ public final class ScentTriggerManager {
      * Sends a play command to OVR hardware.
      * 
      * @param scentName the scent name to play
+     * @param intensity the scent intensity (0.0 to 1.0)
      */
-    private void sendPlayToOvr(String scentName) {
+    private void sendPlayToOvr(String scentName, double intensity) {
         OvrWebSocketClient client = OvrWebSocketClient.getInstance();
         if (client.isConnected()) {
-            WebSocketMessage message = WebSocketMessage.playScent(scentName);
+            WebSocketMessage message = WebSocketMessage.playScent(scentName, intensity);
             boolean sent = client.send(message);
-            AromaCraft.LOGGER.debug("Sent play scent '{}' to OVR: {}", scentName, sent);
+            AromaCraft.LOGGER.debug("Sent play scent '{}' (intensity: {}) to OVR: {}", scentName, intensity, sent);
         } else {
             AromaCraft.LOGGER.debug("OVR not connected, skipping play scent '{}'", scentName);
-        }
-    }
-
-    /**
-     * Sends a stop command to OVR hardware.
-     * 
-     * @param scentName the scent name to stop
-     */
-    private void sendStopToOvr(String scentName) {
-        OvrWebSocketClient client = OvrWebSocketClient.getInstance();
-        if (client.isConnected()) {
-            WebSocketMessage message = WebSocketMessage.stopScent(scentName);
-            boolean sent = client.send(message);
-            AromaCraft.LOGGER.debug("Sent stop scent '{}' to OVR: {}", scentName, sent);
-        } else {
-            AromaCraft.LOGGER.debug("OVR not connected, skipping stop scent '{}'", scentName);
         }
     }
 
