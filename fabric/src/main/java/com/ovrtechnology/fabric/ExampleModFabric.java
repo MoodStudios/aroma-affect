@@ -2,7 +2,7 @@ package com.ovrtechnology.fabric;
 
 import net.fabricmc.api.ModInitializer;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 
 public final class ExampleModFabric implements ModInitializer {
     @Override
@@ -11,6 +11,6 @@ public final class ExampleModFabric implements ModInitializer {
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
         // Run our common setup.
-        AromaCraft.init();
+        AromaAffect.init();
     }
 }
