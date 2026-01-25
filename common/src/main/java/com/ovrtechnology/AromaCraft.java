@@ -5,6 +5,7 @@ import com.ovrtechnology.command.AromaTestCommand;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
+import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
@@ -12,6 +13,7 @@ import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerHandler;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.worldgen.VillagePoolInjector;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,9 @@ public final class AromaCraft {
 
     public static void init() {
         LOGGER.info("Initializing AromaCraft...");
+
+        // Common networking (C2S/S2C packets)
+        NoseSmithDialogueNetworking.init();
 
         // Initialize the nose registry system (includes ability resolver)
         NoseRegistry.init();
@@ -60,6 +65,9 @@ public final class AromaCraft {
 
         // Initialize test commands
         AromaTestCommand.init();
+
+        // Inject custom pieces into vanilla worldgen (villages, etc.)
+        VillagePoolInjector.init();
 
         LOGGER.info("AromaCraft initialized successfully!");
     }
