@@ -1,6 +1,6 @@
 package com.ovrtechnology.ability;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -137,7 +137,7 @@ public final class PreciseSnifferAbility {
             // Start new session
             session = new SniffingSession(pos, playerPos, currentTick, 0);
             ACTIVE_SESSIONS.put(playerId, session);
-            AromaCraft.LOGGER.debug("Started sniffing session for {} at {}", player.getName().getString(), pos);
+            AromaAffect.LOGGER.debug("Started sniffing session for {} at {}", player.getName().getString(), pos);
         }
 
         // Check if player moved too far
@@ -179,7 +179,7 @@ public final class PreciseSnifferAbility {
     public static void cancelSniffing(ServerPlayer player) {
         SniffingSession removed = ACTIVE_SESSIONS.remove(player.getUUID());
         if (removed != null) {
-            AromaCraft.LOGGER.debug("Cancelled sniffing session for {}", player.getName().getString());
+            AromaAffect.LOGGER.debug("Cancelled sniffing session for {}", player.getName().getString());
         }
     }
 
@@ -236,7 +236,7 @@ public final class PreciseSnifferAbility {
 
         // Verify the block is still a brushable block
         if (!(level.getBlockEntity(pos) instanceof BrushableBlockEntity)) {
-            AromaCraft.LOGGER.warn("No BrushableBlockEntity at {} during sniff completion", pos);
+            AromaAffect.LOGGER.warn("No BrushableBlockEntity at {} during sniff completion", pos);
             return;
         }
 
@@ -271,7 +271,7 @@ public final class PreciseSnifferAbility {
             // Spawn celebration particles if Sniffer Egg
             if (loot.is(net.minecraft.world.item.Items.SNIFFER_EGG)) {
                 spawnCelebrationParticles(level, pos);
-                AromaCraft.LOGGER.info("{} found a Sniffer Egg using Precise Sniffer!",
+                AromaAffect.LOGGER.info("{} found a Sniffer Egg using Precise Sniffer!",
                         player.getName().getString());
             }
         }
@@ -286,7 +286,7 @@ public final class PreciseSnifferAbility {
             level.setBlock(pos, Blocks.SAND.defaultBlockState(), 3);
         }
 
-        AromaCraft.LOGGER.debug("Completed sniffing for {} at {}", player.getName().getString(), pos);
+        AromaAffect.LOGGER.debug("Completed sniffing for {} at {}", player.getName().getString(), pos);
     }
 
     /**

@@ -2,7 +2,7 @@ package com.ovrtechnology.trigger.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,7 +20,7 @@ public final class ScentTriggerConfigLoader {
     /**
      * Path to the trigger configuration file.
      */
-    private static final String CONFIG_PATH = "data/aromacraft/scents/scent_triggers.json";
+    private static final String CONFIG_PATH = "data/aromaaffect/scents/scent_triggers.json";
     
     /**
      * Valid OVR scent names (case-sensitive).
@@ -83,18 +83,18 @@ public final class ScentTriggerConfigLoader {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("ScentTriggerConfigLoader.init() called multiple times!");
+            AromaAffect.LOGGER.warn("ScentTriggerConfigLoader.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Loading scent trigger configuration...");
+        AromaAffect.LOGGER.info("Loading scent trigger configuration...");
         
         try {
             config = loadConfigFromResource();
             if (config != null) {
                 config.validate();
                 buildLookupMaps();
-                AromaCraft.LOGGER.info("Loaded {} scent triggers ({} item, {} biome, {} block, {} mob, {} structure)",
+                AromaAffect.LOGGER.info("Loaded {} scent triggers ({} item, {} biome, {} block, {} mob, {} structure)",
                         config.getTotalTriggerCount(),
                         config.getItemTriggers().size(),
                         config.getBiomeTriggers().size(),
@@ -102,11 +102,11 @@ public final class ScentTriggerConfigLoader {
                         config.getMobTriggers().size(),
                         config.getStructureTriggers().size());
             } else {
-                AromaCraft.LOGGER.warn("Failed to load scent trigger configuration, using defaults");
+                AromaAffect.LOGGER.warn("Failed to load scent trigger configuration, using defaults");
                 config = new TriggerConfigRoot();
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error loading scent trigger configuration", e);
+            AromaAffect.LOGGER.error("Error loading scent trigger configuration", e);
             config = new TriggerConfigRoot();
         }
         
@@ -123,7 +123,7 @@ public final class ScentTriggerConfigLoader {
                 .getResourceAsStream(CONFIG_PATH)) {
             
             if (is == null) {
-                AromaCraft.LOGGER.warn("Scent trigger config not found: {}", CONFIG_PATH);
+                AromaAffect.LOGGER.warn("Scent trigger config not found: {}", CONFIG_PATH);
                 return null;
             }
             
@@ -131,7 +131,7 @@ public final class ScentTriggerConfigLoader {
                 return GSON.fromJson(reader, TriggerConfigRoot.class);
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error reading scent trigger config: {}", e.getMessage());
+            AromaAffect.LOGGER.error("Error reading scent trigger config: {}", e.getMessage());
             return null;
         }
     }
@@ -151,10 +151,10 @@ public final class ScentTriggerConfigLoader {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "item", trigger.getItemId());
                 itemTriggerMap.put(trigger.getItemId(), trigger);
-                AromaCraft.LOGGER.debug("Registered item trigger: {} -> {}",
+                AromaAffect.LOGGER.debug("Registered item trigger: {} -> {}",
                         trigger.getItemId(), trigger.getScentName());
             } else {
-                AromaCraft.LOGGER.warn("Invalid item trigger definition: {}", trigger);
+                AromaAffect.LOGGER.warn("Invalid item trigger definition: {}", trigger);
             }
         }
         
@@ -163,7 +163,7 @@ public final class ScentTriggerConfigLoader {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "biome", trigger.getBiomeId());
                 biomeTriggerMap.put(trigger.getBiomeId(), trigger);
-                AromaCraft.LOGGER.debug("Registered biome trigger: {} -> {}",
+                AromaAffect.LOGGER.debug("Registered biome trigger: {} -> {}",
                         trigger.getBiomeId(), trigger.getScentName());
             }
         }
@@ -173,7 +173,7 @@ public final class ScentTriggerConfigLoader {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "block", trigger.getBlockId());
                 blockTriggerMap.put(trigger.getBlockId(), trigger);
-                AromaCraft.LOGGER.debug("Registered block trigger: {} -> {}",
+                AromaAffect.LOGGER.debug("Registered block trigger: {} -> {}",
                         trigger.getBlockId(), trigger.getScentName());
             }
         }
@@ -183,7 +183,7 @@ public final class ScentTriggerConfigLoader {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "mob", trigger.getEntityType());
                 mobTriggerMap.put(trigger.getEntityType(), trigger);
-                AromaCraft.LOGGER.debug("Registered mob trigger: {} -> {}",
+                AromaAffect.LOGGER.debug("Registered mob trigger: {} -> {}",
                         trigger.getEntityType(), trigger.getScentName());
             }
         }
@@ -193,7 +193,7 @@ public final class ScentTriggerConfigLoader {
             if (trigger.isValid()) {
                 validateScentName(trigger.getScentName(), "structure", trigger.getStructureId());
                 structureTriggerMap.put(trigger.getStructureId(), trigger);
-                AromaCraft.LOGGER.debug("Registered structure trigger: {} -> {}",
+                AromaAffect.LOGGER.debug("Registered structure trigger: {} -> {}",
                         trigger.getStructureId(), trigger.getScentName());
             }
         }
@@ -205,7 +205,7 @@ public final class ScentTriggerConfigLoader {
      */
     private static void validateScentName(String scentName, String triggerType, String triggerId) {
         if (!VALID_OVR_SCENTS.contains(scentName)) {
-            AromaCraft.LOGGER.warn("Unknown OVR scent '{}' in {} trigger '{}'. " +
+            AromaAffect.LOGGER.warn("Unknown OVR scent '{}' in {} trigger '{}'. " +
                     "This scent may not be supported by the hardware.",
                     scentName, triggerType, triggerId);
         }
@@ -218,7 +218,7 @@ public final class ScentTriggerConfigLoader {
     /**
      * Gets the item trigger definition for a given item ID.
      * 
-     * @param itemId the full item ID (e.g., "aromacraft:winter_scent")
+     * @param itemId the full item ID (e.g., "aromaaffect:winter_scent")
      * @return Optional containing the trigger if found
      */
     public static Optional<ItemTriggerDefinition> getItemTrigger(String itemId) {
@@ -325,7 +325,7 @@ public final class ScentTriggerConfigLoader {
      * Useful for hot-reloading during development.
      */
     public static void reload() {
-        AromaCraft.LOGGER.info("Reloading scent trigger configuration...");
+        AromaAffect.LOGGER.info("Reloading scent trigger configuration...");
         initialized = false;
         init();
     }

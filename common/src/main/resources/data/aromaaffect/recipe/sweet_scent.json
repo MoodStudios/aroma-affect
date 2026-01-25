@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ASA",
+    "BDB",
+    "ECE"
+  ],
+  "key": {
+    "S": "aromaaffect:scent_base",
+    "D": "aromaaffect:scent_container",
+    "B": "minecraft:honey_block",
+    "A": "minecraft:yellow_dye",
+    "C": "minecraft:orange_dye",
+    "E": "minecraft:pink_dye"
+  },
+  "result": {
+    "id": "aromaaffect:sweet_scent",
+    "count": 1
+  }
+}

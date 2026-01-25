@@ -38,7 +38,7 @@ public class ScentItemDefinition {
     private String id;
     
     /**
-     * Path to the texture file relative to assets/aromacraft/textures/
+     * Path to the texture file relative to assets/aromaaffect/textures/
      * Example: "item/scent_winter"
      */
     @SerializedName("image")
@@ -122,19 +122,19 @@ public class ScentItemDefinition {
     /**
      * Get the localization key for this scent item's name.
      * 
-     * @return The localization key in format "item.aromacraft.{id}"
+     * @return The localization key in format "item.aromaaffect.{id}"
      */
     public String getTranslationKey() {
-        return "item.aromacraft." + id;
+        return "item.aromaaffect." + id;
     }
     
     /**
      * Get the localization key for this scent item's description.
      * 
-     * @return The localization key in format "scent.aromacraft.{id}.description"
+     * @return The localization key in format "scent.aromaaffect.{id}.description"
      */
     public String getDescriptionTranslationKey() {
-        return "scent.aromacraft." + id + ".description";
+        return "scent.aromaaffect." + id + ".description";
     }
     
     /**

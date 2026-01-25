@@ -1,5 +1,5 @@
 /**
- * Search and tracking system for AromaCraft.
+ * Search and tracking system for Aroma Affect.
  * 
  * <p>This package contains the core search functionality that allows players
  * to activate scent-based tracking when wearing a Nose item.</p>

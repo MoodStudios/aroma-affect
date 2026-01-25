@@ -1,6 +1,6 @@
 package com.ovrtechnology.command.path;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -90,7 +90,7 @@ public final class ActivePathManager {
 
         TickEvent.SERVER_POST.register(INSTANCE::onServerTick);
         INSTANCE.initialized = true;
-        AromaCraft.LOGGER.info("Active path manager initialized");
+        AromaAffect.LOGGER.info("Active path manager initialized");
     }
 
     /**
@@ -111,7 +111,7 @@ public final class ActivePathManager {
         ActivePath path = new ActivePath(playerId, level.dimension().location(), destination);
         activePaths.put(playerId, path);
 
-        AromaCraft.LOGGER.debug("Created active path for player {} to {}", player.getName().getString(), destination);
+        AromaAffect.LOGGER.debug("Created active path for player {} to {}", player.getName().getString(), destination);
     }
 
     /**
@@ -176,7 +176,7 @@ public final class ActivePathManager {
             if (distanceToDestination <= ARRIVAL_THRESHOLD) {
                 // Player has arrived!
                 player.sendSystemMessage(Component.literal(
-                        "§6[AromaCraft] §aYou have arrived at your destination!"
+                        "§6[Aroma Affect] §aYou have arrived at your destination!"
                 ));
                 iterator.remove();
                 continue;

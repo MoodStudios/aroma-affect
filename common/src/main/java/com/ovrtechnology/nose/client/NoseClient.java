@@ -1,6 +1,6 @@
 package com.ovrtechnology.nose.client;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseItem;
 import dev.architectury.registry.client.level.entity.EntityModelLayerRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -14,24 +14,24 @@ public final class NoseClient {
 
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("NoseClient.init() called multiple times!");
+            AromaAffect.LOGGER.warn("NoseClient.init() called multiple times!");
             return;
         }
 
         EntityModelLayerRegistry.register(NoseModelLayers.NOSE_MASK, NoseMaskModel::createLayer);
 
         initialized = true;
-        AromaCraft.LOGGER.info("Nose client rendering initialized");
+        AromaAffect.LOGGER.info("Nose client rendering initialized");
     }
 
     public static ResourceLocation getArmorTexture(ItemStack stack) {
         if (stack.getItem() instanceof NoseItem noseItem) {
             return ResourceLocation.fromNamespaceAndPath(
-                    AromaCraft.MOD_ID,
+                    AromaAffect.MOD_ID,
                     "textures/entity/nose/" + noseItem.getItemId() + ".png"
             );
         }
 
-        return ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "textures/entity/nose/basic_nose.png");
+        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose/basic_nose.png");
     }
 }

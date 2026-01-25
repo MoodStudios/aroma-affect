@@ -1,6 +1,6 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.nose.NoseItem;
 import net.minecraft.client.Minecraft;
@@ -43,7 +43,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         // Get the player's equipped nose to determine what blocks they can detect
         Player player = Minecraft.getInstance().player;
         if (player == null) {
-            AromaCraft.LOGGER.debug("No player available for blocks menu");
+            AromaAffect.LOGGER.debug("No player available for blocks menu");
             return;
         }
         
@@ -63,7 +63,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             }
         }
         
-        AromaCraft.LOGGER.debug("Loaded {} block cards", cards.size());
+        AromaAffect.LOGGER.debug("Loaded {} block cards", cards.size());
     }
     
     /**
@@ -119,7 +119,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         // Get the block's item form for the icon
         var blockOptional = BuiltInRegistries.BLOCK.get(blockId);
         if (blockOptional.isEmpty()) {
-            AromaCraft.LOGGER.warn("Block not found: {}", blockId);
+            AromaAffect.LOGGER.warn("Block not found: {}", blockId);
             return;
         }
         
@@ -131,7 +131,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
         
         Component displayName = block.getName();
-        Component description = Component.translatable("menu.aromacraft.blocks.card.description", displayName);
+        Component description = Component.translatable("menu.aromaaffect.blocks.card.description", displayName);
         
         cards.add(new SelectionCard(blockId, displayName, icon, isUnlocked, description));
     }
@@ -139,7 +139,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     @Override
     protected void onCardSelected(SelectionCard card, int index) {
         selectedCardIndex = index;
-        AromaCraft.LOGGER.info("Selected block for tracking: {}", card.id);
+        AromaAffect.LOGGER.info("Selected block for tracking: {}", card.id);
         
         // TODO: Implement tracking activation
         // This should:

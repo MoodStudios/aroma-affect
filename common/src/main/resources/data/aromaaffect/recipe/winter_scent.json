@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ASA",
+    "BDB",
+    "ACA"
+  ],
+  "key": {
+    "S": "aromaaffect:scent_base",
+    "D": "aromaaffect:scent_container",
+    "B": "minecraft:blue_ice",
+    "A": "minecraft:light_blue_dye",
+    "C": "minecraft:white_dye"
+  },
+  "result": {
+    "id": "aromaaffect:winter_scent",
+    "count": 1
+  }
+}

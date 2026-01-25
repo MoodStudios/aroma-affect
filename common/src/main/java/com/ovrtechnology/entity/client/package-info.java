@@ -1,5 +1,5 @@
 /**
- * Client-side rendering classes for AromaCraft entities.
+ * Client-side rendering classes for Aroma Affect entities.
  */
 @MethodsReturnNonnullByDefault
 package com.ovrtechnology.entity.client;

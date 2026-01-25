@@ -1,6 +1,6 @@
 package com.ovrtechnology.nose;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import net.minecraft.world.item.Item;
 import java.util.*;
 
 /**
- * Central registry for all nose items in AromaCraft.
+ * Central registry for all nose items in Aroma Affect.
  * 
  * This class handles:
  * - Loading nose definitions from JSON
@@ -18,14 +18,14 @@ import java.util.*;
  * - Providing access to registered nose items
  * - Initializing the ability resolver for inheritance
  * 
- * Note: Recipes are loaded from data/aromacraft/recipe/ as standard Minecraft recipe JSON files.
+ * Note: Recipes are loaded from data/aromaaffect/recipe/ as standard Minecraft recipe JSON files.
  */
 public final class NoseRegistry {
     
     /**
      * Deferred register for nose items
      */
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaCraft.MOD_ID, Registries.ITEM);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
     
     /**
      * Map of nose ID to registered item supplier
@@ -52,11 +52,11 @@ public final class NoseRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("NoseRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("NoseRegistry.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing NoseRegistry...");
+        AromaAffect.LOGGER.info("Initializing NoseRegistry...");
         
         // Load nose definitions from JSON
         List<NoseDefinition> definitions = NoseDefinitionLoader.loadAllNoses();
@@ -73,7 +73,7 @@ public final class NoseRegistry {
         NoseAbilityResolver.init();
         
         initialized = true;
-        AromaCraft.LOGGER.info("NoseRegistry initialized with {} noses", noseItems.size());
+        AromaAffect.LOGGER.info("NoseRegistry initialized with {} noses", noseItems.size());
     }
     
     /**
@@ -83,7 +83,7 @@ public final class NoseRegistry {
         String id = definition.getId();
         
         if (noseItems.containsKey(id)) {
-            AromaCraft.LOGGER.warn("Duplicate nose ID: {}, skipping...", id);
+            AromaAffect.LOGGER.warn("Duplicate nose ID: {}, skipping...", id);
             return;
         }
         
@@ -95,7 +95,7 @@ public final class NoseRegistry {
         RegistrySupplier<NoseItem> supplier = ITEMS.register(id, () -> new NoseItem(definition, itemId));
         noseItems.put(id, supplier);
         
-        AromaCraft.LOGGER.debug("Registered nose item: {}", id);
+        AromaAffect.LOGGER.debug("Registered nose item: {}", id);
     }
     
     /**

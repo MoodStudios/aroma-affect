@@ -2,7 +2,7 @@ package com.ovrtechnology.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.LookupSubCommand;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.command.sub.PingSubCommand;
@@ -20,7 +20,7 @@ import static net.minecraft.commands.Commands.literal;
 /**
  * Main command handler for /aromatest command.
  * <p>
- * This provides a testing/debug interface for AromaCraft functionality.
+ * This provides a testing/debug interface for Aroma Affect functionality.
  * Subcommands can be easily added by implementing {@link SubCommand}
  * and registering them in {@link #SUB_COMMANDS}.
  */
@@ -56,7 +56,7 @@ public final class AromaTestCommand {
      */
     public static void init() {
         CommandRegistrationEvent.EVENT.register(AromaTestCommand::registerCommands);
-        AromaCraft.LOGGER.info("AromaCraft test commands initialized");
+        AromaAffect.LOGGER.info("Aroma Affect test commands initialized");
     }
     
     /**
@@ -77,7 +77,7 @@ public final class AromaTestCommand {
         // Default execution (no subcommand) shows available subcommands
         builder.executes(context -> {
             context.getSource().sendSuccess(
-                    () -> Component.literal("§6[AromaCraft] §7Available subcommands:"),
+                    () -> Component.literal("§6[Aroma Affect] §7Available subcommands:"),
                     false
             );
             for (SubCommand subCommand : SUB_COMMANDS.values()) {
@@ -90,7 +90,7 @@ public final class AromaTestCommand {
         });
         
         dispatcher.register(builder);
-        AromaCraft.LOGGER.debug("Registered /aromatest command with {} subcommands", SUB_COMMANDS.size());
+        AromaAffect.LOGGER.debug("Registered /aromatest command with {} subcommands", SUB_COMMANDS.size());
     }
 }
 

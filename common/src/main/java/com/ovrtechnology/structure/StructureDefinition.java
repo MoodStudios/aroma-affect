@@ -76,7 +76,7 @@ public class StructureDefinition {
     private String structureId;
     
     /**
-     * Path to the texture file relative to assets/aromacraft/textures/
+     * Path to the texture file relative to assets/aromaaffect/textures/
      * Used for displaying structure icons in menus.
      */
     @SerializedName("image")
@@ -252,14 +252,14 @@ public class StructureDefinition {
     /**
      * Get the localization key for this structure's display name.
      * 
-     * @return Localization key in format "structure.aromacraft.namespace.path"
+     * @return Localization key in format "structure.aromaaffect.namespace.path"
      */
     public String getTranslationKey() {
         if (structureId == null || !structureId.contains(":")) {
-            return "structure.aromacraft.unknown";
+            return "structure.aromaaffect.unknown";
         }
         String[] parts = structureId.split(":", 2);
-        return "structure.aromacraft." + parts[0] + "." + parts[1];
+        return "structure.aromaaffect." + parts[0] + "." + parts[1];
     }
     
     /**

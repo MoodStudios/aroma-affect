@@ -14,25 +14,25 @@ public enum MenuCategory {
      * Blocks category - for tracking specific blocks like ores.
      */
     BLOCKS("blocks", LookupType.BLOCK, Items.DIAMOND_ORE.getDefaultInstance(), 
-           "menu.aromacraft.category.blocks", "menu.aromacraft.category.blocks.description"),
+           "menu.aromaaffect.category.blocks", "menu.aromaaffect.category.blocks.description"),
     
     /**
      * Biomes category - for tracking biome transitions.
      */
     BIOMES("biomes", LookupType.BIOME, Items.OAK_SAPLING.getDefaultInstance(),
-           "menu.aromacraft.category.biomes", "menu.aromacraft.category.biomes.description"),
+           "menu.aromaaffect.category.biomes", "menu.aromaaffect.category.biomes.description"),
     
     /**
      * Structures category - for tracking structures like villages, strongholds, etc.
      */
     STRUCTURES("structures", LookupType.STRUCTURE, Items.BELL.getDefaultInstance(),
-               "menu.aromacraft.category.structures", "menu.aromacraft.category.structures.description"),
+               "menu.aromaaffect.category.structures", "menu.aromaaffect.category.structures.description"),
     
     /**
      * Flowers/Flora category - for tracking flower-type blocks and plants.
      */
     FLOWERS("flowers", LookupType.FLOWER, Items.POPPY.getDefaultInstance(),
-            "menu.aromacraft.category.flowers", "menu.aromacraft.category.flowers.description");
+            "menu.aromaaffect.category.flowers", "menu.aromaaffect.category.flowers.description");
     
     private final String id;
     private final LookupType lookupType;

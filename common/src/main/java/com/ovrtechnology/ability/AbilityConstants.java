@@ -1,12 +1,12 @@
 package com.ovrtechnology.ability;
 
 /**
- * Constants for ability identifiers used throughout AromaCraft.
+ * Constants for ability identifiers used throughout Aroma Affect.
  * 
  * <p>
  * These IDs must match the ability strings defined in the nose JSON
  * configuration
- * files (data/aromacraft/noses/noses.json).
+ * files (data/aromaaffect/noses/noses.json).
  * </p>
  * 
  * <p>

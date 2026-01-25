@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
@@ -24,7 +24,7 @@ import java.util.Set;
  * Loads trackable structure definitions from JSON files.
  * 
  * <p>This loader handles parsing the structure configuration from
- * {@code data/aromacraft/structures/structures.json} and provides validation
+ * {@code data/aromaaffect/structures/structures.json} and provides validation
  * for duplicate IDs, HTML color format, scent references, and block references.</p>
  * 
  * <p>The JSON format supports both array format and object with "structures" array:</p>
@@ -60,7 +60,7 @@ public class StructureDefinitionLoader {
     /**
      * Path to the structures JSON file
      */
-    private static final String STRUCTURES_RESOURCE_PATH = "data/aromacraft/structures/structures.json";
+    private static final String STRUCTURES_RESOURCE_PATH = "data/aromaaffect/structures/structures.json";
     
     /**
      * Cached list of loaded structure definitions
@@ -107,13 +107,13 @@ public class StructureDefinitionLoader {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to load structure definitions", e);
+            AromaAffect.LOGGER.error("Failed to load structure definitions", e);
         }
         
-        AromaCraft.LOGGER.info("Loaded {} structure definitions", loadedStructures.size());
+        AromaAffect.LOGGER.info("Loaded {} structure definitions", loadedStructures.size());
         
         if (!validationWarnings.isEmpty()) {
-            AromaCraft.LOGGER.warn("Structure loading completed with {} validation warnings", validationWarnings.size());
+            AromaAffect.LOGGER.warn("Structure loading completed with {} validation warnings", validationWarnings.size());
         }
         
         return Collections.unmodifiableList(loadedStructures);
@@ -148,7 +148,7 @@ public class StructureDefinitionLoader {
         
         loadedIds.add(structureId);
         loadedStructures.add(structure);
-        AromaCraft.LOGGER.debug("Loaded structure definition: {} (color: {}, scent: {})", 
+        AromaAffect.LOGGER.debug("Loaded structure definition: {} (color: {}, scent: {})", 
                 structureId, structure.getColorHtml(), structure.getScentId());
     }
     
@@ -191,7 +191,7 @@ public class StructureDefinitionLoader {
         // Validate image path
         String rawImage = structure.getRawImage();
         if (rawImage == null || rawImage.isEmpty()) {
-            AromaCraft.LOGGER.debug("[{}] No image defined, using default: {}", structureId, StructureDefinition.DEFAULT_IMAGE);
+            AromaAffect.LOGGER.debug("[{}] No image defined, using default: {}", structureId, StructureDefinition.DEFAULT_IMAGE);
         }
     }
     
@@ -203,7 +203,7 @@ public class StructureDefinitionLoader {
      */
     private static void validateBlockReferences(String structureId, List<String> blockIds) {
         if (!BlockRegistry.isInitialized()) {
-            AromaCraft.LOGGER.debug("[{}] BlockRegistry not initialized, skipping block validation", structureId);
+            AromaAffect.LOGGER.debug("[{}] BlockRegistry not initialized, skipping block validation", structureId);
             return;
         }
         
@@ -211,7 +211,7 @@ public class StructureDefinitionLoader {
         for (String invalidBlock : invalidBlocks) {
             // This is just a warning - blocks in structures don't need to be in our BlockRegistry
             // They just need to be valid Minecraft block IDs
-            AromaCraft.LOGGER.debug("[{}] Block '{}' not found in BlockRegistry (may still be valid Minecraft block)", 
+            AromaAffect.LOGGER.debug("[{}] Block '{}' not found in BlockRegistry (may still be valid Minecraft block)", 
                     structureId, invalidBlock);
         }
         
@@ -230,7 +230,7 @@ public class StructureDefinitionLoader {
      */
     private static void addWarning(String warning) {
         validationWarnings.add(warning);
-        AromaCraft.LOGGER.warn(warning);
+        AromaAffect.LOGGER.warn(warning);
     }
     
     /**
@@ -242,7 +242,7 @@ public class StructureDefinitionLoader {
     private static StructureDefinition[] loadStructuresFromResource(String resourcePath) {
         try (InputStream inputStream = StructureDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                AromaCraft.LOGGER.warn("Structure definitions file not found: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Structure definitions file not found: {}", resourcePath);
                 return new StructureDefinition[0];
             }
             
@@ -259,11 +259,11 @@ public class StructureDefinitionLoader {
                     }
                 }
                 
-                AromaCraft.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'structures' key)", resourcePath);
+                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'structures' key)", resourcePath);
                 return new StructureDefinition[0];
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error parsing structure definitions from: {}", resourcePath, e);
+            AromaAffect.LOGGER.error("Error parsing structure definitions from: {}", resourcePath, e);
             return new StructureDefinition[0];
         }
     }
@@ -278,7 +278,7 @@ public class StructureDefinitionLoader {
         try {
             return GSON.fromJson(json, StructureDefinition.class);
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to parse structure definition from JSON", e);
+            AromaAffect.LOGGER.error("Failed to parse structure definition from JSON", e);
             return null;
         }
     }
@@ -380,7 +380,7 @@ public class StructureDefinitionLoader {
      * @return The reloaded list of structure definitions
      */
     public static List<StructureDefinition> reload() {
-        AromaCraft.LOGGER.info("Reloading structure definitions...");
+        AromaAffect.LOGGER.info("Reloading structure definitions...");
         return loadAllStructures();
     }
     

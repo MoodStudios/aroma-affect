@@ -1,6 +1,6 @@
 package com.ovrtechnology.scentitem;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import net.minecraft.world.item.Item;
 import java.util.*;
 
 /**
- * Central registry for all scent items in AromaCraft.
+ * Central registry for all scent items in Aroma Affect.
  * 
  * <p>This class handles:</p>
  * <ul>
@@ -36,7 +36,7 @@ public final class ScentItemRegistry {
     /**
      * Deferred register for scent items
      */
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaCraft.MOD_ID, Registries.ITEM);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
     
     /**
      * Map of scent item ID to registered item supplier
@@ -70,11 +70,11 @@ public final class ScentItemRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("ScentItemRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("ScentItemRegistry.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing ScentItemRegistry...");
+        AromaAffect.LOGGER.info("Initializing ScentItemRegistry...");
         
         // Load scent item definitions from JSON
         List<ScentItemDefinition> definitions = ScentItemDefinitionLoader.loadAllScentItems();
@@ -88,7 +88,7 @@ public final class ScentItemRegistry {
         ITEMS.register();
         
         initialized = true;
-        AromaCraft.LOGGER.info("ScentItemRegistry initialized with {} scent items", scentItems.size());
+        AromaAffect.LOGGER.info("ScentItemRegistry initialized with {} scent items", scentItems.size());
     }
     
     /**
@@ -98,7 +98,7 @@ public final class ScentItemRegistry {
         String id = definition.getId();
         
         if (scentItems.containsKey(id)) {
-            AromaCraft.LOGGER.warn("Duplicate scent item ID: {}, skipping...", id);
+            AromaAffect.LOGGER.warn("Duplicate scent item ID: {}, skipping...", id);
             return;
         }
         
@@ -110,7 +110,7 @@ public final class ScentItemRegistry {
         RegistrySupplier<ScentItem> supplier = ITEMS.register(id, () -> new ScentItem(definition, itemId));
         scentItems.put(id, supplier);
         
-        AromaCraft.LOGGER.debug("Registered scent item: {}", id);
+        AromaAffect.LOGGER.debug("Registered scent item: {}", id);
     }
     
     /**

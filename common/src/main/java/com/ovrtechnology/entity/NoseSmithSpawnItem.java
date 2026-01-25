@@ -1,6 +1,6 @@
 package com.ovrtechnology.entity;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -65,7 +65,7 @@ public class NoseSmithSpawnItem extends Item {
             context.getItemInHand().shrink(1);
         }
         
-        AromaCraft.LOGGER.debug("Spawned Nose Smith at {}", spawnPos);
+        AromaAffect.LOGGER.debug("Spawned Nose Smith at {}", spawnPos);
         
         return InteractionResult.SUCCESS;
     }

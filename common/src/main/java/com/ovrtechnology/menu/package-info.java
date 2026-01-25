@@ -1,5 +1,5 @@
 /**
- * Menu system for AromaCraft mod.
+ * Menu system for Aroma Affect mod.
  * 
  * <p>This package contains all client-side menu screens for the mod:</p>
  * <ul>

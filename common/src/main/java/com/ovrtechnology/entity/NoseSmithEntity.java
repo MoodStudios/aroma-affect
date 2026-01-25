@@ -1,6 +1,6 @@
 package com.ovrtechnology.entity;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,7 +48,7 @@ import java.util.UUID;
 
 /**
  * The Nose Smith is an NPC that helps players acquire and unlock Scent Masks.
- * This character is central to the AromaCraft progression system, guiding players
+ * This character is central to the Aroma Affect progression system, guiding players
  * through the mask tier system and providing access to nose equipment.
  */
 public class NoseSmithEntity extends Villager {
@@ -85,7 +85,7 @@ public class NoseSmithEntity extends Villager {
     public NoseSmithEntity(EntityType<? extends Villager> entityType, Level level) {
         super(entityType, level);
         // Nose Smith doesn't need to worry about profession data as much
-        this.setCustomName(Component.translatable("entity.aromacraft.nose_smith"));
+        this.setCustomName(Component.translatable("entity.aromaaffect.nose_smith"));
         this.setCustomNameVisible(true);
     }
 
@@ -255,7 +255,7 @@ public class NoseSmithEntity extends Villager {
             Class<?> clazz = Class.forName("com.ovrtechnology.entity.client.dialogue.NoseSmithDialogueClient");
             clazz.getMethod("open", NoseSmithEntity.class).invoke(null, this);
         } catch (ReflectiveOperationException e) {
-            AromaCraft.LOGGER.debug("Failed to open Nose Smith dialogue UI", e);
+            AromaAffect.LOGGER.debug("Failed to open Nose Smith dialogue UI", e);
         }
     }
 
@@ -266,7 +266,7 @@ public class NoseSmithEntity extends Villager {
 
         List<FlowerVariant> candidates = getPottableSmallFlowers();
         if (candidates.isEmpty()) {
-            AromaCraft.LOGGER.warn("No pottable small flowers found; Nose Smith quest cannot initialize.");
+            AromaAffect.LOGGER.warn("No pottable small flowers found; Nose Smith quest cannot initialize.");
             return;
         }
 
@@ -343,7 +343,7 @@ public class NoseSmithEntity extends Villager {
         }
 
         houseDecorated = true;
-        AromaCraft.LOGGER.debug("Decorated Nose Smith house: filled {} pots, placed {} quest flowers", potsFilled, flowersPlaced);
+        AromaAffect.LOGGER.debug("Decorated Nose Smith house: filled {} pots, placed {} quest flowers", potsFilled, flowersPlaced);
     }
 
     private void tryConsumeRequestedFlowerAndReward(ServerLevel serverLevel) {
@@ -394,7 +394,7 @@ public class NoseSmithEntity extends Villager {
         if (!noseItem.isEmpty()) {
             this.spawnAtLocation(serverLevel, noseItem);
         } else {
-            AromaCraft.LOGGER.warn("Failed to drop basic_nose: item not registered");
+            AromaAffect.LOGGER.warn("Failed to drop basic_nose: item not registered");
         }
 
         serverLevel.playSound(null, this.blockPosition(), SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.NEUTRAL, 1.0F, 1.0F);
@@ -408,7 +408,7 @@ public class NoseSmithEntity extends Villager {
 
         Block block = BuiltInRegistries.BLOCK.getOptional(requestedFlower).orElse(null);
         if (block == null || block == Blocks.AIR || !block.defaultBlockState().is(BlockTags.SMALL_FLOWERS)) {
-            AromaCraft.LOGGER.warn("Invalid requested flower id {} for Nose Smith; resetting quest.", requestedFlower);
+            AromaAffect.LOGGER.warn("Invalid requested flower id {} for Nose Smith; resetting quest.", requestedFlower);
             requestedFlower = null;
             this.entityData.set(REQUESTED_FLOWER_ID, "");
             houseDecorated = false;

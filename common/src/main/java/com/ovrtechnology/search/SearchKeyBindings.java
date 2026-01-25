@@ -1,7 +1,7 @@
 package com.ovrtechnology.search;
 
-import com.ovrtechnology.AromaCraft;
-import com.ovrtechnology.keybind.AromaCraftKeyCategory;
+import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.keybind.AromaAffectKeyCategory;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import net.minecraft.client.KeyMapping;
@@ -10,7 +10,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Handles keybinding registration and input handling for the AromaCraft search system.
+ * Handles keybinding registration and input handling for the Aroma Affect search system.
  * 
  * <p>This class uses Architectury's cross-platform keybinding API to register
  * and handle search-related hotkeys on both Fabric and NeoForge.</p>
@@ -20,7 +20,7 @@ import org.lwjgl.glfw.GLFW;
  *   <li><b>Toggle Search</b>: V - Activates/deactivates search mode when a Nose is equipped</li>
  * </ul>
  * 
- * <p>All keybindings are configurable through Minecraft's controls menu under the "AromaCraft" category.</p>
+ * <p>All keybindings are configurable through Minecraft's controls menu under the "Aroma Affect" category.</p>
  */
 public final class SearchKeyBindings {
     
@@ -29,10 +29,10 @@ public final class SearchKeyBindings {
      * Default key: V
      */
     public static final KeyMapping TOGGLE_SEARCH = new KeyMapping(
-            "key.aromacraft.toggle_search",
+            "key.aromaaffect.toggle_search",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_V,
-            AromaCraftKeyCategory.CATEGORY
+            AromaAffectKeyCategory.CATEGORY
     );
     
     /**
@@ -50,11 +50,11 @@ public final class SearchKeyBindings {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("SearchKeyBindings.init() called multiple times!");
+            AromaAffect.LOGGER.warn("SearchKeyBindings.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing search keybindings...");
+        AromaAffect.LOGGER.info("Initializing search keybindings...");
         
         // Initialize the search manager first
         SearchManager.init();
@@ -68,7 +68,7 @@ public final class SearchKeyBindings {
         });
         
         initialized = true;
-        AromaCraft.LOGGER.info("Search keybindings initialized (default: V key)");
+        AromaAffect.LOGGER.info("Search keybindings initialized (default: V key)");
     }
     
     /**

@@ -1,6 +1,6 @@
 package com.ovrtechnology.lookup.worker;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.server.MinecraftServer;
@@ -67,7 +67,7 @@ public final class StructureSearchWorkerManager {
         TickEvent.SERVER_POST.register(INSTANCE::onServerTickPost);
         
         INSTANCE.initialized = true;
-        AromaCraft.LOGGER.info("Structure search worker manager initialized");
+        AromaAffect.LOGGER.info("Structure search worker manager initialized");
     }
     
     private void onServerStopping(MinecraftServer server) {
@@ -122,7 +122,7 @@ public final class StructureSearchWorkerManager {
         
         // Log occasionally to show workers are active
         if (workDone > 0 && server.getTickCount() % 20 == 0) {  // Every second
-            AromaCraft.LOGGER.debug("Worker tick: {} workers active, {} work units this tick", 
+            AromaAffect.LOGGER.debug("Worker tick: {} workers active, {} work units this tick", 
                     workers.size(), workDone);
         }
     }
@@ -132,7 +132,7 @@ public final class StructureSearchWorkerManager {
      */
     public synchronized void addWorker(SearchWorker worker) {
         workers.add(worker);
-        AromaCraft.LOGGER.debug("Added search worker: {}", worker.getId());
+        AromaAffect.LOGGER.debug("Added search worker: {}", worker.getId());
     }
     
     /**
@@ -140,7 +140,7 @@ public final class StructureSearchWorkerManager {
      */
     public synchronized void removeWorker(SearchWorker worker) {
         if (workers.remove(worker)) {
-            AromaCraft.LOGGER.debug("Removed search worker: {}", worker.getId());
+            AromaAffect.LOGGER.debug("Removed search worker: {}", worker.getId());
         }
     }
     
@@ -152,7 +152,7 @@ public final class StructureSearchWorkerManager {
             worker.cancel();
         }
         workers.clear();
-        AromaCraft.LOGGER.debug("Cleared all search workers");
+        AromaAffect.LOGGER.debug("Cleared all search workers");
     }
     
     /**

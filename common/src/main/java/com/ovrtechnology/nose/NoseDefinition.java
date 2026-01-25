@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 /**
  * Represents a nose item definition loaded from JSON.
  * Each nose has properties like tier, durability, and unlock conditions.
- * Recipes are defined separately in data/aromacraft/recipe/ as standard Minecraft recipe JSON files.
+ * Recipes are defined separately in data/aromaaffect/recipe/ as standard Minecraft recipe JSON files.
  */
 @Getter
 @Setter
@@ -24,7 +24,7 @@ public class NoseDefinition {
     private String id;
     
     /**
-     * Path to the texture file relative to assets/aromacraft/textures/item/
+     * Path to the texture file relative to assets/aromaaffect/textures/item/
      */
     @SerializedName("image")
     private String image;

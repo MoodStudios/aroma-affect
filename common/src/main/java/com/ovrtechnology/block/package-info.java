@@ -1,5 +1,5 @@
 /**
- * Block tracking system for AromaCraft.
+ * Block tracking system for Aroma Affect.
  * 
  * <p>This package contains all classes related to trackable block definitions.
  * Blocks define which Minecraft blocks can be detected by the Nose system,
@@ -13,7 +13,7 @@
  * </ul>
  * 
  * <h2>JSON Configuration</h2>
- * <p>Blocks are defined in JSON files located at {@code data/aromacraft/blocks/blocks.json}.
+ * <p>Blocks are defined in JSON files located at {@code data/aromaaffect/blocks/blocks.json}.
  * Each block entry includes:</p>
  * <ul>
  *   <li>{@code block_id} - Minecraft block identifier (e.g., "minecraft:diamond_ore")</li>

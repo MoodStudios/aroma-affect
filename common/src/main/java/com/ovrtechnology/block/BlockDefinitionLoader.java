@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
 
@@ -23,7 +23,7 @@ import java.util.Set;
  * Loads trackable block definitions from JSON files.
  * 
  * <p>This loader handles parsing the block configuration from
- * {@code data/aromacraft/blocks/blocks.json} and provides validation
+ * {@code data/aromaaffect/blocks/blocks.json} and provides validation
  * for duplicate IDs, HTML color format, and scent references.</p>
  * 
  * <p>The JSON format supports both array format and object with "blocks" array:</p>
@@ -57,7 +57,7 @@ public class BlockDefinitionLoader {
     /**
      * Path to the blocks JSON file
      */
-    private static final String BLOCKS_RESOURCE_PATH = "data/aromacraft/blocks/blocks.json";
+    private static final String BLOCKS_RESOURCE_PATH = "data/aromaaffect/blocks/blocks.json";
     
     /**
      * Cached list of loaded block definitions
@@ -102,13 +102,13 @@ public class BlockDefinitionLoader {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to load block definitions", e);
+            AromaAffect.LOGGER.error("Failed to load block definitions", e);
         }
         
-        AromaCraft.LOGGER.info("Loaded {} block definitions", loadedBlocks.size());
+        AromaAffect.LOGGER.info("Loaded {} block definitions", loadedBlocks.size());
         
         if (!validationWarnings.isEmpty()) {
-            AromaCraft.LOGGER.warn("Block loading completed with {} validation warnings", validationWarnings.size());
+            AromaAffect.LOGGER.warn("Block loading completed with {} validation warnings", validationWarnings.size());
         }
         
         return Collections.unmodifiableList(loadedBlocks);
@@ -143,7 +143,7 @@ public class BlockDefinitionLoader {
         
         loadedIds.add(blockId);
         loadedBlocks.add(block);
-        AromaCraft.LOGGER.debug("Loaded block definition: {} (color: {}, scent: {})", 
+        AromaAffect.LOGGER.debug("Loaded block definition: {} (color: {}, scent: {})", 
                 blockId, block.getColorHtml(), block.getScentId());
     }
     
@@ -186,7 +186,7 @@ public class BlockDefinitionLoader {
      */
     private static void addWarning(String warning) {
         validationWarnings.add(warning);
-        AromaCraft.LOGGER.warn(warning);
+        AromaAffect.LOGGER.warn(warning);
     }
     
     /**
@@ -198,7 +198,7 @@ public class BlockDefinitionLoader {
     private static BlockDefinition[] loadBlocksFromResource(String resourcePath) {
         try (InputStream inputStream = BlockDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                AromaCraft.LOGGER.warn("Block definitions file not found: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Block definitions file not found: {}", resourcePath);
                 return new BlockDefinition[0];
             }
             
@@ -215,11 +215,11 @@ public class BlockDefinitionLoader {
                     }
                 }
                 
-                AromaCraft.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'blocks' key)", resourcePath);
+                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'blocks' key)", resourcePath);
                 return new BlockDefinition[0];
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error parsing block definitions from: {}", resourcePath, e);
+            AromaAffect.LOGGER.error("Error parsing block definitions from: {}", resourcePath, e);
             return new BlockDefinition[0];
         }
     }
@@ -234,7 +234,7 @@ public class BlockDefinitionLoader {
         try {
             return GSON.fromJson(json, BlockDefinition.class);
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to parse block definition from JSON", e);
+            AromaAffect.LOGGER.error("Failed to parse block definition from JSON", e);
             return null;
         }
     }
@@ -306,7 +306,7 @@ public class BlockDefinitionLoader {
      * @return The reloaded list of block definitions
      */
     public static List<BlockDefinition> reload() {
-        AromaCraft.LOGGER.info("Reloading block definitions...");
+        AromaAffect.LOGGER.info("Reloading block definitions...");
         return loadAllBlocks();
     }
     

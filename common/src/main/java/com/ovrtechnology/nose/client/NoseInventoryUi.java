@@ -73,8 +73,8 @@ public final class NoseInventoryUi {
 
         Slot headSlot = headSlotOpt.get();
         button.visible = true;
-        button.setX(accessor.aromacraft$getLeftPos() + headSlot.x + BUTTON_X_OFFSET);
-        button.setY(accessor.aromacraft$getTopPos() + headSlot.y + BUTTON_Y_OFFSET);
+        button.setX(accessor.aromaaffect$getLeftPos() + headSlot.x + BUTTON_X_OFFSET);
+        button.setY(accessor.aromaaffect$getTopPos() + headSlot.y + BUTTON_Y_OFFSET);
     }
 
     private static Optional<Slot> findHeadSlot(AbstractContainerMenu menu) {

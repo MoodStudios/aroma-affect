@@ -1,6 +1,6 @@
 package com.ovrtechnology.nose;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -20,7 +20,7 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 
 /**
- * Base item class for all nose equipment in AromaCraft.
+ * Base item class for all nose equipment in Aroma Affect.
  * Noses are equippable items that provide scent detection abilities.
  * 
  * The nose is worn in the head slot like a helmet and provides different detection
@@ -60,7 +60,7 @@ public class NoseItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM, 
-                ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, itemId)
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
         ));
         
         // Set durability

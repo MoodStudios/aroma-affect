@@ -1,6 +1,6 @@
 package com.ovrtechnology.fabric.client;
 
-import com.ovrtechnology.AromaCraftClient;
+import com.ovrtechnology.AromaAffectClient;
 import com.ovrtechnology.nose.client.NoseClient;
 import net.fabricmc.api.ClientModInitializer;
 
@@ -11,7 +11,7 @@ public final class ExampleModFabricClient implements ClientModInitializer {
         NoseClient.init();
 
         // Initialize client-side systems (menus, keybindings, rendering)
-        AromaCraftClient.init();
+        AromaAffectClient.init();
 
         // Register Fabric-specific armor renderer for 3D Nose models
         NoseRenderingFabric.init();

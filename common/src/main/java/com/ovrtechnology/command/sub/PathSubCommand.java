@@ -136,7 +136,7 @@ public class PathSubCommand implements SubCommand {
 
     private int showUsage(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("§6[AromaCraft] §7Path usage:"), false);
+        source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Path usage:"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest path biome <biome_id> [radius]"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest path structure <structure_id> [radius]"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest path block <block_id> [radius]"), false);
@@ -148,15 +148,15 @@ public class PathSubCommand implements SubCommand {
         CommandSourceStack source = context.getSource();
 
         if (!(source.getEntity() instanceof ServerPlayer player)) {
-            source.sendFailure(Component.literal("§6[AromaCraft] §cThis command can only be executed by a player"));
+            source.sendFailure(Component.literal("§6[Aroma Affect] §cThis command can only be executed by a player"));
             return 0;
         }
 
         if (ActivePathManager.getInstance().hasActivePath(player.getUUID())) {
             ActivePathManager.getInstance().removePath(player.getUUID());
-            source.sendSuccess(() -> Component.literal("§6[AromaCraft] §aPath stopped successfully!"), false);
+            source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aPath stopped successfully!"), false);
         } else {
-            source.sendSuccess(() -> Component.literal("§6[AromaCraft] §7No active path to stop."), false);
+            source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7No active path to stop."), false);
         }
 
         return Command.SINGLE_SUCCESS;
@@ -189,7 +189,7 @@ public class PathSubCommand implements SubCommand {
 
         // Send search message
         source.sendSuccess(() -> Component.literal(
-                "§6[AromaCraft] §7Searching for §e" + type.getId() + " §7'§f" + resourceId + "§7'..."
+                "§6[Aroma Affect] §7Searching for §e" + type.getId() + " §7'§f" + resourceId + "§7'..."
         ), false);
 
         // Execute asynchronous search
@@ -207,7 +207,7 @@ public class PathSubCommand implements SubCommand {
             int yLevel = LookupManager.getInstance().findYLevel(level, destination.getX(), destination.getZ(), result.target().type());
             BlockPos finalDestination = new BlockPos(destination.getX(), yLevel, destination.getZ());
 
-            source.sendSuccess(() -> Component.literal("§6[AromaCraft] §aCreating particle path!"), false);
+            source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aCreating particle path!"), false);
             source.sendSuccess(() -> Component.literal(
                     String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d",
                             finalDestination.getX(), finalDestination.getY(), finalDestination.getZ())
@@ -239,7 +239,7 @@ public class PathSubCommand implements SubCommand {
             };
 
             source.sendFailure(Component.literal(
-                    "§6[AromaCraft] §c" + reason + ": §7" + result.target().resourceId()
+                    "§6[Aroma Affect] §c" + reason + ": §7" + result.target().resourceId()
             ));
         }
     }

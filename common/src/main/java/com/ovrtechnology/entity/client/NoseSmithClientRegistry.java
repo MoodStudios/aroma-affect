@@ -1,6 +1,6 @@
 package com.ovrtechnology.entity.client;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.NoseSmithRegistry;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import lombok.experimental.UtilityClass;
@@ -20,16 +20,16 @@ public final class NoseSmithClientRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("NoseSmithClientRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("NoseSmithClientRegistry.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing NoseSmithClientRegistry...");
+        AromaAffect.LOGGER.info("Initializing NoseSmithClientRegistry...");
         
         // Register the entity renderer
         EntityRendererRegistry.register(NoseSmithRegistry.getNOSE_SMITH(), NoseSmithRenderer::new);
         
         initialized = true;
-        AromaCraft.LOGGER.info("NoseSmithClientRegistry initialized successfully!");
+        AromaAffect.LOGGER.info("NoseSmithClientRegistry initialized successfully!");
     }
 }

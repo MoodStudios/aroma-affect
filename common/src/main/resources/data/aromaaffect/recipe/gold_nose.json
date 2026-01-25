@@ -1,0 +1,18 @@
+  {
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "GGG",
+    "GNG",
+    " D "
+  ],
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "N": "aromaaffect:basic_nose",
+    "D": "minecraft:diamond"
+  },
+  "result": {
+    "id": "aromaaffect:gold_nose",
+    "count": 1
+  }
+}

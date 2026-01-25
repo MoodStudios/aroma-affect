@@ -66,7 +66,7 @@ public class BiomeDefinition {
     private String biomeId;
     
     /**
-     * Path to the texture file relative to assets/aromacraft/textures/
+     * Path to the texture file relative to assets/aromaaffect/textures/
      * Used for displaying biome icons in menus.
      */
     @SerializedName("image")

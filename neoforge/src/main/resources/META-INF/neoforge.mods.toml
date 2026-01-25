@@ -1,33 +1,33 @@
 modLoader = "javafml"
 loaderVersion = "[10,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "Proprietary"
 
 [[mods]]
-modId = "aromacraft"
+modId = "aromaaffect"
 version = "${version}"
-displayName = "AromaCraft"
-authors = "Me!"
+displayName = "Aroma Affect"
+authors = "Mood Studios, OVR Technology"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+A Minecraft mod that brings the sense of smell to your gameplay through OVR scent hardware integration.
 '''
 #logoFile = ""
 
-[[dependencies.aromacraft]]
+[[dependencies.aromaaffect]]
 modId = "neoforge"
 type = "required"
 versionRange = "[21.10,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.aromacraft]]
+[[dependencies.aromaaffect]]
 modId = "minecraft"
 type = "required"
 versionRange = "[1.21.10,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.aromacraft]]
+[[dependencies.aromaaffect]]
 modId = "architectury"
 type = "required"
 versionRange = "[18.0.6,)"
@@ -35,4 +35,4 @@ ordering = "AFTER"
 side = "BOTH"
 
 [[mixins]]
-config = "aromacraft.mixins.json"
+config = "aromaaffect.mixins.json"

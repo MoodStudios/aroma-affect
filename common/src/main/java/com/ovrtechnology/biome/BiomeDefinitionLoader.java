@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
 
@@ -23,7 +23,7 @@ import java.util.Set;
  * Loads trackable biome definitions from JSON files.
  * 
  * <p>This loader handles parsing the biome configuration from
- * {@code data/aromacraft/biomes/biomes.json} and provides validation
+ * {@code data/aromaaffect/biomes/biomes.json} and provides validation
  * for duplicate IDs, HTML color format, and scent references.</p>
  * 
  * <p>The JSON format supports both array format and object with "biomes" array:</p>
@@ -58,7 +58,7 @@ public class BiomeDefinitionLoader {
     /**
      * Path to the biomes JSON file
      */
-    private static final String BIOMES_RESOURCE_PATH = "data/aromacraft/biomes/biomes.json";
+    private static final String BIOMES_RESOURCE_PATH = "data/aromaaffect/biomes/biomes.json";
     
     /**
      * Cached list of loaded biome definitions
@@ -104,13 +104,13 @@ public class BiomeDefinitionLoader {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to load biome definitions", e);
+            AromaAffect.LOGGER.error("Failed to load biome definitions", e);
         }
         
-        AromaCraft.LOGGER.info("Loaded {} biome definitions", loadedBiomes.size());
+        AromaAffect.LOGGER.info("Loaded {} biome definitions", loadedBiomes.size());
         
         if (!validationWarnings.isEmpty()) {
-            AromaCraft.LOGGER.warn("Biome loading completed with {} validation warnings", validationWarnings.size());
+            AromaAffect.LOGGER.warn("Biome loading completed with {} validation warnings", validationWarnings.size());
         }
         
         return Collections.unmodifiableList(loadedBiomes);
@@ -145,7 +145,7 @@ public class BiomeDefinitionLoader {
         
         loadedIds.add(biomeId);
         loadedBiomes.add(biome);
-        AromaCraft.LOGGER.debug("Loaded biome definition: {} (color: {}, scent: {})", 
+        AromaAffect.LOGGER.debug("Loaded biome definition: {} (color: {}, scent: {})", 
                 biomeId, biome.getColorHtml(), biome.getScentId());
     }
     
@@ -183,7 +183,7 @@ public class BiomeDefinitionLoader {
         // Validate image path
         String rawImage = biome.getRawImage();
         if (rawImage == null || rawImage.isEmpty()) {
-            AromaCraft.LOGGER.debug("[{}] No image defined, using default: {}", biomeId, BiomeDefinition.DEFAULT_IMAGE);
+            AromaAffect.LOGGER.debug("[{}] No image defined, using default: {}", biomeId, BiomeDefinition.DEFAULT_IMAGE);
         }
     }
     
@@ -194,7 +194,7 @@ public class BiomeDefinitionLoader {
      */
     private static void addWarning(String warning) {
         validationWarnings.add(warning);
-        AromaCraft.LOGGER.warn(warning);
+        AromaAffect.LOGGER.warn(warning);
     }
     
     /**
@@ -206,7 +206,7 @@ public class BiomeDefinitionLoader {
     private static BiomeDefinition[] loadBiomesFromResource(String resourcePath) {
         try (InputStream inputStream = BiomeDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                AromaCraft.LOGGER.warn("Biome definitions file not found: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Biome definitions file not found: {}", resourcePath);
                 return new BiomeDefinition[0];
             }
             
@@ -223,11 +223,11 @@ public class BiomeDefinitionLoader {
                     }
                 }
                 
-                AromaCraft.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'biomes' key)", resourcePath);
+                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'biomes' key)", resourcePath);
                 return new BiomeDefinition[0];
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error parsing biome definitions from: {}", resourcePath, e);
+            AromaAffect.LOGGER.error("Error parsing biome definitions from: {}", resourcePath, e);
             return new BiomeDefinition[0];
         }
     }
@@ -242,7 +242,7 @@ public class BiomeDefinitionLoader {
         try {
             return GSON.fromJson(json, BiomeDefinition.class);
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to parse biome definition from JSON", e);
+            AromaAffect.LOGGER.error("Failed to parse biome definition from JSON", e);
             return null;
         }
     }
@@ -344,7 +344,7 @@ public class BiomeDefinitionLoader {
      * @return The reloaded list of biome definitions
      */
     public static List<BiomeDefinition> reload() {
-        AromaCraft.LOGGER.info("Reloading biome definitions...");
+        AromaAffect.LOGGER.info("Reloading biome definitions...");
         return loadAllBiomes();
     }
     

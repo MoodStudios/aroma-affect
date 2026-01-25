@@ -1,6 +1,6 @@
 package com.ovrtechnology.trigger;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.search.SearchManager;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
@@ -73,7 +73,7 @@ public final class PassiveModeManager {
      */
     public static void tick(Player player) {
         if (player == null) {
-            AromaCraft.LOGGER.warn("Passive-mode tick called with null player!");
+            AromaAffect.LOGGER.warn("Passive-mode tick called with null player!");
             return;
         }
         
@@ -84,14 +84,14 @@ public final class PassiveModeManager {
         tickCounter = 0;
         
         // Log every CHECK_INTERVAL_TICKS to confirm tick is working
-        AromaCraft.LOGGER.debug("[PassiveModeManager] Processing tick (every {} ticks)", CHECK_INTERVAL_TICKS);
+        AromaAffect.LOGGER.debug("[PassiveModeManager] Processing tick (every {} ticks)", CHECK_INTERVAL_TICKS);
         
         // CRITICAL CHECKS - Early returns for performance
         
         // 1. Check if OVR hardware is connected (skip in DEV_MODE)
         if (!DEV_MODE && !OvrWebSocketClient.getInstance().isConnected()) {
             // Hardware not connected - passive mode disabled
-            AromaCraft.LOGGER.debug("Passive-mode disabled: OVR hardware not connected");
+            AromaAffect.LOGGER.debug("Passive-mode disabled: OVR hardware not connected");
             clearPassiveScent();
             return;
         }
@@ -99,7 +99,7 @@ public final class PassiveModeManager {
         // 2. Check if player has nose equipped
         if (SearchManager.isNoseEquipped(player)) {
             // Player has nose - passive mode disabled
-            AromaCraft.LOGGER.debug("Passive-mode disabled: Nose equipped");
+            AromaAffect.LOGGER.debug("Passive-mode disabled: Nose equipped");
             clearPassiveScent();
             return;
         }
@@ -174,12 +174,12 @@ public final class PassiveModeManager {
                     // Send chat message to player
                     String blockName = getBlockDisplayName(level, blockId);
                     player.displayClientMessage(
-                        Component.literal("§6[AromaCraft] §7Detected Scent: §e" + trigger.getScentName() +
+                        Component.literal("§6[Aroma Affect] §7Detected Scent: §e" + trigger.getScentName() +
                             " §7 near block §b" + blockName),
                         false
                     );
                     
-                    AromaCraft.LOGGER.debug("Passive-mode triggered: {} near block {}", 
+                    AromaAffect.LOGGER.debug("Passive-mode triggered: {} near block {}", 
                         trigger.getScentName(), blockId);
                 } else {
                     // Update position in cache
@@ -236,12 +236,12 @@ public final class PassiveModeManager {
                     // Send chat message to player
                     String biomeName = getBiomeDisplayName(biomeId);
                     player.displayClientMessage(
-                        Component.literal("§6[AromaCraft] §7Detected Scent: §e" + trigger.getScentName() +
+                        Component.literal("§6[Aroma Affect] §7Detected Scent: §e" + trigger.getScentName() +
                             " §7near biome §b" + biomeName),
                         false
                     );
                     
-                    AromaCraft.LOGGER.debug("Passive-mode triggered: {} from biome {}", 
+                    AromaAffect.LOGGER.debug("Passive-mode triggered: {} from biome {}", 
                         trigger.getScentName(), biomeId);
                 }
             } else if (trigger.isEnterTrigger()) {
@@ -264,12 +264,12 @@ public final class PassiveModeManager {
                     // Send chat message to player
                     String biomeName = getBiomeDisplayName(biomeId);
                     player.displayClientMessage(
-                        Component.literal("§6[AromaCraft] §7detected scent: §e" + trigger.getScentName() +
+                        Component.literal("§6[Aroma Affect] §7detected scent: §e" + trigger.getScentName() +
                             " §7al enter the biome §b" + biomeName),
                         false
                     );
                     
-                    AromaCraft.LOGGER.debug("Passive-mode triggered: {} entering biome {}", 
+                    AromaAffect.LOGGER.debug("Passive-mode triggered: {} entering biome {}", 
                         trigger.getScentName(), biomeId);
                 }
             }
@@ -341,12 +341,12 @@ public final class PassiveModeManager {
                 // Send chat message to player
                 String structureName = formatResourceId(foundStructureId);
                 player.displayClientMessage(
-                    Component.literal("§6[AromaCraft] §7Detected Scent: §e" + foundTrigger.getScentName() +
+                    Component.literal("§6[Aroma Affect] §7Detected Scent: §e" + foundTrigger.getScentName() +
                         " §7near structure §b" + structureName),
                     false
                 );
                 
-                AromaCraft.LOGGER.debug("Passive-mode triggered: {} near structure {}", 
+                AromaAffect.LOGGER.debug("Passive-mode triggered: {} near structure {}", 
                     foundTrigger.getScentName(), foundStructureId);
             }
         } else {
@@ -435,7 +435,7 @@ public final class PassiveModeManager {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.debug("Error checking structure {}: {}", structureId, e.getMessage());
+            AromaAffect.LOGGER.debug("Error checking structure {}: {}", structureId, e.getMessage());
         }
         
         return false;
@@ -478,7 +478,7 @@ public final class PassiveModeManager {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.warn("Error searching for block {}: {}", blockId, e.getMessage());
+            AromaAffect.LOGGER.warn("Error searching for block {}: {}", blockId, e.getMessage());
         }
         
         return Optional.empty();
@@ -512,7 +512,7 @@ public final class PassiveModeManager {
                 return displayName;
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.debug("Error getting block display name for {}: {}", blockId, e.getMessage());
+            AromaAffect.LOGGER.debug("Error getting block display name for {}: {}", blockId, e.getMessage());
         }
         
         // Fallback: format the resource ID
@@ -586,7 +586,7 @@ public final class PassiveModeManager {
             .filter(trigger -> trigger.source() == ScentTriggerSource.PASSIVE_MODE)
             .ifPresent(trigger -> {
                 manager.stop();
-                AromaCraft.LOGGER.debug("Passive-mode scent stopped: {}", trigger.scentName());
+                AromaAffect.LOGGER.debug("Passive-mode scent stopped: {}", trigger.scentName());
             });
         
         // Clear caches

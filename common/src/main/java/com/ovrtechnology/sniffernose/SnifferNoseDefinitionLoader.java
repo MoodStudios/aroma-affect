@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 
 import java.io.InputStream;
@@ -22,7 +22,7 @@ import java.util.Set;
  * Loads sniffer nose definitions from JSON files.
  * 
  * <p>This loader handles parsing the sniffer nose configuration from
- * {@code data/aromacraft/noses/sniffer_noses.json}.</p>
+ * {@code data/aromaaffect/noses/sniffer_noses.json}.</p>
  */
 public class SnifferNoseDefinitionLoader {
     
@@ -33,7 +33,7 @@ public class SnifferNoseDefinitionLoader {
     /**
      * Path to the sniffer noses JSON file
      */
-    private static final String SNIFFER_NOSES_RESOURCE_PATH = "data/aromacraft/noses/sniffer_noses.json";
+    private static final String SNIFFER_NOSES_RESOURCE_PATH = "data/aromaaffect/noses/sniffer_noses.json";
     
     /**
      * Default texture path for fallback
@@ -68,10 +68,10 @@ public class SnifferNoseDefinitionLoader {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to load sniffer nose definitions", e);
+            AromaAffect.LOGGER.error("Failed to load sniffer nose definitions", e);
         }
         
-        AromaCraft.LOGGER.info("Loaded {} sniffer nose definitions", loadedSnifferNoses.size());
+        AromaAffect.LOGGER.info("Loaded {} sniffer nose definitions", loadedSnifferNoses.size());
         return Collections.unmodifiableList(loadedSnifferNoses);
     }
     
@@ -80,12 +80,12 @@ public class SnifferNoseDefinitionLoader {
      */
     private static void processSnifferNose(SnifferNoseDefinition snifferNose) {
         if (snifferNose == null) {
-            AromaCraft.LOGGER.warn("Null sniffer nose definition found, skipping...");
+            AromaAffect.LOGGER.warn("Null sniffer nose definition found, skipping...");
             return;
         }
         
         if (!snifferNose.isValid()) {
-            AromaCraft.LOGGER.warn("Invalid sniffer nose definition found (missing id), skipping...");
+            AromaAffect.LOGGER.warn("Invalid sniffer nose definition found (missing id), skipping...");
             return;
         }
         
@@ -93,7 +93,7 @@ public class SnifferNoseDefinitionLoader {
         
         // Check for duplicate IDs
         if (loadedIds.contains(id)) {
-            AromaCraft.LOGGER.warn("Duplicate sniffer nose ID '{}' found, skipping...", id);
+            AromaAffect.LOGGER.warn("Duplicate sniffer nose ID '{}' found, skipping...", id);
             return;
         }
         
@@ -102,7 +102,7 @@ public class SnifferNoseDefinitionLoader {
         
         loadedIds.add(id);
         loadedSnifferNoses.add(snifferNose);
-        AromaCraft.LOGGER.debug("Loaded sniffer nose definition: {}", id);
+        AromaAffect.LOGGER.debug("Loaded sniffer nose definition: {}", id);
     }
     
     /**
@@ -114,16 +114,16 @@ public class SnifferNoseDefinitionLoader {
         // Check texture
         String texturePath = snifferNose.getImage();
         if (texturePath == null || texturePath.isEmpty()) {
-            AromaCraft.LOGGER.warn("[{}] No texture defined, using fallback: {}", id, DEFAULT_TEXTURE);
+            AromaAffect.LOGGER.warn("[{}] No texture defined, using fallback: {}", id, DEFAULT_TEXTURE);
             snifferNose.setImage(DEFAULT_TEXTURE);
         } else if (!textureExists(texturePath)) {
-            AromaCraft.LOGGER.warn("[{}] Texture '{}' not found, using fallback: {}", id, texturePath, DEFAULT_TEXTURE);
+            AromaAffect.LOGGER.warn("[{}] Texture '{}' not found, using fallback: {}", id, texturePath, DEFAULT_TEXTURE);
             snifferNose.setImage(DEFAULT_TEXTURE);
         }
         
         // Check model
         if (snifferNose.getModel() == null || snifferNose.getModel().isEmpty()) {
-            AromaCraft.LOGGER.info("[{}] No model defined, using default: minecraft:leather_helmet", id);
+            AromaAffect.LOGGER.info("[{}] No model defined, using default: minecraft:leather_helmet", id);
         }
     }
     
@@ -131,7 +131,7 @@ public class SnifferNoseDefinitionLoader {
      * Check if a texture file exists in the resources
      */
     private static boolean textureExists(String texturePath) {
-        String fullPath = "assets/aromacraft/textures/" + texturePath + ".png";
+        String fullPath = "assets/aromaaffect/textures/" + texturePath + ".png";
         
         try (InputStream stream = SnifferNoseDefinitionLoader.class.getClassLoader().getResourceAsStream(fullPath)) {
             return stream != null;
@@ -146,7 +146,7 @@ public class SnifferNoseDefinitionLoader {
     private static SnifferNoseDefinition[] loadSnifferNosesFromResource(String resourcePath) {
         try (InputStream inputStream = SnifferNoseDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                AromaCraft.LOGGER.warn("Sniffer noses definitions file not found: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Sniffer noses definitions file not found: {}", resourcePath);
                 return new SnifferNoseDefinition[0];
             }
             
@@ -163,11 +163,11 @@ public class SnifferNoseDefinitionLoader {
                     }
                 }
                 
-                AromaCraft.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'sniffer_noses' key)", resourcePath);
+                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'sniffer_noses' key)", resourcePath);
                 return new SnifferNoseDefinition[0];
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error parsing sniffer nose definitions from: {}", resourcePath, e);
+            AromaAffect.LOGGER.error("Error parsing sniffer nose definitions from: {}", resourcePath, e);
             return new SnifferNoseDefinition[0];
         }
     }
