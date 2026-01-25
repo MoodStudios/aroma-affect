@@ -24,8 +24,10 @@ public final class AromaAffectNeoForgeClient {
         // Register shared model layers early (before NeoForge fires layer definition events).
         NoseClient.init();
 
-        // Register client setup event
-        modEventBus.addListener(this::onClientSetup);
+        // Initialize common client systems early so entity renderers exist before the world renders.
+        // (If this runs too late, missing renderers can hard-crash the client when entities are present.)
+        AromaAffectClient.init();
+
         modEventBus.addListener(this::onRegisterClientExtensions);
     }
     
