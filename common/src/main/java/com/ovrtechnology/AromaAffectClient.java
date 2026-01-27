@@ -5,6 +5,7 @@ import com.ovrtechnology.menu.MenuKeyBindings;
 import com.ovrtechnology.nose.client.NoseInventoryUi;
 import com.ovrtechnology.search.SearchKeyBindings;
 import com.ovrtechnology.trigger.ScentTriggerHandler;
+import com.ovrtechnology.trigger.client.PassiveModeHud;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
 import lombok.experimental.UtilityClass;
@@ -50,13 +51,15 @@ public final class AromaAffectClient {
 
         // Initialize scent trigger handler
         ScentTriggerHandler.init();
-        
+
+        // Initialize passive mode HUD overlay
+        PassiveModeHud.init();
+
         // Initialize OVR WebSocket client for scent hardware integration
         // The connection is optional - the mod works without it
         initWebSocketClient();
         
         // TODO: Initialize other client systems
-        // - HUD overlays for tracking
         // - Particle effects
         // - Sound manager
         

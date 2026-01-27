@@ -6,6 +6,7 @@
     "block_cooldown_ms": 5000,
     "structure_cooldown_ms": 15000,
     "mob_cooldown_ms": 5000,
+    "passive_scent_cooldown_ms": 30000,
     "item_intensity": 0.5,
     "biome_intensity": 0.3,
     "block_intensity": 0.4,
@@ -147,385 +148,385 @@
       "biome_id": "minecraft:plains",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:sunflower_plains",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:snowy_plains",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:ice_spikes",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:desert",
       "scent_name": "Desert",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:swamp",
       "scent_name": "Petrichor",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:mangrove_swamp",
       "scent_name": "Petrichor",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:forest",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:flower_forest",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:birch_forest",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:dark_forest",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:old_growth_birch_forest",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:old_growth_pine_taiga",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:old_growth_spruce_taiga",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:taiga",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:snowy_taiga",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:savanna",
       "scent_name": "Desert",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:savanna_plateau",
       "scent_name": "Desert",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:windswept_hills",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:windswept_gravelly_hills",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:windswept_forest",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:windswept_savanna",
       "scent_name": "Desert",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:jungle",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:sparse_jungle",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:bamboo_jungle",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:badlands",
       "scent_name": "Desert",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:eroded_badlands",
       "scent_name": "Desert",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:wooded_badlands",
       "scent_name": "Desert",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:meadow",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:cherry_grove",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:grove",
       "scent_name": "Evergreen",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:snowy_slopes",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:frozen_peaks",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:jagged_peaks",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:stony_peaks",
       "scent_name": "Terra Silva",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:river",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:frozen_river",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:beach",
       "scent_name": "Beach",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:snowy_beach",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:stony_shore",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:warm_ocean",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:lukewarm_ocean",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:deep_lukewarm_ocean",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:ocean",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:deep_ocean",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:cold_ocean",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:deep_cold_ocean",
       "scent_name": "Marine",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:frozen_ocean",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:deep_frozen_ocean",
       "scent_name": "Winter",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:mushroom_fields",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:dripstone_caves",
       "scent_name": "Terra Silva",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:lush_caves",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:deep_dark",
       "scent_name": "Machina",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:nether_wastes",
       "scent_name": "Smoky",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:warped_forest",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:crimson_forest",
       "scent_name": "Smoky",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:soul_sand_valley",
       "scent_name": "Smoky",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:basalt_deltas",
       "scent_name": "Smoky",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:the_end",
       "scent_name": "Machina",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:end_highlands",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:end_midlands",
       "scent_name": "Floral",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:small_end_islands",
       "scent_name": "Machina",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:end_barrens",
       "scent_name": "Machina",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     },
     {
       "biome_id": "minecraft:the_void",
       "scent_name": "Machina",
       "mode": "AMBIENT",
-      "priority": "MEDLOW"
+      "priority": "LOW"
     }
   ],
   "block_triggers": [
