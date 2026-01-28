@@ -1,0 +1,38 @@
+{
+  "abilities": [
+    {
+      "id": "basic_scent",
+      "type": "passive",
+      "description": "Basic scent detection for water and lava"
+    },
+    {
+      "id": "active_tracking",
+      "type": "passive",
+      "description": "Enhanced active tracking mode for scent detection"
+    },
+    {
+      "id": "structure_compass",
+      "type": "passive",
+      "description": "Detect nearby structures through scent"
+    },
+    {
+      "id": "danger_sense",
+      "type": "passive",
+      "description": "Sense nearby dangers and hostile entities"
+    },
+    {
+      "id": "precise_sniffer",
+      "type": "block_interaction",
+      "description": "Sniff out loot from Suspicious Sand with increased Sniffer Egg chance",
+      "config": {
+        "duration_ticks": 40,
+        "cooldown_ticks": 40,
+        "durability_cost": 5,
+        "valid_blocks": [
+          "minecraft:suspicious_sand"
+        ],
+        "sniffer_egg_chance": 0.4
+      }
+    }
+  ]
+}
