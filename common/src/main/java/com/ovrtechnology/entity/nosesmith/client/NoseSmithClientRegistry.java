@@ -1,7 +1,7 @@
-package com.ovrtechnology.entity.client;
+package com.ovrtechnology.entity.nosesmith.client;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.entity.NoseSmithRegistry;
+import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import lombok.experimental.UtilityClass;
 

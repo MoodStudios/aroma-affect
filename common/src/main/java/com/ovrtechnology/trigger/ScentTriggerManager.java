@@ -359,7 +359,7 @@ public final class ScentTriggerManager {
 
     /**
      * Gets the remaining duration as a fraction (0.0 to 1.0).
-     * 
+     *
      * @return progress fraction, or 0 if no active scent
      */
     public float getRemainingProgress() {
@@ -367,5 +367,25 @@ public final class ScentTriggerManager {
             return 0.0f;
         }
         return (float) remainingTicks / activeScent.durationTicks();
+    }
+
+    /**
+     * Gets the timestamp of the last global trigger.
+     * Used by HUD to calculate cooldown progress.
+     *
+     * @return timestamp in milliseconds
+     */
+    public long getLastGlobalTriggerTime() {
+        return lastGlobalTriggerTime;
+    }
+
+    /**
+     * Gets the timestamp of the last trigger for a specific scent.
+     *
+     * @param scentName the scent name
+     * @return timestamp in milliseconds, or 0 if never triggered
+     */
+    public long getLastTriggerTime(String scentName) {
+        return lastTriggerTime.getOrDefault(scentName, 0L);
     }
 }

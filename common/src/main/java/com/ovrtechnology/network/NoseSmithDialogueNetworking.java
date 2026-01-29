@@ -1,7 +1,7 @@
 package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.entity.NoseSmithEntity;
+import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.RegistryAccess;

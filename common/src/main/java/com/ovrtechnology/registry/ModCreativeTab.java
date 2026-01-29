@@ -1,7 +1,7 @@
 package com.ovrtechnology.registry;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.entity.NoseSmithRegistry;
+import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;

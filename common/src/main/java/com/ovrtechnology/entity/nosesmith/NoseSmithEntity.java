@@ -1,4 +1,4 @@
-package com.ovrtechnology.entity;
+package com.ovrtechnology.entity.nosesmith;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseRegistry;
@@ -252,7 +252,7 @@ public class NoseSmithEntity extends Villager {
 
     private void openDialogueUiClient() {
         try {
-            Class<?> clazz = Class.forName("com.ovrtechnology.entity.client.dialogue.NoseSmithDialogueClient");
+            Class<?> clazz = Class.forName("com.ovrtechnology.entity.nosesmith.client.dialogue.NoseSmithDialogueClient");
             clazz.getMethod("open", NoseSmithEntity.class).invoke(null, this);
         } catch (ReflectiveOperationException e) {
             AromaAffect.LOGGER.debug("Failed to open Nose Smith dialogue UI", e);
