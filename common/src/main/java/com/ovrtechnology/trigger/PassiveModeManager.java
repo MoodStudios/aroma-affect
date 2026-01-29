@@ -1,7 +1,6 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.search.SearchManager;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -107,12 +106,9 @@ public final class PassiveModeManager {
             return;
         }
 
-        // 2. Check if player has nose equipped
-        if (SearchManager.isNoseEquipped(player)) {
-            AromaAffect.LOGGER.debug("Passive-mode disabled: Nose equipped");
-            clearPassiveScent(player);
-            return;
-        }
+        // Note: Passive-mode now works with or without nose equipped.
+        // Previously it was disabled when nose was equipped, but users
+        // want automatic scent detection regardless of nose status.
 
         // All conditions met - evaluate triggers by priority
         Level level = player.level();

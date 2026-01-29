@@ -1,10 +1,8 @@
 package com.ovrtechnology.command.path;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.trigger.ScentPriority;
-import com.ovrtechnology.trigger.ScentTrigger;
-import com.ovrtechnology.trigger.ScentTriggerManager;
-import com.ovrtechnology.trigger.ScentTriggerSource;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -267,6 +265,7 @@ public final class ActivePathManager {
 
     /**
      * Triggers a scent based on the target type and ID.
+     * Uses networking to send the trigger from server to client.
      *
      * @param player     the player to trigger the scent for
      * @param targetType the type of target being tracked
@@ -284,19 +283,11 @@ public final class ActivePathManager {
         double intensity = getIntensityForTarget(targetType, targetId);
         ScentPriority priority = ScentPriority.MEDIUM;
 
-        ScentTrigger trigger = ScentTrigger.create(
-                scent,
-                ScentTriggerSource.PATH_TRACKING,
-                priority,
-                PATH_SCENT_DURATION_TICKS,
-                intensity
-        );
+        // Send scent trigger to client via networking
+        PathScentNetworking.sendScentTrigger(player, scent, intensity, priority);
 
-        boolean triggered = ScentTriggerManager.getInstance().trigger(trigger);
-        if (triggered) {
-            AromaAffect.LOGGER.debug("Triggered path tracking scent '{}' for player {} (tracking {} {})",
-                    scent, player.getName().getString(), targetType, targetId);
-        }
+        AromaAffect.LOGGER.debug("Sent path tracking scent '{}' to player {} (tracking {} {})",
+                scent, player.getName().getString(), targetType, targetId);
     }
 
     /**
