@@ -221,7 +221,11 @@ public class PathSubCommand implements SubCommand {
 
             // Create persistent path that follows terrain with undulations
             if (player != null && player.level() == level) {
-                ActivePathManager.getInstance().createPath(player, level, finalDestination);
+                // Convert LookupType to ActivePathManager.TargetType
+                ActivePathManager.TargetType targetType = convertLookupType(result.target().type());
+                String targetId = result.target().resourceId().toString();
+
+                ActivePathManager.getInstance().createPath(player, level, finalDestination, targetType, targetId);
             } else if (player == null) {
                 source.sendSuccess(() -> Component.literal("§7  §o(Particles only visible to players)"), false);
             }
@@ -242,5 +246,16 @@ public class PathSubCommand implements SubCommand {
                     "§6[Aroma Affect] §c" + reason + ": §7" + result.target().resourceId()
             ));
         }
+    }
+
+    /**
+     * Converts a LookupType to an ActivePathManager.TargetType.
+     */
+    private ActivePathManager.TargetType convertLookupType(LookupType lookupType) {
+        return switch (lookupType) {
+            case BLOCK, FLOWER -> ActivePathManager.TargetType.BLOCK;
+            case BIOME -> ActivePathManager.TargetType.BIOME;
+            case STRUCTURE -> ActivePathManager.TargetType.STRUCTURE;
+        };
     }
 }

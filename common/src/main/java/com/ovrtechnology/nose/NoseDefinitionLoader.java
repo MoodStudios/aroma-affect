@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.structure.StructureRegistry;
@@ -156,6 +157,22 @@ public class NoseDefinitionLoader {
                     validBiomes.removeAll(invalidBiomes);
                     unlock.setBiomes(validBiomes);
                     AromaAffect.LOGGER.info("[{}] Kept {} valid biome references after filtering", noseId, validBiomes.size());
+                }
+            }
+            
+            // Validate and filter ability references against AbilityDefinitionLoader
+            if (unlock.hasAbilityUnlocks() && AbilityDefinitionLoader.isInitialized()) {
+                List<String> invalidAbilities = AbilityDefinitionLoader.validateAbilityIds(unlock.getAbilities());
+                if (!invalidAbilities.isEmpty()) {
+                    for (String invalidAbility : invalidAbilities) {
+                        AromaAffect.LOGGER.warn("[{}] Skipping unregistered ability: '{}' - ability must be defined in abilities.json", 
+                                noseId, invalidAbility);
+                    }
+                    // Filter out invalid abilities
+                    List<String> validAbilities = new ArrayList<>(unlock.getAbilities());
+                    validAbilities.removeAll(invalidAbilities);
+                    unlock.setAbilities(validAbilities);
+                    AromaAffect.LOGGER.info("[{}] Kept {} valid ability references after filtering", noseId, validAbilities.size());
                 }
             }
         }

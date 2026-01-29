@@ -43,7 +43,7 @@ public final class SnifferLootTable {
     private SnifferLootTable() {}
 
     /**
-     * Rolls loot for the Precise Sniffer ability.
+     * Rolls loot for the Precise Sniffer ability using the default chance.
      * 
      * <p>
      * First checks if the player wins a Sniffer Egg (40% chance).
@@ -65,9 +65,34 @@ public final class SnifferLootTable {
             ServerPlayer player,
             RandomSource random) {
 
-        int roll = random.nextInt(100);
+        return rollLoot(level, pos, vanillaLootKey, player, random, SNIFFER_EGG_CHANCE / 100.0);
+    }
 
-        if (roll < SNIFFER_EGG_CHANCE) {
+    /**
+     * Rolls loot for the Precise Sniffer ability with a custom Sniffer Egg chance.
+     * 
+     * <p>
+     * First checks if the player wins a Sniffer Egg based on the provided chance.
+     * If not, delegates to the vanilla archaeology loot table.
+     * </p>
+     * 
+     * @param level            the server level
+     * @param pos              the position of the suspicious sand block
+     * @param vanillaLootKey   the vanilla loot table key from the brushable block
+     * @param player           the player using the ability (required for loot context)
+     * @param random           the random source
+     * @param snifferEggChance the chance (0.0 to 1.0) to get a Sniffer Egg
+     * @return the rolled ItemStack (Sniffer Egg or vanilla loot)
+     */
+    public static ItemStack rollLoot(
+            ServerLevel level,
+            BlockPos pos,
+            ResourceKey<LootTable> vanillaLootKey,
+            ServerPlayer player,
+            RandomSource random,
+            double snifferEggChance) {
+
+        if (random.nextDouble() < snifferEggChance) {
             return new ItemStack(Items.SNIFFER_EGG);
         }
 

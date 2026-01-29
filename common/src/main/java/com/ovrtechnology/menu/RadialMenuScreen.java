@@ -1,9 +1,10 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.trigger.PassiveModeManager;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.ovrtechnology.trigger.PassiveModeManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -149,6 +150,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private boolean isHoveringConfig = false;
     private boolean isHoveringCompass = false;
     private boolean isHoveringPassive = false;
+    private boolean isHoveringStopPath = false;
+
+    // Color for stop button (reddish)
+    private static final int COLOR_STOP_BUTTON = 0x80FF6B6B;
 
     @Override
     protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
@@ -173,7 +178,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     /**
-     * Renders the corner buttons for config (top-right) and compass (bottom-right).
+     * Renders the corner buttons for config (top-right), compass (bottom-right), and stop path (bottom-left).
      */
     private void renderCornerButtons(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
         float appear = Mth.clamp((animationProgress - 0.3f) / 0.7f, 0.0f, 1.0f);
@@ -192,9 +197,14 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int compassX = width - CORNER_BUTTON_PADDING - buttonSize;
         int compassY = height - CORNER_BUTTON_PADDING - buttonSize;
 
+        // Stop Path button position (bottom-left corner)
+        int stopX = CORNER_BUTTON_PADDING;
+        int stopY = height - CORNER_BUTTON_PADDING - buttonSize;
+
         // Check hover states
         isHoveringConfig = isInBounds(mouseX, mouseY, configX, configY, buttonSize, buttonSize);
         isHoveringCompass = isInBounds(mouseX, mouseY, compassX, compassY, buttonSize, buttonSize);
+        isHoveringStopPath = isInBounds(mouseX, mouseY, stopX, stopY, buttonSize, buttonSize);
 
         // Render config button background when hovered
         if (isHoveringConfig) {
@@ -212,6 +222,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             renderOutline(graphics, compassX, compassY, buttonSize, buttonSize, borderColor);
         }
 
+        // Render stop path button background (always visible with slight tint, brighter when hovered)
+        int stopBgColor = isHoveringStopPath ? withAlpha(COLOR_STOP_BUTTON, appear) : withAlpha(0x40FF6B6B, appear);
+        graphics.fill(stopX, stopY, stopX + buttonSize, stopY + buttonSize, stopBgColor);
+        int stopBorderColor = withAlpha(isHoveringStopPath ? 0xFFFF6B6B : COLOR_RING_BORDER, appear);
+        renderOutline(graphics, stopX, stopY, buttonSize, buttonSize, stopBorderColor);
+
         // Render config icon
         float configScale = isHoveringConfig ? 1.1f : 1.0f;
         int configIconSize = (int) (CORNER_ICON_SIZE * configScale);
@@ -228,6 +244,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         graphics.blit(ICON_COMPASS, compassIconX, compassIconY, 0, 0, compassIconSize, compassIconSize, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
 
+        // Render stop path "X" icon (drawn as text since we don't have a texture)
+        int stopTextColor = withAlpha(isHoveringStopPath ? 0xFFFFFFFF : 0xFFDDDDDD, appear);
+        Component stopText = Component.literal("X");
+        int textX = stopX + buttonSize / 2 - font.width(stopText) / 2;
+        int textY = stopY + buttonSize / 2 - 4;
+        graphics.drawString(font, stopText, textX, textY, stopTextColor);
+
         // Render tooltips for corner buttons when hovered
         if (isHoveringConfig) {
             graphics.drawString(font, Component.translatable("menu.aromaaffect.button.config"),
@@ -240,6 +263,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     compassX - font.width(Component.translatable("menu.aromaaffect.button.compass")) - 8,
                     compassY + buttonSize / 2 - 4,
                     withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isHoveringStopPath) {
+            Component stopLabel = Component.literal("Stop Path");
+            graphics.drawString(font, stopLabel,
+                    stopX + buttonSize + 8,
+                    stopY + buttonSize / 2 - 4,
+                    withAlpha(0xFFFF6B6B, appear));
         }
 
         // Passive mode button position (top-left corner)
@@ -319,6 +349,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
             MenuManager.openCompassMenu();
             return true;
         }
+        if (isHoveringStopPath) {
+            AromaAffect.LOGGER.debug("Stop Path button clicked");
+            executeStopPath();
+            return true;
+        }
         if (isHoveringPassive) {
             AromaAffect.LOGGER.debug("Passive mode button clicked");
             PassiveModeManager.togglePassiveMode();
@@ -341,6 +376,22 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         onEntrySelected(entries.get(index));
         return true;
+    }
+
+    /**
+     * Executes the stop path command and closes the menu.
+     */
+    private void executeStopPath() {
+        // Send the stop path command to the server
+        if (Minecraft.getInstance().getConnection() != null) {
+            Minecraft.getInstance().getConnection().sendCommand("aromatest path stop");
+            AromaAffect.LOGGER.debug("Sent stop path command");
+        }
+
+        // Close the menu
+        if (minecraft != null) {
+            minecraft.setScreen(null);
+        }
     }
 
     @Override
