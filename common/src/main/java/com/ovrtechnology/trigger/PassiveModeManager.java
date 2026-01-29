@@ -50,7 +50,7 @@ public final class PassiveModeManager {
      * Development mode flag - bypasses OVR hardware check.
      * Set to false for production builds.
      */
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     /**
      * How often to check for passive triggers (in ticks).

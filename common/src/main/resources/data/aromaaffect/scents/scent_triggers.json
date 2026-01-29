@@ -7,6 +7,7 @@
     "structure_cooldown_ms": 15000,
     "mob_cooldown_ms": 5000,
     "passive_scent_cooldown_ms": 30000,
+    "path_tracking_cooldown_ms": 20000,
     "item_intensity": 0.5,
     "biome_intensity": 0.3,
     "block_intensity": 0.4,
@@ -703,6 +704,169 @@
       "scent_name": "Floral",
       "trigger_on": "PROXIMITY",
       "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "_comment": "=== Flowers ===",
+      "block_id": "minecraft:dandelion",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:poppy",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:blue_orchid",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:allium",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:azure_bluet",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:red_tulip",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:orange_tulip",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:white_tulip",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:pink_tulip",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:oxeye_daisy",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:cornflower",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:lily_of_the_valley",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:sunflower",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:lilac",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:rose_bush",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:peony",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:wither_rose",
+      "scent_name": "Smoky",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:torchflower",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:pitcher_plant",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:pink_petals",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:spore_blossom",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 4,
+      "priority": "MEDIUM"
+    },
+    {
+      "_comment": "=== Nether Flora ===",
+      "block_id": "minecraft:crimson_fungus",
+      "scent_name": "Smoky",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
+      "priority": "MEDIUM"
+    },
+    {
+      "block_id": "minecraft:warped_fungus",
+      "scent_name": "Floral",
+      "trigger_on": "PROXIMITY",
+      "range": 3,
       "priority": "MEDIUM"
     }
   ],
