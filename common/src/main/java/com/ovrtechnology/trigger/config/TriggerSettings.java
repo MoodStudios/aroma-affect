@@ -51,6 +51,12 @@ public class TriggerSettings {
      * Prevents the same scent from triggering again too soon.
      */
     public static final long DEFAULT_PASSIVE_SCENT_COOLDOWN_MS = 30000;
+
+    /**
+     * Default cooldown for path tracking scent triggers (ms).
+     * Controls how often scents are emitted while following a path.
+     */
+    public static final long DEFAULT_PATH_TRACKING_COOLDOWN_MS = 20000;
     
     // ========================================
     // Default intensities by trigger type
@@ -128,6 +134,13 @@ public class TriggerSettings {
      */
     @SerializedName("passive_scent_cooldown_ms")
     private long passiveScentCooldownMs = DEFAULT_PASSIVE_SCENT_COOLDOWN_MS;
+
+    /**
+     * Cooldown for path tracking scent triggers (ms).
+     * Controls how often scents are emitted while following a path.
+     */
+    @SerializedName("path_tracking_cooldown_ms")
+    private long pathTrackingCooldownMs = DEFAULT_PATH_TRACKING_COOLDOWN_MS;
     
     // ========================================
     // Intensity settings
@@ -181,7 +194,8 @@ public class TriggerSettings {
         if (mobCooldownMs < 0) mobCooldownMs = DEFAULT_MOB_COOLDOWN_MS;
         if (structureCooldownMs < 0) structureCooldownMs = DEFAULT_STRUCTURE_COOLDOWN_MS;
         if (passiveScentCooldownMs < 0) passiveScentCooldownMs = DEFAULT_PASSIVE_SCENT_COOLDOWN_MS;
-        
+        if (pathTrackingCooldownMs < 0) pathTrackingCooldownMs = DEFAULT_PATH_TRACKING_COOLDOWN_MS;
+
         // Validate intensities (clamp to 0.0 - 1.0)
         itemIntensity = clampIntensity(itemIntensity, DEFAULT_ITEM_INTENSITY);
         biomeIntensity = clampIntensity(biomeIntensity, DEFAULT_BIOME_INTENSITY);

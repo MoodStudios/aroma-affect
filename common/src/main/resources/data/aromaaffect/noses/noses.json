@@ -10,10 +10,69 @@
       "unlock": {
         "blocks": [
           "minecraft:water",
-          "minecraft:lava"
+          "minecraft:coal_ore",
+          "minecraft:deepslate_coal_ore",
+          "minecraft:iron_ore",
+          "minecraft:deepslate_iron_ore",
+          "minecraft:emerald_ore",
+          "minecraft:deepslate_emerald_ore"
         ],
-        "biomes": [],
+        "biomes": [
+          "minecraft:plains",
+          "minecraft:sunflower_plains",
+          "minecraft:forest",
+          "minecraft:birch_forest",
+          "minecraft:dark_forest",
+          "minecraft:old_growth_birch_forest",
+          "minecraft:flower_forest",
+          "minecraft:desert",
+          "minecraft:taiga",
+          "minecraft:snowy_taiga",
+          "minecraft:old_growth_pine_taiga",
+          "minecraft:old_growth_spruce_taiga",
+          "minecraft:swamp",
+          "minecraft:mangrove_swamp",
+          "minecraft:savanna",
+          "minecraft:savanna_plateau",
+          "minecraft:windswept_savanna",
+          "minecraft:ocean",
+          "minecraft:deep_ocean",
+          "minecraft:warm_ocean",
+          "minecraft:lukewarm_ocean",
+          "minecraft:deep_lukewarm_ocean",
+          "minecraft:cold_ocean",
+          "minecraft:deep_cold_ocean",
+          "minecraft:river",
+          "minecraft:beach",
+          "minecraft:snowy_plains",
+          "minecraft:snowy_beach",
+          "minecraft:stony_shore",
+          "minecraft:windswept_hills",
+          "minecraft:windswept_gravelly_hills",
+          "minecraft:windswept_forest"
+        ],
         "structures": [],
+        "flowers": [
+          "minecraft:dandelion",
+          "minecraft:poppy",
+          "minecraft:blue_orchid",
+          "minecraft:allium",
+          "minecraft:azure_bluet",
+          "minecraft:red_tulip",
+          "minecraft:orange_tulip",
+          "minecraft:white_tulip",
+          "minecraft:pink_tulip",
+          "minecraft:oxeye_daisy",
+          "minecraft:cornflower",
+          "minecraft:lily_of_the_valley",
+          "minecraft:sunflower",
+          "minecraft:lilac",
+          "minecraft:rose_bush",
+          "minecraft:peony",
+          "minecraft:torchflower",
+          "minecraft:pitcher_plant",
+          "minecraft:pink_petals"
+        ],
         "abilities": [
           "basic_scent"
         ],
@@ -30,16 +89,52 @@
       "unlock": {
         "blocks": [
           "minecraft:gold_ore",
-          "minecraft:emerald_ore"
+          "minecraft:deepslate_gold_ore",
+          "minecraft:nether_gold_ore",
+          "minecraft:lapis_ore",
+          "minecraft:deepslate_lapis_ore",
+          "minecraft:copper_ore",
+          "minecraft:deepslate_copper_ore",
+          "minecraft:redstone_ore",
+          "minecraft:deepslate_redstone_ore",
+          "minecraft:lava"
         ],
         "biomes": [
-          "minecraft:desert",
-          "minecraft:snowy_plains"
+          "minecraft:meadow",
+          "minecraft:grove",
+          "minecraft:snowy_slopes",
+          "minecraft:jagged_peaks",
+          "minecraft:frozen_peaks",
+          "minecraft:stony_peaks",
+          "minecraft:jungle",
+          "minecraft:bamboo_jungle",
+          "minecraft:sparse_jungle",
+          "minecraft:badlands",
+          "minecraft:eroded_badlands",
+          "minecraft:wooded_badlands",
+          "minecraft:cherry_grove",
+          "minecraft:ice_spikes",
+          "minecraft:mushroom_fields",
+          "minecraft:frozen_ocean",
+          "minecraft:deep_frozen_ocean",
+          "minecraft:frozen_river",
+          "minecraft:lush_caves",
+          "minecraft:dripstone_caves",
+          "minecraft:deep_dark",
+          "minecraft:nether_wastes",
+          "minecraft:crimson_forest",
+          "minecraft:warped_forest",
+          "minecraft:soul_sand_valley",
+          "minecraft:basalt_deltas",
+          "minecraft:the_end",
+          "minecraft:end_highlands",
+          "minecraft:end_midlands",
+          "minecraft:small_end_islands",
+          "minecraft:end_barrens",
+          "minecraft:the_void"
         ],
-        "structures": [
-          "minecraft:village_plains",
-          "minecraft:mineshaft"
-        ],
+        "structures": [],
+        "flowers": [],
         "abilities": [
           "active_tracking"
         ],
@@ -58,17 +153,18 @@
       "unlock": {
         "blocks": [
           "minecraft:diamond_ore",
-          "minecraft:ancient_debris"
+          "minecraft:deepslate_diamond_ore",
+          "minecraft:spawner"
         ],
-        "biomes": [
-          "minecraft:jungle",
-          "minecraft:badlands",
-          "minecraft:nether_wastes"
-        ],
+        "biomes": [],
         "structures": [
-          "minecraft:stronghold",
-          "minecraft:ancient_city"
+          "minecraft:village_plains",
+          "minecraft:village_desert",
+          "minecraft:village_savanna",
+          "minecraft:village_snowy",
+          "minecraft:village_taiga"
         ],
+        "flowers": [],
         "abilities": [
           "structure_compass",
           "danger_sense"
@@ -81,30 +177,22 @@
     {
       "id": "blaze_nose",
       "image": "item/blaze_nose",
-      "model": "minecraft:chain_helmet",
+      "model": "minecraft:chainmail_helmet",
       "tier": 4,
       "durability": 500,
-      "repair": "minecraft:diamond",
+      "repair": "minecraft:blaze_rod",
       "unlock": {
-        "blocks": [
-          "minecraft:diamond_ore",
-          "minecraft:ancient_debris"
-        ],
-        "biomes": [
-          "minecraft:jungle",
-          "minecraft:badlands",
-          "minecraft:nether_wastes"
-        ],
+        "blocks": [],
+        "biomes": [],
         "structures": [
           "minecraft:stronghold",
-          "minecraft:ancient_city"
+          "minecraft:ancient_city",
+          "minecraft:fortress"
         ],
-        "abilities": [
-          "structure_compass",
-          "danger_sense"
-        ],
+        "flowers": [],
+        "abilities": [],
         "noses": [
-          "gold_nose"
+          "diamond_nose"
         ]
       }
     },
@@ -113,29 +201,22 @@
       "image": "item/netherite_nose",
       "model": "minecraft:netherite_helmet",
       "tier": 5,
-      "durability": 500,
-      "repair": "minecraft:diamond",
+      "durability": 750,
+      "repair": "minecraft:netherite_ingot",
       "unlock": {
         "blocks": [
-          "minecraft:diamond_ore",
           "minecraft:ancient_debris"
         ],
-        "biomes": [
-          "minecraft:jungle",
-          "minecraft:badlands",
-          "minecraft:nether_wastes"
-        ],
+        "biomes": [],
         "structures": [
-          "minecraft:stronghold",
-          "minecraft:ancient_city"
+          "minecraft:monument"
         ],
+        "flowers": [],
         "abilities": [
-          "structure_compass",
-          "danger_sense",
           "precise_sniffer"
         ],
         "noses": [
-          "gold_nose"
+          "blaze_nose"
         ]
       }
     },
@@ -144,28 +225,45 @@
       "image": "item/ultimate_nose",
       "model": "minecraft:leather_helmet",
       "tier": 6,
-      "durability": 500,
-      "repair": "minecraft:diamond",
+      "durability": 1000,
+      "repair": "minecraft:nether_star",
       "unlock": {
         "blocks": [
-          "minecraft:diamond_ore",
-          "minecraft:ancient_debris"
+          "minecraft:nether_quartz_ore",
+          "minecraft:amethyst_cluster",
+          "minecraft:budding_amethyst",
+          "minecraft:chest"
         ],
-        "biomes": [
-          "minecraft:jungle",
-          "minecraft:badlands",
-          "minecraft:nether_wastes"
-        ],
+        "biomes": [],
         "structures": [
-          "minecraft:stronghold",
-          "minecraft:ancient_city"
+          "minecraft:mineshaft",
+          "minecraft:mineshaft_mesa",
+          "minecraft:ruined_portal",
+          "minecraft:ruined_portal_nether",
+          "minecraft:shipwreck",
+          "minecraft:ocean_ruin_cold",
+          "minecraft:ocean_ruin_warm",
+          "minecraft:buried_treasure",
+          "minecraft:pillager_outpost",
+          "minecraft:igloo",
+          "minecraft:swamp_hut",
+          "minecraft:desert_pyramid",
+          "minecraft:jungle_pyramid",
+          "minecraft:mansion",
+          "minecraft:bastion_remnant",
+          "minecraft:end_city",
+          "minecraft:trail_ruins",
+          "minecraft:trial_chambers"
+        ],
+        "flowers": [
+          "minecraft:wither_rose",
+          "minecraft:spore_blossom"
         ],
         "abilities": [
-          "structure_compass",
-          "danger_sense"
+          "omniscent"
         ],
         "noses": [
-          "gold_nose"
+          "netherite_nose"
         ]
       }
     }

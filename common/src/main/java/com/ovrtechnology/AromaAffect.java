@@ -9,6 +9,7 @@ import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
+import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
@@ -36,6 +37,7 @@ public final class AromaAffect {
 
         // Common networking (C2S/S2C packets)
         NoseSmithDialogueNetworking.init();
+        PathScentNetworking.init();
 
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();

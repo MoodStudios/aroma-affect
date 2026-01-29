@@ -67,5 +67,11 @@ public enum ScentTriggerSource {
      * Passive mode - automatic scent emission when near blocks/biomes/structures.
      * Only works when OVR hardware is connected and player doesn't have a nose equipped.
      */
-    PASSIVE_MODE
+    PASSIVE_MODE,
+
+    /**
+     * Path tracking mode - scent emission while following a path to a target.
+     * Triggered periodically while the player has an active path to a block/biome/structure.
+     */
+    PATH_TRACKING
 }
