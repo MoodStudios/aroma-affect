@@ -1,4 +1,4 @@
-package com.ovrtechnology.entity;
+package com.ovrtechnology.entity.nosesmith;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.BlockPos;

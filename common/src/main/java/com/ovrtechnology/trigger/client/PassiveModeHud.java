@@ -91,8 +91,8 @@ public final class PassiveModeHud {
         ScentTriggerManager manager = ScentTriggerManager.getInstance();
         ScentTrigger activeScent = manager.getActiveScent();
 
-        // Only show HUD for passive mode scents
-        if (activeScent == null || activeScent.source() != ScentTriggerSource.PASSIVE_MODE) {
+        // Show HUD for any active scent (not just passive mode)
+        if (activeScent == null) {
             return;
         }
 
@@ -123,8 +123,10 @@ public final class PassiveModeHud {
             cooldownMs = TriggerSettings.DEFAULT_GLOBAL_COOLDOWN_MS;
         }
 
+        // Use the actual last global trigger time from the manager
+        long lastTriggerTime = ScentTriggerManager.getInstance().getLastGlobalTriggerTime();
         long now = System.currentTimeMillis();
-        long elapsedMs = now - activeScent.triggeredAt();
+        long elapsedMs = now - lastTriggerTime;
         long remainingMs = Math.max(0, cooldownMs - elapsedMs);
 
         float progress = (float) remainingMs / cooldownMs;
@@ -132,17 +134,37 @@ public final class PassiveModeHud {
     }
 
     /**
-     * Calculates the per-scent type cooldown progress (0.0 = ready, 1.0 = full cooldown).
-     * This cooldown is specific to the trigger type (block, structure, biome).
+     * Calculates the per-scent cooldown progress (0.0 = ready, 1.0 = full cooldown).
+     * This cooldown is specific to the scent name.
      */
     private static float calculateScentCooldownProgress(ScentTrigger activeScent) {
-        long cooldownMs = PassiveModeManager.getCurrentCooldownMs();
-        if (cooldownMs <= 0) {
-            cooldownMs = 5000;
+        // Get the cooldown duration based on trigger source
+        TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+        long cooldownMs;
+
+        // Determine cooldown based on source type
+        if (activeScent.source() == ScentTriggerSource.PASSIVE_MODE) {
+            // For passive mode, use the type-specific cooldown
+            cooldownMs = PassiveModeManager.getCurrentCooldownMs();
+            if (cooldownMs <= 0) {
+                // Fallback based on biome cooldown as default for passive
+                cooldownMs = settings.getBiomeCooldownMs();
+            }
+        } else if (activeScent.source() == ScentTriggerSource.ITEM_USE) {
+            cooldownMs = settings.getItemUseCooldownMs();
+        } else {
+            // Default fallback
+            cooldownMs = settings.getPassiveScentCooldownMs();
         }
 
+        if (cooldownMs <= 0) {
+            cooldownMs = 5000; // Fallback default
+        }
+
+        // Use the actual last trigger time for this specific scent
+        long lastTriggerTime = ScentTriggerManager.getInstance().getLastTriggerTime(activeScent.scentName());
         long now = System.currentTimeMillis();
-        long elapsedMs = now - activeScent.triggeredAt();
+        long elapsedMs = now - lastTriggerTime;
         long remainingMs = Math.max(0, cooldownMs - elapsedMs);
 
         float progress = (float) remainingMs / cooldownMs;

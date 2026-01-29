@@ -1,6 +1,6 @@
 package com.ovrtechnology;
 
-import com.ovrtechnology.entity.client.NoseSmithClientRegistry;
+import com.ovrtechnology.entity.nosesmith.client.NoseSmithClientRegistry;
 import com.ovrtechnology.menu.MenuKeyBindings;
 import com.ovrtechnology.nose.client.NoseInventoryUi;
 import com.ovrtechnology.search.SearchKeyBindings;

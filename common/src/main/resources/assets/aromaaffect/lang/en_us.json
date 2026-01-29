@@ -71,6 +71,8 @@
   
   "menu.aromaaffect.button.config": "Settings",
   "menu.aromaaffect.button.compass": "Compass",
+  "menu.aromaaffect.button.passive.on": "Passive Mode: ON",
+  "menu.aromaaffect.button.passive.off": "Passive Mode: OFF",
   
   "menu.aromaaffect.config.title": "Aroma Affect Configuration",
   "menu.aromaaffect.config.placeholder": "Configuration options coming soon...",

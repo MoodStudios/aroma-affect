@@ -303,6 +303,15 @@ public final class ScentTriggerConfigLoader {
     }
 
     /**
+     * Gets all mob triggers.
+     *
+     * @return unmodifiable collection of mob triggers
+     */
+    public static Collection<MobTriggerDefinition> getAllMobTriggers() {
+        return Collections.unmodifiableCollection(mobTriggerMap.values());
+    }
+
+    /**
      * Gets the global trigger settings.
      * 
      * @return the settings, or defaults if not loaded

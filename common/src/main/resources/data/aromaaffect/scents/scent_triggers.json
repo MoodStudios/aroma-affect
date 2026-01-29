@@ -1063,25 +1063,329 @@
   ],
   "mob_triggers": [
     {
-      "_comment": "PLACEHOLDER - Example structure for future implementation",
       "entity_type": "minecraft:cow",
       "scent_name": "Barnyard",
-      "range": 3,
+      "range": 5,
       "priority": "MEDLOW"
     },
     {
-      "_comment": "PLACEHOLDER - Pig example",
       "entity_type": "minecraft:pig",
       "scent_name": "Barnyard",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:chicken",
+      "scent_name": "Barnyard",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:sheep",
+      "scent_name": "Barnyard",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:horse",
+      "scent_name": "Barnyard",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:donkey",
+      "scent_name": "Barnyard",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:mule",
+      "scent_name": "Barnyard",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:llama",
+      "scent_name": "Barnyard",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:goat",
+      "scent_name": "Barnyard",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:wolf",
+      "scent_name": "Barnyard",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:cat",
+      "scent_name": "Kindred",
       "range": 3,
       "priority": "MEDLOW"
     },
     {
-      "_comment": "PLACEHOLDER - Chicken example",
-      "entity_type": "minecraft:chicken",
-      "scent_name": "Barnyard",
+      "entity_type": "minecraft:ocelot",
+      "scent_name": "Evergreen",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:fox",
+      "scent_name": "Evergreen",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:rabbit",
+      "scent_name": "Floral",
       "range": 3,
       "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:bee",
+      "scent_name": "Floral",
+      "range": 3,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:polar_bear",
+      "scent_name": "Winter",
+      "range": 8,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:panda",
+      "scent_name": "Evergreen",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:parrot",
+      "scent_name": "Evergreen",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:turtle",
+      "scent_name": "Beach",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:dolphin",
+      "scent_name": "Marine",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:squid",
+      "scent_name": "Marine",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:glow_squid",
+      "scent_name": "Marine",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:cod",
+      "scent_name": "Marine",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:salmon",
+      "scent_name": "Marine",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:tropical_fish",
+      "scent_name": "Marine",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:pufferfish",
+      "scent_name": "Marine",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:axolotl",
+      "scent_name": "Marine",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:frog",
+      "scent_name": "Petrichor",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:tadpole",
+      "scent_name": "Petrichor",
+      "range": 2,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:sniffer",
+      "scent_name": "Floral",
+      "range": 6,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:camel",
+      "scent_name": "Desert",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:villager",
+      "scent_name": "Kindred",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:iron_golem",
+      "scent_name": "Machina",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:snow_golem",
+      "scent_name": "Winter",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:zombie",
+      "scent_name": "Smoky",
+      "range": 6,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:skeleton",
+      "scent_name": "Smoky",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:creeper",
+      "scent_name": "Smoky",
+      "range": 8,
+      "priority": "MEDLOW",
+      "intensity": 0.6
+    },
+    {
+      "entity_type": "minecraft:spider",
+      "scent_name": "Terra Silva",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:cave_spider",
+      "scent_name": "Terra Silva",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:enderman",
+      "scent_name": "Machina",
+      "range": 10,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:blaze",
+      "scent_name": "Smoky",
+      "range": 8,
+      "priority": "MEDLOW",
+      "intensity": 0.6
+    },
+    {
+      "entity_type": "minecraft:ghast",
+      "scent_name": "Smoky",
+      "range": 15,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:magma_cube",
+      "scent_name": "Smoky",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:piglin",
+      "scent_name": "Smoky",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:hoglin",
+      "scent_name": "Barnyard",
+      "range": 6,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:strider",
+      "scent_name": "Smoky",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:wither_skeleton",
+      "scent_name": "Smoky",
+      "range": 8,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:ender_dragon",
+      "scent_name": "Machina",
+      "range": 50,
+      "priority": "MEDIUM",
+      "intensity": 0.8
+    },
+    {
+      "entity_type": "minecraft:wither",
+      "scent_name": "Smoky",
+      "range": 30,
+      "priority": "MEDIUM",
+      "intensity": 0.8
+    },
+    {
+      "entity_type": "minecraft:warden",
+      "scent_name": "Machina",
+      "range": 20,
+      "priority": "MEDIUM",
+      "intensity": 0.7
+    },
+    {
+      "entity_type": "minecraft:elder_guardian",
+      "scent_name": "Marine",
+      "range": 25,
+      "priority": "MEDIUM",
+      "intensity": 0.6
+    },
+    {
+      "entity_type": "minecraft:allay",
+      "scent_name": "Floral",
+      "range": 5,
+      "priority": "MEDLOW",
+      "intensity": 0.5
     }
   ]
 }

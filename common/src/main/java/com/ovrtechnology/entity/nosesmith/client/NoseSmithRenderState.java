@@ -1,4 +1,4 @@
-package com.ovrtechnology.entity.client;
+package com.ovrtechnology.entity.nosesmith.client;
 
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 

@@ -1,7 +1,7 @@
-package com.ovrtechnology.entity.client;
+package com.ovrtechnology.entity.nosesmith.client;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.entity.NoseSmithEntity;
+import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.VillagerModel;
 import net.minecraft.client.model.geom.ModelLayers;

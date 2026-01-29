@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileJava:*)",
+      "WebSearch",
+      "Bash(./gradlew build:*)"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
-package com.ovrtechnology.entity.client.dialogue;
+package com.ovrtechnology.entity.nosesmith.client.dialogue;
 
-import com.ovrtechnology.entity.NoseSmithEntity;
+import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;

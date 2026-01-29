@@ -3,6 +3,7 @@ package com.ovrtechnology.menu;
 import com.ovrtechnology.AromaAffect;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -73,6 +74,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final ResourceLocation ICON_FLOWERS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
     private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
     private static final ResourceLocation ICON_COMPASS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_compass.png");
+    private static final ResourceLocation ICON_PASSIVE = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
 
     // Icon display size (will be scaled from high-res textures)
     private static final int ICON_DISPLAY_SIZE = 32;
@@ -147,6 +149,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     // Track hover states for corner buttons
     private boolean isHoveringConfig = false;
     private boolean isHoveringCompass = false;
+    private boolean isHoveringPassive = false;
     private boolean isHoveringStopPath = false;
 
     // Color for stop button (reddish)
@@ -268,6 +271,47 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     stopY + buttonSize / 2 - 4,
                     withAlpha(0xFFFF6B6B, appear));
         }
+
+        // Passive mode button position (top-left corner)
+        int passiveX = CORNER_BUTTON_PADDING;
+        int passiveY = CORNER_BUTTON_PADDING;
+
+        // Check hover state
+        isHoveringPassive = isInBounds(mouseX, mouseY, passiveX, passiveY, buttonSize, buttonSize);
+
+        // Render passive button background (green if enabled, gray if disabled)
+        boolean isPassiveEnabled = PassiveModeManager.isPassiveModeEnabled();
+        int passiveBgColor;
+        if (isHoveringPassive) {
+            passiveBgColor = isPassiveEnabled ? 0xA066CC66 : 0xA0666666;
+        } else {
+            passiveBgColor = isPassiveEnabled ? 0x8044AA44 : 0x80444444;
+        }
+        graphics.fill(passiveX, passiveY, passiveX + buttonSize, passiveY + buttonSize,
+                withAlpha(passiveBgColor, appear));
+
+        int passiveBorderColor = withAlpha(COLOR_RING_BORDER, appear);
+        renderOutline(graphics, passiveX, passiveY, buttonSize, buttonSize, passiveBorderColor);
+
+        // Render passive icon
+        float passiveScale = isHoveringPassive ? 1.1f : 1.0f;
+        int passiveIconSize = (int) (CORNER_ICON_SIZE * passiveScale);
+        int passiveIconX = passiveX + iconOffset + (CORNER_ICON_SIZE - passiveIconSize) / 2;
+        int passiveIconY = passiveY + iconOffset + (CORNER_ICON_SIZE - passiveIconSize) / 2;
+
+        graphics.blit(ICON_PASSIVE, passiveIconX, passiveIconY, 0, 0,
+                passiveIconSize, passiveIconSize, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
+
+        // Render tooltip for passive button
+        if (isHoveringPassive) {
+            Component passiveLabel = isPassiveEnabled
+                    ? Component.translatable("menu.aromaaffect.button.passive.on")
+                    : Component.translatable("menu.aromaaffect.button.passive.off");
+            graphics.drawString(font, passiveLabel,
+                    passiveX + buttonSize + 8,
+                    passiveY + buttonSize / 2 - 4,
+                    withAlpha(0xFFFFFFFF, appear));
+        }
     }
 
     private static boolean isInBounds(double x, double y, int bx, int by, int bw, int bh) {
@@ -308,6 +352,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
         if (isHoveringStopPath) {
             AromaAffect.LOGGER.debug("Stop Path button clicked");
             executeStopPath();
+            return true;
+        }
+        if (isHoveringPassive) {
+            AromaAffect.LOGGER.debug("Passive mode button clicked");
+            PassiveModeManager.togglePassiveMode();
             return true;
         }
 
