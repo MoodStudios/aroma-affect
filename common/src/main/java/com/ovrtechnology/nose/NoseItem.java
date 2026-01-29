@@ -203,7 +203,14 @@ public class NoseItem extends Item {
     public boolean canDetectStructure(String structureId) {
         return NoseAbilityResolver.canDetectStructure(definition.getId(), structureId);
     }
-    
+
+    /**
+     * Check if this nose can detect a specific flower (including inherited abilities)
+     */
+    public boolean canDetectFlower(String flowerId) {
+        return NoseAbilityResolver.canDetectFlower(definition.getId(), flowerId);
+    }
+
     /**
      * Check if this nose has a specific ability (including inherited abilities)
      */

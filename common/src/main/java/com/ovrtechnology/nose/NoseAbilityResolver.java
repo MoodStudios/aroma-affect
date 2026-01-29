@@ -58,25 +58,27 @@ public final class NoseAbilityResolver {
         Set<String> blocks = new LinkedHashSet<>();
         Set<String> biomes = new LinkedHashSet<>();
         Set<String> structures = new LinkedHashSet<>();
+        Set<String> flowers = new LinkedHashSet<>();
         List<String> circularDependencies = new ArrayList<>();
-        
-        resolveRecursive(noseId, visited, abilities, blocks, biomes, structures, circularDependencies);
-        
+
+        resolveRecursive(noseId, visited, abilities, blocks, biomes, structures, flowers, circularDependencies);
+
         // Report any circular dependencies found
         if (!circularDependencies.isEmpty()) {
             AromaAffect.LOGGER.warn("Circular dependencies detected for nose '{}': {}", noseId, circularDependencies);
         }
-        
+
         ResolvedAbilities resolved = new ResolvedAbilities(
                 Collections.unmodifiableSet(abilities),
                 Collections.unmodifiableSet(blocks),
                 Collections.unmodifiableSet(biomes),
-                Collections.unmodifiableSet(structures)
+                Collections.unmodifiableSet(structures),
+                Collections.unmodifiableSet(flowers)
         );
-        
+
         ABILITY_CACHE.put(noseId, resolved);
-        AromaAffect.LOGGER.debug("Resolved abilities for '{}': {} abilities, {} blocks, {} biomes, {} structures",
-                noseId, abilities.size(), blocks.size(), biomes.size(), structures.size());
+        AromaAffect.LOGGER.debug("Resolved abilities for '{}': {} abilities, {} blocks, {} biomes, {} structures, {} flowers",
+                noseId, abilities.size(), blocks.size(), biomes.size(), structures.size(), flowers.size());
         
         return resolved;
     }
@@ -91,6 +93,7 @@ public final class NoseAbilityResolver {
             Set<String> blocks,
             Set<String> biomes,
             Set<String> structures,
+            Set<String> flowers,
             List<String> circularDependencies
     ) {
         // Circular dependency check
@@ -99,9 +102,9 @@ public final class NoseAbilityResolver {
             AromaAffect.LOGGER.warn("Circular dependency detected: nose '{}' already in resolution chain", noseId);
             return;
         }
-        
+
         visited.add(noseId);
-        
+
         // Get the nose definition
         Optional<NoseDefinition> defOpt = NoseRegistry.getDefinition(noseId);
         if (defOpt.isEmpty()) {
@@ -109,26 +112,27 @@ public final class NoseAbilityResolver {
             visited.remove(noseId);
             return;
         }
-        
+
         NoseDefinition definition = defOpt.get();
         NoseUnlock unlock = definition.getUnlock();
-        
+
         if (unlock == null) {
             visited.remove(noseId);
             return;
         }
-        
+
         // Add direct abilities
         abilities.addAll(unlock.getAbilities());
         blocks.addAll(unlock.getBlocks());
         biomes.addAll(unlock.getBiomes());
         structures.addAll(unlock.getStructures());
-        
+        flowers.addAll(unlock.getFlowers());
+
         // Recursively resolve inherited noses
         for (String inheritedNoseId : unlock.getNoses()) {
-            resolveRecursive(inheritedNoseId, visited, abilities, blocks, biomes, structures, circularDependencies);
+            resolveRecursive(inheritedNoseId, visited, abilities, blocks, biomes, structures, flowers, circularDependencies);
         }
-        
+
         visited.remove(noseId);
     }
     
@@ -177,7 +181,14 @@ public final class NoseAbilityResolver {
     public static boolean canDetectStructure(String noseId, String structureId) {
         return getResolvedAbilities(noseId).getStructures().contains(structureId);
     }
-    
+
+    /**
+     * Check if a nose can detect a specific flower (including inherited)
+     */
+    public static boolean canDetectFlower(String noseId, String flowerId) {
+        return getResolvedAbilities(noseId).getFlowers().contains(flowerId);
+    }
+
     /**
      * Clear the ability cache (for reloading)
      */
@@ -196,35 +207,42 @@ public final class NoseAbilityResolver {
                 Collections.emptySet(),
                 Collections.emptySet(),
                 Collections.emptySet(),
+                Collections.emptySet(),
                 Collections.emptySet()
         );
-        
+
         private final Set<String> abilities;
         private final Set<String> blocks;
         private final Set<String> biomes;
         private final Set<String> structures;
-        
-        public ResolvedAbilities(Set<String> abilities, Set<String> blocks, Set<String> biomes, Set<String> structures) {
+        private final Set<String> flowers;
+
+        public ResolvedAbilities(Set<String> abilities, Set<String> blocks, Set<String> biomes, Set<String> structures, Set<String> flowers) {
             this.abilities = abilities;
             this.blocks = blocks;
             this.biomes = biomes;
             this.structures = structures;
+            this.flowers = flowers;
         }
-        
+
         public boolean hasAbility(String abilityId) {
             return abilities.contains(abilityId);
         }
-        
+
         public boolean canDetectBlock(String blockId) {
             return blocks.contains(blockId);
         }
-        
+
         public boolean canDetectBiome(String biomeId) {
             return biomes.contains(biomeId);
         }
-        
+
         public boolean canDetectStructure(String structureId) {
             return structures.contains(structureId);
+        }
+
+        public boolean canDetectFlower(String flowerId) {
+            return flowers.contains(flowerId);
         }
     }
 }
