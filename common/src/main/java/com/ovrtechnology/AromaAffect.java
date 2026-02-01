@@ -13,6 +13,7 @@ import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
+import com.ovrtechnology.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -53,6 +54,9 @@ public final class AromaAffect {
 
         // Initialize the Nose Smith entity registry
         NoseSmithRegistry.init();
+
+        // Initialize Sniffer menu registry
+        SnifferMenuRegistry.init();
 
         // Initialize creative tab
         ModCreativeTab.init();
