@@ -1,7 +1,9 @@
 package com.ovrtechnology;
 
 import com.ovrtechnology.ability.AbilityHandler;
+import com.ovrtechnology.command.AromaGuideCommand;
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.guide.AromaGuideRegistry;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
@@ -43,6 +45,9 @@ public final class AromaCraft {
         // Initialize the scent item registry system
         ScentItemRegistry.init();
 
+        // Initialize the Aroma Guide (village compass)
+        AromaGuideRegistry.init();
+
         // Initialize the Nose Smith entity registry
         NoseSmithRegistry.init();
 
@@ -63,7 +68,8 @@ public final class AromaCraft {
         ScentTriggerManager.init();
         ScentTriggerHandler.init();
 
-        // Initialize test commands
+        // Initialize commands
+        AromaGuideCommand.init();
         AromaTestCommand.init();
 
         // Inject custom pieces into vanilla worldgen (villages, etc.)

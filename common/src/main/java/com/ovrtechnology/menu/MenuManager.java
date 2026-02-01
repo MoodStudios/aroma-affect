@@ -1,6 +1,7 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.guide.GuideManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
@@ -107,6 +108,13 @@ public final class MenuManager {
         minecraft.setScreen(new FlowersMenuScreen());
     }
     
+    /**
+     * Opens the AromaCraft guide book.
+     */
+    public static void openGuide() {
+        GuideManager.openGuideClient();
+    }
+
     /**
      * Opens the compass/tracking menu.
      */

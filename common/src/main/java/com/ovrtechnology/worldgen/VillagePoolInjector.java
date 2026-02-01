@@ -1,5 +1,6 @@
 package com.ovrtechnology.worldgen;
 
+import com.mojang.datafixers.util.Pair;
 import com.ovrtechnology.AromaCraft;
 import dev.architectury.event.events.common.LifecycleEvent;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -11,8 +12,10 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Runtime injection into vanilla village template pools.
@@ -64,7 +67,7 @@ public final class VillagePoolInjector {
     private static boolean reflectionReady = false;
 
     private static Field templatesField;
-    private static Field maxSizeField;
+    private static Field rawTemplatesField;
 
     private VillagePoolInjector() {
     }
@@ -121,26 +124,44 @@ public final class VillagePoolInjector {
         }
 
         try {
-            templatesField = StructureTemplatePool.class.getDeclaredField("templates");
-            maxSizeField = StructureTemplatePool.class.getDeclaredField("maxSize");
+            // Find fields by type instead of by name, because field names differ between
+            // Mojang mappings (dev/NeoForge) and intermediary mappings (Fabric runtime).
+            for (Field field : StructureTemplatePool.class.getDeclaredFields()) {
+                field.setAccessible(true);
+                if (field.getType() == ObjectArrayList.class) {
+                    templatesField = field;
+                } else if (field.getType() == List.class) {
+                    rawTemplatesField = field;
+                }
+            }
 
-            templatesField.setAccessible(true);
-            maxSizeField.setAccessible(true);
+            if (templatesField == null) {
+                throw new NoSuchFieldException("Could not find ObjectArrayList<StructurePoolElement> field in StructureTemplatePool");
+            }
+            if (rawTemplatesField == null) {
+                throw new NoSuchFieldException("Could not find List<Pair<StructurePoolElement, Integer>> field in StructureTemplatePool");
+            }
 
             reflectionReady = true;
             return true;
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             AromaCraft.LOGGER.error("Failed to access StructureTemplatePool internals", e);
             return false;
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static void forcePoolToOnly(StructureTemplatePool pool, StructurePoolElement onlyElement)
             throws ReflectiveOperationException {
+        // Update the flattened templates list (used by getShuffledTemplates during jigsaw assembly).
         ObjectArrayList<StructurePoolElement> templates = getMutableTemplates(pool);
         templates.clear();
         templates.add(onlyElement);
-        maxSizeField.setInt(pool, Integer.MIN_VALUE);
+
+        // Also update rawTemplates so nothing can reconstruct the original list.
+        List<Pair<StructurePoolElement, Integer>> rawTemplates = new ArrayList<>();
+        rawTemplates.add(Pair.of(onlyElement, 1));
+        rawTemplatesField.set(pool, rawTemplates);
     }
 
     @SuppressWarnings("unchecked")

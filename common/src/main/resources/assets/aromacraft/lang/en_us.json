@@ -183,5 +183,13 @@
   "websocket.aromacraft.status.connecting": "OVR Hardware: Connecting...",
   "websocket.aromacraft.status.connected": "OVR Hardware: Connected",
   "websocket.aromacraft.status.reconnecting": "OVR Hardware: Reconnecting...",
-  "websocket.aromacraft.status.failed": "OVR Hardware: Connection Failed"
+  "websocket.aromacraft.status.failed": "OVR Hardware: Connection Failed",
+
+  "item.aromacraft.aroma_guide": "Aroma Guide",
+  "item.aromacraft.aroma_guide.distance": "Nearest Village: %s blocks",
+  "item.aromacraft.aroma_guide.searching": "Searching for villages...",
+
+  "guide.aromacraft.title": "AromaCraft Guide",
+  "guide.aromacraft.subtitle": "Scent-Powered Exploration for Minecraft",
+  "guide.aromacraft.command.open": "Opening AromaCraft Guide..."
 }
