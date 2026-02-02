@@ -1,11 +1,12 @@
 {
   "global_cooldown_ms": 3000,
+  "scent_cooldown_ms": 5000,
   "item_use_cooldown_ms": 5000,
   "biome_cooldown_ms": 10000,
   "block_cooldown_ms": 5000,
   "structure_cooldown_ms": 15000,
   "mob_cooldown_ms": 5000,
-  "passive_scent_cooldown_ms": 30000,
+  "passive_scent_cooldown_ms": 15000,
   "path_tracking_cooldown_ms": 20000,
   "item_intensity": 0.5,
   "biome_intensity": 0.3,
