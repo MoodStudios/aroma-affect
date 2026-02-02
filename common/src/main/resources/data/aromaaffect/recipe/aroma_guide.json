@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:compass",
+    "minecraft:paper"
+  ],
+  "result": {
+    "id": "aromaaffect:aroma_guide",
+    "count": 1
+  }
+}

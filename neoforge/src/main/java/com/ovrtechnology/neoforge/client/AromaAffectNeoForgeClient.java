@@ -37,6 +37,9 @@ public final class AromaAffectNeoForgeClient {
 
     private void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
         event.register(SnifferMenuRegistry.SNIFFER_MENU.get(), SnifferScreen::new);
+
+        // Register block outline renderer for X-ray wireframe
+        BlockOutlineRendererNeoForge.init();
     }
     
     private void onClientSetup(FMLClientSetupEvent event) {

@@ -36,7 +36,21 @@ public class ScentItemDefinition {
      */
     @SerializedName("id")
     private String id;
-    
+
+    /**
+     * The type of scent item. "capsule" indicates an aroma capsule that provides
+     * a specific scent. Items without this field are utility items (containers, bases, etc.).
+     */
+    @SerializedName("type")
+    private String type;
+
+    /**
+     * The name of the scent this item provides (e.g., "Winter", "Floral").
+     * Only meaningful for capsule-type items.
+     */
+    @SerializedName("scent")
+    private String scent;
+
     /**
      * Path to the texture file relative to assets/aromaaffect/textures/
      * Example: "item/scent_winter"
@@ -137,6 +151,15 @@ public class ScentItemDefinition {
         return "scent.aromaaffect." + id + ".description";
     }
     
+    /**
+     * Whether this scent item is an aroma capsule.
+     *
+     * @return true if the type is "capsule"
+     */
+    public boolean isCapsule() {
+        return "capsule".equals(type);
+    }
+
     /**
      * Validates the scent item definition has required fields.
      * 

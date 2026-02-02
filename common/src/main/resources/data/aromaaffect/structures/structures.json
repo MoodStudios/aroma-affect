@@ -65,6 +65,7 @@
       "fallback_name": "Stronghold",
       "color_html": "#4A4A4A",
       "scent_id": "terra_silva",
+      "range": 40,
       "blocks": [
         "minecraft:end_portal_frame",
         "minecraft:stone_bricks",
@@ -78,6 +79,7 @@
       "fallback_name": "Ancient City",
       "color_html": "#1C1C2A",
       "scent_id": "machina",
+      "range": 60,
       "blocks": [
         "minecraft:sculk",
         "minecraft:sculk_catalyst",
@@ -104,6 +106,7 @@
       "fallback_name": "Woodland Mansion",
       "color_html": "#4A3728",
       "scent_id": "timber",
+      "range": 60,
       "blocks": [
         "minecraft:dark_oak_planks",
         "minecraft:dark_oak_log",
@@ -116,6 +119,7 @@
       "fallback_name": "Mineshaft",
       "color_html": "#6B4423",
       "scent_id": "terra_silva",
+      "range": 30,
       "blocks": [
         "minecraft:oak_planks",
         "minecraft:oak_fence",
@@ -129,6 +133,7 @@
       "fallback_name": "Mesa Mineshaft",
       "color_html": "#CD853F",
       "scent_id": "desert",
+      "range": 30,
       "blocks": [
         "minecraft:dark_oak_planks",
         "minecraft:dark_oak_fence",
@@ -178,6 +183,7 @@
       "fallback_name": "Buried Treasure",
       "color_html": "#FFD700",
       "scent_id": "beach",
+      "range": 20,
       "blocks": [
         "minecraft:chest"
       ]
@@ -188,6 +194,7 @@
       "fallback_name": "Shipwreck",
       "color_html": "#8B4513",
       "scent_id": "marine",
+      "range": 30,
       "blocks": [
         "minecraft:oak_planks",
         "minecraft:spruce_planks",
@@ -200,6 +207,7 @@
       "fallback_name": "Cold Ocean Ruins",
       "color_html": "#5F9EA0",
       "scent_id": "marine",
+      "range": 25,
       "blocks": [
         "minecraft:stone_bricks",
         "minecraft:mossy_stone_bricks",
@@ -212,6 +220,7 @@
       "fallback_name": "Warm Ocean Ruins",
       "color_html": "#F4A460",
       "scent_id": "marine",
+      "range": 25,
       "blocks": [
         "minecraft:sandstone",
         "minecraft:polished_granite",
@@ -224,6 +233,7 @@
       "fallback_name": "Desert Pyramid",
       "color_html": "#D2691E",
       "scent_id": "desert",
+      "range": 40,
       "blocks": [
         "minecraft:sandstone",
         "minecraft:chiseled_sandstone",
@@ -236,6 +246,7 @@
       "fallback_name": "Jungle Temple",
       "color_html": "#556B2F",
       "scent_id": "evergreen",
+      "range": 35,
       "blocks": [
         "minecraft:cobblestone",
         "minecraft:mossy_cobblestone",
@@ -248,6 +259,7 @@
       "fallback_name": "Igloo",
       "color_html": "#FFFAFA",
       "scent_id": "winter",
+      "range": 25,
       "blocks": [
         "minecraft:snow_block",
         "minecraft:white_carpet"
@@ -259,6 +271,7 @@
       "fallback_name": "Witch Hut",
       "color_html": "#2E8B57",
       "scent_id": "petrichor",
+      "range": 25,
       "blocks": [
         "minecraft:spruce_planks",
         "minecraft:cauldron",
@@ -271,6 +284,7 @@
       "fallback_name": "Pillager Outpost",
       "color_html": "#696969",
       "scent_id": "timber",
+      "range": 40,
       "blocks": [
         "minecraft:dark_oak_log",
         "minecraft:birch_planks",
@@ -283,6 +297,7 @@
       "fallback_name": "Ruined Portal",
       "color_html": "#8B008B",
       "scent_id": "smoky",
+      "range": 20,
       "blocks": [
         "minecraft:obsidian",
         "minecraft:crying_obsidian",
@@ -295,6 +310,7 @@
       "fallback_name": "Nether Ruined Portal",
       "color_html": "#8B0000",
       "scent_id": "smoky",
+      "range": 20,
       "blocks": [
         "minecraft:obsidian",
         "minecraft:crying_obsidian"
@@ -306,6 +322,7 @@
       "fallback_name": "Trail Ruins",
       "color_html": "#A0522D",
       "scent_id": "terra_silva",
+      "range": 25,
       "blocks": [
         "minecraft:mud_bricks",
         "minecraft:gravel",
@@ -318,6 +335,7 @@
       "fallback_name": "Trial Chambers",
       "color_html": "#4682B4",
       "scent_id": "machina",
+      "range": 40,
       "blocks": [
         "minecraft:copper_bulb",
         "minecraft:trial_spawner",

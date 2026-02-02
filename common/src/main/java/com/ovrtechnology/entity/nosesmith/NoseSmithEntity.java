@@ -2,6 +2,8 @@ package com.ovrtechnology.entity.nosesmith;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseRegistry;
+import com.ovrtechnology.scentitem.ScentItem;
+import com.ovrtechnology.scentitem.ScentItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -24,6 +26,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerData;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,6 +36,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -84,9 +90,14 @@ public class NoseSmithEntity extends Villager {
     
     public NoseSmithEntity(EntityType<? extends Villager> entityType, Level level) {
         super(entityType, level);
-        // Nose Smith doesn't need to worry about profession data as much
         this.setCustomName(Component.translatable("entity.aromaaffect.nose_smith"));
         this.setCustomNameVisible(true);
+        this.setVillagerData(this.getVillagerData().withProfession(BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT)).withLevel(5));
+    }
+
+    @Override
+    public void setVillagerData(VillagerData villagerData) {
+        super.setVillagerData(villagerData.withProfession(BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT)).withLevel(5));
     }
 
     @Override
@@ -142,6 +153,11 @@ public class NoseSmithEntity extends Villager {
     public void tick() {
         super.tick();
 
+        if (this.getCustomName() == null) {
+            this.setCustomName(Component.translatable("entity.aromaaffect.nose_smith"));
+            this.setCustomNameVisible(true);
+        }
+
         if (!(this.level() instanceof ServerLevel serverLevel)) {
             return;
         }
@@ -154,6 +170,7 @@ public class NoseSmithEntity extends Villager {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
+        // Never run Villager AI (profession assignment, trading, gossip, etc.)
         if (isInDialogue()) {
             this.getNavigation().stop();
             this.getMoveControl().setWait();
@@ -163,17 +180,13 @@ public class NoseSmithEntity extends Villager {
             if (player != null) {
                 this.getLookControl().setLookAt(player, 60.0F, 60.0F);
             }
-
-            return;
         }
-
-        super.customServerAiStep(serverLevel);
     }
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND) {
-            return super.mobInteract(player, hand);
+            return InteractionResult.PASS;
         }
 
         if (this.level().isClientSide()) {
@@ -309,7 +322,7 @@ public class NoseSmithEntity extends Villager {
 
         int potsFilled = 0;
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-            if (!serverLevel.getBlockState(pos).is(Blocks.FLOWER_POT)) {
+            if (!(serverLevel.getBlockState(pos).getBlock() instanceof FlowerPotBlock)) {
                 continue;
             }
 
@@ -330,17 +343,27 @@ public class NoseSmithEntity extends Villager {
 
             BlockPos candidate = origin.offset(dx, 0, dz);
             BlockPos surface = serverLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate);
-            if (!serverLevel.getBlockState(surface).isAir()) {
-                continue;
-            }
 
-            if (!flowerState.canSurvive(serverLevel, surface)) {
-                continue;
+            if (clearReplaceable(serverLevel, surface)) {
+                if (!flowerState.canSurvive(serverLevel, surface)) {
+                    serverLevel.setBlock(surface.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+                }
+                serverLevel.setBlock(surface, flowerState, Block.UPDATE_ALL);
+                flowersPlaced++;
             }
-
-            serverLevel.setBlock(surface, flowerState, Block.UPDATE_ALL);
-            flowersPlaced++;
         }
+
+        if (flowersPlaced == 0) {
+            BlockPos fallback = origin.above();
+            clearReplaceable(serverLevel, fallback);
+            if (!flowerState.canSurvive(serverLevel, fallback)) {
+                serverLevel.setBlock(fallback.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            }
+            serverLevel.setBlock(fallback, flowerState, Block.UPDATE_ALL);
+            flowersPlaced = 1;
+        }
+
+        fillChestsWithScents(serverLevel, origin, min, max, random);
 
         houseDecorated = true;
         AromaAffect.LOGGER.debug("Decorated Nose Smith house: filled {} pots, placed {} quest flowers", potsFilled, flowersPlaced);
@@ -379,12 +402,14 @@ public class NoseSmithEntity extends Villager {
                 itemEntity.setItem(stack);
             }
 
-            giveNoseReward(serverLevel);
+            Player thrower = itemEntity.getOwner() instanceof Player p ? p
+                    : serverLevel.getNearestPlayer(this, FLOWER_TURN_IN_RADIUS + 2.0D);
+            giveNoseReward(serverLevel, thrower);
             return;
         }
     }
 
-    private void giveNoseReward(ServerLevel serverLevel) {
+    private void giveNoseReward(ServerLevel serverLevel, @Nullable Player receiver) {
         setHasNose(false);
 
         ItemStack noseItem = NoseRegistry.getNoseSupplier("basic_nose")
@@ -392,12 +417,73 @@ public class NoseSmithEntity extends Villager {
                 .orElse(ItemStack.EMPTY);
 
         if (!noseItem.isEmpty()) {
-            this.spawnAtLocation(serverLevel, noseItem);
+            double spawnX = this.getX();
+            double spawnY = this.getEyeY() - 0.3D;
+            double spawnZ = this.getZ();
+            ItemEntity drop = new ItemEntity(serverLevel, spawnX, spawnY, spawnZ, noseItem);
+            drop.setPickUpDelay(10);
+
+            if (receiver != null) {
+                double dx = receiver.getX() - spawnX;
+                double dy = receiver.getEyeY() - spawnY;
+                double dz = receiver.getZ() - spawnZ;
+                double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                if (dist > 0.01D) {
+                    double speed = 0.3D;
+                    drop.setDeltaMovement(dx / dist * speed, dy / dist * speed + 0.15D, dz / dist * speed);
+                }
+            }
+
+            serverLevel.addFreshEntity(drop);
         } else {
             AromaAffect.LOGGER.warn("Failed to drop basic_nose: item not registered");
         }
 
-        serverLevel.playSound(null, this.blockPosition(), SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.NEUTRAL, 1.0F, 1.0F);
+        serverLevel.playSound(null, this.blockPosition(), SoundEvents.VILLAGER_YES, SoundSource.NEUTRAL, 1.0F, 1.0F);
+        serverLevel.playSound(null, this.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.75F, 1.2F);
+    }
+
+    private static void fillChestsWithScents(ServerLevel serverLevel, BlockPos origin, BlockPos min, BlockPos max, RandomSource random) {
+        List<ScentItem> scents = ScentItemRegistry.getCapsuleItems();
+        if (scents.isEmpty()) {
+            return;
+        }
+
+        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
+            if (!(serverLevel.getBlockEntity(pos) instanceof ChestBlockEntity chest)) {
+                continue;
+            }
+
+            int slotsToFill = 1 + random.nextInt(4);
+            int slotsFilled = 0;
+            int containerSize = chest.getContainerSize();
+
+            for (int attempt = 0; attempt < 16 && slotsFilled < slotsToFill; attempt++) {
+                int slot = random.nextInt(containerSize);
+                if (!chest.getItem(slot).isEmpty()) {
+                    continue;
+                }
+
+                ScentItem scent = scents.get(random.nextInt(scents.size()));
+                int count = 1 + random.nextInt(2);
+                chest.setItem(slot, new ItemStack(scent, count));
+                slotsFilled++;
+            }
+        }
+    }
+
+    private static boolean clearReplaceable(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.isAir()) {
+            return true;
+        }
+        if (state.is(Blocks.SNOW) || state.is(Blocks.POWDER_SNOW)
+                || state.is(Blocks.SHORT_GRASS) || state.is(Blocks.TALL_GRASS)
+                || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN)) {
+            level.removeBlock(pos, false);
+            return true;
+        }
+        return false;
     }
 
     @Nullable

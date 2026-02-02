@@ -26,7 +26,7 @@ bin/
 .cursor/rules/
 
 # Claude
-.claude
+.claude/settings.local.json
 
 # Mac
 .DS_Store

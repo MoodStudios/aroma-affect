@@ -4,15 +4,21 @@ import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.ability.AbilityHandler;
 import com.ovrtechnology.ability.AbilityRegistry;
 import com.ovrtechnology.ability.PreciseSnifferAbility;
+import com.ovrtechnology.command.AromaGuideCommand;
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.flower.FlowerDefinitionLoader;
+import com.ovrtechnology.guide.AromaGuideFirstJoinHandler;
+import com.ovrtechnology.guide.AromaGuideRegistry;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
+import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
+import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
@@ -51,8 +57,14 @@ public final class AromaAffect {
         // Initialize the sniffer nose registry system (items for Sniffer mob)
         SnifferNoseRegistry.init();
 
+        // Initialize scent definitions (needed for particle colors, display names, etc.)
+        ScentRegistry.init();
+
         // Initialize the scent item registry system
         ScentItemRegistry.init();
+
+        // Initialize the Aroma Guide (village compass)
+        AromaGuideRegistry.init();
 
         // Initialize the Nose Smith entity registry
         NoseSmithRegistry.init();
@@ -75,12 +87,20 @@ public final class AromaAffect {
         AbilityRegistry.init();
         AbilityHandler.init();
 
+        // Load flower and mob definitions (needed by trigger system)
+        FlowerDefinitionLoader.loadAllFlowers();
+        MobDefinitionLoader.loadAllMobs();
+
         // Initialize scent trigger system
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
 
-        // Initialize test commands
+        // Initialize commands
+        AromaGuideCommand.init();
         AromaTestCommand.init();
+
+        // Give Aroma Guide on first join
+        AromaGuideFirstJoinHandler.init();
 
         // Inject custom pieces into vanilla worldgen (villages, etc.)
         VillagePoolInjector.init();

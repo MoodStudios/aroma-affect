@@ -1,6 +1,7 @@
 package com.ovrtechnology.structure;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.trigger.ScentPriority;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -110,7 +111,32 @@ public class StructureDefinition {
      */
     @SerializedName("blocks")
     private List<String> blocks;
-    
+
+    /**
+     * Trigger mode: "PROXIMITY" (when near structure).
+     */
+    @SerializedName("mode")
+    private String mode = "PROXIMITY";
+
+    /**
+     * Range in blocks for proximity triggers.
+     */
+    @SerializedName("range")
+    private int range = 50;
+
+    /**
+     * Priority level for this trigger.
+     */
+    @SerializedName("priority")
+    private ScentPriority priority = ScentPriority.MEDLOW;
+
+    /**
+     * Scent intensity (0.0 to 1.0).
+     * If not specified, uses the global structure_intensity from settings.
+     */
+    @SerializedName("intensity")
+    private Double intensity;
+
     /**
      * Default constructor for GSON deserialization.
      */
