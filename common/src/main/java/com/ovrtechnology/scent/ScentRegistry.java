@@ -148,6 +148,22 @@ public final class ScentRegistry {
     }
     
     /**
+     * Get a scent definition by its fallback name (case-insensitive).
+     *
+     * @param name The scent fallback name (e.g., "Winter", "Floral")
+     * @return Optional containing the scent if found
+     */
+    public static Optional<ScentDefinition> getScentByName(String name) {
+        if (name == null) return Optional.empty();
+        for (ScentDefinition def : scentDefinitions.values()) {
+            if (name.equalsIgnoreCase(def.getFallbackName())) {
+                return Optional.of(def);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Get the number of registered scents.
      * 
      * @return The scent count

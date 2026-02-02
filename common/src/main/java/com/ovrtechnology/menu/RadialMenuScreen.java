@@ -180,9 +180,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
     public void tick() {
         super.tick();
 
-        // Tick tracking state machine for auto-clear of terminal states
-        ActiveTrackingState.tick();
-
         if (selectionProgress.length == 0) {
             return;
         }
@@ -207,6 +204,9 @@ public class RadialMenuScreen extends BaseMenuScreen {
             }
             previousHoverIndex = selectedIndex;
         }
+
+        // Shop button glow animation
+        shopGlowPhase += 0.15f;
 
         // Smoothly rotate arrow toward selected segment center, or back to default (up)
         float targetAngle;
@@ -234,7 +234,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private boolean isHoveringCompass = false;
     private boolean isHoveringPassiveToggle = false;
     private boolean isHoveringConfigGear = false;
+    private boolean isHoveringShop = false;
     private boolean isHoveringPanelStop = false;
+
+    // Shop button animation
+    private float shopGlowPhase = 0f;
 
     /** Bounds of the stop button rendered below the tracking panel. */
     private int panelStopX, panelStopY, panelStopW, panelStopH;
@@ -382,8 +386,42 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 gearIconSize, gearIconSize
         );
 
+        // Shop button (right of gear, same height)
+        int shopX = gearX + gearBtnSize + 4;
+        int shopY = CORNER_BUTTON_PADDING;
+        int shopBtnSize = toggleH;
+
+        isHoveringShop = isInBounds(mouseX, mouseY, shopX, shopY, shopBtnSize, shopBtnSize);
+
+        // Animated glow behind shop button
+        float glowPulse = (float) (0.4f + 0.6f * Math.abs(Math.sin(shopGlowPhase)));
+        int glowA = (int) (50 * appear * glowPulse);
+        int glowColor = (glowA << 24) | 0x44DD44;
+        graphics.fill(shopX - 2, shopY - 2, shopX + shopBtnSize + 2, shopY + shopBtnSize + 2, glowColor);
+
+        int shopBg = isHoveringShop
+                ? withAlpha(0xCC44BB44, appear)
+                : withAlpha(0x8833AA33, appear);
+        graphics.fill(shopX, shopY, shopX + shopBtnSize, shopY + shopBtnSize, shopBg);
+        renderOutline(graphics, shopX, shopY, shopBtnSize, shopBtnSize, withAlpha(0x8844FF44, appear));
+
+        // Draw a cart icon procedurally (small basket shape)
+        int cx = shopX + shopBtnSize / 2;
+        int cy = shopY + shopBtnSize / 2;
+        int iconColor = withAlpha(0xFFFFFFFF, appear);
+        // Cart body
+        graphics.fill(cx - 5, cy - 2, cx + 5, cy + 3, iconColor);
+        // Cart bottom (narrower)
+        graphics.fill(cx - 4, cy + 3, cx + 4, cy + 4, iconColor);
+        // Handle
+        graphics.fill(cx - 6, cy - 4, cx - 5, cy - 1, iconColor);
+        graphics.fill(cx - 6, cy - 4, cx - 2, cy - 3, iconColor);
+        // Wheels
+        graphics.fill(cx - 3, cy + 5, cx - 1, cy + 7, iconColor);
+        graphics.fill(cx + 1, cy + 5, cx + 3, cy + 7, iconColor);
+
         // Tooltips
-        int tooltipX = gearX + gearBtnSize + 8;
+        int tooltipX = shopX + shopBtnSize + 8;
         if (isHoveringPassiveToggle) {
             Component passiveLabel = isPassiveEnabled
                     ? Component.translatable("menu.aromaaffect.button.passive.on")
@@ -397,6 +435,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             graphics.drawString(font, Component.translatable("config.aromaaffect.button.settings"),
                     tooltipX,
                     gearY + gearBtnSize / 2 - 4,
+                    withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isHoveringShop) {
+            graphics.drawString(font, Component.translatable("shop.aromaaffect.button"),
+                    tooltipX,
+                    shopY + shopBtnSize / 2 - 4,
                     withAlpha(0xFFFFFFFF, appear));
         }
     }
@@ -446,6 +490,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             AromaAffect.LOGGER.debug("Config gear button clicked");
             playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
             MenuManager.openConfigMenu();
+            return true;
+        }
+        if (isHoveringShop) {
+            AromaAffect.LOGGER.debug("Shop button clicked");
+            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
+            MenuManager.openShopMenu();
             return true;
         }
         if (isHoveringPanelStop) {
@@ -602,18 +652,47 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     /**
-     * Renders a small green dot at the top-right corner of an icon to indicate active tracking.
+     * Renders an animated "online" indicator at the top-right corner of an icon.
+     * A solid green dot with a single smooth ring that expands and fades out.
+     * Uses wall-clock time for frame-accurate interpolation (no tick jitter).
      */
-    private static void renderTrackingIndicator(GuiGraphics graphics, int iconX, int iconY, int iconSize, float alpha) {
+    private void renderTrackingIndicator(GuiGraphics graphics, int iconX, int iconY, int iconSize, float alpha) {
         int dotSize = 6;
-        int dx = iconX + iconSize - dotSize;
-        int dy = iconY - 1;
-        int dotColor = (int) (230 * alpha) << 24 | 0x44FF44;
-        int borderColor = (int) (200 * alpha) << 24 | 0x226622;
+        int cx = iconX + iconSize - dotSize / 2;
+        int cy = iconY - 1 + dotSize / 2;
 
-        // Outer border
+        // Use real time for perfectly smooth animation (~3.5 second cycle)
+        float time = (float) ((System.nanoTime() / 1_000_000_000.0) % 3.5 / 3.5);
+
+        // Single expanding ring with ease-out for smooth deceleration
+        float eased = 1.0f - (1.0f - time) * (1.0f - time); // ease-out quad
+        float ringScale = 1.0f + eased * 2.5f;
+        float ringFade = (1.0f - eased);
+        ringFade *= ringFade; // fade out faster at the end
+        float ringAlpha = ringFade * alpha;
+
+        if (ringAlpha > 0.01f) {
+            int ringHalf = (int) (dotSize * ringScale / 2.0f);
+            // Ring outline (just the border, not filled)
+            int ringColor = ((int) (100 * ringAlpha)) << 24 | 0x44FF44;
+            // Top
+            graphics.fill(cx - ringHalf, cy - ringHalf, cx + ringHalf, cy - ringHalf + 1, ringColor);
+            // Bottom
+            graphics.fill(cx - ringHalf, cy + ringHalf - 1, cx + ringHalf, cy + ringHalf, ringColor);
+            // Left
+            graphics.fill(cx - ringHalf, cy - ringHalf, cx - ringHalf + 1, cy + ringHalf, ringColor);
+            // Right
+            graphics.fill(cx + ringHalf - 1, cy - ringHalf, cx + ringHalf, cy + ringHalf, ringColor);
+        }
+
+        // Solid dot with gentle breathing
+        float breathe = 0.88f + 0.12f * (float) Math.sin(time * Math.PI * 2.0);
+        int dx = cx - dotSize / 2;
+        int dy = cy - dotSize / 2;
+        int borderColor = (int) (200 * alpha * breathe) << 24 | 0x226622;
+        int dotColor = (int) (230 * alpha * breathe) << 24 | 0x44FF44;
+
         graphics.fill(dx - 1, dy - 1, dx + dotSize + 1, dy + dotSize + 1, borderColor);
-        // Inner dot
         graphics.fill(dx, dy, dx + dotSize, dy + dotSize, dotColor);
     }
 

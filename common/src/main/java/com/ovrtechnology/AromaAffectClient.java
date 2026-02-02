@@ -6,6 +6,7 @@ import com.ovrtechnology.nose.client.NoseInventoryUi;
 import com.ovrtechnology.search.SearchKeyBindings;
 import com.ovrtechnology.guide.AromaGuideTracker;
 import com.ovrtechnology.trigger.ScentTriggerHandler;
+import com.ovrtechnology.menu.TrackingHud;
 import com.ovrtechnology.trigger.client.PassiveModeHud;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
@@ -58,6 +59,9 @@ public final class AromaAffectClient {
 
         // Initialize passive mode HUD overlay
         PassiveModeHud.init();
+
+        // Initialize tracking HUD (Arrived! notifications + global state tick)
+        TrackingHud.init();
 
         // Initialize OVR WebSocket client for scent hardware integration
         // The connection is optional - the mod works without it

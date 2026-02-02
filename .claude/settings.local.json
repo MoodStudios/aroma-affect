@@ -49,7 +49,9 @@
       "Bash(./gradlew.bat build)",
       "Bash(jar:*)",
       "WebFetch(domain:maven.fabricmc.net)",
-      "Bash(gradlew build:*)"
+      "Bash(gradlew build:*)",
+      "Bash(C:Python313python.exe -c \"\nfrom PIL import Image\nimg = Image.open\\(''C:/Users/toxic/Projects/MoodStudios/Github/aromacraft/assets/omara-cover.png''\\)\nprint\\(f''Original size: {img.size}''\\)\nimg_resized = img.resize\\(\\(512, 512\\), Image.LANCZOS\\)\nimg_resized.save\\(''C:/Users/toxic/Projects/MoodStudios/Github/aromacraft/common/src/main/resources/assets/aromaaffect/textures/gui/sprites/shop/omara_cover.png''\\)\nprint\\(''Resized to 512x512''\\)\n\")",
+      "Bash(\"C:\\\\Python313\\\\python.exe\":*)"
     ]
   }
 }

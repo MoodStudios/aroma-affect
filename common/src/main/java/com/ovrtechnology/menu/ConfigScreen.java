@@ -8,6 +8,9 @@ import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
+import com.ovrtechnology.websocket.ConnectionState;
+import com.ovrtechnology.websocket.OvrWebSocketClient;
+import com.ovrtechnology.websocket.WebSocketMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -17,8 +20,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Full configuration screen for Aroma Affect mod settings.
@@ -29,7 +35,7 @@ public class ConfigScreen extends BaseMenuScreen {
     private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
 
-    private enum Section { GENERAL, PASSIVE, SCENT_VALUES }
+    private enum Section { GENERAL, PASSIVE, SCENT_VALUES, WEBSOCKET }
     private enum ScentSubFilter { BLOCKS, FLOWERS, BIOMES, STRUCTURES }
 
     private Section activeSection = Section.GENERAL;
@@ -37,6 +43,9 @@ public class ConfigScreen extends BaseMenuScreen {
 
     // Scroll state for scent values list
     private double scentScrollOffset = 0;
+    private double wsScrollOffset = 0;
+
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
     // Key capture state
     private boolean capturingKey = false;
@@ -146,6 +155,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 case GENERAL -> "config.aromaaffect.section.general";
                 case PASSIVE -> "config.aromaaffect.section.passive";
                 case SCENT_VALUES -> "config.aromaaffect.section.scent_values";
+                case WEBSOCKET -> "config.aromaaffect.section.websocket";
             };
             Component label = Component.translatable(labelKey);
             graphics.drawString(font, label, sidebarLeft + 12, tabY + (tabH - 8) / 2, withAlpha(isActive ? COL_TEXT : COL_TEXT_DIM, a));
@@ -162,6 +172,7 @@ public class ConfigScreen extends BaseMenuScreen {
             case GENERAL -> renderGeneralSection(graphics, contentLeft, contentTop, contentW, mouseX, mouseY, a);
             case PASSIVE -> renderPassiveSection(graphics, contentLeft, contentTop, contentW, mouseX, mouseY, a);
             case SCENT_VALUES -> renderScentValuesSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
+            case WEBSOCKET -> renderWebSocketSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
         }
     }
 
@@ -323,12 +334,146 @@ public class ConfigScreen extends BaseMenuScreen {
         }
     }
 
+    private void renderWebSocketSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+        OvrWebSocketClient client = OvrWebSocketClient.getInstance();
+        ConnectionState connState = client.getState();
+
+        // --- Status Card ---
+        int cardH = 55;
+        graphics.fill(x, y, x + w, y + cardH, withAlpha(0x30FFFFFF, a));
+        renderOutline(graphics, x, y, w, cardH, withAlpha(0x44FFFFFF, a));
+
+        int cardPad = 8;
+        int rowY = y + cardPad;
+
+        // Row 1: colored dot + status text
+        int dotColor = switch (connState) {
+            case CONNECTED -> 0xFF44FF44;
+            case CONNECTING, RECONNECTING -> 0xFFFFCC44;
+            case DISCONNECTED, CONNECTION_FAILED -> 0xFFFF4444;
+        };
+        graphics.fill(x + cardPad, rowY + 1, x + cardPad + 8, rowY + 9, withAlpha(dotColor, a));
+        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.status").append(": " + connState.getDisplayName()),
+                x + cardPad + 12, rowY, withAlpha(COL_TEXT, a));
+        rowY += 14;
+
+        // Row 2: server URI
+        String uri = client.getConfig().getUri();
+        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.server").append(": " + uri),
+                x + cardPad, rowY, withAlpha(COL_TEXT_DIM, a));
+        rowY += 14;
+
+        // Row 3: reconnect attempts (only if > 0)
+        int attempts = client.getReconnectAttempts();
+        if (attempts > 0) {
+            graphics.drawString(font, Component.translatable("config.aromaaffect.ws.attempts").append(": " + attempts),
+                    x + cardPad, rowY, withAlpha(COL_TEXT_DIM, a));
+        }
+
+        // --- Message Log ---
+        int logTop = y + cardH + 10;
+        int logH = h - cardH - 10;
+
+        // Header
+        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.messages"), x, logTop, withAlpha(COL_ACCENT, a));
+        logTop += 14;
+        logH -= 14;
+
+        // Column headers
+        int colDir = x;
+        int colType = x + 20;
+        int colContent = x + 70;
+        int colTime = x + w - 50;
+        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.dir"), colDir, logTop, withAlpha(COL_ACCENT, a));
+        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.type"), colType, logTop, withAlpha(COL_ACCENT, a));
+        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.content"), colContent, logTop, withAlpha(COL_ACCENT, a));
+        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.time"), colTime, logTop, withAlpha(COL_ACCENT, a));
+        logTop += 12;
+        logH -= 12;
+
+        List<WebSocketMessage> messages = client.getMessageHistory();
+
+        if (messages.isEmpty()) {
+            graphics.drawCenteredString(font, Component.translatable("config.aromaaffect.ws.no_messages"),
+                    x + w / 2, logTop + logH / 2 - 4, withAlpha(COL_TEXT_DIM, a));
+            return;
+        }
+
+        int entryH = 14;
+        int totalH = messages.size() * entryH;
+        int maxScroll = Math.max(0, totalH - logH);
+        wsScrollOffset = Mth.clamp(wsScrollOffset, 0, maxScroll);
+
+        // Scissor-clipped scrollable area
+        graphics.enableScissor(x, logTop, x + w, logTop + logH);
+        int drawY = logTop - (int) wsScrollOffset;
+        int maxContentW = colTime - colContent - 4;
+        for (WebSocketMessage msg : messages) {
+            if (drawY + entryH >= logTop && drawY < logTop + logH) {
+                // Direction arrow
+                if (msg.isOutgoing()) {
+                    graphics.drawString(font, "\u2192", colDir, drawY, withAlpha(0xFF44FF44, a));
+                } else {
+                    graphics.drawString(font, "\u2190", colDir, drawY, withAlpha(0xFFBB88FF, a));
+                }
+
+                // Type
+                graphics.drawString(font, msg.getType(), colType, drawY, withAlpha(COL_TEXT_DIM, a));
+
+                // Content (truncated)
+                String payload = msg.getPayload();
+                if (font.width(payload) > maxContentW) {
+                    while (payload.length() > 3 && font.width(payload + "...") > maxContentW) {
+                        payload = payload.substring(0, payload.length() - 1);
+                    }
+                    payload = payload + "...";
+                }
+                graphics.drawString(font, payload, colContent, drawY, withAlpha(COL_TEXT_DIM, a));
+
+                // Time
+                String time = TIME_FMT.format(msg.getTimestamp());
+                graphics.drawString(font, time, colTime, drawY, withAlpha(COL_TEXT_DIM, a));
+            }
+            drawY += entryH;
+        }
+        graphics.disableScissor();
+
+        // Scrollbar
+        if (totalH > logH && logH > 0) {
+            int scrollBarX = x + w - 4;
+            int scrollBarH = Math.max(10, (int) ((float) logH / totalH * logH));
+            int scrollBarY = logTop + (int) ((float) wsScrollOffset / maxScroll * (logH - scrollBarH));
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 3, scrollBarY + scrollBarH, withAlpha(0x88FFFFFF, a));
+        }
+    }
+
+    private static final Set<String> FLOWER_IDS = Set.of(
+            "minecraft:dandelion", "minecraft:poppy", "minecraft:blue_orchid",
+            "minecraft:allium", "minecraft:azure_bluet", "minecraft:red_tulip",
+            "minecraft:orange_tulip", "minecraft:white_tulip", "minecraft:pink_tulip",
+            "minecraft:oxeye_daisy", "minecraft:cornflower", "minecraft:lily_of_the_valley",
+            "minecraft:sunflower", "minecraft:lilac", "minecraft:rose_bush", "minecraft:peony",
+            "minecraft:wither_rose", "minecraft:torchflower", "minecraft:pitcher_plant",
+            "minecraft:pink_petals", "minecraft:spore_blossom",
+            "minecraft:crimson_fungus", "minecraft:warped_fungus"
+    );
+
     private List<String[]> getScentValueEntries() {
         List<String[]> entries = new ArrayList<>();
         switch (activeScentFilter) {
-            case BLOCKS, FLOWERS -> {
+            case BLOCKS -> {
                 for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
                     if (!trigger.isValid()) continue;
+                    if (FLOWER_IDS.contains(trigger.getBlockId())) continue;
+                    String name = formatId(trigger.getBlockId());
+                    String scent = trigger.getScentName();
+                    entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
+                }
+            }
+            case FLOWERS -> {
+                for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
+                    if (!trigger.isValid()) continue;
+                    if (!FLOWER_IDS.contains(trigger.getBlockId())) continue;
                     String name = formatId(trigger.getBlockId());
                     String scent = trigger.getScentName();
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
@@ -656,6 +801,10 @@ public class ConfigScreen extends BaseMenuScreen {
     protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (activeSection == Section.SCENT_VALUES) {
             scentScrollOffset -= scrollY * 14;
+            return true;
+        }
+        if (activeSection == Section.WEBSOCKET) {
+            wsScrollOffset -= scrollY * 14;
             return true;
         }
         return false;

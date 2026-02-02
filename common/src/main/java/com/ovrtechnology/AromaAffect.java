@@ -14,6 +14,7 @@ import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
+import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
@@ -49,6 +50,9 @@ public final class AromaAffect {
 
         // Initialize the sniffer nose registry system (items for Sniffer mob)
         SnifferNoseRegistry.init();
+
+        // Initialize scent definitions (needed for particle colors, display names, etc.)
+        ScentRegistry.init();
 
         // Initialize the scent item registry system
         ScentItemRegistry.init();

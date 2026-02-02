@@ -3,6 +3,8 @@ package com.ovrtechnology.command.path;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.scent.ScentDefinition;
+import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
@@ -11,6 +13,7 @@ import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
 import com.ovrtechnology.trigger.config.TriggerSettings;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -245,7 +248,7 @@ public final class ActivePathManager {
             }
 
             // Spawn particles along the path
-            spawnPathParticles(player, level, playerPos, destination);
+            spawnPathParticles(player, level, playerPos, destination, path);
 
             // Check if we should trigger a scent (based on cooldown)
             if (path.targetType() != null && path.targetId() != null) {
@@ -331,14 +334,39 @@ public final class ActivePathManager {
     }
 
     /**
+     * Resolves a particle color from the scent associated with a path.
+     * Falls back to a soft white if no scent mapping is found.
+     */
+    private ParticleOptions resolveParticleForPath(ActivePath path) {
+        if (path.targetType() != null && path.targetId() != null) {
+            Optional<String> scentName = getScentForTarget(path.targetType(), path.targetId());
+            if (scentName.isPresent()) {
+                String name = scentName.get();
+                // Try lookup by fallback name first, then by ID
+                Optional<ScentDefinition> def = ScentRegistry.getScentByName(name);
+                if (def.isEmpty()) {
+                    def = ScentRegistry.getScent(name.toLowerCase().replace(" ", "_"));
+                }
+                if (def.isPresent()) {
+                    int[] rgb = def.get().getColorRGB();
+                    int argb = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+                    return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, argb);
+                }
+            }
+        }
+        return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0xFFFFFFFF);
+    }
+
+    /**
      * Spawns undulating particles along a terrain-following path.
      *
      * @param player      the player to send particles to
      * @param level       the server level
      * @param origin      the starting position (player's position)
      * @param destination the target destination
+     * @param path        the active path (used to resolve particle color)
      */
-    private void spawnPathParticles(ServerPlayer player, ServerLevel level, BlockPos origin, BlockPos destination) {
+    private void spawnPathParticles(ServerPlayer player, ServerLevel level, BlockPos origin, BlockPos destination, ActivePath path) {
         double dx = destination.getX() - origin.getX();
         double dz = destination.getZ() - origin.getZ();
         double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
@@ -355,7 +383,7 @@ public final class ActivePathManager {
         double perpZ = dirX;
 
         int numberOfPoints = Math.max(10, (int) (renderDistance / PATH_SAMPLE_SPACING));
-        ParticleOptions particleType = ParticleTypes.GLOW;
+        ParticleOptions particleType = resolveParticleForPath(path);
 
         // Animation offset based on tick counter for flowing effect
         double animationOffset = (tickCounter * 0.1) % (2 * Math.PI);
@@ -388,9 +416,9 @@ public final class ActivePathManager {
                     x,
                     y,
                     z,
-                    0.1f,           // xDist: small random offset
-                    0.1f,           // yDist
-                    0.1f,           // zDist
+                    0.05f,          // xDist: small random offset
+                    0.05f,          // yDist
+                    0.05f,          // zDist
                     0.0f,           // maxSpeed
                     1               // count
             );

@@ -86,6 +86,13 @@
   
   "menu.aromaaffect.blocks.title": "Select Block to Track",
   "menu.aromaaffect.blocks.card.description": "Track %s",
+  "menu.aromaaffect.blocks.search_placeholder": "Search blocks...",
+  "menu.aromaaffect.blocks.filter.all": "All",
+  "menu.aromaaffect.blocks.filter.ores": "Ores",
+  "menu.aromaaffect.blocks.filter.fluids": "Fluids",
+  "menu.aromaaffect.blocks.filter.dungeon": "Dungeon",
+  "menu.aromaaffect.blocks.filter.nature": "Nature",
+  "menu.aromaaffect.blocks.no_results": "No blocks match your search",
   
   "menu.aromaaffect.biomes.title": "Select Biome to Track",
   "menu.aromaaffect.biomes.card.description": "Navigate to %s",
@@ -230,5 +237,31 @@
   "config.aromaaffect.scent_values.structures": "Structures",
   "config.aromaaffect.on": "ON",
   "config.aromaaffect.off": "OFF",
-  "config.aromaaffect.button.settings": "Settings"
+  "config.aromaaffect.button.settings": "Settings",
+
+  "config.aromaaffect.section.websocket": "WebSocket",
+  "config.aromaaffect.ws.status": "Status",
+  "config.aromaaffect.ws.server": "Server",
+  "config.aromaaffect.ws.attempts": "Reconnect Attempts",
+  "config.aromaaffect.ws.messages": "Message Log",
+  "config.aromaaffect.ws.no_messages": "No messages yet",
+  "config.aromaaffect.ws.dir": "Dir",
+  "config.aromaaffect.ws.type": "Type",
+  "config.aromaaffect.ws.content": "Content",
+  "config.aromaaffect.ws.time": "Time",
+
+  "shop.aromaaffect.button": "Shop",
+  "shop.aromaaffect.title": "OVR Shop",
+  "shop.aromaaffect.subtitle": "Enhance your Minecraft experience with real scents",
+  "shop.aromaaffect.product_name": "Omara\u2122 Scent Display",
+  "shop.aromaaffect.tagline": "Scent Display by OVR Technology",
+  "shop.aromaaffect.feature1": "Real scent output while you play",
+  "shop.aromaaffect.feature2": "8 unique scent cartridges included",
+  "shop.aromaaffect.feature3": "USB-C powered, plug and play",
+  "shop.aromaaffect.feature4": "Works with Aroma Affect mod",
+  "shop.aromaaffect.feature5": "Compact desktop form factor",
+  "shop.aromaaffect.feature6": "Low-noise operation",
+  "shop.aromaaffect.compatible": "\u2713 Compatible with Aroma Affect",
+  "shop.aromaaffect.view_info": "View Info",
+  "shop.aromaaffect.buy_now": "Pre Order"
 }

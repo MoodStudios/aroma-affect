@@ -116,6 +116,20 @@ public final class MenuManager {
     }
 
     /**
+     * Opens the shop screen.
+     */
+    public static void openShopMenu() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaAffect.LOGGER.debug("Cannot open shop menu: no player");
+            return;
+        }
+
+        AromaAffect.LOGGER.debug("Opening shop menu");
+        minecraft.setScreen(new ShopScreen());
+    }
+
+    /**
      * Opens the compass/tracking menu.
      */
     public static void openCompassMenu() {
