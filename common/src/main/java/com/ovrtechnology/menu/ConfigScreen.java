@@ -7,6 +7,7 @@ import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
+import com.ovrtechnology.trigger.config.MobTriggerDefinition;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
 import com.ovrtechnology.websocket.ConnectionState;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
@@ -36,7 +37,7 @@ public class ConfigScreen extends BaseMenuScreen {
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
 
     private enum Section { GENERAL, PASSIVE, SCENT_VALUES, WEBSOCKET }
-    private enum ScentSubFilter { BLOCKS, FLOWERS, BIOMES, STRUCTURES }
+    private enum ScentSubFilter { BLOCKS, FLOWERS, BIOMES, STRUCTURES, MOBS }
 
     private Section activeSection = Section.GENERAL;
     private ScentSubFilter activeScentFilter = ScentSubFilter.BLOCKS;
@@ -186,7 +187,7 @@ public class ConfigScreen extends BaseMenuScreen {
         boolean isAutomatic = "automatic".equals(config.getPuffMode());
 
         // Automatic button
-        int autoBg = isAutomatic ? withAlpha(0xFF2A6B2A, a) : withAlpha(0xFF333333, a);
+        int autoBg = isAutomatic ? withAlpha(COL_ACCENT, a) : withAlpha(0xFF333333, a);
         boolean hoverAuto = mx >= selX && mx < selX + SELECTOR_BTN_W && my >= rowY && my < rowY + SELECTOR_BTN_H;
         if (hoverAuto && !isAutomatic) autoBg = withAlpha(0xFF444444, a);
         graphics.fill(selX, rowY, selX + SELECTOR_BTN_W, rowY + SELECTOR_BTN_H, autoBg);
@@ -195,7 +196,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
         // Manual button
         int manSelX = selX + SELECTOR_BTN_W + 2;
-        int manBg = !isAutomatic ? withAlpha(0xFF2A6B2A, a) : withAlpha(0xFF333333, a);
+        int manBg = !isAutomatic ? withAlpha(COL_ACCENT, a) : withAlpha(0xFF333333, a);
         boolean hoverMan = mx >= manSelX && mx < manSelX + SELECTOR_BTN_W && my >= rowY && my < rowY + SELECTOR_BTN_H;
         if (hoverMan && isAutomatic) manBg = withAlpha(0xFF444444, a);
         graphics.fill(manSelX, rowY, manSelX + SELECTOR_BTN_W, rowY + SELECTOR_BTN_H, manBg);
@@ -279,6 +280,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 case FLOWERS -> "config.aromaaffect.scent_values.flowers";
                 case BIOMES -> "config.aromaaffect.scent_values.biomes";
                 case STRUCTURES -> "config.aromaaffect.scent_values.structures";
+                case MOBS -> "config.aromaaffect.scent_values.mobs";
             };
             Component label = Component.translatable(labelKey);
             int tabW = font.width(label) + 16;
@@ -491,6 +493,14 @@ public class ConfigScreen extends BaseMenuScreen {
                 for (StructureTriggerDefinition trigger : ScentTriggerConfigLoader.getAllStructureTriggers()) {
                     if (!trigger.isValid()) continue;
                     String name = formatId(trigger.getStructureId());
+                    String scent = trigger.getScentName();
+                    entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
+                }
+            }
+            case MOBS -> {
+                for (MobTriggerDefinition trigger : ScentTriggerConfigLoader.getAllMobTriggers()) {
+                    if (!trigger.isValid()) continue;
+                    String name = formatId(trigger.getEntityType());
                     String scent = trigger.getScentName();
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
@@ -783,6 +793,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 case FLOWERS -> "config.aromaaffect.scent_values.flowers";
                 case BIOMES -> "config.aromaaffect.scent_values.biomes";
                 case STRUCTURES -> "config.aromaaffect.scent_values.structures";
+                case MOBS -> "config.aromaaffect.scent_values.mobs";
             };
             Component label = Component.translatable(labelKey);
             int tabW = font.width(label) + 16;

@@ -31,7 +31,7 @@ public final class AromaGuideCompassBehavior {
             return 0f;
         }
 
-        BlockPos target = AromaGuideTracker.getNearestVillagePos();
+        BlockPos target = AromaGuideTracker.getCompassTargetPos();
         if (target == null) {
             // Spin slowly when no village is found
             previousAngle = currentAngle;

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "BBB",
+    "BNB",
+    "FEF"
+  ],
+  "key": {
+    "B": "minecraft:blaze_powder",
+    "N": "aromaaffect:diamond_nose",
+    "F": "minecraft:flint",
+    "E": "minecraft:ender_pearl"
+  },
+  "result": {
+    "id": "aromaaffect:blaze_nose",
+    "count": 1
+  }
+}

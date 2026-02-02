@@ -115,6 +115,11 @@ public final class BlockOutlineRenderer {
             }
         }
 
+        // Fallback for structures: gold/amber color
+        if (ActiveTrackingState.getCategory() == MenuCategory.STRUCTURES) {
+            return new float[]{1.0f, 0.8f, 0.2f};
+        }
+
         return null;
     }
 

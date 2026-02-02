@@ -6,9 +6,12 @@ import com.ovrtechnology.ability.AbilityRegistry;
 import com.ovrtechnology.ability.PreciseSnifferAbility;
 import com.ovrtechnology.command.AromaGuideCommand;
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.biome.BiomeDefinitionLoader;
+import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.guide.AromaGuideFirstJoinHandler;
 import com.ovrtechnology.guide.AromaGuideRegistry;
+import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
@@ -18,6 +21,7 @@ import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
+import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.sniffer.SnifferMenuRegistry;
@@ -72,6 +76,9 @@ public final class AromaAffect {
         // Initialize Sniffer menu registry
         SnifferMenuRegistry.init();
 
+        // Initialize custom sounds
+        ModSounds.init();
+
         // Initialize creative tab
         ModCreativeTab.init();
 
@@ -87,9 +94,12 @@ public final class AromaAffect {
         AbilityRegistry.init();
         AbilityHandler.init();
 
-        // Load flower and mob definitions (needed by trigger system)
+        // Load all definition data (needed by trigger system)
+        BiomeDefinitionLoader.loadAllBiomes();
+        BlockDefinitionLoader.loadAllBlocks();
         FlowerDefinitionLoader.loadAllFlowers();
         MobDefinitionLoader.loadAllMobs();
+        StructureDefinitionLoader.loadAllStructures();
 
         // Initialize scent trigger system
         ScentTriggerConfigLoader.init();

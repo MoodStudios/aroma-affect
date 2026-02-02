@@ -239,11 +239,12 @@
   "config.aromaaffect.scent_values.flowers": "Flowers",
   "config.aromaaffect.scent_values.biomes": "Biomes",
   "config.aromaaffect.scent_values.structures": "Structures",
+  "config.aromaaffect.scent_values.mobs": "Mobs",
   "config.aromaaffect.on": "ON",
   "config.aromaaffect.off": "OFF",
   "config.aromaaffect.button.settings": "Settings",
 
-  "config.aromaaffect.section.websocket": "WebSocket",
+  "config.aromaaffect.section.websocket": "Bridge",
   "config.aromaaffect.ws.status": "Status",
   "config.aromaaffect.ws.server": "Server",
   "config.aromaaffect.ws.attempts": "Reconnect Attempts",
