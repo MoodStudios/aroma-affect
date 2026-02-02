@@ -412,16 +412,18 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
     @Unique
     private ItemStack aromaaffect$selectRandomMineral(Sniffer sniffer) {
-        // Pesos: cobre(35), hierro(30), oro(20), diamante(10), netherite(5) = 100 total
+        // Pesos: cobre(30), hierro(25), oro(18), esmeralda(15), diamante(8), netherite(4) = 100 total
         double roll = sniffer.getRandom().nextDouble() * 100;
 
-        if (roll < 35) {
+        if (roll < 30) {
             return new ItemStack(Items.RAW_COPPER);
-        } else if (roll < 65) {
+        } else if (roll < 55) {
             return new ItemStack(Items.RAW_IRON);
-        } else if (roll < 85) {
+        } else if (roll < 73) {
             return new ItemStack(Items.RAW_GOLD);
-        } else if (roll < 95) {
+        } else if (roll < 88) {
+            return new ItemStack(Items.EMERALD);
+        } else if (roll < 96) {
             return new ItemStack(Items.DIAMOND);
         } else {
             return new ItemStack(Items.NETHERITE_SCRAP);
