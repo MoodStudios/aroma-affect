@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Player;
@@ -29,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Sniffer.class)
-public abstract class SnifferTamingMixin extends Animal {
+public abstract class SnifferTamingMixin extends Animal implements HasCustomInventoryScreen {
 
     @Unique
     private static final int TORCH_FLOWERS_NEEDED = 4;
@@ -46,35 +47,14 @@ public abstract class SnifferTamingMixin extends Animal {
 
         // Si ya está domado
         if (data.ownerUUID != null) {
-            SnifferContainer container = new SnifferContainer(self);
-
-            // Shift + click abre el inventario
-            if (player.isShiftKeyDown()) {
-                if (!self.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
-                    SnifferMenuRegistry.openSnifferMenu(serverPlayer, self);
-                }
-                cir.setReturnValue(InteractionResult.SUCCESS);
-                return;
-            }
-
-            // Montar solo si tiene silla de montar
-            if (itemStack.isEmpty() && !self.isVehicle() && container.hasSaddle()) {
+            // Montar con mano vacía
+            if (itemStack.isEmpty() && !self.isVehicle()) {
                 if (!self.level().isClientSide()) {
                     player.startRiding(self);
+                    // Resetear el estado del Sniffer a IDLING para que no se mueva en posiciones raras
+                    self.transitionTo(Sniffer.State.IDLING);
                 }
                 cir.setReturnValue(InteractionResult.SUCCESS);
-                return;
-            }
-
-            // Si intenta montar sin silla
-            if (itemStack.isEmpty() && !self.isVehicle() && !container.hasSaddle()) {
-                if (!self.level().isClientSide()) {
-                    player.displayClientMessage(
-                            Component.literal("§cNeed a saddle to ride this Sniffer!"),
-                            true
-                    );
-                }
-                cir.setReturnValue(InteractionResult.FAIL);
                 return;
             }
 
@@ -146,6 +126,9 @@ public abstract class SnifferTamingMixin extends Animal {
             if (passenger instanceof Player && container.hasSaddle()) {
                 // Detener navegación IA
                 self.getNavigation().stop();
+
+                // Mantener al Sniffer en estado IDLING mientras está montado
+                self.transitionTo(Sniffer.State.IDLING);
             }
         }
     }
@@ -195,6 +178,17 @@ public abstract class SnifferTamingMixin extends Animal {
             return player;
         }
         return null;
+    }
+
+    @Override
+    public void openCustomInventoryScreen(Player player) {
+        Sniffer self = (Sniffer) (Object) this;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+
+        // Solo abrir si está domado y el jugador está montado
+        if (data.ownerUUID != null && !self.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            SnifferMenuRegistry.openSnifferMenu(serverPlayer, self);
+        }
     }
 
 }

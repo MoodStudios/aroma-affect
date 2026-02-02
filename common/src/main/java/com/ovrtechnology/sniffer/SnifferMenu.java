@@ -1,5 +1,6 @@
 package com.ovrtechnology.sniffer;
 
+import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import lombok.Getter;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,8 +34,13 @@ public class SnifferMenu extends AbstractContainerMenu {
             }
         });
 
-        // Slot de decoración (placeholder)
+        // Slot de Enhanced Sniffer Nose (solo acepta SnifferNoseItem)
         this.addSlot(new Slot(snifferContainer, SnifferContainer.DECORATION_SLOT, 8, 36) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return stack.getItem() instanceof SnifferNoseItem;
+            }
+
             @Override
             public int getMaxStackSize() {
                 return 1;
@@ -75,10 +81,13 @@ public class SnifferMenu extends AbstractContainerMenu {
                     if (!this.moveItemStackTo(itemStack, SnifferContainer.SADDLE_SLOT, 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                } else {
+                } else if (itemStack.getItem() instanceof SnifferNoseItem) {
                     if (!this.moveItemStackTo(itemStack, SnifferContainer.DECORATION_SLOT, 2, false)) {
                         return ItemStack.EMPTY;
                     }
+                } else {
+                    // Item no válido para los slots del sniffer, no hacer nada
+                    return ItemStack.EMPTY;
                 }
             }
 

@@ -1,99 +1,74 @@
 package com.ovrtechnology.sniffer;
 
-import net.minecraft.world.Container;
+import com.ovrtechnology.network.SnifferEquipmentNetworking;
+import com.ovrtechnology.sniffernose.SnifferNoseItem;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public class SnifferContainer implements Container {
+public class SnifferContainer extends SimpleContainer {
     private final Sniffer sniffer;
     private final SnifferTamingData data;
+    private boolean initializing = true;
 
     public static final int SADDLE_SLOT = 0;
     public static final int DECORATION_SLOT = 1;
     public static final int CONTAINER_SIZE = 2;
 
     public SnifferContainer(Sniffer sniffer) {
+        super(CONTAINER_SIZE);
         this.sniffer = sniffer;
         this.data = SnifferTamingData.get(sniffer.getUUID());
-    }
 
-    @Override
-    public int getContainerSize() {
-        return CONTAINER_SIZE;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return data.saddleItem.isEmpty() && data.decorationItem.isEmpty();
-    }
-
-    @Override
-    public ItemStack getItem(int slot) {
-        return slot == SADDLE_SLOT ? data.saddleItem :
-                slot == DECORATION_SLOT ? data.decorationItem :
-                        ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack removeItem(int slot, int count) {
-        ItemStack stack = getItem(slot);
-
-        if (!stack.isEmpty()) {
-            ItemStack result = stack.split(count);
-            setChanged();
-            return result;
+        // Cargar items guardados en el data (sin triggear setChanged)
+        if (!data.saddleItem.isEmpty()) {
+            super.setItem(SADDLE_SLOT, data.saddleItem.copy());
         }
-        return ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack removeItemNoUpdate(int slot) {
-        ItemStack stack = getItem(slot);
-
-        if (slot == SADDLE_SLOT) {
-            data.saddleItem = ItemStack.EMPTY;
-        } else if (slot == DECORATION_SLOT) {
-            data.decorationItem = ItemStack.EMPTY;
+        if (!data.decorationItem.isEmpty()) {
+            super.setItem(DECORATION_SLOT, data.decorationItem.copy());
         }
-        setChanged();
-        return stack;
-    }
-
-    @Override
-    public void setItem(int slot, ItemStack stack) {
-        if (slot == SADDLE_SLOT) {
-            // Solo acepta sillas de montar
-            if (!stack.isEmpty() && !stack.is(Items.SADDLE)) {
-                return;
-            }
-            data.saddleItem = stack.copy();
-        } else if (slot == DECORATION_SLOT) {
-            // Acepta cualquier cosa (tu placeholder)
-            data.decorationItem = stack.copy();
-        }
-        setChanged();
+        this.initializing = false;
     }
 
     @Override
     public void setChanged() {
-        // Sincronización automática
+        super.setChanged();
+
+        // No sincronizar durante la inicialización para evitar sobrescribir datos
+        if (initializing) {
+            return;
+        }
+
+        // Sincronizar con SnifferTamingData
+        data.saddleItem = super.getItem(SADDLE_SLOT).copy();
+        data.decorationItem = super.getItem(DECORATION_SLOT).copy();
+
+        // Broadcast equipment change to all tracking players
+        if (sniffer.level() instanceof ServerLevel serverLevel) {
+            for (ServerPlayer player : serverLevel.players()) {
+                if (player.distanceToSqr(sniffer) <= 128 * 128) {
+                    SnifferEquipmentNetworking.sendEquipmentSync(player, sniffer.getUUID(), data);
+                }
+            }
+        }
     }
 
     @Override
-    public boolean stillValid(net.minecraft.world.entity.player.Player player) {
-        return !sniffer.isDeadOrDying() &&
-                player.distanceToSqr(sniffer) <= 64.0;
-    }
-
-    @Override
-    public void clearContent() {
-        data.saddleItem = ItemStack.EMPTY;
-        data.decorationItem = ItemStack.EMPTY;
+    public boolean stillValid(Player player) {
+        return !sniffer.isDeadOrDying() && player.distanceToSqr(sniffer) <= 64.0;
     }
 
     public boolean hasSaddle() {
-        return !data.saddleItem.isEmpty() && data.saddleItem.is(Items.SADDLE);
+        ItemStack saddle = super.getItem(SADDLE_SLOT);
+        return !saddle.isEmpty() && saddle.is(Items.SADDLE);
     }
 
+    public boolean hasSnifferNose() {
+        ItemStack nose = super.getItem(DECORATION_SLOT);
+        return !nose.isEmpty() && nose.getItem() instanceof SnifferNoseItem;
+    }
 }
