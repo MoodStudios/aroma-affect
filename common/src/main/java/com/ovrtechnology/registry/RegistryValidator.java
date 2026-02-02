@@ -1,6 +1,6 @@
 package com.ovrtechnology.registry;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.biome.BiomeDefinition;
 import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockDefinition;
@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Validates AromaCraft registry entries against Minecraft's actual registries.
+ * Validates Aroma Affect registry entries against Minecraft's actual registries.
  * 
  * <p>This class performs post-load validation after the server has started,
  * when all mods have registered their content and the world's registry access
  * is available.</p>
  * 
  * <h2>Why Post-Load Validation?</h2>
- * <p>During mod initialization ({@code AromaCraft.init()}), Minecraft's dynamic
+ * <p>During mod initialization ({@code AromaAffect.init()}), Minecraft's dynamic
  * registries (structures, biomes) are not yet populated with world-specific data.
  * We can only validate against them after the server/world has loaded.</p>
  * 
@@ -87,7 +87,7 @@ public final class RegistryValidator {
      */
     public static void init() {
         LifecycleEvent.SERVER_STARTED.register(RegistryValidator::onServerStarted);
-        AromaCraft.LOGGER.info("RegistryValidator initialized - will validate on server start");
+        AromaAffect.LOGGER.info("RegistryValidator initialized - will validate on server start");
     }
     
     /**
@@ -95,7 +95,7 @@ public final class RegistryValidator {
      * At this point, all mods have registered their content and the world is loaded.
      */
     private static void onServerStarted(MinecraftServer server) {
-        AromaCraft.LOGGER.info("Validating AromaCraft registries against Minecraft registries...");
+        AromaAffect.LOGGER.info("Validating Aroma Affect registries against Minecraft registries...");
         
         // Clear previous validation state
         invalidStructureIds.clear();
@@ -123,9 +123,9 @@ public final class RegistryValidator {
         long elapsed = System.currentTimeMillis() - startTime;
         
         if (errorCount == 0) {
-            AromaCraft.LOGGER.info("Registry validation complete in {}ms - all entries valid!", elapsed);
+            AromaAffect.LOGGER.info("Registry validation complete in {}ms - all entries valid!", elapsed);
         } else {
-            AromaCraft.LOGGER.warn("Registry validation complete in {}ms - found {} invalid entries", elapsed, errorCount);
+            AromaAffect.LOGGER.warn("Registry validation complete in {}ms - found {} invalid entries", elapsed, errorCount);
             logValidationSummary();
         }
     }
@@ -135,7 +135,7 @@ public final class RegistryValidator {
      */
     private static void validateBlocks() {
         if (!BlockRegistry.isInitialized()) {
-            AromaCraft.LOGGER.warn("BlockRegistry not initialized, skipping block validation");
+            AromaAffect.LOGGER.warn("BlockRegistry not initialized, skipping block validation");
             return;
         }
         
@@ -149,14 +149,14 @@ public final class RegistryValidator {
             ResourceLocation resourceLocation = ResourceLocation.tryParse(blockId);
             
             if (resourceLocation == null) {
-                AromaCraft.LOGGER.error("[BlockRegistry] Invalid ResourceLocation format: '{}'", blockId);
+                AromaAffect.LOGGER.error("[BlockRegistry] Invalid ResourceLocation format: '{}'", blockId);
                 invalidBlockIds.add(blockId);
                 invalid++;
                 continue;
             }
             
             if (!blockRegistry.containsKey(resourceLocation)) {
-                AromaCraft.LOGGER.warn("[BlockRegistry] Block not found in Minecraft registry: '{}' - " +
+                AromaAffect.LOGGER.warn("[BlockRegistry] Block not found in Minecraft registry: '{}' - " +
                         "this block will not be trackable", blockId);
                 invalidBlockIds.add(blockId);
                 invalid++;
@@ -164,7 +164,7 @@ public final class RegistryValidator {
         }
         
         errorCount += invalid;
-        AromaCraft.LOGGER.info("Validated {} blocks: {} valid, {} invalid", 
+        AromaAffect.LOGGER.info("Validated {} blocks: {} valid, {} invalid", 
                 checked, checked - invalid, invalid);
     }
     
@@ -173,7 +173,7 @@ public final class RegistryValidator {
      */
     private static void validateBiomes(Registry<Biome> biomeRegistry) {
         if (!BiomeRegistry.isInitialized()) {
-            AromaCraft.LOGGER.warn("BiomeRegistry not initialized, skipping biome validation");
+            AromaAffect.LOGGER.warn("BiomeRegistry not initialized, skipping biome validation");
             return;
         }
         
@@ -186,7 +186,7 @@ public final class RegistryValidator {
             ResourceLocation resourceLocation = ResourceLocation.tryParse(biomeId);
             
             if (resourceLocation == null) {
-                AromaCraft.LOGGER.error("[BiomeRegistry] Invalid ResourceLocation format: '{}'", biomeId);
+                AromaAffect.LOGGER.error("[BiomeRegistry] Invalid ResourceLocation format: '{}'", biomeId);
                 invalidBiomeIds.add(biomeId);
                 invalid++;
                 continue;
@@ -196,10 +196,10 @@ public final class RegistryValidator {
                 // Check if it's a modded biome that might not be loaded
                 String namespace = biome.getNamespace();
                 if ("minecraft".equals(namespace)) {
-                    AromaCraft.LOGGER.error("[BiomeRegistry] Vanilla biome not found: '{}' - " +
+                    AromaAffect.LOGGER.error("[BiomeRegistry] Vanilla biome not found: '{}' - " +
                             "this may indicate a typo or version mismatch", biomeId);
                 } else {
-                    AromaCraft.LOGGER.warn("[BiomeRegistry] Modded biome not found: '{}' - " +
+                    AromaAffect.LOGGER.warn("[BiomeRegistry] Modded biome not found: '{}' - " +
                             "the mod '{}' may not be installed or the biome ID may be incorrect", 
                             biomeId, namespace);
                 }
@@ -209,7 +209,7 @@ public final class RegistryValidator {
         }
         
         errorCount += invalid;
-        AromaCraft.LOGGER.info("Validated {} biomes: {} valid, {} invalid", 
+        AromaAffect.LOGGER.info("Validated {} biomes: {} valid, {} invalid", 
                 checked, checked - invalid, invalid);
     }
     
@@ -218,7 +218,7 @@ public final class RegistryValidator {
      */
     private static void validateStructures(Registry<Structure> structureRegistry) {
         if (!StructureRegistry.isInitialized()) {
-            AromaCraft.LOGGER.warn("StructureRegistry not initialized, skipping structure validation");
+            AromaAffect.LOGGER.warn("StructureRegistry not initialized, skipping structure validation");
             return;
         }
         
@@ -226,7 +226,7 @@ public final class RegistryValidator {
         int invalid = 0;
         
         // Log available structures for debugging
-        AromaCraft.LOGGER.debug("Available structures in world: {}", 
+        AromaAffect.LOGGER.debug("Available structures in world: {}", 
                 structureRegistry.keySet().stream().map(ResourceLocation::toString).toList());
         
         for (StructureDefinition structure : StructureRegistry.getAllStructures()) {
@@ -235,7 +235,7 @@ public final class RegistryValidator {
             ResourceLocation resourceLocation = ResourceLocation.tryParse(structureId);
             
             if (resourceLocation == null) {
-                AromaCraft.LOGGER.error("[StructureRegistry] Invalid ResourceLocation format: '{}'", structureId);
+                AromaAffect.LOGGER.error("[StructureRegistry] Invalid ResourceLocation format: '{}'", structureId);
                 invalidStructureIds.add(structureId);
                 invalid++;
                 continue;
@@ -245,10 +245,10 @@ public final class RegistryValidator {
                 // Check if it's a modded structure that might not be loaded
                 String namespace = structure.getNamespace();
                 if ("minecraft".equals(namespace)) {
-                    AromaCraft.LOGGER.error("[StructureRegistry] Vanilla structure not found: '{}' - " +
+                    AromaAffect.LOGGER.error("[StructureRegistry] Vanilla structure not found: '{}' - " +
                             "this may indicate a typo or version mismatch", structureId);
                 } else {
-                    AromaCraft.LOGGER.warn("[StructureRegistry] Modded structure not found: '{}' - " +
+                    AromaAffect.LOGGER.warn("[StructureRegistry] Modded structure not found: '{}' - " +
                             "the mod '{}' may not be installed or the structure ID may be incorrect", 
                             structureId, namespace);
                 }
@@ -258,7 +258,7 @@ public final class RegistryValidator {
         }
         
         errorCount += invalid;
-        AromaCraft.LOGGER.info("Validated {} structures: {} valid, {} invalid", 
+        AromaAffect.LOGGER.info("Validated {} structures: {} valid, {} invalid", 
                 checked, checked - invalid, invalid);
     }
     
@@ -266,25 +266,25 @@ public final class RegistryValidator {
      * Logs a summary of all validation errors.
      */
     private static void logValidationSummary() {
-        AromaCraft.LOGGER.warn("=== Registry Validation Summary ===");
+        AromaAffect.LOGGER.warn("=== Registry Validation Summary ===");
         
         if (!invalidBlockIds.isEmpty()) {
-            AromaCraft.LOGGER.warn("Invalid blocks ({}): {}", 
+            AromaAffect.LOGGER.warn("Invalid blocks ({}): {}", 
                     invalidBlockIds.size(), invalidBlockIds);
         }
         
         if (!invalidBiomeIds.isEmpty()) {
-            AromaCraft.LOGGER.warn("Invalid biomes ({}): {}", 
+            AromaAffect.LOGGER.warn("Invalid biomes ({}): {}", 
                     invalidBiomeIds.size(), invalidBiomeIds);
         }
         
         if (!invalidStructureIds.isEmpty()) {
-            AromaCraft.LOGGER.warn("Invalid structures ({}): {}", 
+            AromaAffect.LOGGER.warn("Invalid structures ({}): {}", 
                     invalidStructureIds.size(), invalidStructureIds);
         }
         
-        AromaCraft.LOGGER.warn("These entries will not be trackable. Check your JSON configuration files.");
-        AromaCraft.LOGGER.warn("===================================");
+        AromaAffect.LOGGER.warn("These entries will not be trackable. Check your JSON configuration files.");
+        AromaAffect.LOGGER.warn("===================================");
     }
     
     /**

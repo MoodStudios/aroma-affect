@@ -1,6 +1,6 @@
 package com.ovrtechnology.sniffernose;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -15,7 +15,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import java.util.function.Consumer;
 
 /**
- * Item class for sniffer nose items in AromaCraft.
+ * Item class for sniffer nose items in Aroma Affect.
  * 
  * <p>Sniffer nose items are designed for the Sniffer mob and are NOT equippable by players.
  * They are regular items that can be used in crafting, dropped by mobs, etc.</p>
@@ -55,7 +55,7 @@ public class SnifferNoseItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM, 
-                ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, itemId)
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
         ));
         
         // Sniffer nose items stack to 1 (they are unique items)

@@ -1,12 +1,11 @@
 package com.ovrtechnology.ability;
 
 /**
- * Constants for ability identifiers used throughout AromaCraft.
+ * Constants for ability identifiers used throughout Aroma Affect.
  * 
  * <p>
  * These IDs must match the ability strings defined in the nose JSON
- * configuration
- * files (data/aromacraft/noses/noses.json).
+ * configuration files (data/aromaaffect/noses/noses.json).
  * </p>
  * 
  * <p>
@@ -20,11 +19,46 @@ package com.ovrtechnology.ability;
  * }</pre>
  * 
  * @see com.ovrtechnology.nose.NoseAbilityResolver#hasAbility(String, String)
+ * @see AbilityRegistry
  */
 public final class AbilityConstants {
 
     private AbilityConstants() {}
 
-    public static final String PRECISE_SNIFFER = "precise_sniffer";
+    // ========== Tier 1 Abilities ==========
 
+    /**
+     * Basic scent detection ability.
+     * Allows detection of basic scents like water and lava.
+     */
+    public static final String BASIC_SCENT = "basic_scent";
+
+    // ========== Tier 2 Abilities ==========
+
+    /**
+     * Active tracking ability.
+     * Enables active tracking mode for enhanced scent detection.
+     */
+    public static final String ACTIVE_TRACKING = "active_tracking";
+
+    // ========== Tier 3+ Abilities ==========
+
+    /**
+     * Structure compass ability.
+     * Allows detection of nearby structures.
+     */
+    public static final String STRUCTURE_COMPASS = "structure_compass";
+
+    /**
+     * Danger sense ability.
+     * Provides warnings about nearby dangers and hostile entities.
+     */
+    public static final String DANGER_SENSE = "danger_sense";
+
+    /**
+     * Precise sniffer ability.
+     * Allows players to "sniff out" loot from Suspicious Sand
+     * with an increased chance for Sniffer Eggs.
+     */
+    public static final String PRECISE_SNIFFER = "precise_sniffer";
 }

@@ -1,6 +1,6 @@
 package com.ovrtechnology.command;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -26,7 +26,7 @@ public final class AromaGuideCommand {
 
     public static void init() {
         CommandRegistrationEvent.EVENT.register(AromaGuideCommand::registerCommand);
-        AromaCraft.LOGGER.info("AromaCraft guide command initialized");
+        AromaAffect.LOGGER.info("AromaCraft guide command initialized");
     }
 
     private static void registerCommand(
@@ -44,7 +44,7 @@ public final class AromaGuideCommand {
                 });
 
         dispatcher.register(builder);
-        AromaCraft.LOGGER.debug("Registered /aromaguide command");
+        AromaAffect.LOGGER.debug("Registered /aromaguide command");
     }
 
     /**
@@ -55,7 +55,7 @@ public final class AromaGuideCommand {
             Class<?> clazz = Class.forName("com.ovrtechnology.guide.GuideManager");
             clazz.getMethod("openGuideClient").invoke(null);
         } catch (ReflectiveOperationException e) {
-            AromaCraft.LOGGER.debug("Failed to open guide UI (expected on dedicated server)", e);
+            AromaAffect.LOGGER.debug("Failed to open guide UI (expected on dedicated server)", e);
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.ovrtechnology.trigger;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
@@ -96,13 +96,13 @@ public final class ScentTriggerManager {
      */
     public static void init() {
         if (INSTANCE.initialized) {
-            AromaCraft.LOGGER.warn("ScentTriggerManager.init() called multiple times!");
+            AromaAffect.LOGGER.warn("ScentTriggerManager.init() called multiple times!");
             return;
         }
 
-        AromaCraft.LOGGER.info("Initializing ScentTriggerManager...");
+        AromaAffect.LOGGER.info("Initializing ScentTriggerManager...");
         INSTANCE.initialized = true;
-        AromaCraft.LOGGER.info("ScentTriggerManager initialized");
+        AromaAffect.LOGGER.info("ScentTriggerManager initialized");
     }
 
     // ========================================
@@ -125,7 +125,7 @@ public final class ScentTriggerManager {
 
         // Check global cooldown
         if (now - lastGlobalTriggerTime < settings.getGlobalCooldownMs()) {
-            AromaCraft.LOGGER.debug("Scent '{}' blocked by global cooldown", scentName);
+            AromaAffect.LOGGER.debug("Scent '{}' blocked by global cooldown", scentName);
             return false;
         }
 
@@ -134,7 +134,7 @@ public final class ScentTriggerManager {
         if (lastTime != null) {
             long scentCooldown = settings.getItemUseCooldownMs(); // Default to item cooldown
             if (now - lastTime < scentCooldown) {
-                AromaCraft.LOGGER.debug("Scent '{}' on cooldown for {} more ms",
+                AromaAffect.LOGGER.debug("Scent '{}' on cooldown for {} more ms",
                         scentName, scentCooldown - (now - lastTime));
                 return false;
             }
@@ -216,19 +216,16 @@ public final class ScentTriggerManager {
             return false;
         }
 
-        AromaCraft.LOGGER.debug("Processing trigger: {}", trigger);
+        AromaAffect.LOGGER.debug("Processing trigger: {}", trigger);
 
         // Check if this trigger should replace the active one
         if (!trigger.shouldReplace(activeScent)) {
-            AromaCraft.LOGGER.debug("Trigger '{}' blocked by higher priority active scent '{}'",
+            AromaAffect.LOGGER.debug("Trigger '{}' blocked by higher priority active scent '{}'",
                     trigger.scentName(), activeScent != null ? activeScent.scentName() : "none");
             return false;
         }
 
-        // Stop the previous scent if different
-        if (activeScent != null && !activeScent.scentName().equals(trigger.scentName())) {
-            sendStopToOvr(activeScent.scentName());
-        }
+        // Note: No need to send stop to previous scent - OVR client handles this automatically
 
         // Activate the new scent
         activeScent = trigger;
@@ -237,22 +234,22 @@ public final class ScentTriggerManager {
         // Update cooldowns
         updateCooldowns(trigger.scentName());
 
-        // Send to OVR
-        sendPlayToOvr(trigger.scentName());
+        // Send to OVR with intensity
+        sendPlayToOvr(trigger.scentName(), trigger.intensity());
 
-        AromaCraft.LOGGER.info("Triggered scent '{}' (priority: {}, duration: {} ticks)",
-                trigger.scentName(), trigger.priority(), trigger.durationTicks());
+        AromaAffect.LOGGER.info("Triggered scent '{}' (priority: {}, duration: {} ticks, intensity: {})",
+                trigger.scentName(), trigger.priority(), trigger.durationTicks(), trigger.intensity());
 
         return true;
     }
 
     /**
      * Stops the currently active scent.
+     * Note: OVR client handles automatic stop, this just clears local state.
      */
     public void stop() {
         if (activeScent != null) {
-            sendStopToOvr(activeScent.scentName());
-            AromaCraft.LOGGER.info("Stopped scent '{}'", activeScent.scentName());
+            AromaAffect.LOGGER.info("Stopped tracking scent '{}'", activeScent.scentName());
             activeScent = null;
             remainingTicks = 0;
         }
@@ -290,7 +287,7 @@ public final class ScentTriggerManager {
         remainingTicks--;
 
         if (remainingTicks <= 0) {
-            AromaCraft.LOGGER.debug("Scent '{}' duration expired", activeScent.scentName());
+            AromaAffect.LOGGER.debug("Scent '{}' duration expired", activeScent.scentName());
             stop();
         }
     }
@@ -303,31 +300,16 @@ public final class ScentTriggerManager {
      * Sends a play command to OVR hardware.
      * 
      * @param scentName the scent name to play
+     * @param intensity the scent intensity (0.0 to 1.0)
      */
-    private void sendPlayToOvr(String scentName) {
+    private void sendPlayToOvr(String scentName, double intensity) {
         OvrWebSocketClient client = OvrWebSocketClient.getInstance();
         if (client.isConnected()) {
-            WebSocketMessage message = WebSocketMessage.playScent(scentName);
+            WebSocketMessage message = WebSocketMessage.playScent(scentName, intensity);
             boolean sent = client.send(message);
-            AromaCraft.LOGGER.debug("Sent play scent '{}' to OVR: {}", scentName, sent);
+            AromaAffect.LOGGER.debug("Sent play scent '{}' (intensity: {}) to OVR: {}", scentName, intensity, sent);
         } else {
-            AromaCraft.LOGGER.debug("OVR not connected, skipping play scent '{}'", scentName);
-        }
-    }
-
-    /**
-     * Sends a stop command to OVR hardware.
-     * 
-     * @param scentName the scent name to stop
-     */
-    private void sendStopToOvr(String scentName) {
-        OvrWebSocketClient client = OvrWebSocketClient.getInstance();
-        if (client.isConnected()) {
-            WebSocketMessage message = WebSocketMessage.stopScent(scentName);
-            boolean sent = client.send(message);
-            AromaCraft.LOGGER.debug("Sent stop scent '{}' to OVR: {}", scentName, sent);
-        } else {
-            AromaCraft.LOGGER.debug("OVR not connected, skipping stop scent '{}'", scentName);
+            AromaAffect.LOGGER.debug("OVR not connected, skipping play scent '{}'", scentName);
         }
     }
 
@@ -377,7 +359,7 @@ public final class ScentTriggerManager {
 
     /**
      * Gets the remaining duration as a fraction (0.0 to 1.0).
-     * 
+     *
      * @return progress fraction, or 0 if no active scent
      */
     public float getRemainingProgress() {
@@ -385,5 +367,25 @@ public final class ScentTriggerManager {
             return 0.0f;
         }
         return (float) remainingTicks / activeScent.durationTicks();
+    }
+
+    /**
+     * Gets the timestamp of the last global trigger.
+     * Used by HUD to calculate cooldown progress.
+     *
+     * @return timestamp in milliseconds
+     */
+    public long getLastGlobalTriggerTime() {
+        return lastGlobalTriggerTime;
+    }
+
+    /**
+     * Gets the timestamp of the last trigger for a specific scent.
+     *
+     * @param scentName the scent name
+     * @return timestamp in milliseconds, or 0 if never triggered
+     */
+    public long getLastTriggerTime(String scentName) {
+        return lastTriggerTime.getOrDefault(scentName, 0L);
     }
 }

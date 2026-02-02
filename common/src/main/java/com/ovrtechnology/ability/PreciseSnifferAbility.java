@@ -1,10 +1,12 @@
 package com.ovrtechnology.ability;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -19,12 +21,10 @@ import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
- * Implementation of the Precise Sniffer ability
+ * Implementation of the Precise Sniffer ability.
  * 
  * <p>
  * This ability allows players to "sniff out" loot from Suspicious Sand
@@ -32,36 +32,38 @@ import java.util.UUID;
  * chance to obtain Sniffer Eggs.
  * </p>
  * 
+ * <p>
+ * Configuration is loaded from {@code abilities.json}. Default values are
+ * used if the config is not available.
+ * </p>
+ * 
  * <h2>Mechanics:</h2>
  * <ul>
  * <li>Player must hold right-click on Suspicious Sand</li>
  * <li>Progress builds up over time (like brushing)</li>
- * <li>When complete, loot is generated with 40% Sniffer Egg chance</li>
+ * <li>When complete, loot is generated with configurable Sniffer Egg chance</li>
  * <li>Cooldown prevents spam after successful sniff</li>
  * <li>Nose durability is consumed on success</li>
  * </ul>
  * 
  * @see SnifferLootTable
  * @see AbilityHandler
+ * @see BlockInteractionAbility
+ * @see AbilityDefinition
  */
-public final class PreciseSnifferAbility {
+public final class PreciseSnifferAbility implements BlockInteractionAbility {
 
     /**
-     * Total ticks required to complete a sniff (similar to brush duration).
-     * 40 ticks = 2 seconds.
+     * Singleton instance for registration with AbilityRegistry.
      */
-    public static final int SNIFF_DURATION_TICKS = 40;
+    public static final PreciseSnifferAbility INSTANCE = new PreciseSnifferAbility();
 
-    /**
-     * Cooldown in ticks after a successful sniff.
-     * 40 ticks = 2 seconds.
-     */
-    public static final int COOLDOWN_TICKS = 40;
+    // ========== Default Config Values ==========
 
-    /**
-     * Durability cost per successful sniff.
-     */
-    public static final int DURABILITY_COST = 5;
+    private static final int DEFAULT_DURATION_TICKS = 40;
+    private static final int DEFAULT_COOLDOWN_TICKS = 40;
+    private static final int DEFAULT_DURABILITY_COST = 5;
+    private static final double DEFAULT_SNIFFER_EGG_CHANCE = 0.4;
 
     /**
      * Maximum distance player can move before sniffing is cancelled.
@@ -74,36 +76,104 @@ public final class PreciseSnifferAbility {
      * Tracks active sniffing sessions.
      * Key: Player UUID, Value: Sniffing session data.
      */
-    private static final Map<UUID, SniffingSession> ACTIVE_SESSIONS = new HashMap<>();
+    private final Map<UUID, SniffingSession> activeSessions = new HashMap<>();
 
     /**
      * Tracks cooldowns per player.
      * Key: Player UUID, Value: Game tick when cooldown expires.
      */
-    private static final Map<UUID, Long> COOLDOWNS = new HashMap<>();
-
-    private PreciseSnifferAbility() {}
-
-    // ========== Public API ==========
+    private final Map<UUID, Long> cooldowns = new HashMap<>();
 
     /**
-     * Checks if a block is valid for the Precise Sniffer ability.
-     * 
-     * @param block the block to check
-     * @return true if the block is Suspicious Sand
+     * Cached valid blocks from config.
      */
-    public static boolean isValidTarget(Block block) {
-        return block == Blocks.SUSPICIOUS_SAND;
+    private Set<Block> validBlocks;
+
+    /**
+     * Private constructor - use {@link #INSTANCE} instead.
+     */
+    private PreciseSnifferAbility() {}
+
+    // ========== Config Accessors ==========
+
+    /**
+     * Gets the ability definition from the loader.
+     * 
+     * @return the definition or null if not loaded
+     */
+    private AbilityDefinition getDefinition() {
+        return AbilityDefinitionLoader.getAbilityById(AbilityConstants.PRECISE_SNIFFER);
     }
 
     /**
-     * Checks if a player can use the Precise Sniffer ability.
-     * 
-     * @param player the player
-     * @return true if the player can use the ability
+     * Gets the duration in ticks from config.
      */
-    public static boolean canUse(ServerPlayer player) {
-        Long cooldownEnd = COOLDOWNS.get(player.getUUID());
+    public int getDurationTicks() {
+        AbilityDefinition def = getDefinition();
+        return def != null ? def.getConfigInt("duration_ticks", DEFAULT_DURATION_TICKS) : DEFAULT_DURATION_TICKS;
+    }
+
+    /**
+     * Gets the cooldown in ticks from config.
+     */
+    public int getCooldownTicks() {
+        AbilityDefinition def = getDefinition();
+        return def != null ? def.getConfigInt("cooldown_ticks", DEFAULT_COOLDOWN_TICKS) : DEFAULT_COOLDOWN_TICKS;
+    }
+
+    /**
+     * Gets the durability cost from config.
+     */
+    public int getDurabilityCost() {
+        AbilityDefinition def = getDefinition();
+        return def != null ? def.getConfigInt("durability_cost", DEFAULT_DURABILITY_COST) : DEFAULT_DURABILITY_COST;
+    }
+
+    /**
+     * Gets the Sniffer Egg chance from config.
+     */
+    public double getSnifferEggChance() {
+        AbilityDefinition def = getDefinition();
+        return def != null ? def.getConfigDouble("sniffer_egg_chance", DEFAULT_SNIFFER_EGG_CHANCE) : DEFAULT_SNIFFER_EGG_CHANCE;
+    }
+
+    /**
+     * Gets and caches the valid blocks from config.
+     */
+    private Set<Block> getValidBlocks() {
+        if (validBlocks == null) {
+            validBlocks = new HashSet<>();
+            AbilityDefinition def = getDefinition();
+            if (def != null) {
+                List<String> blockIds = def.getConfigStringList("valid_blocks");
+                for (String blockId : blockIds) {
+                    ResourceLocation loc = ResourceLocation.tryParse(blockId);
+                    if (loc != null) {
+                        Block block = BuiltInRegistries.BLOCK.getOptional(loc).orElse(null);
+                        if (block != null && block != Blocks.AIR) {
+                            validBlocks.add(block);
+                        }
+                    }
+                }
+            }
+            // Fallback if no blocks configured
+            if (validBlocks.isEmpty()) {
+                validBlocks.add(Blocks.SUSPICIOUS_SAND);
+            }
+        }
+        return validBlocks;
+    }
+
+    // ========== Ability Interface Implementation ==========
+
+    @Override
+    public String getId() {
+        return AbilityConstants.PRECISE_SNIFFER;
+    }
+
+    @Override
+    public boolean canUse(ServerPlayer player) {
+        Long cooldownEnd = cooldowns.get(player.getUUID());
         if (cooldownEnd != null && player.level().getGameTime() < cooldownEnd) {
             return false;
         }
@@ -117,104 +187,46 @@ public final class PreciseSnifferAbility {
         return noseItem.hasAbility(AbilityConstants.PRECISE_SNIFFER);
     }
 
-    /**
-     * Starts or continues a sniffing session for a player.
-     * Should be called every tick while the player is interacting.
-     * 
-     * @param player the player
-     * @param pos    the block position
-     * @return true if the sniff completed this tick, false otherwise
-     */
-    public static boolean tickSniffing(ServerPlayer player, BlockPos pos) {
-        UUID playerId = player.getUUID();
-        long currentTick = player.level().getGameTime();
-        Vec3 playerPos = player.position();
-
-        // Get or create session
-        SniffingSession session = ACTIVE_SESSIONS.get(playerId);
-
-        if (session == null || !session.targetPos.equals(pos)) {
-            // Start new session
-            session = new SniffingSession(pos, playerPos, currentTick, 0);
-            ACTIVE_SESSIONS.put(playerId, session);
-            AromaCraft.LOGGER.debug("Started sniffing session for {} at {}", player.getName().getString(), pos);
-        }
-
-        // Check if player moved too far
-        if (playerPos.distanceTo(session.startPlayerPos) > MAX_MOVEMENT_DISTANCE) {
-            cancelSniffing(player);
-            return false;
-        }
-
-        // Increment progress
-        session = new SniffingSession(
-                session.targetPos,
-                session.startPlayerPos,
-                session.startTick,
-                session.progress + 1);
-        ACTIVE_SESSIONS.put(playerId, session);
-
-        // Play sniffing sound periodically (every 10 ticks)
-        if (session.progress % 10 == 0) {
-            playSniffSound(player, pos);
-        }
-
-        // Spawn particles
-        spawnSniffParticles(player, pos);
-
-        // Check if complete
-        if (session.progress >= SNIFF_DURATION_TICKS) {
-            completeSniffing(player, pos);
-            return true;
-        }
-
-        return false;
+    @Override
+    public boolean isValidTarget(Block block) {
+        return getValidBlocks().contains(block);
     }
 
-    /**
-     * Cancels an active sniffing session for a player.
-     * 
-     * @param player the player
-     */
-    public static void cancelSniffing(ServerPlayer player) {
-        SniffingSession removed = ACTIVE_SESSIONS.remove(player.getUUID());
+    @Override
+    public boolean onInteract(ServerPlayer player, BlockPos pos) {
+        return tickSniffingInternal(player, pos);
+    }
+
+    @Override
+    public void onCancel(ServerPlayer player) {
+        SniffingSession removed = activeSessions.remove(player.getUUID());
         if (removed != null) {
-            AromaCraft.LOGGER.debug("Cancelled sniffing session for {}", player.getName().getString());
+            AromaAffect.LOGGER.debug("Cancelled sniffing session for {}", player.getName().getString());
         }
     }
 
-    /**
-     * Checks if a player has an active sniffing session.
-     * 
-     * @param player the player
-     * @return true if sniffing is in progress
-     */
-    public static boolean isSniffing(ServerPlayer player) {
-        return ACTIVE_SESSIONS.containsKey(player.getUUID());
+    @Override
+    public boolean onTick(ServerPlayer player, BlockPos pos) {
+        return tickSniffingInternal(player, pos);
     }
 
-    /**
-     * Gets the sniffing progress for a player (0.0 to 1.0).
-     * 
-     * @param player the player
-     * @return progress from 0.0 (just started) to 1.0 (complete)
-     */
-    public static float getProgress(ServerPlayer player) {
-        SniffingSession session = ACTIVE_SESSIONS.get(player.getUUID());
+    @Override
+    public boolean isActive(ServerPlayer player) {
+        return activeSessions.containsKey(player.getUUID());
+    }
+
+    @Override
+    public float getProgress(ServerPlayer player) {
+        SniffingSession session = activeSessions.get(player.getUUID());
         if (session == null) {
             return 0.0f;
         }
-        return Math.min(1.0f, (float) session.progress / SNIFF_DURATION_TICKS);
+        return Math.min(1.0f, (float) session.progress / getDurationTicks());
     }
 
-    /**
-     * Gets remaining cooldown in ticks for a player.
-     * 
-     * @param player the player
-     * @return remaining ticks, or 0 if not on cooldown
-     */
-    public static long getRemainingCooldown(ServerPlayer player) {
-        Long cooldownEnd = COOLDOWNS.get(player.getUUID());
+    @Override
+    public long getRemainingCooldown(ServerPlayer player) {
+        Long cooldownEnd = cooldowns.get(player.getUUID());
         if (cooldownEnd == null) {
             return 0;
         }
@@ -225,18 +237,71 @@ public final class PreciseSnifferAbility {
     // ========== Internal Methods ==========
 
     /**
+     * Processes a tick of sniffing, starting or continuing a session.
+     * 
+     * @param player the player
+     * @param pos    the block position
+     * @return true if the sniff completed this tick, false otherwise
+     */
+    private boolean tickSniffingInternal(ServerPlayer player, BlockPos pos) {
+        UUID playerId = player.getUUID();
+        long currentTick = player.level().getGameTime();
+        Vec3 playerPos = player.position();
+
+        // Get or create session
+        SniffingSession session = activeSessions.get(playerId);
+
+        if (session == null || !session.targetPos.equals(pos)) {
+            // Start new session
+            session = new SniffingSession(pos, playerPos, currentTick, 0);
+            activeSessions.put(playerId, session);
+            AromaAffect.LOGGER.debug("Started sniffing session for {} at {}", player.getName().getString(), pos);
+        }
+
+        // Check if player moved too far
+        if (playerPos.distanceTo(session.startPlayerPos) > MAX_MOVEMENT_DISTANCE) {
+            onCancel(player);
+            return false;
+        }
+
+        // Increment progress
+        session = new SniffingSession(
+                session.targetPos,
+                session.startPlayerPos,
+                session.startTick,
+                session.progress + 1);
+        activeSessions.put(playerId, session);
+
+        // Play sniffing sound periodically (every 10 ticks)
+        if (session.progress % 10 == 0) {
+            playSniffSound(player, pos);
+        }
+
+        // Spawn particles
+        spawnSniffParticles(player, pos);
+
+        // Check if complete
+        if (session.progress >= getDurationTicks()) {
+            completeSniffing(player, pos);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Completes a sniffing session, generating loot and applying effects.
      */
-    private static void completeSniffing(ServerPlayer player, BlockPos pos) {
+    private void completeSniffing(ServerPlayer player, BlockPos pos) {
         ServerLevel level = (ServerLevel) player.level();
 
-        ACTIVE_SESSIONS.remove(player.getUUID());
+        activeSessions.remove(player.getUUID());
 
-        COOLDOWNS.put(player.getUUID(), level.getGameTime() + COOLDOWN_TICKS);
+        cooldowns.put(player.getUUID(), level.getGameTime() + getCooldownTicks());
 
         // Verify the block is still a brushable block
         if (!(level.getBlockEntity(pos) instanceof BrushableBlockEntity)) {
-            AromaCraft.LOGGER.warn("No BrushableBlockEntity at {} during sniff completion", pos);
+            AromaAffect.LOGGER.warn("No BrushableBlockEntity at {} during sniff completion", pos);
             return;
         }
 
@@ -246,13 +311,14 @@ public final class PreciseSnifferAbility {
         // actual loot table
         ResourceKey<LootTable> lootTableKey = net.minecraft.world.level.storage.loot.BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY;
 
-        // Roll loot with Sniffer Egg bias
+        // Roll loot with Sniffer Egg bias (using config chance)
         ItemStack loot = SnifferLootTable.rollLoot(
                 level,
                 pos,
                 lootTableKey,
                 player,
-                level.getRandom());
+                level.getRandom(),
+                getSnifferEggChance());
 
         if (!loot.isEmpty()) {
             // Spawn item entity at block position
@@ -271,7 +337,7 @@ public final class PreciseSnifferAbility {
             // Spawn celebration particles if Sniffer Egg
             if (loot.is(net.minecraft.world.item.Items.SNIFFER_EGG)) {
                 spawnCelebrationParticles(level, pos);
-                AromaCraft.LOGGER.info("{} found a Sniffer Egg using Precise Sniffer!",
+                AromaAffect.LOGGER.info("{} found a Sniffer Egg using Precise Sniffer!",
                         player.getName().getString());
             }
         }
@@ -286,23 +352,23 @@ public final class PreciseSnifferAbility {
             level.setBlock(pos, Blocks.SAND.defaultBlockState(), 3);
         }
 
-        AromaCraft.LOGGER.debug("Completed sniffing for {} at {}", player.getName().getString(), pos);
+        AromaAffect.LOGGER.debug("Completed sniffing for {} at {}", player.getName().getString(), pos);
     }
 
     /**
      * Damages the player's equipped nose.
      */
-    private static void damageNose(ServerPlayer player) {
+    private void damageNose(ServerPlayer player) {
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
         if (!headItem.isEmpty()) {
-            headItem.hurtAndBreak(DURABILITY_COST, player, EquipmentSlot.HEAD);
+            headItem.hurtAndBreak(getDurabilityCost(), player, EquipmentSlot.HEAD);
         }
     }
 
     /**
      * Plays sniffing sound effect.
      */
-    private static void playSniffSound(ServerPlayer player, BlockPos pos) {
+    private void playSniffSound(ServerPlayer player, BlockPos pos) {
         player.level().playSound(
                 null,
                 pos,
@@ -315,7 +381,7 @@ public final class PreciseSnifferAbility {
     /**
      * Plays success sound effect based on loot obtained.
      */
-    private static void playSuccessSound(ServerPlayer player, BlockPos pos, ItemStack loot) {
+    private void playSuccessSound(ServerPlayer player, BlockPos pos, ItemStack loot) {
         if (loot.is(net.minecraft.world.item.Items.SNIFFER_EGG)) {
             // Special sound for Sniffer Egg
             player.level().playSound(
@@ -340,7 +406,7 @@ public final class PreciseSnifferAbility {
     /**
      * Spawns sniffing particles during the sniffing animation.
      */
-    private static void spawnSniffParticles(ServerPlayer player, BlockPos pos) {
+    private void spawnSniffParticles(ServerPlayer player, BlockPos pos) {
         if (player.level() instanceof ServerLevel serverLevel) {
             Vec3 particlePos = Vec3.atCenterOf(pos);
             serverLevel.sendParticles(
@@ -358,7 +424,7 @@ public final class PreciseSnifferAbility {
     /**
      * Spawns celebration particles when a Sniffer Egg is found.
      */
-    private static void spawnCelebrationParticles(ServerLevel level, BlockPos pos) {
+    private void spawnCelebrationParticles(ServerLevel level, BlockPos pos) {
         Vec3 particlePos = Vec3.atCenterOf(pos);
         level.sendParticles(
                 ParticleTypes.TOTEM_OF_UNDYING,
@@ -374,9 +440,16 @@ public final class PreciseSnifferAbility {
     /**
      * Cleans up expired sessions and cooldowns (call periodically).
      */
-    public static void cleanup() {
+    public void cleanup() {
         // Could implement session timeout here if needed
         // For now, sessions are cleaned up on cancel/complete
+    }
+
+    /**
+     * Clears the cached valid blocks (for reloading).
+     */
+    public void clearCache() {
+        validBlocks = null;
     }
 
     // ========== Data Classes ==========

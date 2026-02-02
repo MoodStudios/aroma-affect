@@ -1,6 +1,6 @@
 package com.ovrtechnology.biome;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.util.*;
 
 /**
- * Central registry for all trackable biome definitions in AromaCraft.
+ * Central registry for all trackable biome definitions in Aroma Affect.
  * 
  * <p>This class provides the main API for other systems to access biome information.
  * Biomes define which Minecraft biomes can be tracked by the Nose system, along with
@@ -66,16 +66,16 @@ public final class BiomeRegistry {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("BiomeRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("BiomeRegistry.init() called multiple times!");
             return;
         }
         
         // Warn if ScentRegistry is not initialized
         if (!ScentRegistry.isInitialized()) {
-            AromaCraft.LOGGER.warn("BiomeRegistry.init() called before ScentRegistry! Scent validation may fail.");
+            AromaAffect.LOGGER.warn("BiomeRegistry.init() called before ScentRegistry! Scent validation may fail.");
         }
         
-        AromaCraft.LOGGER.info("Initializing BiomeRegistry...");
+        AromaAffect.LOGGER.info("Initializing BiomeRegistry...");
         
         // Load biome definitions from JSON
         List<BiomeDefinition> definitions = BiomeDefinitionLoader.loadAllBiomes();
@@ -86,7 +86,7 @@ public final class BiomeRegistry {
         }
         
         initialized = true;
-        AromaCraft.LOGGER.info("BiomeRegistry initialized with {} biomes", biomeDefinitions.size());
+        AromaAffect.LOGGER.info("BiomeRegistry initialized with {} biomes", biomeDefinitions.size());
     }
     
     /**
@@ -98,12 +98,12 @@ public final class BiomeRegistry {
         String biomeId = definition.getBiomeId();
         
         if (biomeDefinitions.containsKey(biomeId)) {
-            AromaCraft.LOGGER.warn("Duplicate biome ID in registry: {}, skipping...", biomeId);
+            AromaAffect.LOGGER.warn("Duplicate biome ID in registry: {}, skipping...", biomeId);
             return;
         }
         
         biomeDefinitions.put(biomeId, definition);
-        AromaCraft.LOGGER.debug("Registered biome: {}", biomeId);
+        AromaAffect.LOGGER.debug("Registered biome: {}", biomeId);
     }
     
     /**
@@ -313,7 +313,7 @@ public final class BiomeRegistry {
      * This clears the registry and reloads from the configuration file.
      */
     public static void reload() {
-        AromaCraft.LOGGER.info("Reloading BiomeRegistry...");
+        AromaAffect.LOGGER.info("Reloading BiomeRegistry...");
         biomeDefinitions.clear();
         
         List<BiomeDefinition> definitions = BiomeDefinitionLoader.reload();
@@ -321,7 +321,7 @@ public final class BiomeRegistry {
             registerBiome(definition);
         }
         
-        AromaCraft.LOGGER.info("BiomeRegistry reloaded with {} biomes", biomeDefinitions.size());
+        AromaAffect.LOGGER.info("BiomeRegistry reloaded with {} biomes", biomeDefinitions.size());
     }
     
     /**

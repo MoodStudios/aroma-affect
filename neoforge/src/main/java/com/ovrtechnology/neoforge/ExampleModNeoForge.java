@@ -2,12 +2,12 @@ package com.ovrtechnology.neoforge;
 
 import net.neoforged.fml.common.Mod;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 
-@Mod(AromaCraft.MOD_ID)
+@Mod(AromaAffect.MOD_ID)
 public final class ExampleModNeoForge {
     public ExampleModNeoForge() {
         // Run our common setup.
-        AromaCraft.init();
+        AromaAffect.init();
     }
 }

@@ -15,7 +15,7 @@ import lombok.ToString;
  * <p>Example JSON:</p>
  * <pre>
  * {
- *   "item_id": "aromacraft:winter_scent",
+ *   "item_id": "aromaaffect:winter_scent",
  *   "scent_name": "Winter",
  *   "trigger_on": "USE",
  *   "duration_ticks": 200,
@@ -45,7 +45,7 @@ public class ItemTriggerDefinition {
     public static final long DEFAULT_COOLDOWN_MS = 5000;
     
     /**
-     * The full item ID including namespace (e.g., "aromacraft:winter_scent").
+     * The full item ID including namespace (e.g., "aromaaffect:winter_scent").
      */
     @SerializedName("item_id")
     private String itemId;
@@ -85,6 +85,13 @@ public class ItemTriggerDefinition {
     private Long cooldownMs;
     
     /**
+     * Scent intensity (0.0 to 1.0).
+     * If not specified, uses the global item_intensity from settings.
+     */
+    @SerializedName("intensity")
+    private Double intensity;
+    
+    /**
      * Default constructor for GSON.
      */
     public ItemTriggerDefinition() {
@@ -108,6 +115,16 @@ public class ItemTriggerDefinition {
      */
     public long getCooldownMsOrDefault() {
         return cooldownMs != null ? cooldownMs : DEFAULT_COOLDOWN_MS;
+    }
+    
+    /**
+     * Gets the intensity, falling back to global setting if not specified.
+     * 
+     * @param globalIntensity the global default intensity from TriggerSettings
+     * @return intensity value (0.0 to 1.0)
+     */
+    public double getIntensityOrDefault(double globalIntensity) {
+        return intensity != null ? intensity : globalIntensity;
     }
     
     /**

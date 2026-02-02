@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 
 import java.io.InputStream;
@@ -22,7 +22,7 @@ import java.util.Set;
  * Loads scent item definitions from JSON files.
  * 
  * <p>This loader handles parsing the scent item configuration from
- * {@code data/aromacraft/scents/scent_items.json}.</p>
+ * {@code data/aromaaffect/scents/scent_items.json}.</p>
  * 
  * <p>The JSON format supports both array format and object with "scents" array:</p>
  * <pre>
@@ -43,7 +43,7 @@ public class ScentItemDefinitionLoader {
     /**
      * Path to the scent items JSON file
      */
-    private static final String SCENT_ITEMS_RESOURCE_PATH = "data/aromacraft/scents/scent_items.json";
+    private static final String SCENT_ITEMS_RESOURCE_PATH = "data/aromaaffect/scents/scent_items.json";
     
     /**
      * Default texture path for fallback
@@ -78,10 +78,10 @@ public class ScentItemDefinitionLoader {
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to load scent item definitions", e);
+            AromaAffect.LOGGER.error("Failed to load scent item definitions", e);
         }
         
-        AromaCraft.LOGGER.info("Loaded {} scent item definitions", loadedScentItems.size());
+        AromaAffect.LOGGER.info("Loaded {} scent item definitions", loadedScentItems.size());
         return Collections.unmodifiableList(loadedScentItems);
     }
     
@@ -90,12 +90,12 @@ public class ScentItemDefinitionLoader {
      */
     private static void processScentItem(ScentItemDefinition scentItem) {
         if (scentItem == null) {
-            AromaCraft.LOGGER.warn("Null scent item definition found, skipping...");
+            AromaAffect.LOGGER.warn("Null scent item definition found, skipping...");
             return;
         }
         
         if (!scentItem.isValid()) {
-            AromaCraft.LOGGER.warn("Invalid scent item definition found (missing id), skipping...");
+            AromaAffect.LOGGER.warn("Invalid scent item definition found (missing id), skipping...");
             return;
         }
         
@@ -103,7 +103,7 @@ public class ScentItemDefinitionLoader {
         
         // Check for duplicate IDs
         if (loadedIds.contains(id)) {
-            AromaCraft.LOGGER.warn("Duplicate scent item ID '{}' found, skipping...", id);
+            AromaAffect.LOGGER.warn("Duplicate scent item ID '{}' found, skipping...", id);
             return;
         }
         
@@ -112,7 +112,7 @@ public class ScentItemDefinitionLoader {
         
         loadedIds.add(id);
         loadedScentItems.add(scentItem);
-        AromaCraft.LOGGER.debug("Loaded scent item definition: {} ({})", id, scentItem.getFallbackName());
+        AromaAffect.LOGGER.debug("Loaded scent item definition: {} ({})", id, scentItem.getFallbackName());
     }
     
     /**
@@ -124,22 +124,22 @@ public class ScentItemDefinitionLoader {
         // Check texture
         String texturePath = scentItem.getImage();
         if (texturePath == null || texturePath.isEmpty()) {
-            AromaCraft.LOGGER.warn("[{}] No texture defined, using fallback: {}", id, DEFAULT_TEXTURE);
+            AromaAffect.LOGGER.warn("[{}] No texture defined, using fallback: {}", id, DEFAULT_TEXTURE);
             scentItem.setImage(DEFAULT_TEXTURE);
         } else if (!textureExists(texturePath)) {
-            AromaCraft.LOGGER.warn("[{}] Texture '{}' not found, using fallback: {}", id, texturePath, DEFAULT_TEXTURE);
+            AromaAffect.LOGGER.warn("[{}] Texture '{}' not found, using fallback: {}", id, texturePath, DEFAULT_TEXTURE);
             scentItem.setImage(DEFAULT_TEXTURE);
         }
         
         // Check model
         if (scentItem.getModel() == null || scentItem.getModel().isEmpty()) {
-            AromaCraft.LOGGER.info("[{}] No model defined, using default: minecraft:paper", id);
+            AromaAffect.LOGGER.info("[{}] No model defined, using default: minecraft:paper", id);
         }
         
         // Check priority bounds
         int priority = scentItem.getPriority();
         if (priority < 1 || priority > 10) {
-            AromaCraft.LOGGER.warn("[{}] Priority {} out of bounds (1-10), will be clamped", id, priority);
+            AromaAffect.LOGGER.warn("[{}] Priority {} out of bounds (1-10), will be clamped", id, priority);
         }
     }
     
@@ -147,7 +147,7 @@ public class ScentItemDefinitionLoader {
      * Check if a texture file exists in the resources.
      */
     private static boolean textureExists(String texturePath) {
-        String fullPath = "assets/aromacraft/textures/" + texturePath + ".png";
+        String fullPath = "assets/aromaaffect/textures/" + texturePath + ".png";
         
         try (InputStream stream = ScentItemDefinitionLoader.class.getClassLoader().getResourceAsStream(fullPath)) {
             return stream != null;
@@ -162,7 +162,7 @@ public class ScentItemDefinitionLoader {
     private static ScentItemDefinition[] loadScentItemsFromResource(String resourcePath) {
         try (InputStream inputStream = ScentItemDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                AromaCraft.LOGGER.warn("Scent items definitions file not found: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Scent items definitions file not found: {}", resourcePath);
                 return new ScentItemDefinition[0];
             }
             
@@ -179,11 +179,11 @@ public class ScentItemDefinitionLoader {
                     }
                 }
                 
-                AromaCraft.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'scents' key)", resourcePath);
+                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'scents' key)", resourcePath);
                 return new ScentItemDefinition[0];
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error parsing scent item definitions from: {}", resourcePath, e);
+            AromaAffect.LOGGER.error("Error parsing scent item definitions from: {}", resourcePath, e);
             return new ScentItemDefinition[0];
         }
     }

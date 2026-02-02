@@ -38,7 +38,13 @@ public class NoseUnlock {
      */
     @SerializedName("structures")
     private List<String> structures;
-    
+
+    /**
+     * List of flower block IDs this nose can detect (e.g., "minecraft:dandelion", "minecraft:poppy")
+     */
+    @SerializedName("flowers")
+    private List<String> flowers;
+
     /**
      * List of ability IDs this nose unlocks (references to ability definitions in code)
      */
@@ -66,7 +72,11 @@ public class NoseUnlock {
     public List<String> getStructures() {
         return structures != null ? structures : Collections.emptyList();
     }
-    
+
+    public List<String> getFlowers() {
+        return flowers != null ? flowers : Collections.emptyList();
+    }
+
     public List<String> getAbilities() {
         return abilities != null ? abilities : Collections.emptyList();
     }
@@ -95,7 +105,14 @@ public class NoseUnlock {
     public boolean hasStructureUnlocks() {
         return structures != null && !structures.isEmpty();
     }
-    
+
+    /**
+     * Check if this unlock has any flower detection
+     */
+    public boolean hasFlowerUnlocks() {
+        return flowers != null && !flowers.isEmpty();
+    }
+
     /**
      * Check if this unlock has any ability unlocks
      */
@@ -114,6 +131,6 @@ public class NoseUnlock {
      * Check if this unlock has any conditions at all
      */
     public boolean hasAnyUnlocks() {
-        return hasBlockUnlocks() || hasBiomeUnlocks() || hasStructureUnlocks() || hasAbilityUnlocks() || hasNoseInheritance();
+        return hasBlockUnlocks() || hasBiomeUnlocks() || hasStructureUnlocks() || hasFlowerUnlocks() || hasAbilityUnlocks() || hasNoseInheritance();
     }
 }

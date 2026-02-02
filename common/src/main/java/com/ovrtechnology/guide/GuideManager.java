@@ -1,6 +1,6 @@
 package com.ovrtechnology.guide;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.Minecraft;
 
 /**
@@ -19,11 +19,11 @@ public final class GuideManager {
     public static void openGuideClient() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open guide: no player");
+            AromaAffect.LOGGER.debug("Cannot open guide: no player");
             return;
         }
 
-        AromaCraft.LOGGER.debug("Opening AromaCraft guide");
+        AromaAffect.LOGGER.debug("Opening AromaCraft guide");
         minecraft.execute(() -> {
             GuideBook book = AromaCraftGuideContent.getBook();
             minecraft.setScreen(new GuideScreen(book));

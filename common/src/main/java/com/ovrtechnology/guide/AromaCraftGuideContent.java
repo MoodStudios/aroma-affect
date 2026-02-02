@@ -1,16 +1,19 @@
 package com.ovrtechnology.guide;
 
-import net.minecraft.ChatFormatting;
+import com.ovrtechnology.AromaAffect;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * Builds the hardcoded AromaCraft guide content.
+ * Builds the hardcoded Aroma Affect guide content.
  * In the future, this will be replaced by JSON-driven content loading.
  */
 public final class AromaCraftGuideContent {
+
+    private static final ResourceLocation NOSE_SCREENSHOT = ResourceLocation.fromNamespaceAndPath(
+            AromaAffect.MOD_ID, "textures/gui/guide/nose_screenshot.png");
 
     private static GuideBook cachedBook;
 
@@ -25,7 +28,7 @@ public final class AromaCraftGuideContent {
     }
 
     private static GuideBook buildBook() {
-        return GuideBook.builder("AromaCraft Guide")
+        return GuideBook.builder("Aroma Affect Guide")
                 .subtitle("Scent-Powered Exploration for Minecraft")
                 .category(buildWelcomeCategory())
                 .category(buildNosesCategory())
@@ -50,13 +53,15 @@ public final class AromaCraftGuideContent {
     private static GuidePage buildWelcomePage() {
         return GuidePage.builder("welcome", "Welcome")
                 .icon(GuideIcon.ofItem(new ItemStack(Items.NETHER_STAR)))
-                .element(GuideElement.header("Welcome to AromaCraft!"))
+                .element(GuideElement.header("Welcome to Aroma Affect!"))
                 .element(GuideElement.spacer(4))
                 .element(GuideElement.text(
-                        "AromaCraft is a Minecraft mod that brings the sense of smell into your game. " +
+                        "Aroma Affect is a Minecraft mod that brings the sense of smell into your game. " +
                         "Through the Nose equipment system, you can detect ores, biomes, structures, " +
                         "and flowers by their scent signatures."
                 ))
+                .element(GuideElement.spacer(8))
+                .element(GuideElement.image(NOSE_SCREENSHOT, 500, 262))
                 .element(GuideElement.spacer(8))
                 .element(GuideElement.subheader("What can you do?"))
                 .element(GuideElement.text(
@@ -114,7 +119,7 @@ public final class AromaCraftGuideContent {
                 .icon(GuideIcon.ofItem(new ItemStack(Items.OAK_BUTTON)))
                 .element(GuideElement.header("Controls & Keybindings"))
                 .element(GuideElement.spacer(4))
-                .element(GuideElement.text("All keybindings can be changed in Minecraft's Controls settings under the AromaCraft category."))
+                .element(GuideElement.text("All keybindings can be changed in Minecraft's Controls settings under the Aroma Affect category."))
                 .element(GuideElement.spacer(6))
                 .element(GuideElement.separator())
                 .element(GuideElement.spacer(4))
@@ -126,7 +131,7 @@ public final class AromaCraftGuideContent {
                 .element(GuideElement.spacer(6))
                 .element(GuideElement.coloredText("\u25B6  Shift+C  \u2500  Open Configuration", 0xFFB8A9FF))
                 .element(GuideElement.spacer(2))
-                .element(GuideElement.text("Opens the AromaCraft settings panel."))
+                .element(GuideElement.text("Opens the Aroma Affect settings panel."))
                 .element(GuideElement.spacer(6))
                 .element(GuideElement.coloredText("\u25B6  V  \u2500  Toggle Search Mode", 0xFFB8A9FF))
                 .element(GuideElement.spacer(2))
@@ -159,9 +164,11 @@ public final class AromaCraftGuideContent {
                 .element(GuideElement.header("The Nose System"))
                 .element(GuideElement.spacer(4))
                 .element(GuideElement.text(
-                        "Noses are the core equipment of AromaCraft. They are worn in the helmet " +
+                        "Noses are the core equipment of Aroma Affect. They are worn in the helmet " +
                         "slot and grant the player various scent-detection abilities based on their tier."
                 ))
+                .element(GuideElement.spacer(6))
+                .element(GuideElement.image(NOSE_SCREENSHOT, 500, 262))
                 .element(GuideElement.spacer(6))
                 .element(GuideElement.subheader("How Noses Work"))
                 .element(GuideElement.text(
@@ -227,7 +234,7 @@ public final class AromaCraftGuideContent {
                 .element(GuideElement.header("The Scent System"))
                 .element(GuideElement.spacer(4))
                 .element(GuideElement.text(
-                        "Scents are AromaCraft's way of connecting the digital Minecraft world " +
+                        "Scents are Aroma Affect's way of connecting the digital Minecraft world " +
                         "to real-world smells. Each scent corresponds to a real fragrance that " +
                         "can be emitted by OVR hardware when triggered in-game."
                 ))
@@ -255,7 +262,7 @@ public final class AromaCraftGuideContent {
                 .icon(GuideIcon.ofItem(new ItemStack(Items.FLOWER_POT)))
                 .element(GuideElement.header("All Scents"))
                 .element(GuideElement.spacer(4))
-                .element(GuideElement.text("AromaCraft features 18 unique scent profiles:"))
+                .element(GuideElement.text("Aroma Affect features 18 unique scent profiles:"))
                 .element(GuideElement.spacer(6))
                 .element(GuideElement.coloredText("\u2726 Winter", 0xFFADD8E6))
                 .element(GuideElement.text("Cold air, cool mint, ozone, and watery melon"))
@@ -357,7 +364,7 @@ public final class AromaCraftGuideContent {
                 .element(GuideElement.spacer(6))
                 .element(GuideElement.subheader("Finding a Nose Smith"))
                 .element(GuideElement.text(
-                        "Nose Smiths spawn naturally in custom village houses added by AromaCraft. " +
+                        "Nose Smiths spawn naturally in custom village houses added by Aroma Affect. " +
                         "Look for a villager-like NPC with a distinctive large nose. " +
                         "Right-click to start a dialogue."
                 ))

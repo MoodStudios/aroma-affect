@@ -1,8 +1,8 @@
 /**
- * Nose system for AromaCraft.
+ * Nose system for Aroma Affect.
  * 
  * <p>This package contains all classes related to the "Nose" equipment system,
- * which is the core mechanic of the AromaCraft mod. Noses are equippable items
+ * which is the core mechanic of the Aroma Affect mod. Noses are equippable items
  * that provide scent detection abilities in the game.</p>
  * 
  * <h2>Key Classes</h2>
@@ -17,7 +17,7 @@
  * </ul>
  * 
  * <h2>JSON Configuration</h2>
- * <p>Noses are defined in JSON files located at {@code data/aromacraft/noses/noses.json}.
+ * <p>Noses are defined in JSON files located at {@code data/aromaaffect/noses/noses.json}.
  * Each nose definition specifies the item's properties, tier, unlock conditions, and crafting recipe.</p>
  * 
  * <h2>Ability Inheritance</h2>

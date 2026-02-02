@@ -1,5 +1,5 @@
 /**
- * Ability system for AromaCraft nose items.
+ * Ability system for Aroma Affect nose items.
  * 
  * <p>
  * This package contains the implementation of special abilities that can be

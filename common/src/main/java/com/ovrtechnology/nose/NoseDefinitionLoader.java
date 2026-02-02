@@ -5,7 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.structure.StructureRegistry;
@@ -21,10 +22,10 @@ import java.util.List;
 
 /**
  * Loads nose definitions from JSON files.
- * Parses the data/aromacraft/noses/ directory for nose definitions.
+ * Parses the data/aromaaffect/noses/ directory for nose definitions.
  * Handles texture validation and fallback to basic_nose texture.
  * 
- * Note: Recipes are defined separately in data/aromacraft/recipe/ as standard Minecraft recipe JSON files.
+ * Note: Recipes are defined separately in data/aromaaffect/recipe/ as standard Minecraft recipe JSON files.
  */
 public class NoseDefinitionLoader {
     
@@ -57,7 +58,7 @@ public class NoseDefinitionLoader {
         
         // Load the index file that lists all nose definition files
         try {
-            NoseDefinition[] noses = loadNosesFromResource("data/aromacraft/noses/noses.json");
+            NoseDefinition[] noses = loadNosesFromResource("data/aromaaffect/noses/noses.json");
             if (noses != null) {
                 for (NoseDefinition nose : noses) {
                     if (nose != null && nose.isValid()) {
@@ -65,17 +66,17 @@ public class NoseDefinitionLoader {
                         validateAndApplyFallbacks(nose);
                         
                         loadedNoses.add(nose);
-                        AromaCraft.LOGGER.info("Loaded nose definition: {}", nose.getId());
+                        AromaAffect.LOGGER.info("Loaded nose definition: {}", nose.getId());
                     } else {
-                        AromaCraft.LOGGER.warn("Invalid nose definition found, skipping...");
+                        AromaAffect.LOGGER.warn("Invalid nose definition found, skipping...");
                     }
                 }
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to load nose definitions", e);
+            AromaAffect.LOGGER.error("Failed to load nose definitions", e);
         }
         
-        AromaCraft.LOGGER.info("Loaded {} nose definitions", loadedNoses.size());
+        AromaAffect.LOGGER.info("Loaded {} nose definitions", loadedNoses.size());
         return Collections.unmodifiableList(loadedNoses);
     }
     
@@ -88,17 +89,17 @@ public class NoseDefinitionLoader {
         // Check texture
         String texturePath = nose.getImage();
         if (texturePath == null || texturePath.isEmpty()) {
-            AromaCraft.LOGGER.warn("[{}] No texture defined, using fallback: {}", noseId, DEFAULT_TEXTURE);
+            AromaAffect.LOGGER.warn("[{}] No texture defined, using fallback: {}", noseId, DEFAULT_TEXTURE);
             nose.setImage(DEFAULT_TEXTURE);
         } else if (!textureExists(texturePath)) {
-            AromaCraft.LOGGER.warn("[{}] Texture '{}' not found, using fallback: {}", noseId, texturePath, DEFAULT_TEXTURE);
+            AromaAffect.LOGGER.warn("[{}] Texture '{}' not found, using fallback: {}", noseId, texturePath, DEFAULT_TEXTURE);
             nose.setImage(DEFAULT_TEXTURE);
         }
         
         // Check model - default to iron_helmet if not specified
         String model = nose.getModel();
         if (model == null || model.isEmpty()) {
-            AromaCraft.LOGGER.info("[{}] No model defined, using default: {}", noseId, DEFAULT_MODEL);
+            AromaAffect.LOGGER.info("[{}] No model defined, using default: {}", noseId, DEFAULT_MODEL);
         }
         
         // Validate unlock references
@@ -107,7 +108,7 @@ public class NoseDefinitionLoader {
             // Validate nose inheritance
             if (unlock.hasNoseInheritance()) {
                 for (String inheritedNoseId : unlock.getNoses()) {
-                    AromaCraft.LOGGER.debug("[{}] Inherits abilities from: {}", noseId, inheritedNoseId);
+                    AromaAffect.LOGGER.debug("[{}] Inherits abilities from: {}", noseId, inheritedNoseId);
                 }
             }
             
@@ -116,14 +117,14 @@ public class NoseDefinitionLoader {
                 List<String> invalidBlocks = BlockRegistry.validateBlockIds(unlock.getBlocks());
                 if (!invalidBlocks.isEmpty()) {
                     for (String invalidBlock : invalidBlocks) {
-                        AromaCraft.LOGGER.warn("[{}] Skipping unregistered block: '{}' - block must be defined in blocks.json", 
+                        AromaAffect.LOGGER.warn("[{}] Skipping unregistered block: '{}' - block must be defined in blocks.json", 
                                 noseId, invalidBlock);
                     }
                     // Filter out invalid blocks
                     List<String> validBlocks = new ArrayList<>(unlock.getBlocks());
                     validBlocks.removeAll(invalidBlocks);
                     unlock.setBlocks(validBlocks);
-                    AromaCraft.LOGGER.info("[{}] Kept {} valid block references after filtering", noseId, validBlocks.size());
+                    AromaAffect.LOGGER.info("[{}] Kept {} valid block references after filtering", noseId, validBlocks.size());
                 }
             }
             
@@ -132,14 +133,14 @@ public class NoseDefinitionLoader {
                 List<String> invalidStructures = StructureRegistry.validateStructureIds(unlock.getStructures());
                 if (!invalidStructures.isEmpty()) {
                     for (String invalidStructure : invalidStructures) {
-                        AromaCraft.LOGGER.warn("[{}] Skipping unregistered structure: '{}' - structure must be defined in structures.json", 
+                        AromaAffect.LOGGER.warn("[{}] Skipping unregistered structure: '{}' - structure must be defined in structures.json", 
                                 noseId, invalidStructure);
                     }
                     // Filter out invalid structures
                     List<String> validStructures = new ArrayList<>(unlock.getStructures());
                     validStructures.removeAll(invalidStructures);
                     unlock.setStructures(validStructures);
-                    AromaCraft.LOGGER.info("[{}] Kept {} valid structure references after filtering", noseId, validStructures.size());
+                    AromaAffect.LOGGER.info("[{}] Kept {} valid structure references after filtering", noseId, validStructures.size());
                 }
             }
             
@@ -148,14 +149,30 @@ public class NoseDefinitionLoader {
                 List<String> invalidBiomes = BiomeRegistry.validateBiomeIds(unlock.getBiomes());
                 if (!invalidBiomes.isEmpty()) {
                     for (String invalidBiome : invalidBiomes) {
-                        AromaCraft.LOGGER.warn("[{}] Skipping unregistered biome: '{}' - biome must be defined in biomes.json", 
+                        AromaAffect.LOGGER.warn("[{}] Skipping unregistered biome: '{}' - biome must be defined in biomes.json", 
                                 noseId, invalidBiome);
                     }
                     // Filter out invalid biomes
                     List<String> validBiomes = new ArrayList<>(unlock.getBiomes());
                     validBiomes.removeAll(invalidBiomes);
                     unlock.setBiomes(validBiomes);
-                    AromaCraft.LOGGER.info("[{}] Kept {} valid biome references after filtering", noseId, validBiomes.size());
+                    AromaAffect.LOGGER.info("[{}] Kept {} valid biome references after filtering", noseId, validBiomes.size());
+                }
+            }
+            
+            // Validate and filter ability references against AbilityDefinitionLoader
+            if (unlock.hasAbilityUnlocks() && AbilityDefinitionLoader.isInitialized()) {
+                List<String> invalidAbilities = AbilityDefinitionLoader.validateAbilityIds(unlock.getAbilities());
+                if (!invalidAbilities.isEmpty()) {
+                    for (String invalidAbility : invalidAbilities) {
+                        AromaAffect.LOGGER.warn("[{}] Skipping unregistered ability: '{}' - ability must be defined in abilities.json", 
+                                noseId, invalidAbility);
+                    }
+                    // Filter out invalid abilities
+                    List<String> validAbilities = new ArrayList<>(unlock.getAbilities());
+                    validAbilities.removeAll(invalidAbilities);
+                    unlock.setAbilities(validAbilities);
+                    AromaAffect.LOGGER.info("[{}] Kept {} valid ability references after filtering", noseId, validAbilities.size());
                 }
             }
         }
@@ -166,8 +183,8 @@ public class NoseDefinitionLoader {
      */
     private static boolean textureExists(String texturePath) {
         // Convert texture path to full resource path
-        // texturePath is like "item/basic_nose", full path is "assets/aromacraft/textures/item/basic_nose.png"
-        String fullPath = "assets/aromacraft/textures/" + texturePath + ".png";
+        // texturePath is like "item/basic_nose", full path is "assets/aromaaffect/textures/item/basic_nose.png"
+        String fullPath = "assets/aromaaffect/textures/" + texturePath + ".png";
         
         try (InputStream stream = NoseDefinitionLoader.class.getClassLoader().getResourceAsStream(fullPath)) {
             return stream != null;
@@ -182,7 +199,7 @@ public class NoseDefinitionLoader {
     private static NoseDefinition[] loadNosesFromResource(String resourcePath) {
         try (InputStream inputStream = NoseDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                AromaCraft.LOGGER.warn("Nose definitions file not found: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Nose definitions file not found: {}", resourcePath);
                 return new NoseDefinition[0];
             }
             
@@ -199,11 +216,11 @@ public class NoseDefinitionLoader {
                     }
                 }
                 
-                AromaCraft.LOGGER.warn("Invalid JSON format in: {}", resourcePath);
+                AromaAffect.LOGGER.warn("Invalid JSON format in: {}", resourcePath);
                 return new NoseDefinition[0];
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Error parsing nose definitions from: {}", resourcePath, e);
+            AromaAffect.LOGGER.error("Error parsing nose definitions from: {}", resourcePath, e);
             return new NoseDefinition[0];
         }
     }
@@ -215,7 +232,7 @@ public class NoseDefinitionLoader {
         try {
             return GSON.fromJson(json, NoseDefinition.class);
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to parse nose definition from JSON", e);
+            AromaAffect.LOGGER.error("Failed to parse nose definition from JSON", e);
             return null;
         }
     }

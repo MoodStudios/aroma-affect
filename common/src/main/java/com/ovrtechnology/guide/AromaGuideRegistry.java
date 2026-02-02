@@ -1,6 +1,6 @@
 package com.ovrtechnology.guide;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import net.minecraft.world.item.Item;
 public final class AromaGuideRegistry {
 
     private static final DeferredRegister<Item> ITEMS =
-            DeferredRegister.create(AromaCraft.MOD_ID, Registries.ITEM);
+            DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
 
     @Getter
     private static final RegistrySupplier<AromaGuideItem> AROMA_GUIDE =
@@ -23,6 +23,6 @@ public final class AromaGuideRegistry {
 
     public static void init() {
         ITEMS.register();
-        AromaCraft.LOGGER.info("Registered Aroma Guide item");
+        AromaAffect.LOGGER.info("Registered Aroma Guide item");
     }
 }

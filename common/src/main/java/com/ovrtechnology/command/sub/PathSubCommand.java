@@ -12,6 +12,7 @@ import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.lookup.LookupResult;
 import com.ovrtechnology.lookup.LookupTarget;
 import com.ovrtechnology.lookup.LookupType;
+import com.ovrtechnology.network.PathScentNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -39,6 +40,19 @@ import net.minecraft.server.level.ServerPlayer;
  * </ul>
  */
 public class PathSubCommand implements SubCommand {
+
+    /**
+     * When true, path search results are printed to the player's chat.
+     * Toggle with {@code /aromatest path verbose}.
+     */
+    private static boolean verbose = false;
+
+    /**
+     * @return true if verbose chat messages are enabled
+     */
+    public static boolean isVerbose() {
+        return verbose;
+    }
 
     /**
      * Suggestion provider for biome IDs.
@@ -130,17 +144,29 @@ public class PathSubCommand implements SubCommand {
                 .then(Commands.literal("stop")
                         .executes(this::executeStop)
                 )
+
+                .then(Commands.literal("verbose")
+                        .executes(this::toggleVerbose)
+                )
                 // Default: show usage
                 .executes(this::showUsage);
     }
 
     private int showUsage(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("§6[AromaCraft] §7Path usage:"), false);
+        source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Path usage:"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest path biome <biome_id> [radius]"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest path structure <structure_id> [radius]"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest path block <block_id> [radius]"), false);
         source.sendSuccess(() -> Component.literal("§e  /aromatest path stop §7- Stop the current path"), false);
+        source.sendSuccess(() -> Component.literal("§e  /aromatest path verbose §7- Toggle chat messages (" + (verbose ? "§aON" : "§cOFF") + "§7)"), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int toggleVerbose(CommandContext<CommandSourceStack> context) {
+        verbose = !verbose;
+        String state = verbose ? "§aEnabled" : "§cDisabled";
+        context.getSource().sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Verbose path messages: " + state), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -148,15 +174,19 @@ public class PathSubCommand implements SubCommand {
         CommandSourceStack source = context.getSource();
 
         if (!(source.getEntity() instanceof ServerPlayer player)) {
-            source.sendFailure(Component.literal("§6[AromaCraft] §cThis command can only be executed by a player"));
+            source.sendFailure(Component.literal("§6[Aroma Affect] §cThis command can only be executed by a player"));
             return 0;
         }
 
         if (ActivePathManager.getInstance().hasActivePath(player.getUUID())) {
             ActivePathManager.getInstance().removePath(player.getUUID());
-            source.sendSuccess(() -> Component.literal("§6[AromaCraft] §aPath stopped successfully!"), false);
+            if (verbose) {
+                source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aPath stopped successfully!"), false);
+            }
         } else {
-            source.sendSuccess(() -> Component.literal("§6[AromaCraft] §7No active path to stop."), false);
+            if (verbose) {
+                source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7No active path to stop."), false);
+            }
         }
 
         return Command.SINGLE_SUCCESS;
@@ -187,10 +217,12 @@ public class PathSubCommand implements SubCommand {
         ServerLevel level = source.getLevel();
         LookupTarget target = new LookupTarget(type, resourceId);
 
-        // Send search message
-        source.sendSuccess(() -> Component.literal(
-                "§6[AromaCraft] §7Searching for §e" + type.getId() + " §7'§f" + resourceId + "§7'..."
-        ), false);
+        // Send search message (verbose only)
+        if (verbose) {
+            source.sendSuccess(() -> Component.literal(
+                    "§6[Aroma Affect] §7Searching for §e" + type.getId() + " §7'§f" + resourceId + "§7'..."
+            ), false);
+        }
 
         // Execute asynchronous search
         LookupManager.getInstance().lookupAsync(level, origin, target, radius, result -> {
@@ -207,22 +239,35 @@ public class PathSubCommand implements SubCommand {
             int yLevel = LookupManager.getInstance().findYLevel(level, destination.getX(), destination.getZ(), result.target().type());
             BlockPos finalDestination = new BlockPos(destination.getX(), yLevel, destination.getZ());
 
-            source.sendSuccess(() -> Component.literal("§6[AromaCraft] §aCreating particle path!"), false);
-            source.sendSuccess(() -> Component.literal(
-                    String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d",
-                            finalDestination.getX(), finalDestination.getY(), finalDestination.getZ())
-            ), false);
-            source.sendSuccess(() -> Component.literal(
-                    "§7  Distance: §e" + result.getFormattedDistance() + " blocks"
-            ), false);
-            source.sendSuccess(() -> Component.literal(
-                    "§7  §oThe path will guide you until you arrive. Use §e/aromatest path stop §7§oto cancel."
-            ), false);
+            if (verbose) {
+                source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aCreating particle path!"), false);
+                source.sendSuccess(() -> Component.literal(
+                        String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d",
+                                finalDestination.getX(), finalDestination.getY(), finalDestination.getZ())
+                ), false);
+                source.sendSuccess(() -> Component.literal(
+                        "§7  Distance: §e" + result.getFormattedDistance() + " blocks"
+                ), false);
+                source.sendSuccess(() -> Component.literal(
+                        "§7  §oThe path will guide you until you arrive. Use §e/aromatest path stop §7§oto cancel."
+                ), false);
+            }
 
             // Create persistent path that follows terrain with undulations
             if (player != null && player.level() == level) {
-                ActivePathManager.getInstance().createPath(player, level, finalDestination);
-            } else if (player == null) {
+                // Convert LookupType to ActivePathManager.TargetType
+                ActivePathManager.TargetType targetType = convertLookupType(result.target().type());
+                String targetId = result.target().resourceId().toString();
+
+                ActivePathManager.getInstance().createPath(player, level, finalDestination, targetType, targetId);
+
+                // Notify client that path was found
+                int dist = (int) Math.sqrt(
+                        Math.pow(origin.getX() - finalDestination.getX(), 2) +
+                        Math.pow(origin.getZ() - finalDestination.getZ(), 2)
+                );
+                PathScentNetworking.sendPathFound(player, dist);
+            } else if (player == null && verbose) {
                 source.sendSuccess(() -> Component.literal("§7  §o(Particles only visible to players)"), false);
             }
 
@@ -238,9 +283,27 @@ public class PathSubCommand implements SubCommand {
                 default -> "unknown error";
             };
 
-            source.sendFailure(Component.literal(
-                    "§6[AromaCraft] §c" + reason + ": §7" + result.target().resourceId()
-            ));
+            if (verbose) {
+                source.sendFailure(Component.literal(
+                        "§6[Aroma Affect] §c" + reason + ": §7" + result.target().resourceId()
+                ));
+            }
+
+            // Notify client that search failed
+            if (source.getEntity() instanceof ServerPlayer failedPlayer) {
+                PathScentNetworking.sendPathNotFound(failedPlayer, reason);
+            }
         }
+    }
+
+    /**
+     * Converts a LookupType to an ActivePathManager.TargetType.
+     */
+    private ActivePathManager.TargetType convertLookupType(LookupType lookupType) {
+        return switch (lookupType) {
+            case BLOCK, FLOWER -> ActivePathManager.TargetType.BLOCK;
+            case BIOME -> ActivePathManager.TargetType.BIOME;
+            case STRUCTURE -> ActivePathManager.TargetType.STRUCTURE;
+        };
     }
 }

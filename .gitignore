@@ -25,6 +25,9 @@ bin/
 # Cursor rules
 .cursor/rules/
 
+# Claude
+.claude
+
 # Mac
 .DS_Store
 

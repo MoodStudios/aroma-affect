@@ -54,6 +54,13 @@ public class BiomeTriggerDefinition {
     private ScentPriority priority = ScentPriority.MEDLOW;
     
     /**
+     * Scent intensity (0.0 to 1.0).
+     * If not specified, uses the global biome_intensity from settings.
+     */
+    @SerializedName("intensity")
+    private Double intensity;
+    
+    /**
      * Optional comment for documentation in JSON.
      */
     @SerializedName("_comment")
@@ -81,6 +88,16 @@ public class BiomeTriggerDefinition {
      */
     public boolean isEnterTrigger() {
         return "ENTER".equalsIgnoreCase(mode);
+    }
+    
+    /**
+     * Gets the intensity, falling back to global setting if not specified.
+     * 
+     * @param globalIntensity the global default intensity from TriggerSettings
+     * @return intensity value (0.0 to 1.0)
+     */
+    public double getIntensityOrDefault(double globalIntensity) {
+        return intensity != null ? intensity : globalIntensity;
     }
     
     /**

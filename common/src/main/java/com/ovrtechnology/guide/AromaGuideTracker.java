@@ -4,20 +4,24 @@ import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.item.component.LodestoneTracker;
 
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 /**
  * Client-side tracker that locates the nearest village and displays
  * the distance on the action bar while the player holds an Aroma Guide.
  * <p>
- * The compass needle direction is handled by {@link AromaGuideCompassBehavior}
- * which hooks into the item property system.
+ * The compass needle rotation is driven by writing a {@link LodestoneTracker}
+ * component onto the held item stack, which the vanilla {@code minecraft:compass}
+ * range_dispatch property reads automatically.
  * <p>
  * Village lookup runs on the integrated server thread every 100 ticks
  * (~5 seconds) to avoid performance issues.
@@ -33,10 +37,6 @@ public final class AromaGuideTracker {
 
     private AromaGuideTracker() {}
 
-    /**
-     * Returns the current nearest village position, or null if none found.
-     * Used by the compass angle calculation.
-     */
     @Nullable
     public static BlockPos getNearestVillagePos() {
         return nearestVillagePos;
@@ -44,7 +44,6 @@ public final class AromaGuideTracker {
 
     /**
      * Initialize the client tick listener.
-     * Call from {@link com.ovrtechnology.AromaCraftClient#init()}.
      */
     public static void init() {
         ClientTickEvent.CLIENT_POST.register(AromaGuideTracker::onClientTick);
@@ -56,33 +55,51 @@ public final class AromaGuideTracker {
 
         boolean holdingGuide = isHoldingAromaGuide(player);
         if (!holdingGuide) {
-            // Reset when not holding
             nearestVillagePos = null;
             return;
         }
 
         tickCounter++;
 
-        // Perform the actual structure search on the server thread (integrated server).
-        // For dedicated servers, the server sends locate results via the vanilla system;
-        // here we piggyback on the integrated server for singleplayer / LAN.
         if (tickCounter >= SEARCH_INTERVAL_TICKS) {
             tickCounter = 0;
             locateNearestVillage(client, player);
         }
 
-        // Display distance on action bar every tick (smooth updates)
+        // Update the lodestone tracker component on held Aroma Guide stacks
+        // so the vanilla compass property system rotates the needle.
+        updateCompassComponent(player);
+
+        // Display distance on action bar
         if (nearestVillagePos != null) {
             int distance = (int) Math.sqrt(player.blockPosition().distSqr(nearestVillagePos));
             player.displayClientMessage(
-                    Component.translatable("item.aromacraft.aroma_guide.distance", distance),
-                    true // action bar (above hotbar)
+                    Component.translatable("item.aromaaffect.aroma_guide.distance", distance),
+                    true
             );
         } else {
             player.displayClientMessage(
-                    Component.translatable("item.aromacraft.aroma_guide.searching"),
+                    Component.translatable("item.aromaaffect.aroma_guide.searching"),
                     true
             );
+        }
+    }
+
+    private static void updateCompassComponent(LocalPlayer player) {
+        updateStackComponent(player.getMainHandItem(), player);
+        updateStackComponent(player.getOffhandItem(), player);
+    }
+
+    private static void updateStackComponent(ItemStack stack, LocalPlayer player) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof AromaGuideItem)) return;
+
+        if (nearestVillagePos != null) {
+            GlobalPos globalPos = GlobalPos.of(player.level().dimension(), nearestVillagePos);
+            stack.set(DataComponents.LODESTONE_TRACKER,
+                    new LodestoneTracker(Optional.of(globalPos), false));
+        } else {
+            // Remove component so the needle spins randomly (vanilla behavior for missing lodestone)
+            stack.remove(DataComponents.LODESTONE_TRACKER);
         }
     }
 
@@ -94,7 +111,6 @@ public final class AromaGuideTracker {
     }
 
     private static void locateNearestVillage(Minecraft client, LocalPlayer player) {
-        // Only works on integrated server (singleplayer / LAN host)
         if (client.getSingleplayerServer() == null) return;
 
         ServerLevel serverLevel = client.getSingleplayerServer().getLevel(player.level().dimension());
@@ -102,8 +118,6 @@ public final class AromaGuideTracker {
 
         BlockPos playerPos = player.blockPosition();
 
-        // Use the server's structure manager to find the nearest village.
-        // BuiltinStructures.VILLAGE is the tag/key for all village variants.
         var result = serverLevel.getChunkSource().getGenerator()
                 .findNearestMapStructure(
                         serverLevel,

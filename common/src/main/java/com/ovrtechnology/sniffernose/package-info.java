@@ -1,5 +1,5 @@
 /**
- * Sniffer Nose system for AromaCraft.
+ * Sniffer Nose system for Aroma Affect.
  * 
  * <p>This package provides the sniffer nose item registration system.
  * Sniffer noses are items designed for the Sniffer mob and are NOT equippable by players.</p>
@@ -19,7 +19,7 @@
  * </ul>
  * 
  * <h2>JSON Configuration</h2>
- * <p>Sniffer noses are defined in {@code data/aromacraft/noses/sniffer_noses.json}:</p>
+ * <p>Sniffer noses are defined in {@code data/aromaaffect/noses/sniffer_noses.json}:</p>
  * <pre>
  * {
  *   "sniffer_noses": [
@@ -36,7 +36,7 @@
  * 
  * <h2>Usage</h2>
  * <pre>
- * // Initialize during mod startup (in AromaCraft.init())
+ * // Initialize during mod startup (in Aroma Affect.init())
  * SnifferNoseRegistry.init();
  * 
  * // Access sniffer nose items

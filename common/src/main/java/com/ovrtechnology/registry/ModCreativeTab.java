@@ -1,7 +1,7 @@
 package com.ovrtechnology.registry;
 
-import com.ovrtechnology.AromaCraft;
-import com.ovrtechnology.entity.NoseSmithRegistry;
+import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.guide.AromaGuideRegistry;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
@@ -21,7 +21,7 @@ import net.minecraft.world.item.Items;
 import java.util.Comparator;
 
 /**
- * Registers the creative mode tab for AromaCraft items.
+ * Registers the creative mode tab for Aroma Affect items.
  */
 @UtilityClass
 public final class ModCreativeTab {
@@ -30,10 +30,10 @@ public final class ModCreativeTab {
      * Deferred register for creative tabs
      */
     private static final DeferredRegister<CreativeModeTab> TABS = 
-            DeferredRegister.create(AromaCraft.MOD_ID, Registries.CREATIVE_MODE_TAB);
+            DeferredRegister.create(AromaAffect.MOD_ID, Registries.CREATIVE_MODE_TAB);
     
     /**
-     * The main AromaCraft creative tab
+     * The main Aroma Affect creative tab
      */
     public static final RegistrySupplier<CreativeModeTab> AROMAAFFECT_TAB = TABS.register(
             "aromaaffect_tab",
@@ -88,6 +88,6 @@ public final class ModCreativeTab {
      */
     public static void init() {
         TABS.register();
-        AromaCraft.LOGGER.info("Registered AromaAffect creative tab");
+        AromaAffect.LOGGER.info("Registered AromaAffect creative tab");
     }
 }

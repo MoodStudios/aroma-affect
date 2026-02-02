@@ -1,12 +1,12 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.guide.GuideManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
 /**
- * Central manager for opening and managing AromaCraft menus.
+ * Central manager for opening and managing Aroma Affect menus.
  * 
  * <p>This class provides a unified API for opening any menu in the mod.
  * All menu opening logic should go through this class to ensure proper
@@ -25,16 +25,16 @@ public final class MenuManager {
     public static void openRadialMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open radial menu: no player");
+            AromaAffect.LOGGER.debug("Cannot open radial menu: no player");
             return;
         }
         
         if (minecraft.screen != null) {
-            AromaCraft.LOGGER.debug("Cannot open radial menu: another screen is open");
+            AromaAffect.LOGGER.debug("Cannot open radial menu: another screen is open");
             return;
         }
         
-        AromaCraft.LOGGER.debug("Opening radial menu");
+        AromaAffect.LOGGER.debug("Opening radial menu");
         minecraft.setScreen(new RadialMenuScreen());
     }
     
@@ -44,11 +44,11 @@ public final class MenuManager {
     public static void openConfigMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open config menu: no player");
+            AromaAffect.LOGGER.debug("Cannot open config menu: no player");
             return;
         }
         
-        AromaCraft.LOGGER.debug("Opening config menu");
+        AromaAffect.LOGGER.debug("Opening config menu");
         minecraft.setScreen(new ConfigScreen());
     }
     
@@ -58,11 +58,11 @@ public final class MenuManager {
     public static void openBlocksMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open blocks menu: no player");
+            AromaAffect.LOGGER.debug("Cannot open blocks menu: no player");
             return;
         }
         
-        AromaCraft.LOGGER.debug("Opening blocks menu");
+        AromaAffect.LOGGER.debug("Opening blocks menu");
         minecraft.setScreen(new BlocksMenuScreen());
     }
     
@@ -72,11 +72,11 @@ public final class MenuManager {
     public static void openBiomesMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open biomes menu: no player");
+            AromaAffect.LOGGER.debug("Cannot open biomes menu: no player");
             return;
         }
         
-        AromaCraft.LOGGER.debug("Opening biomes menu");
+        AromaAffect.LOGGER.debug("Opening biomes menu");
         minecraft.setScreen(new BiomesMenuScreen());
     }
     
@@ -86,11 +86,11 @@ public final class MenuManager {
     public static void openStructuresMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open structures menu: no player");
+            AromaAffect.LOGGER.debug("Cannot open structures menu: no player");
             return;
         }
         
-        AromaCraft.LOGGER.debug("Opening structures menu");
+        AromaAffect.LOGGER.debug("Opening structures menu");
         minecraft.setScreen(new StructuresMenuScreen());
     }
     
@@ -100,11 +100,11 @@ public final class MenuManager {
     public static void openFlowersMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open flowers menu: no player");
+            AromaAffect.LOGGER.debug("Cannot open flowers menu: no player");
             return;
         }
         
-        AromaCraft.LOGGER.debug("Opening flowers menu");
+        AromaAffect.LOGGER.debug("Opening flowers menu");
         minecraft.setScreen(new FlowersMenuScreen());
     }
     
@@ -121,11 +121,11 @@ public final class MenuManager {
     public static void openCompassMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) {
-            AromaCraft.LOGGER.debug("Cannot open compass menu: no player");
+            AromaAffect.LOGGER.debug("Cannot open compass menu: no player");
             return;
         }
         
-        AromaCraft.LOGGER.debug("Opening compass menu");
+        AromaAffect.LOGGER.debug("Opening compass menu");
         minecraft.setScreen(new CompassMenuScreen());
     }
     
@@ -159,14 +159,14 @@ public final class MenuManager {
      */
     public static void returnToRadialMenu() {
         Minecraft minecraft = Minecraft.getInstance();
-        AromaCraft.LOGGER.debug("Returning to radial menu");
+        AromaAffect.LOGGER.debug("Returning to radial menu");
         minecraft.setScreen(new RadialMenuScreen());
     }
     
     /**
-     * Checks if any AromaCraft menu is currently open.
+     * Checks if any Aroma Affect menu is currently open.
      * 
-     * @return true if an AromaCraft menu is open
+     * @return true if an Aroma Affect menu is open
      */
     public static boolean isMenuOpen() {
         Minecraft minecraft = Minecraft.getInstance();
@@ -174,7 +174,7 @@ public final class MenuManager {
     }
     
     /**
-     * Gets the currently open menu, if it's an AromaCraft menu.
+     * Gets the currently open menu, if it's an Aroma Affect menu.
      * 
      * @return the current menu, or null if none is open
      */

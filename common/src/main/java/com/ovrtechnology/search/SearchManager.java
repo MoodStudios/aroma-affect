@@ -1,6 +1,6 @@
 package com.ovrtechnology.search;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseItem;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -9,7 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Manages the search/tracking state for AromaCraft.
+ * Manages the search/tracking state for Aroma Affect.
  * 
  * <p>This class handles the activation and deactivation of the scent search mode,
  * which allows players to track targets when they have a Nose equipped.</p>
@@ -49,17 +49,17 @@ public final class SearchManager {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("SearchManager.init() called multiple times!");
+            AromaAffect.LOGGER.warn("SearchManager.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing SearchManager...");
+        AromaAffect.LOGGER.info("Initializing SearchManager...");
         
         // Reset state
         searchActive = false;
         
         initialized = true;
-        AromaCraft.LOGGER.info("SearchManager initialized");
+        AromaAffect.LOGGER.info("SearchManager initialized");
     }
     
     /**
@@ -75,13 +75,13 @@ public final class SearchManager {
         Player player = minecraft.player;
         
         if (player == null) {
-            AromaCraft.LOGGER.debug("Cannot toggle search: No player instance");
+            AromaAffect.LOGGER.debug("Cannot toggle search: No player instance");
             return false;
         }
         
         // Check if nose is equipped
         if (!isNoseEquipped(player)) {
-            AromaCraft.LOGGER.info("[AromaCraft Search] Cannot activate search - No Nose equipped!");
+            AromaAffect.LOGGER.info("[Aroma Affect Search] Cannot activate search - No Nose equipped!");
             return false;
         }
         
@@ -138,7 +138,7 @@ public final class SearchManager {
             noseName = noseItem.getDefinition().getId();
         }
         
-        AromaCraft.LOGGER.info("[AromaCraft Search] Search mode ACTIVATED with: {}", noseName);
+        AromaAffect.LOGGER.info("[Aroma Affect Search] Search mode ACTIVATED with: {}", noseName);
         
         // TODO: Future implementation
         // - Start visual effects (particles, HUD overlay)
@@ -150,7 +150,7 @@ public final class SearchManager {
      * Called when search mode is deactivated.
      */
     private static void onSearchDeactivated(Player player) {
-        AromaCraft.LOGGER.info("[AromaCraft Search] Search mode DEACTIVATED");
+        AromaAffect.LOGGER.info("[Aroma Affect Search] Search mode DEACTIVATED");
         
         // TODO: Future implementation
         // - Stop visual effects
@@ -208,7 +208,7 @@ public final class SearchManager {
         if (player == null || !isNoseEquipped(player)) {
             // Nose was unequipped, deactivate search
             searchActive = false;
-            AromaCraft.LOGGER.info("[AromaCraft Search] Search auto-deactivated: Nose unequipped");
+            AromaAffect.LOGGER.info("[Aroma Affect Search] Search auto-deactivated: Nose unequipped");
             return false;
         }
         

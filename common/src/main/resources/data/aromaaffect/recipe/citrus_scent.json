@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ASA",
+    "BDB",
+    "ECE"
+  ],
+  "key": {
+    "S": "aromaaffect:scent_base",
+    "D": "aromaaffect:scent_container",
+    "B": "minecraft:melon_slice",
+    "A": "minecraft:orange_dye",
+    "C": "minecraft:yellow_dye",
+    "E": "minecraft:lime_dye"
+  },
+  "result": {
+    "id": "aromaaffect:citrus_scent",
+    "count": 1
+  }
+}

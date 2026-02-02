@@ -1,0 +1,8 @@
+/**
+ * Entity package for Aroma Affect.
+ * Contains custom entity definitions including the Nose Smith NPC.
+ */
+@MethodsReturnNonnullByDefault
+package com.ovrtechnology.entity.nosesmith;
+
+import net.minecraft.MethodsReturnNonnullByDefault;

@@ -36,7 +36,7 @@ public class SnifferNoseDefinition {
     private String id;
     
     /**
-     * Path to the texture file relative to assets/aromacraft/textures/
+     * Path to the texture file relative to assets/aromaaffect/textures/
      */
     @SerializedName("image")
     private String image;
@@ -98,7 +98,7 @@ public class SnifferNoseDefinition {
      * Get the localization key for this item's name
      */
     public String getTranslationKey() {
-        return "item.aromacraft." + id;
+        return "item.aromaaffect." + id;
     }
     
     /**

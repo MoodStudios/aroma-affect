@@ -1,6 +1,6 @@
 package com.ovrtechnology.nose;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 
 import java.util.*;
@@ -28,11 +28,11 @@ public final class NoseAbilityResolver {
      */
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("NoseAbilityResolver.init() called multiple times!");
+            AromaAffect.LOGGER.warn("NoseAbilityResolver.init() called multiple times!");
             return;
         }
         
-        AromaCraft.LOGGER.info("Initializing NoseAbilityResolver...");
+        AromaAffect.LOGGER.info("Initializing NoseAbilityResolver...");
         
         // Resolve abilities for each nose
         for (String noseId : NoseRegistry.getAllNoseIds()) {
@@ -40,7 +40,7 @@ public final class NoseAbilityResolver {
         }
         
         initialized = true;
-        AromaCraft.LOGGER.info("NoseAbilityResolver initialized with {} cached entries", ABILITY_CACHE.size());
+        AromaAffect.LOGGER.info("NoseAbilityResolver initialized with {} cached entries", ABILITY_CACHE.size());
     }
     
     /**
@@ -58,25 +58,27 @@ public final class NoseAbilityResolver {
         Set<String> blocks = new LinkedHashSet<>();
         Set<String> biomes = new LinkedHashSet<>();
         Set<String> structures = new LinkedHashSet<>();
+        Set<String> flowers = new LinkedHashSet<>();
         List<String> circularDependencies = new ArrayList<>();
-        
-        resolveRecursive(noseId, visited, abilities, blocks, biomes, structures, circularDependencies);
-        
+
+        resolveRecursive(noseId, visited, abilities, blocks, biomes, structures, flowers, circularDependencies);
+
         // Report any circular dependencies found
         if (!circularDependencies.isEmpty()) {
-            AromaCraft.LOGGER.warn("Circular dependencies detected for nose '{}': {}", noseId, circularDependencies);
+            AromaAffect.LOGGER.warn("Circular dependencies detected for nose '{}': {}", noseId, circularDependencies);
         }
-        
+
         ResolvedAbilities resolved = new ResolvedAbilities(
                 Collections.unmodifiableSet(abilities),
                 Collections.unmodifiableSet(blocks),
                 Collections.unmodifiableSet(biomes),
-                Collections.unmodifiableSet(structures)
+                Collections.unmodifiableSet(structures),
+                Collections.unmodifiableSet(flowers)
         );
-        
+
         ABILITY_CACHE.put(noseId, resolved);
-        AromaCraft.LOGGER.debug("Resolved abilities for '{}': {} abilities, {} blocks, {} biomes, {} structures",
-                noseId, abilities.size(), blocks.size(), biomes.size(), structures.size());
+        AromaAffect.LOGGER.debug("Resolved abilities for '{}': {} abilities, {} blocks, {} biomes, {} structures, {} flowers",
+                noseId, abilities.size(), blocks.size(), biomes.size(), structures.size(), flowers.size());
         
         return resolved;
     }
@@ -91,44 +93,46 @@ public final class NoseAbilityResolver {
             Set<String> blocks,
             Set<String> biomes,
             Set<String> structures,
+            Set<String> flowers,
             List<String> circularDependencies
     ) {
         // Circular dependency check
         if (visited.contains(noseId)) {
             circularDependencies.add(noseId);
-            AromaCraft.LOGGER.warn("Circular dependency detected: nose '{}' already in resolution chain", noseId);
+            AromaAffect.LOGGER.warn("Circular dependency detected: nose '{}' already in resolution chain", noseId);
             return;
         }
-        
+
         visited.add(noseId);
-        
+
         // Get the nose definition
         Optional<NoseDefinition> defOpt = NoseRegistry.getDefinition(noseId);
         if (defOpt.isEmpty()) {
-            AromaCraft.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
+            AromaAffect.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
             visited.remove(noseId);
             return;
         }
-        
+
         NoseDefinition definition = defOpt.get();
         NoseUnlock unlock = definition.getUnlock();
-        
+
         if (unlock == null) {
             visited.remove(noseId);
             return;
         }
-        
+
         // Add direct abilities
         abilities.addAll(unlock.getAbilities());
         blocks.addAll(unlock.getBlocks());
         biomes.addAll(unlock.getBiomes());
         structures.addAll(unlock.getStructures());
-        
+        flowers.addAll(unlock.getFlowers());
+
         // Recursively resolve inherited noses
         for (String inheritedNoseId : unlock.getNoses()) {
-            resolveRecursive(inheritedNoseId, visited, abilities, blocks, biomes, structures, circularDependencies);
+            resolveRecursive(inheritedNoseId, visited, abilities, blocks, biomes, structures, flowers, circularDependencies);
         }
-        
+
         visited.remove(noseId);
     }
     
@@ -137,13 +141,13 @@ public final class NoseAbilityResolver {
      */
     public static ResolvedAbilities getResolvedAbilities(String noseId) {
         if (!initialized) {
-            AromaCraft.LOGGER.error("NoseAbilityResolver not initialized! Call init() first.");
+            AromaAffect.LOGGER.error("NoseAbilityResolver not initialized! Call init() first.");
             return ResolvedAbilities.EMPTY;
         }
         
         ResolvedAbilities resolved = ABILITY_CACHE.get(noseId);
         if (resolved == null) {
-            AromaCraft.LOGGER.warn("No resolved abilities found for nose: {}", noseId);
+            AromaAffect.LOGGER.warn("No resolved abilities found for nose: {}", noseId);
             return ResolvedAbilities.EMPTY;
         }
         
@@ -177,14 +181,21 @@ public final class NoseAbilityResolver {
     public static boolean canDetectStructure(String noseId, String structureId) {
         return getResolvedAbilities(noseId).getStructures().contains(structureId);
     }
-    
+
+    /**
+     * Check if a nose can detect a specific flower (including inherited)
+     */
+    public static boolean canDetectFlower(String noseId, String flowerId) {
+        return getResolvedAbilities(noseId).getFlowers().contains(flowerId);
+    }
+
     /**
      * Clear the ability cache (for reloading)
      */
     public static void clearCache() {
         ABILITY_CACHE.clear();
         initialized = false;
-        AromaCraft.LOGGER.info("NoseAbilityResolver cache cleared");
+        AromaAffect.LOGGER.info("NoseAbilityResolver cache cleared");
     }
     
     /**
@@ -196,35 +207,58 @@ public final class NoseAbilityResolver {
                 Collections.emptySet(),
                 Collections.emptySet(),
                 Collections.emptySet(),
+                Collections.emptySet(),
                 Collections.emptySet()
         );
-        
+
         private final Set<String> abilities;
         private final Set<String> blocks;
         private final Set<String> biomes;
         private final Set<String> structures;
-        
-        public ResolvedAbilities(Set<String> abilities, Set<String> blocks, Set<String> biomes, Set<String> structures) {
+        private final Set<String> flowers;
+
+        public ResolvedAbilities(Set<String> abilities, Set<String> blocks, Set<String> biomes, Set<String> structures, Set<String> flowers) {
             this.abilities = abilities;
             this.blocks = blocks;
             this.biomes = biomes;
             this.structures = structures;
+            this.flowers = flowers;
         }
-        
+
         public boolean hasAbility(String abilityId) {
             return abilities.contains(abilityId);
         }
-        
+
         public boolean canDetectBlock(String blockId) {
             return blocks.contains(blockId);
         }
-        
+
         public boolean canDetectBiome(String biomeId) {
             return biomes.contains(biomeId);
         }
-        
+
         public boolean canDetectStructure(String structureId) {
             return structures.contains(structureId);
+        }
+
+        public boolean canDetectFlower(String flowerId) {
+            return flowers.contains(flowerId);
+        }
+
+        public Set<String> getBlocks() {
+            return blocks;
+        }
+
+        public Set<String> getBiomes() {
+            return biomes;
+        }
+
+        public Set<String> getStructures() {
+            return structures;
+        }
+
+        public Set<String> getFlowers() {
+            return flowers;
         }
     }
 }

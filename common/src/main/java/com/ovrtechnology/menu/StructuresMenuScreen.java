@@ -1,6 +1,8 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.nose.EquippedNoseHelper;
+import com.ovrtechnology.nose.NoseAbilityResolver;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -8,152 +10,146 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Menu screen for selecting structures to track.
- * 
+ *
  * <p>This menu displays all structures that the currently equipped Nose can detect.
  * Structures are shown as cards with representative item icons.</p>
- * 
- * <p><b>NOTE:</b> This is a base implementation. Full implementation should include:</p>
- * <ul>
- *   <li>Loading structures from the equipped Nose's ability configuration</li>
- *   <li>Category filtering (villages, dungeons, monuments, etc.)</li>
- *   <li>Search functionality</li>
- *   <li>Structure-specific icons</li>
- *   <li>Displaying structure tier/rarity</li>
- *   <li>Integration with the tracking system to set the active target</li>
- * </ul>
- * 
+ *
+ * <p>When a structure is selected, the path command is executed to create a particle
+ * trail leading to the nearest instance of that structure.</p>
+ *
  * @see MenuManager#openStructuresMenu()
  * @see SelectionMenuScreen
  */
 public class StructuresMenuScreen extends SelectionMenuScreen {
-    
+
+    /**
+     * Map of structure IDs to their representative icons and display names.
+     */
+    private static final Map<String, StructureInfo> STRUCTURE_INFO = new HashMap<>();
+
+    static {
+        // Villages
+        STRUCTURE_INFO.put("minecraft:village_plains", new StructureInfo(Items.BELL.getDefaultInstance(), "Village (Plains)"));
+        STRUCTURE_INFO.put("minecraft:village_desert", new StructureInfo(Items.SANDSTONE.getDefaultInstance(), "Village (Desert)"));
+        STRUCTURE_INFO.put("minecraft:village_savanna", new StructureInfo(Items.ACACIA_LOG.getDefaultInstance(), "Village (Savanna)"));
+        STRUCTURE_INFO.put("minecraft:village_snowy", new StructureInfo(Items.SNOWBALL.getDefaultInstance(), "Village (Snowy)"));
+        STRUCTURE_INFO.put("minecraft:village_taiga", new StructureInfo(Items.SPRUCE_LOG.getDefaultInstance(), "Village (Taiga)"));
+
+        // Common overworld structures
+        STRUCTURE_INFO.put("minecraft:mineshaft", new StructureInfo(Items.RAIL.getDefaultInstance(), "Mineshaft"));
+        STRUCTURE_INFO.put("minecraft:mineshaft_mesa", new StructureInfo(Items.POWERED_RAIL.getDefaultInstance(), "Mineshaft (Mesa)"));
+        STRUCTURE_INFO.put("minecraft:ruined_portal", new StructureInfo(Items.CRYING_OBSIDIAN.getDefaultInstance(), "Ruined Portal"));
+        STRUCTURE_INFO.put("minecraft:ruined_portal_nether", new StructureInfo(Items.OBSIDIAN.getDefaultInstance(), "Ruined Portal (Nether)"));
+        STRUCTURE_INFO.put("minecraft:shipwreck", new StructureInfo(Items.OAK_BOAT.getDefaultInstance(), "Shipwreck"));
+        STRUCTURE_INFO.put("minecraft:ocean_ruin_cold", new StructureInfo(Items.PRISMARINE_BRICKS.getDefaultInstance(), "Ocean Ruins (Cold)"));
+        STRUCTURE_INFO.put("minecraft:ocean_ruin_warm", new StructureInfo(Items.PRISMARINE.getDefaultInstance(), "Ocean Ruins (Warm)"));
+        STRUCTURE_INFO.put("minecraft:buried_treasure", new StructureInfo(Items.HEART_OF_THE_SEA.getDefaultInstance(), "Buried Treasure"));
+
+        // Pyramids and temples
+        STRUCTURE_INFO.put("minecraft:desert_pyramid", new StructureInfo(Items.TNT.getDefaultInstance(), "Desert Pyramid"));
+        STRUCTURE_INFO.put("minecraft:jungle_pyramid", new StructureInfo(Items.MOSSY_COBBLESTONE.getDefaultInstance(), "Jungle Temple"));
+        STRUCTURE_INFO.put("minecraft:igloo", new StructureInfo(Items.SNOW_BLOCK.getDefaultInstance(), "Igloo"));
+        STRUCTURE_INFO.put("minecraft:swamp_hut", new StructureInfo(Items.CAULDRON.getDefaultInstance(), "Witch Hut"));
+
+        // Pillager structures
+        STRUCTURE_INFO.put("minecraft:pillager_outpost", new StructureInfo(Items.CROSSBOW.getDefaultInstance(), "Pillager Outpost"));
+        STRUCTURE_INFO.put("minecraft:mansion", new StructureInfo(Items.TOTEM_OF_UNDYING.getDefaultInstance(), "Woodland Mansion"));
+
+        // Ocean
+        STRUCTURE_INFO.put("minecraft:monument", new StructureInfo(Items.PRISMARINE_SHARD.getDefaultInstance(), "Ocean Monument"));
+
+        // End-game overworld
+        STRUCTURE_INFO.put("minecraft:stronghold", new StructureInfo(Items.END_PORTAL_FRAME.getDefaultInstance(), "Stronghold"));
+        STRUCTURE_INFO.put("minecraft:ancient_city", new StructureInfo(Items.SCULK.getDefaultInstance(), "Ancient City"));
+        STRUCTURE_INFO.put("minecraft:trail_ruins", new StructureInfo(Items.BRUSH.getDefaultInstance(), "Trail Ruins"));
+        STRUCTURE_INFO.put("minecraft:trial_chambers", new StructureInfo(Items.TRIAL_KEY.getDefaultInstance(), "Trial Chambers"));
+
+        // Nether structures
+        STRUCTURE_INFO.put("minecraft:fortress", new StructureInfo(Items.NETHER_BRICK.getDefaultInstance(), "Nether Fortress"));
+        STRUCTURE_INFO.put("minecraft:bastion_remnant", new StructureInfo(Items.GILDED_BLACKSTONE.getDefaultInstance(), "Bastion Remnant"));
+
+        // End structures
+        STRUCTURE_INFO.put("minecraft:end_city", new StructureInfo(Items.PURPUR_BLOCK.getDefaultInstance(), "End City"));
+    }
+
     public StructuresMenuScreen() {
         super(MenuCategory.STRUCTURES);
     }
-    
+
     @Override
     protected void loadCards() {
         cards.clear();
-        
+
         Player player = Minecraft.getInstance().player;
         if (player == null) {
-            AromaCraft.LOGGER.debug("No player available for structures menu");
+            AromaAffect.LOGGER.debug("No player available for structures menu");
             return;
         }
-        
-        // TODO: Get equipped nose and its detectable structures
-        Set<ResourceLocation> detectableStructures = getDetectableStructures(player);
-        
-        if (detectableStructures.isEmpty()) {
-            // Add placeholder structures for development/testing
-            addPlaceholderStructures();
-        } else {
-            for (ResourceLocation structureId : detectableStructures) {
-                addStructureCard(structureId, true);
-            }
+
+        // Check if player has a nose equipped
+        if (!EquippedNoseHelper.hasNoseEquipped(player)) {
+            AromaAffect.LOGGER.debug("No nose equipped, showing empty menu");
+            return;
         }
-        
-        AromaCraft.LOGGER.debug("Loaded {} structure cards", cards.size());
+
+        // Get detectable structures from equipped nose
+        NoseAbilityResolver.ResolvedAbilities abilities = EquippedNoseHelper.getEquippedAbilities(player);
+        Set<String> detectableStructures = abilities.getStructures();
+
+        if (detectableStructures.isEmpty()) {
+            AromaAffect.LOGGER.debug("Equipped nose has no structure detection abilities");
+            return;
+        }
+
+        // Add cards for each detectable structure
+        for (String structureId : detectableStructures) {
+            ResourceLocation resourceLocation = ResourceLocation.parse(structureId);
+            addStructureCard(resourceLocation, true);
+        }
+
+        AromaAffect.LOGGER.debug("Loaded {} structure cards from equipped nose", cards.size());
     }
-    
+
     /**
-     * Gets the set of structures that the player's equipped nose can detect.
-     */
-    private Set<ResourceLocation> getDetectableStructures(Player player) {
-        // TODO: Implement proper nose detection
-        return Set.of();
-    }
-    
-    /**
-     * Adds placeholder structures for development and testing.
-     */
-    private void addPlaceholderStructures() {
-        // Common structures (unlocked early)
-        addStructureCard(ResourceLocation.withDefaultNamespace("village_plains"), 
-                        Items.BELL.getDefaultInstance(), true, "Village (Plains)");
-        addStructureCard(ResourceLocation.withDefaultNamespace("village_desert"), 
-                        Items.SANDSTONE.getDefaultInstance(), true, "Village (Desert)");
-        addStructureCard(ResourceLocation.withDefaultNamespace("mineshaft"), 
-                        Items.RAIL.getDefaultInstance(), true, "Mineshaft");
-        addStructureCard(ResourceLocation.withDefaultNamespace("ruined_portal"), 
-                        Items.CRYING_OBSIDIAN.getDefaultInstance(), true, "Ruined Portal");
-        addStructureCard(ResourceLocation.withDefaultNamespace("shipwreck"), 
-                        Items.OAK_BOAT.getDefaultInstance(), true, "Shipwreck");
-        
-        // Mid-tier structures
-        addStructureCard(ResourceLocation.withDefaultNamespace("desert_pyramid"), 
-                        Items.TNT.getDefaultInstance(), true, "Desert Pyramid");
-        addStructureCard(ResourceLocation.withDefaultNamespace("jungle_pyramid"), 
-                        Items.MOSSY_COBBLESTONE.getDefaultInstance(), true, "Jungle Temple");
-        addStructureCard(ResourceLocation.withDefaultNamespace("ocean_monument"), 
-                        Items.PRISMARINE.getDefaultInstance(), false, "Ocean Monument");
-        addStructureCard(ResourceLocation.withDefaultNamespace("pillager_outpost"), 
-                        Items.CROSSBOW.getDefaultInstance(), false, "Pillager Outpost");
-        addStructureCard(ResourceLocation.withDefaultNamespace("mansion"), 
-                        Items.TOTEM_OF_UNDYING.getDefaultInstance(), false, "Woodland Mansion");
-        
-        // End-game structures (locked)
-        addStructureCard(ResourceLocation.withDefaultNamespace("stronghold"), 
-                        Items.END_PORTAL_FRAME.getDefaultInstance(), false, "Stronghold");
-        addStructureCard(ResourceLocation.withDefaultNamespace("fortress"), 
-                        Items.NETHER_BRICK.getDefaultInstance(), false, "Nether Fortress");
-        addStructureCard(ResourceLocation.withDefaultNamespace("bastion_remnant"), 
-                        Items.GILDED_BLACKSTONE.getDefaultInstance(), false, "Bastion Remnant");
-        addStructureCard(ResourceLocation.withDefaultNamespace("end_city"), 
-                        Items.PURPUR_BLOCK.getDefaultInstance(), false, "End City");
-        addStructureCard(ResourceLocation.withDefaultNamespace("ancient_city"), 
-                        Items.SCULK.getDefaultInstance(), false, "Ancient City");
-        
-        // Special structures
-        addStructureCard(ResourceLocation.withDefaultNamespace("trial_chambers"), 
-                        Items.TRIAL_KEY.getDefaultInstance(), false, "Trial Chambers");
-    }
-    
-    /**
-     * Adds a structure card with automatic display name.
+     * Adds a structure card to the menu.
+     *
+     * @param structureId the structure's resource location
+     * @param isUnlocked  whether the structure is unlocked for tracking
      */
     private void addStructureCard(ResourceLocation structureId, boolean isUnlocked) {
-        ItemStack icon = getStructureIcon(structureId);
-        String name = structureId.getPath().replace("_", " ");
-        name = capitalizeWords(name);
-        addStructureCardInternal(structureId, icon, isUnlocked, name);
-    }
-    
-    /**
-     * Adds a structure card with a specific icon and display name.
-     */
-    private void addStructureCard(ResourceLocation structureId, ItemStack icon, 
-                                  boolean isUnlocked, String displayName) {
-        addStructureCardInternal(structureId, icon, isUnlocked, displayName);
-    }
-    
-    private void addStructureCardInternal(ResourceLocation structureId, ItemStack icon, 
-                                          boolean isUnlocked, String displayName) {
+        StructureInfo info = STRUCTURE_INFO.get(structureId.toString());
+
+        ItemStack icon;
+        String displayName;
+
+        if (info != null) {
+            icon = info.icon;
+            displayName = info.displayName;
+        } else {
+            // Fallback for unknown structures
+            icon = Items.COMPASS.getDefaultInstance();
+            displayName = capitalizeWords(structureId.getPath().replace("_", " "));
+        }
+
         Component name = Component.literal(displayName);
-        Component description = Component.translatable("menu.aromacraft.structures.card.description", name);
-        
+        Component description = Component.translatable("menu.aromaaffect.structures.card.description", name);
+
         cards.add(new SelectionCard(structureId, name, icon, isUnlocked, description));
     }
-    
-    /**
-     * Gets an appropriate icon for a structure.
-     */
-    private ItemStack getStructureIcon(ResourceLocation structureId) {
-        // Default fallback icon
-        return Items.BELL.getDefaultInstance();
-    }
-    
+
     /**
      * Capitalizes the first letter of each word.
      */
     private String capitalizeWords(String str) {
         StringBuilder result = new StringBuilder();
         boolean capitalizeNext = true;
-        
+
         for (char c : str.toCharArray()) {
             if (Character.isWhitespace(c)) {
                 capitalizeNext = true;
@@ -165,28 +161,52 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
                 result.append(c);
             }
         }
-        
+
         return result.toString();
     }
-    
+
     @Override
     protected void onCardSelected(SelectionCard card, int index) {
         selectedCardIndex = index;
-        AromaCraft.LOGGER.info("Selected structure for tracking: {}", card.id);
-        
-        // TODO: Implement tracking activation
-        // This should:
-        // 1. Set the player's active tracking target to this structure
-        // 2. Start the structure tracking/compass overlay
-        // 3. Optionally trigger the StructureLookupStrategy
-        // 4. Close the menu or show confirmation
-        
-        closeCurrentMenu();
+        ActiveTrackingState.set(card.id, card.displayName, card.icon, MenuCategory.STRUCTURES);
+        AromaAffect.LOGGER.info("Selected structure for tracking: {}", card.id);
+
+        startPathToStructure(card.id);
+        MenuManager.returnToRadialMenu();
     }
-    
+
+    /**
+     * Starts a particle path to the selected structure by executing the path command.
+     *
+     * @param structureId the structure's resource location
+     */
+    private void startPathToStructure(ResourceLocation structureId) {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) {
+            return;
+        }
+
+        // Send the path command to the server
+        String command = String.format("aromatest path structure %s", structureId.toString());
+        AromaAffect.LOGGER.debug("Executing path command: {}", command);
+
+        if (Minecraft.getInstance().getConnection() != null) {
+            Minecraft.getInstance().getConnection().sendCommand(command);
+        }
+    }
+
+    /**
+     * Closes this menu and returns to the game.
+     */
     private void closeCurrentMenu() {
         if (minecraft != null) {
             minecraft.setScreen(null);
         }
+    }
+
+    /**
+     * Holds structure display information.
+     */
+    private record StructureInfo(ItemStack icon, String displayName) {
     }
 }

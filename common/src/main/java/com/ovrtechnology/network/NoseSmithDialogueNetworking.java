@@ -1,7 +1,7 @@
 package com.ovrtechnology.network;
 
-import com.ovrtechnology.AromaCraft;
-import com.ovrtechnology.entity.NoseSmithEntity;
+import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.RegistryAccess;
@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
 
 public final class NoseSmithDialogueNetworking {
     private static final ResourceLocation NOSE_SMITH_DIALOGUE_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "nose_smith_dialogue");
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_smith_dialogue");
 
     private static boolean initialized = false;
 

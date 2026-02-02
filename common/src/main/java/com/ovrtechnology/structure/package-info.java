@@ -1,5 +1,5 @@
 /**
- * Structure tracking system for AromaCraft.
+ * Structure tracking system for Aroma Affect.
  * 
  * <p>This package contains all classes related to trackable structure definitions.
  * Structures define which Minecraft structures (villages, strongholds, dungeons, etc.)
@@ -14,7 +14,7 @@
  * </ul>
  * 
  * <h2>JSON Configuration</h2>
- * <p>Structures are defined in JSON files located at {@code data/aromacraft/structures/structures.json}.
+ * <p>Structures are defined in JSON files located at {@code data/aromaaffect/structures/structures.json}.
  * Each structure entry includes:</p>
  * <ul>
  *   <li>{@code structure_id} - Minecraft structure identifier (e.g., "minecraft:stronghold")</li>

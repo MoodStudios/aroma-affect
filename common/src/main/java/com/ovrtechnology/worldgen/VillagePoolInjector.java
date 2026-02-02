@@ -1,7 +1,7 @@
 package com.ovrtechnology.worldgen;
 
 import com.mojang.datafixers.util.Pair;
-import com.ovrtechnology.AromaCraft;
+import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.common.LifecycleEvent;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.Registry;
@@ -47,19 +47,19 @@ public final class VillagePoolInjector {
         }
 
         public ResourceLocation noseSmithHouseTemplate() {
-            return ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "village/" + id + "/houses/nose_smith_house");
+            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/houses/nose_smith_house");
         }
 
         public ResourceLocation noseSmithTownCenterTemplate() {
-            return ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "village/" + id + "/town_centers/nose_smith_start");
+            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/town_centers/nose_smith_start");
         }
 
         public ResourceLocation noseSmithResidentPool() {
-            return ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "village/" + id + "/nose_smith_resident");
+            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_resident");
         }
 
         public ResourceLocation noseSmithHousePool() {
-            return ResourceLocation.fromNamespaceAndPath(AromaCraft.MOD_ID, "village/" + id + "/nose_smith_house");
+            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_house");
         }
     }
 
@@ -74,7 +74,7 @@ public final class VillagePoolInjector {
 
     public static void init() {
         if (initialized) {
-            AromaCraft.LOGGER.warn("VillagePoolInjector.init() called multiple times!");
+            AromaAffect.LOGGER.warn("VillagePoolInjector.init() called multiple times!");
             return;
         }
 
@@ -82,7 +82,7 @@ public final class VillagePoolInjector {
         LifecycleEvent.SERVER_BEFORE_START.register(VillagePoolInjector::inject);
 
         initialized = true;
-        AromaCraft.LOGGER.info("Village pool injector initialized");
+        AromaAffect.LOGGER.info("Village pool injector initialized");
     }
 
     private static void inject(MinecraftServer server) {
@@ -111,10 +111,10 @@ public final class VillagePoolInjector {
                         .apply(StructureTemplatePool.Projection.RIGID);
 
                 forcePoolToOnly(townCenters, startElement);
-                AromaCraft.LOGGER.info("Forced village start pool {} -> {}", biome.townCentersPool(), biome.noseSmithTownCenterTemplate());
+                AromaAffect.LOGGER.info("Forced village start pool {} -> {}", biome.townCentersPool(), biome.noseSmithTownCenterTemplate());
             }
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to inject village pools", e);
+            AromaAffect.LOGGER.error("Failed to inject village pools", e);
         }
     }
 
@@ -145,7 +145,7 @@ public final class VillagePoolInjector {
             reflectionReady = true;
             return true;
         } catch (Exception e) {
-            AromaCraft.LOGGER.error("Failed to access StructureTemplatePool internals", e);
+            AromaAffect.LOGGER.error("Failed to access StructureTemplatePool internals", e);
             return false;
         }
     }

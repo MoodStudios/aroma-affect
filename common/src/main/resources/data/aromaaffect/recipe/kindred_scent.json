@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ASA",
+    "BDB",
+    "ECE"
+  ],
+  "key": {
+    "S": "aromaaffect:scent_base",
+    "D": "aromaaffect:scent_container",
+    "B": "minecraft:leather",
+    "A": "minecraft:brown_dye",
+    "C": "minecraft:red_dye",
+    "E": "minecraft:orange_dye"
+  },
+  "result": {
+    "id": "aromaaffect:kindred_scent",
+    "count": 1
+  }
+}
