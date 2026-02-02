@@ -619,6 +619,10 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     public void onError(WebSocket webSocket, Throwable error) {
         AromaAffect.LOGGER.error("WebSocket error: {}", error.getMessage());
 
+        // Clean up current connection
+        this.webSocket = null;
+        stopHealthMonitoring();
+
         executeOnMainThread(() -> {
             for (WebSocketConnectionListener listener : connectionListeners) {
                 try {
@@ -628,6 +632,14 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 }
             }
         });
+
+        // Schedule reconnection if enabled
+        if (config.isAutoReconnect() && state.get() != ConnectionState.DISCONNECTED) {
+            setState(ConnectionState.CONNECTION_FAILED);
+            scheduleReconnect();
+        } else {
+            setState(ConnectionState.DISCONNECTED);
+        }
     }
 
     // ========================================

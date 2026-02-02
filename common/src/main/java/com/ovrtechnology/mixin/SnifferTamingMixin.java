@@ -297,7 +297,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
     }
 
-    @Inject(method = "finishDigging", at = @At("TAIL"))
+    @Inject(method = "onDiggingComplete", at = @At("TAIL"))
     private void aromaaffect$onFinishDigging(boolean found, CallbackInfoReturnable<Sniffer> cir) {
         Sniffer self = (Sniffer) (Object) this;
 
