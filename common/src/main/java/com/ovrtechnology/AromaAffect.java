@@ -15,10 +15,12 @@ import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
+import com.ovrtechnology.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -43,6 +45,7 @@ public final class AromaAffect {
         // Common networking (C2S/S2C packets)
         NoseSmithDialogueNetworking.init();
         PathScentNetworking.init();
+        SnifferEquipmentNetworking.init();
 
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();
@@ -65,6 +68,9 @@ public final class AromaAffect {
 
         // Initialize the Nose Smith entity registry
         NoseSmithRegistry.init();
+
+        // Initialize Sniffer menu registry
+        SnifferMenuRegistry.init();
 
         // Initialize creative tab
         ModCreativeTab.init();

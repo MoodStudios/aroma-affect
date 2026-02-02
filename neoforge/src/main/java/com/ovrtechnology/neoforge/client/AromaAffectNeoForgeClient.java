@@ -5,12 +5,15 @@ import com.ovrtechnology.AromaAffectClient;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.nose.client.NoseClient;
+import com.ovrtechnology.sniffer.SnifferMenuRegistry;
+import com.ovrtechnology.sniffer.SnifferScreen;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 
 /**
@@ -29,6 +32,11 @@ public final class AromaAffectNeoForgeClient {
         AromaAffectClient.init();
 
         modEventBus.addListener(this::onRegisterClientExtensions);
+        modEventBus.addListener(this::onRegisterMenuScreens);
+    }
+
+    private void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(SnifferMenuRegistry.SNIFFER_MENU.get(), SnifferScreen::new);
 
         // Register block outline renderer for X-ray wireframe
         BlockOutlineRendererNeoForge.init();
