@@ -15,5 +15,8 @@ public final class ExampleModFabricClient implements ClientModInitializer {
 
         // Register Fabric-specific armor renderer for 3D Nose models
         NoseRenderingFabric.init();
+
+        // Register block outline renderer for X-ray wireframe
+        BlockOutlineRendererFabric.init();
     }
 }

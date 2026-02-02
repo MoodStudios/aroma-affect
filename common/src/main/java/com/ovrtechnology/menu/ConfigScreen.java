@@ -62,7 +62,7 @@ public class ConfigScreen extends BaseMenuScreen {
     private static final int SELECTOR_BTN_H = 20;
 
     // Colors
-    private static final int COL_GREEN = 0xFF44FF44;
+    private static final int COL_GREEN = 0xFF9A7CFF;
     private static final int COL_GRAY = 0xFF666666;
     private static final int COL_ACCENT = 0xFF9A7CFF;
     private static final int COL_BG_PANEL = 0xDD1A1A2E;

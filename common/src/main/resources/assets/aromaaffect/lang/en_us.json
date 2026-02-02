@@ -96,9 +96,13 @@
   
   "menu.aromaaffect.biomes.title": "Select Biome to Track",
   "menu.aromaaffect.biomes.card.description": "Navigate to %s",
+  "menu.aromaaffect.biomes.search_placeholder": "Search biomes...",
+  "menu.aromaaffect.biomes.no_results": "No biomes match your search",
   
   "menu.aromaaffect.structures.title": "Select Structure to Track",
   "menu.aromaaffect.structures.card.description": "Find %s",
+  "menu.aromaaffect.structures.search_placeholder": "Search structures...",
+  "menu.aromaaffect.structures.no_results": "No structures match your search",
   
   "menu.aromaaffect.flowers.title": "Select Flower to Track",
   "menu.aromaaffect.flowers.card.description": "Track %s",
@@ -249,6 +253,8 @@
   "config.aromaaffect.ws.type": "Type",
   "config.aromaaffect.ws.content": "Content",
   "config.aromaaffect.ws.time": "Time",
+
+  "guide.aromaaffect.button": "Guide",
 
   "shop.aromaaffect.button": "Shop",
   "shop.aromaaffect.title": "OVR Shop",

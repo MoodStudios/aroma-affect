@@ -10,7 +10,8 @@
       "block_id": "minecraft:lava",
       "color_html": "#E74C3C",
       "scent_id": "smoky",
-      "fallback_name": "Lava"
+      "fallback_name": "Lava",
+      "range": 8
     },
     {
       "block_id": "minecraft:gold_ore",
@@ -40,55 +41,64 @@
       "block_id": "minecraft:diamond_ore",
       "color_html": "#5DECF5",
       "scent_id": "terra_silva",
-      "fallback_name": "Diamond Ore"
+      "fallback_name": "Diamond Ore",
+      "range": 6
     },
     {
       "block_id": "minecraft:deepslate_diamond_ore",
       "color_html": "#4DD4E0",
       "scent_id": "terra_silva",
-      "fallback_name": "Deepslate Diamond Ore"
+      "fallback_name": "Deepslate Diamond Ore",
+      "range": 6
     },
     {
       "block_id": "minecraft:ancient_debris",
       "color_html": "#8B4513",
       "scent_id": "smoky",
-      "fallback_name": "Ancient Debris"
+      "fallback_name": "Ancient Debris",
+      "range": 6
     },
     {
       "block_id": "minecraft:iron_ore",
       "color_html": "#BDC3C7",
       "scent_id": "terra_silva",
-      "fallback_name": "Iron Ore"
+      "fallback_name": "Iron Ore",
+      "range": 4
     },
     {
       "block_id": "minecraft:deepslate_iron_ore",
       "color_html": "#95A5A6",
       "scent_id": "terra_silva",
-      "fallback_name": "Deepslate Iron Ore"
+      "fallback_name": "Deepslate Iron Ore",
+      "range": 4
     },
     {
       "block_id": "minecraft:coal_ore",
       "color_html": "#2C3E50",
       "scent_id": "smoky",
-      "fallback_name": "Coal Ore"
+      "fallback_name": "Coal Ore",
+      "range": 3
     },
     {
       "block_id": "minecraft:deepslate_coal_ore",
       "color_html": "#1A252F",
       "scent_id": "smoky",
-      "fallback_name": "Deepslate Coal Ore"
+      "fallback_name": "Deepslate Coal Ore",
+      "range": 3
     },
     {
       "block_id": "minecraft:copper_ore",
       "color_html": "#E67E22",
       "scent_id": "terra_silva",
-      "fallback_name": "Copper Ore"
+      "fallback_name": "Copper Ore",
+      "range": 4
     },
     {
       "block_id": "minecraft:deepslate_copper_ore",
       "color_html": "#D35400",
       "scent_id": "terra_silva",
-      "fallback_name": "Deepslate Copper Ore"
+      "fallback_name": "Deepslate Copper Ore",
+      "range": 4
     },
     {
       "block_id": "minecraft:redstone_ore",
@@ -124,13 +134,15 @@
       "block_id": "minecraft:nether_quartz_ore",
       "color_html": "#ECF0F1",
       "scent_id": "smoky",
-      "fallback_name": "Nether Quartz Ore"
+      "fallback_name": "Nether Quartz Ore",
+      "range": 4
     },
     {
       "block_id": "minecraft:spawner",
       "color_html": "#1ABC9C",
       "scent_id": "machina",
-      "fallback_name": "Monster Spawner"
+      "fallback_name": "Monster Spawner",
+      "range": 8
     },
     {
       "block_id": "minecraft:chest",
@@ -142,14 +154,15 @@
       "block_id": "minecraft:amethyst_cluster",
       "color_html": "#9B59B6",
       "scent_id": "floral",
-      "fallback_name": "Amethyst Cluster"
+      "fallback_name": "Amethyst Cluster",
+      "range": 4
     },
     {
       "block_id": "minecraft:budding_amethyst",
       "color_html": "#8E44AD",
       "scent_id": "floral",
-      "fallback_name": "Budding Amethyst"
+      "fallback_name": "Budding Amethyst",
+      "range": 4
     }
   ]
 }
-

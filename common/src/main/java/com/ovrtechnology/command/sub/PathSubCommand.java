@@ -12,6 +12,7 @@ import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.lookup.LookupResult;
 import com.ovrtechnology.lookup.LookupTarget;
 import com.ovrtechnology.lookup.LookupType;
+import com.ovrtechnology.lookup.StructurePositionRefiner;
 import com.ovrtechnology.network.PathScentNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -236,8 +237,19 @@ public class PathSubCommand implements SubCommand {
         if (result.isSuccess()) {
             BlockPos destination = result.getPosition();
 
-            int yLevel = LookupManager.getInstance().findYLevel(level, destination.getX(), destination.getZ(), result.target().type());
-            BlockPos finalDestination = new BlockPos(destination.getX(), yLevel, destination.getZ());
+            // For BLOCK and FLOWER, the search already found the exact block position.
+            // Only use findYLevel for STRUCTURE and BIOME where we need a walkable surface.
+            BlockPos finalDestination;
+            LookupType lookupType = result.target().type();
+            if (lookupType == LookupType.BLOCK || lookupType == LookupType.FLOWER) {
+                finalDestination = destination;
+            } else if (lookupType == LookupType.STRUCTURE) {
+                BlockPos refined = StructurePositionRefiner.refine(level, destination, result.target().resourceId());
+                finalDestination = refined;
+            } else {
+                int yLevel = LookupManager.getInstance().findYLevel(level, destination.getX(), destination.getZ(), lookupType);
+                finalDestination = new BlockPos(destination.getX(), yLevel, destination.getZ());
+            }
 
             if (verbose) {
                 source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aCreating particle path!"), false);
@@ -266,7 +278,7 @@ public class PathSubCommand implements SubCommand {
                         Math.pow(origin.getX() - finalDestination.getX(), 2) +
                         Math.pow(origin.getZ() - finalDestination.getZ(), 2)
                 );
-                PathScentNetworking.sendPathFound(player, dist);
+                PathScentNetworking.sendPathFound(player, dist, finalDestination);
             } else if (player == null && verbose) {
                 source.sendSuccess(() -> Component.literal("§7  §o(Particles only visible to players)"), false);
             }

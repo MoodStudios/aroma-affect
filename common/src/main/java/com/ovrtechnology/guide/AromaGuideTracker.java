@@ -34,6 +34,7 @@ public final class AromaGuideTracker {
     @Nullable
     private static BlockPos nearestVillagePos = null;
     private static int tickCounter = 0;
+    private static boolean wasHolding = false;
 
     private AromaGuideTracker() {}
 
@@ -55,8 +56,16 @@ public final class AromaGuideTracker {
 
         boolean holdingGuide = isHoldingAromaGuide(player);
         if (!holdingGuide) {
-            nearestVillagePos = null;
+            // Keep nearestVillagePos cached so the compass retains its last direction
+            // instead of spinning randomly when briefly un-hovered in inventory.
+            wasHolding = false;
             return;
+        }
+
+        // Trigger an immediate search when the player first picks up / switches to the guide
+        if (!wasHolding) {
+            wasHolding = true;
+            tickCounter = SEARCH_INTERVAL_TICKS; // force search on next tick
         }
 
         tickCounter++;
@@ -98,7 +107,7 @@ public final class AromaGuideTracker {
             stack.set(DataComponents.LODESTONE_TRACKER,
                     new LodestoneTracker(Optional.of(globalPos), false));
         } else {
-            // Remove component so the needle spins randomly (vanilla behavior for missing lodestone)
+            // Remove component so the needle spins slowly (handled by AromaGuideCompassBehavior)
             stack.remove(DataComponents.LODESTONE_TRACKER);
         }
     }

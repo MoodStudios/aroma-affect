@@ -1,6 +1,7 @@
 package com.ovrtechnology.block;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.trigger.ScentPriority;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -67,7 +68,32 @@ public class BlockDefinition {
      */
     @SerializedName("fallback_name")
     private String fallbackName;
-    
+
+    /**
+     * Trigger mode: "INTERACT" (on right-click) or "PROXIMITY" (when near).
+     */
+    @SerializedName("trigger_on")
+    private String triggerOn = "PROXIMITY";
+
+    /**
+     * Range in blocks for proximity triggers.
+     */
+    @SerializedName("range")
+    private int range = 5;
+
+    /**
+     * Priority level for this trigger.
+     */
+    @SerializedName("priority")
+    private ScentPriority priority = ScentPriority.MEDIUM;
+
+    /**
+     * Scent intensity (0.0 to 1.0).
+     * If not specified, uses the global block_intensity from settings.
+     */
+    @SerializedName("intensity")
+    private Double intensity;
+
     /**
      * Default constructor for GSON deserialization.
      */

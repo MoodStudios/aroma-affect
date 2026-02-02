@@ -234,6 +234,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private boolean isHoveringCompass = false;
     private boolean isHoveringPassiveToggle = false;
     private boolean isHoveringConfigGear = false;
+    private boolean isHoveringGuide = false;
     private boolean isHoveringShop = false;
     private boolean isHoveringPanelStop = false;
 
@@ -349,7 +350,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Toggle pill background
         int toggleBg = isPassiveEnabled
-                ? withAlpha(isHoveringPassiveToggle ? 0xDD55FF55 : 0xCC44DD44, appear)
+                ? withAlpha(isHoveringPassiveToggle ? 0xDDAA8FFF : 0xCC9A7CFF, appear)
                 : withAlpha(isHoveringPassiveToggle ? 0xDD777777 : 0xCC555555, appear);
         graphics.fill(toggleX, toggleY, toggleX + toggleW, toggleY + toggleH, toggleBg);
         renderOutline(graphics, toggleX, toggleY, toggleW, toggleH, withAlpha(0x44FFFFFF, appear));
@@ -386,8 +387,47 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 gearIconSize, gearIconSize
         );
 
-        // Shop button (right of gear, same height)
-        int shopX = gearX + gearBtnSize + 4;
+        // Guide button (right of gear, same height)
+        int guideX = gearX + gearBtnSize + 4;
+        int guideY = CORNER_BUTTON_PADDING;
+        int guideBtnSize = toggleH;
+
+        isHoveringGuide = isInBounds(mouseX, mouseY, guideX, guideY, guideBtnSize, guideBtnSize);
+
+        int guideBg = isHoveringGuide
+                ? withAlpha(COLOR_RING_SELECTED, appear)
+                : withAlpha(0x40FFFFFF, appear);
+        graphics.fill(guideX, guideY, guideX + guideBtnSize, guideY + guideBtnSize, guideBg);
+        renderOutline(graphics, guideX, guideY, guideBtnSize, guideBtnSize, withAlpha(COLOR_RING_BORDER, appear));
+
+        // Draw an open book icon procedurally
+        int bx = guideX + guideBtnSize / 2;
+        int by = guideY + guideBtnSize / 2;
+        int coverColor = withAlpha(0xFFCCA654, appear);  // Warm brown cover
+        int pageColor = withAlpha(0xFFF5ECD7, appear);   // Cream pages
+        int lineColor = withAlpha(0xFFAA9060, appear);   // Subtle text lines
+        int spineColor = withAlpha(0xFFFFFFFF, appear);   // White spine highlight
+        // Left cover (slightly larger than page for border effect)
+        graphics.fill(bx - 7, by - 5, bx - 1, by + 5, coverColor);
+        // Right cover
+        graphics.fill(bx + 1, by - 5, bx + 7, by + 5, coverColor);
+        // Left page (inset from cover)
+        graphics.fill(bx - 6, by - 4, bx - 1, by + 4, pageColor);
+        // Right page
+        graphics.fill(bx + 1, by - 4, bx + 6, by + 4, pageColor);
+        // Spine highlight
+        graphics.fill(bx - 1, by - 5, bx + 1, by + 5, spineColor);
+        // Text lines on left page
+        graphics.fill(bx - 5, by - 3, bx - 2, by - 2, lineColor);
+        graphics.fill(bx - 5, by - 1, bx - 2, by, lineColor);
+        graphics.fill(bx - 5, by + 1, bx - 3, by + 2, lineColor);
+        // Text lines on right page
+        graphics.fill(bx + 2, by - 3, bx + 5, by - 2, lineColor);
+        graphics.fill(bx + 2, by - 1, bx + 5, by, lineColor);
+        graphics.fill(bx + 2, by + 1, bx + 4, by + 2, lineColor);
+
+        // Shop button (right of guide, same height)
+        int shopX = guideX + guideBtnSize + 4;
         int shopY = CORNER_BUTTON_PADDING;
         int shopBtnSize = toggleH;
 
@@ -435,6 +475,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             graphics.drawString(font, Component.translatable("config.aromaaffect.button.settings"),
                     tooltipX,
                     gearY + gearBtnSize / 2 - 4,
+                    withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isHoveringGuide) {
+            graphics.drawString(font, Component.translatable("guide.aromaaffect.button"),
+                    tooltipX,
+                    guideY + guideBtnSize / 2 - 4,
                     withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringShop) {
@@ -490,6 +536,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             AromaAffect.LOGGER.debug("Config gear button clicked");
             playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
             MenuManager.openConfigMenu();
+            return true;
+        }
+        if (isHoveringGuide) {
+            AromaAffect.LOGGER.debug("Guide button clicked");
+            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuManager.openGuide();
             return true;
         }
         if (isHoveringShop) {
@@ -653,42 +705,38 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
     /**
      * Renders an animated "online" indicator at the top-right corner of an icon.
-     * A solid green dot with a single smooth ring that expands and fades out.
-     * Uses wall-clock time for frame-accurate interpolation (no tick jitter).
+     * Smooth pulsing glow around a solid green dot — pure opacity animation,
+     * no moving geometry, so no integer-rounding jitter.
      */
-    private void renderTrackingIndicator(GuiGraphics graphics, int iconX, int iconY, int iconSize, float alpha) {
+    private static void renderTrackingIndicator(GuiGraphics graphics, int iconX, int iconY, int iconSize, float alpha) {
         int dotSize = 6;
-        int cx = iconX + iconSize - dotSize / 2;
-        int cy = iconY - 1 + dotSize / 2;
+        int dx = iconX + iconSize - dotSize;
+        int dy = iconY - 1;
 
-        // Use real time for perfectly smooth animation (~3.5 second cycle)
-        float time = (float) ((System.nanoTime() / 1_000_000_000.0) % 3.5 / 3.5);
+        // Continuous time in seconds for smooth per-frame interpolation
+        double t = System.nanoTime() / 1_000_000_000.0;
 
-        // Single expanding ring with ease-out for smooth deceleration
-        float eased = 1.0f - (1.0f - time) * (1.0f - time); // ease-out quad
-        float ringScale = 1.0f + eased * 2.5f;
-        float ringFade = (1.0f - eased);
-        ringFade *= ringFade; // fade out faster at the end
-        float ringAlpha = ringFade * alpha;
+        // Soft glow layers (fixed size, only opacity animates — perfectly smooth)
+        // Sine wave with ~3s period, phase-shifted per layer for a gentle ripple
+        float glow1 = 0.5f + 0.5f * (float) Math.sin(t * 2.1);        // ~3.0s
+        float glow2 = 0.5f + 0.5f * (float) Math.sin(t * 2.1 - 0.8);  // same speed, offset
 
-        if (ringAlpha > 0.01f) {
-            int ringHalf = (int) (dotSize * ringScale / 2.0f);
-            // Ring outline (just the border, not filled)
-            int ringColor = ((int) (100 * ringAlpha)) << 24 | 0x44FF44;
-            // Top
-            graphics.fill(cx - ringHalf, cy - ringHalf, cx + ringHalf, cy - ringHalf + 1, ringColor);
-            // Bottom
-            graphics.fill(cx - ringHalf, cy + ringHalf - 1, cx + ringHalf, cy + ringHalf, ringColor);
-            // Left
-            graphics.fill(cx - ringHalf, cy - ringHalf, cx - ringHalf + 1, cy + ringHalf, ringColor);
-            // Right
-            graphics.fill(cx + ringHalf - 1, cy - ringHalf, cx + ringHalf, cy + ringHalf, ringColor);
+        int g1Alpha = (int) (45 * alpha * glow1);
+        int g2Alpha = (int) (28 * alpha * glow2);
+
+        // Outer glow (larger, fainter)
+        if (g2Alpha > 0) {
+            graphics.fill(dx - 4, dy - 4, dx + dotSize + 4, dy + dotSize + 4,
+                    (g2Alpha << 24) | 0x44FF44);
+        }
+        // Inner glow (tighter, brighter)
+        if (g1Alpha > 0) {
+            graphics.fill(dx - 2, dy - 2, dx + dotSize + 2, dy + dotSize + 2,
+                    (g1Alpha << 24) | 0x44FF44);
         }
 
-        // Solid dot with gentle breathing
-        float breathe = 0.88f + 0.12f * (float) Math.sin(time * Math.PI * 2.0);
-        int dx = cx - dotSize / 2;
-        int dy = cy - dotSize / 2;
+        // Solid dot — subtle brightness breathing
+        float breathe = 0.9f + 0.1f * (float) Math.sin(t * 2.1 + 1.6);
         int borderColor = (int) (200 * alpha * breathe) << 24 | 0x226622;
         int dotColor = (int) (230 * alpha * breathe) << 24 | 0x44FF44;
 

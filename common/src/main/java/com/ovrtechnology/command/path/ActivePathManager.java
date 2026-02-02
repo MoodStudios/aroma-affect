@@ -21,6 +21,8 @@ import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.Iterator;
@@ -67,28 +69,44 @@ public final class ActivePathManager {
     /**
      * Distance between path sample points (in blocks).
      */
-    private static final double PATH_SAMPLE_SPACING = 2.0;
+    private static final double PATH_SAMPLE_SPACING = 1.5;
 
     /**
      * Amplitude of the wave undulations (in blocks).
      */
-    private static final double WAVE_AMPLITUDE = 0.8;
+    private static final double WAVE_AMPLITUDE = 0.5;
 
     /**
      * Frequency of the wave undulations (controls how many waves appear).
      */
-    private static final double WAVE_FREQUENCY = 0.15;
+    private static final double WAVE_FREQUENCY = 0.12;
 
     /**
      * Height offset above ground for particles.
      */
-    private static final double PARTICLE_HEIGHT_OFFSET = 1.0;
+    private static final double PARTICLE_HEIGHT_OFFSET = 0.6;
 
     /**
      * Maximum path length to render (in blocks).
      * Limits rendering for very long paths to maintain performance.
      */
-    private static final double MAX_RENDER_DISTANCE = 150.0;
+    private static final double MAX_RENDER_DISTANCE = 120.0;
+
+    /**
+     * Length (in blocks) of the bright pulse that travels along the path.
+     */
+    private static final double PULSE_LENGTH = 30.0;
+
+    /**
+     * Speed at which the pulse travels along the path (blocks per tick).
+     */
+    private static final double PULSE_SPEED = 1.5;
+
+    /**
+     * Maximum Y change per sample point. Limits vertical jumps so the path
+     * doesn't climb over trees or tall structures.
+     */
+    private static final double MAX_Y_STEP = 1.5;
 
     /**
      * Default duration for path tracking scent triggers (in ticks).
@@ -371,6 +389,8 @@ public final class ActivePathManager {
         double dz = destination.getZ() - origin.getZ();
         double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
 
+        if (horizontalDistance < 1.0) return;
+
         // Limit the render distance
         double renderDistance = Math.min(horizontalDistance, MAX_RENDER_DISTANCE);
 
@@ -385,42 +405,77 @@ public final class ActivePathManager {
         int numberOfPoints = Math.max(10, (int) (renderDistance / PATH_SAMPLE_SPACING));
         ParticleOptions particleType = resolveParticleForPath(path);
 
-        // Animation offset based on tick counter for flowing effect
-        double animationOffset = (tickCounter * 0.1) % (2 * Math.PI);
+        // Pulse position: travels from player toward destination, then wraps around
+        double pulseCenter = (tickCounter * PULSE_SPEED) % (renderDistance + PULSE_LENGTH);
+
+        // Start Y-smoothing from the player's actual Y position
+        double smoothedY = player.getY();
 
         for (int i = 0; i <= numberOfPoints; i++) {
-            double progress = (double) i / numberOfPoints;
-            double distance = progress * renderDistance;
+            double distance = ((double) i / numberOfPoints) * renderDistance;
 
-            // Base position along the path
-            double baseX = origin.getX() + dirX * distance;
-            double baseZ = origin.getZ() + dirZ * distance;
-
-            // Calculate wave offset (sinusoidal undulation)
-            double wavePhase = distance * WAVE_FREQUENCY + animationOffset;
+            // --- Static wave shape (no animation offset) ---
+            double wavePhase = distance * WAVE_FREQUENCY;
             double waveOffset = Math.sin(wavePhase) * WAVE_AMPLITUDE;
 
-            // Apply wave offset perpendicular to path direction
-            double x = baseX + perpX * waveOffset + 0.5;
-            double z = baseZ + perpZ * waveOffset + 0.5;
+            // Fade the amplitude to zero near the player and at the far end
+            double fadeIn = Math.min(1.0, distance / 6.0);
+            double fadeOut = Math.min(1.0, (renderDistance - distance) / 6.0);
+            waveOffset *= fadeIn * fadeOut;
 
-            // Get terrain height at this position
-            int terrainY = getTerrainHeight(level, (int) x, (int) z);
-            double y = terrainY + PARTICLE_HEIGHT_OFFSET;
+            // Base position along the straight line
+            double baseX = origin.getX() + dirX * distance + 0.5;
+            double baseZ = origin.getZ() + dirZ * distance + 0.5;
 
-            // Create and send particle packet
+            // Apply static wave offset perpendicular to path direction
+            double x = baseX + perpX * waveOffset;
+            double z = baseZ + perpZ * waveOffset;
+
+            // Get ground height (smart: skips trees, logs, etc.)
+            int groundY = getGroundHeight(level, (int) x, (int) z);
+            double targetY = groundY + PARTICLE_HEIGHT_OFFSET;
+
+            // Y-smoothing: clamp the vertical change per step so the path
+            // doesn't jump over buildings or climb trees
+            double yDiff = targetY - smoothedY;
+            if (yDiff > MAX_Y_STEP) {
+                smoothedY += MAX_Y_STEP;
+            } else if (yDiff < -MAX_Y_STEP) {
+                smoothedY -= MAX_Y_STEP;
+            } else {
+                smoothedY = targetY;
+            }
+            double y = smoothedY;
+
+            // --- Travelling pulse: decide how many particles to spawn at this point ---
+            // Points inside the pulse get extra particles for a "bright wave" effect
+            double distToPulse = Math.abs(distance - pulseCenter);
+            int count;
+            if (distToPulse < PULSE_LENGTH * 0.5) {
+                // Inside the bright pulse: 2-3 particles
+                double pulseIntensity = 1.0 - (distToPulse / (PULSE_LENGTH * 0.5));
+                count = pulseIntensity > 0.5 ? 3 : 2;
+            } else {
+                // Base path: show every other point to keep a thin trail
+                if (i % 2 == 0) {
+                    count = 1;
+                } else {
+                    continue;
+                }
+            }
+
             ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(
                     particleType,
-                    false,          // overrideLimiter
-                    true,           // alwaysShow: show particles at distance
+                    false,
+                    true,           // alwaysShow
                     x,
                     y,
                     z,
-                    0.05f,          // xDist: small random offset
-                    0.05f,          // yDist
-                    0.05f,          // zDist
+                    0.02f,          // xDist: very tight spread
+                    0.02f,          // yDist
+                    0.02f,          // zDist
                     0.0f,           // maxSpeed
-                    1               // count
+                    count
             );
 
             player.connection.send(packet);
@@ -428,21 +483,66 @@ public final class ActivePathManager {
     }
 
     /**
-     * Gets the terrain height at a given position.
+     * Gets the walkable ground height at a given position.
+     * <p>
+     * Uses {@code MOTION_BLOCKING_NO_LEAVES} to ignore tree canopy, then
+     * scans downward to skip non-ground blocks like logs, fences, and walls
+     * so the path stays at actual walking level.
      *
      * @param level the server level
      * @param x     the x coordinate
      * @param z     the z coordinate
-     * @return the y level of the terrain surface
+     * @return the y level of the walkable ground surface
      */
-    private int getTerrainHeight(ServerLevel level, int x, int z) {
+    private int getGroundHeight(ServerLevel level, int x, int z) {
         try {
-            // Use MOTION_BLOCKING for a height that entities can stand on
-            return level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+            // Start from the top ignoring leaves
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+
+            // Scan downward: skip non-terrain blocks (logs, fences, walls, etc.)
+            // looking for a solid ground block with air/passable space above it
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
+            int minY = Math.max(level.getMinY(), y - 20);
+
+            for (int scanY = y; scanY > minY; scanY--) {
+                pos.setY(scanY);
+                BlockState below = level.getBlockState(pos);
+
+                pos.setY(scanY + 1);
+                BlockState above = level.getBlockState(pos);
+
+                // A good ground level: the block below is solid ground and the block above is passable
+                if (isGroundBlock(below) && isPassable(above)) {
+                    return scanY + 1;
+                }
+            }
+
+            // Fallback: use the heightmap value directly
+            return y;
         } catch (Exception e) {
-            // Fallback to sea level if height lookup fails
             return level.getSeaLevel();
         }
+    }
+
+    /**
+     * Checks if a block is considered solid ground (natural terrain).
+     */
+    private boolean isGroundBlock(BlockState state) {
+        // Full solid cube that isn't a log, fence, or wall
+        if (!state.isSolid()) return false;
+        if (state.is(BlockTags.LOGS)) return false;
+        if (state.is(BlockTags.FENCES)) return false;
+        if (state.is(BlockTags.WALLS)) return false;
+        return true;
+    }
+
+    /**
+     * Checks if a block is passable (air, plants, fluids, etc.)
+     */
+    private boolean isPassable(BlockState state) {
+        return state.isAir()
+                || !state.isSolid()
+                || state.is(BlockTags.REPLACEABLE);
     }
 
     /**

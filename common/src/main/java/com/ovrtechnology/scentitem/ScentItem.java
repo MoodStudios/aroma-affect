@@ -99,7 +99,7 @@ public class ScentItem extends Item {
      * 
      * <p>This triggers the associated scent on OVR hardware if:</p>
      * <ul>
-     *   <li>A trigger is configured for this item in scent_triggers.json</li>
+     *   <li>A trigger is configured for this item in scent_item_triggers.json</li>
      *   <li>The scent is not on cooldown</li>
      * </ul>
      * 

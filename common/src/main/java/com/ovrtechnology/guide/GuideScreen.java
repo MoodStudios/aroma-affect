@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
@@ -373,6 +374,7 @@ public class GuideScreen extends BaseMenuScreen {
             case SEPARATOR -> renderSeparator(g, x, y, width, alpha);
             case SPACER -> element.getSpacerHeight();
             case TIP -> renderTipElement(g, element, x, y, width, alpha);
+            case CRAFTING_GRID -> renderCraftingGrid(g, element, x, y, width, alpha);
         };
     }
 
@@ -529,6 +531,80 @@ public class GuideScreen extends BaseMenuScreen {
         }
 
         return boxHeight + 6;
+    }
+
+    private int renderCraftingGrid(GuiGraphics g, GuideElement element, int x, int y,
+                                    int width, float alpha) {
+        ItemStack[] grid = element.getCraftingGrid();
+        ItemStack result = element.getCraftingResult();
+        if (grid == null || result == null) return 0;
+
+        // Layout constants
+        int slotSize = 18;     // 16px item + 2px padding
+        int gridSize = slotSize * 3;
+        int arrowWidth = 24;
+        int resultSlotSize = 22;
+        int totalWidth = gridSize + arrowWidth + resultSlotSize;
+        int startX = x + (width - totalWidth) / 2;
+
+        // Label above grid
+        int labelHeight = 0;
+        Component label = element.getText();
+        if (label != null && !label.getString().isEmpty()) {
+            int labelX = startX + (totalWidth - font.width(label)) / 2;
+            g.drawString(font, label, labelX, y, applyAlpha(0xFFCCCCCC, alpha), false);
+            labelHeight = font.lineHeight + 8;
+        }
+
+        int gridY = y + labelHeight;
+
+        // Background panel behind the whole recipe
+        int panelPad = 6;
+        int panelLeft = startX - panelPad;
+        int panelTop = gridY - panelPad;
+        int panelRight = startX + totalWidth + panelPad;
+        int panelBottom = gridY + gridSize + panelPad;
+        g.fill(panelLeft, panelTop, panelRight, panelBottom, applyAlpha(0x30FFFFFF, alpha));
+        drawBorder(g, panelLeft, panelTop, panelRight, panelBottom, applyAlpha(COLOR_BORDER_LIGHT, alpha));
+
+        // Draw 3x3 grid slots
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                int slotX = startX + col * slotSize;
+                int slotY = gridY + row * slotSize;
+
+                // Slot background
+                g.fill(slotX, slotY, slotX + slotSize - 1, slotY + slotSize - 1,
+                        applyAlpha(0x40000000, alpha));
+                // Slot border
+                drawBorder(g, slotX, slotY, slotX + slotSize - 1, slotY + slotSize - 1,
+                        applyAlpha(0x60FFFFFF, alpha));
+
+                ItemStack item = grid[row * 3 + col];
+                if (item != null && !item.isEmpty()) {
+                    g.renderItem(item, slotX + 1, slotY + 1);
+                }
+            }
+        }
+
+        // Arrow (centered vertically with grid)
+        int arrowX = startX + gridSize + (arrowWidth - font.width("\u2192")) / 2;
+        int arrowY = gridY + (gridSize - font.lineHeight) / 2;
+        g.drawString(font, "\u2192", arrowX, arrowY, applyAlpha(0xFFFFFFFF, alpha), true);
+
+        // Result slot (centered vertically with grid)
+        int resultX = startX + gridSize + arrowWidth;
+        int resultY = gridY + (gridSize - resultSlotSize) / 2;
+
+        // Result slot background - slightly larger and highlighted
+        g.fill(resultX, resultY, resultX + resultSlotSize, resultY + resultSlotSize,
+                applyAlpha(0x50FFD700, alpha));
+        drawBorder(g, resultX, resultY, resultX + resultSlotSize, resultY + resultSlotSize,
+                applyAlpha(0xAAFFD700, alpha));
+
+        g.renderItem(result, resultX + 3, resultY + 3);
+
+        return labelHeight + gridSize + panelPad * 2 + 4;
     }
 
     // ── Scrollbar ──────────────────────────────────────────────────

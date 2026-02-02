@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
  *   GuideElement.image(ResourceLocation.of("aromacraft:textures/gui/guide/banner.png"), 200, 60)
  *   GuideElement.separator()
  *   GuideElement.spacer(8)
+ *   GuideElement.craftingGrid(grid, result, "Recipe Name")
  * </pre>
  */
 public final class GuideElement {
@@ -29,7 +30,8 @@ public final class GuideElement {
         IMAGE,
         SEPARATOR,
         SPACER,
-        TIP
+        TIP,
+        CRAFTING_GRID
     }
 
     private final Type type;
@@ -43,10 +45,15 @@ public final class GuideElement {
     private final int imageHeight;
     private final int spacerHeight;
     private final int color;
+    @Nullable
+    private final ItemStack[] craftingGrid;
+    @Nullable
+    private final ItemStack craftingResult;
 
     private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
                          @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
-                         int spacerHeight, int color) {
+                         int spacerHeight, int color,
+                         @Nullable ItemStack[] craftingGrid, @Nullable ItemStack craftingResult) {
         this.type = type;
         this.text = text;
         this.itemStack = itemStack;
@@ -55,6 +62,14 @@ public final class GuideElement {
         this.imageHeight = imageHeight;
         this.spacerHeight = spacerHeight;
         this.color = color;
+        this.craftingGrid = craftingGrid;
+        this.craftingResult = craftingResult;
+    }
+
+    private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
+                         @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
+                         int spacerHeight, int color) {
+        this(type, text, itemStack, imageTexture, imageWidth, imageHeight, spacerHeight, color, null, null);
     }
 
     public static GuideElement header(String text) {
@@ -109,6 +124,19 @@ public final class GuideElement {
         return new GuideElement(Type.TIP, text, null, null, 0, 0, 0, 0xFF7BD48A);
     }
 
+    /**
+     * Creates a crafting grid element showing a 3x3 grid with a result.
+     *
+     * @param grid   9-element array (row-major, left-to-right top-to-bottom). Use {@link ItemStack#EMPTY} for empty slots.
+     * @param result the output item
+     * @param label  display label shown above the grid (e.g. "Aroma Guide")
+     */
+    public static GuideElement craftingGrid(ItemStack[] grid, ItemStack result, String label) {
+        if (grid.length != 9) throw new IllegalArgumentException("Crafting grid must have exactly 9 slots");
+        return new GuideElement(Type.CRAFTING_GRID, Component.literal(label), null, null,
+                0, 0, 0, 0xFFFFFFFF, grid.clone(), result.copy());
+    }
+
     public Type getType() {
         return type;
     }
@@ -142,5 +170,15 @@ public final class GuideElement {
 
     public int getColor() {
         return color;
+    }
+
+    @Nullable
+    public ItemStack[] getCraftingGrid() {
+        return craftingGrid;
+    }
+
+    @Nullable
+    public ItemStack getCraftingResult() {
+        return craftingResult;
     }
 }

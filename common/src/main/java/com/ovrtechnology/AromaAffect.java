@@ -6,10 +6,13 @@ import com.ovrtechnology.ability.AbilityRegistry;
 import com.ovrtechnology.ability.PreciseSnifferAbility;
 import com.ovrtechnology.command.AromaGuideCommand;
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.flower.FlowerDefinitionLoader;
+import com.ovrtechnology.guide.AromaGuideFirstJoinHandler;
 import com.ovrtechnology.guide.AromaGuideRegistry;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
+import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
@@ -78,6 +81,10 @@ public final class AromaAffect {
         AbilityRegistry.init();
         AbilityHandler.init();
 
+        // Load flower and mob definitions (needed by trigger system)
+        FlowerDefinitionLoader.loadAllFlowers();
+        MobDefinitionLoader.loadAllMobs();
+
         // Initialize scent trigger system
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
@@ -85,6 +92,9 @@ public final class AromaAffect {
         // Initialize commands
         AromaGuideCommand.init();
         AromaTestCommand.init();
+
+        // Give Aroma Guide on first join
+        AromaGuideFirstJoinHandler.init();
 
         // Inject custom pieces into vanilla worldgen (villages, etc.)
         VillagePoolInjector.init();

@@ -6,7 +6,7 @@
  * 
  * <h2>Architecture Overview</h2>
  * <pre>
- * scent_triggers.json → ScentTriggerConfigLoader → Validation
+ * Per-category JSONs → ScentTriggerConfigLoader → Validation
  *                              ↓
  * Game Events → ScentTriggerHandler → ScentTriggerManager → OvrWebSocketClient
  * </pre>
@@ -21,8 +21,9 @@
  * </ul>
  * 
  * <h2>Configuration</h2>
- * <p>Triggers are configured via {@code data/aromaaffect/scents/scent_triggers.json}.
- * The config subpackage contains POJOs for loading this configuration.</p>
+ * <p>Triggers are configured via per-category JSON files (biomes.json, blocks.json,
+ * flowers.json, structures.json, mobs.json, trigger_settings.json, scent_item_triggers.json).
+ * The config subpackage contains POJOs for the trigger definitions.</p>
  * 
  * <h2>WebSocket Protocol</h2>
  * <p>Messages sent to OVR hardware follow this format:</p>

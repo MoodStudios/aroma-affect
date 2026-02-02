@@ -29,6 +29,9 @@ public final class AromaAffectNeoForgeClient {
         AromaAffectClient.init();
 
         modEventBus.addListener(this::onRegisterClientExtensions);
+
+        // Register block outline renderer for X-ray wireframe
+        BlockOutlineRendererNeoForge.init();
     }
     
     private void onClientSetup(FMLClientSetupEvent event) {

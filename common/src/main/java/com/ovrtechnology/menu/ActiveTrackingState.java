@@ -1,5 +1,6 @@
 package com.ovrtechnology.menu;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -39,6 +40,7 @@ public final class ActiveTrackingState {
     private static ItemStack icon;
     private static MenuCategory category;
     private static int distance = -1;
+    private static BlockPos destination;
 
     private static TrackingStatus status = TrackingStatus.IDLE;
     private static String statusMessage;
@@ -74,8 +76,13 @@ public final class ActiveTrackingState {
      * @param dist initial distance in blocks
      */
     public static void setTracking(int dist) {
+        setTracking(dist, null);
+    }
+
+    public static void setTracking(int dist, BlockPos dest) {
         status = TrackingStatus.TRACKING;
         distance = dist;
+        destination = dest;
         statusMessage = null;
         statusTimestamp = System.currentTimeMillis();
     }
@@ -85,6 +92,7 @@ public final class ActiveTrackingState {
      */
     public static void setArrived() {
         status = TrackingStatus.ARRIVED;
+        destination = null;
         statusMessage = null;
         statusTimestamp = System.currentTimeMillis();
     }
@@ -111,6 +119,7 @@ public final class ActiveTrackingState {
         icon = null;
         category = null;
         distance = -1;
+        destination = null;
         status = TrackingStatus.IDLE;
         statusMessage = null;
     }
@@ -200,5 +209,22 @@ public final class ActiveTrackingState {
      */
     public static String getCategoryId() {
         return category != null ? category.getId() : null;
+    }
+
+    /**
+     * @return the destination BlockPos, or null if not set
+     */
+    public static BlockPos getDestination() {
+        return destination;
+    }
+
+    /**
+     * @return true if a block outline should be rendered for the current tracking target
+     */
+    public static boolean shouldShowOutline() {
+        return status == TrackingStatus.TRACKING
+                && destination != null
+                && distance >= 0 && distance <= 32
+                && (category == MenuCategory.BLOCKS || category == MenuCategory.FLOWERS);
     }
 }

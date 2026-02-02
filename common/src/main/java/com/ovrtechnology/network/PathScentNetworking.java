@@ -8,6 +8,7 @@ import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.ScentTriggerSource;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -92,10 +93,11 @@ public final class PathScentNetworking {
         // Register client-side receiver for path found status (S2C)
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, PATH_STATUS_FOUND_PACKET_ID, (buf, context) -> {
             int distance = buf.readVarInt();
+            BlockPos destination = buf.readBlockPos();
 
             context.queue(() -> {
-                ActiveTrackingState.setTracking(distance);
-                AromaAffect.LOGGER.debug("Path status: found (distance: {})", distance);
+                ActiveTrackingState.setTracking(distance, destination);
+                AromaAffect.LOGGER.debug("Path status: found (distance: {}, destination: {})", distance, destination);
             });
         });
 
@@ -168,13 +170,14 @@ public final class PathScentNetworking {
      * @param player   the player to notify
      * @param distance initial distance in blocks
      */
-    public static void sendPathFound(ServerPlayer player, int distance) {
+    public static void sendPathFound(ServerPlayer player, int distance, BlockPos destination) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
                 Unpooled.buffer(),
                 player.registryAccess()
         );
 
         buf.writeVarInt(distance);
+        buf.writeBlockPos(destination);
 
         NetworkManager.sendToPlayer(player, PATH_STATUS_FOUND_PACKET_ID, buf);
     }
