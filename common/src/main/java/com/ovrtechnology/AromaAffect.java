@@ -4,14 +4,14 @@ import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.ability.AbilityHandler;
 import com.ovrtechnology.ability.AbilityRegistry;
 import com.ovrtechnology.ability.PreciseSnifferAbility;
-import com.ovrtechnology.command.AromaGuideCommand;
-import com.ovrtechnology.command.AromaTestCommand;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinitionLoader;
+import com.ovrtechnology.command.AromaGuideCommand;
+import com.ovrtechnology.command.AromaTestCommand;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
+import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.guide.AromaGuideFirstJoinHandler;
 import com.ovrtechnology.guide.AromaGuideRegistry;
-import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
@@ -94,12 +94,12 @@ public final class AromaAffect {
         AbilityRegistry.init();
         AbilityHandler.init();
 
-        // Load all definition data (needed by trigger system)
+        // Load definition files (needed by trigger system)
         BiomeDefinitionLoader.loadAllBiomes();
         BlockDefinitionLoader.loadAllBlocks();
         FlowerDefinitionLoader.loadAllFlowers();
-        MobDefinitionLoader.loadAllMobs();
         StructureDefinitionLoader.loadAllStructures();
+        MobDefinitionLoader.loadAllMobs();
 
         // Initialize scent trigger system
         ScentTriggerConfigLoader.init();
