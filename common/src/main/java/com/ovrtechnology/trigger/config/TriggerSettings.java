@@ -22,6 +22,12 @@ public class TriggerSettings {
     public static final long DEFAULT_GLOBAL_COOLDOWN_MS = 3000;
     
     /**
+     * Default cooldown per scent name (ms).
+     * Used by ScentTriggerManager to prevent the same scent from triggering too frequently.
+     */
+    public static final long DEFAULT_SCENT_COOLDOWN_MS = 5000;
+
+    /**
      * Default cooldown for item use triggers (ms).
      */
     public static final long DEFAULT_ITEM_USE_COOLDOWN_MS = 5000;
@@ -49,8 +55,9 @@ public class TriggerSettings {
     /**
      * Default cooldown per scent in passive mode (ms).
      * Prevents the same scent from triggering again too soon.
+     * Matches the PassiveModeManager check interval of 300 ticks (15 seconds).
      */
-    public static final long DEFAULT_PASSIVE_SCENT_COOLDOWN_MS = 30000;
+    public static final long DEFAULT_PASSIVE_SCENT_COOLDOWN_MS = 15000;
 
     /**
      * Default cooldown for path tracking scent triggers (ms).
@@ -97,7 +104,14 @@ public class TriggerSettings {
      */
     @SerializedName("global_cooldown_ms")
     private long globalCooldownMs = DEFAULT_GLOBAL_COOLDOWN_MS;
-    
+
+    /**
+     * Cooldown per scent name (ms).
+     * Used by ScentTriggerManager to prevent the same scent from triggering too frequently.
+     */
+    @SerializedName("scent_cooldown_ms")
+    private long scentCooldownMs = DEFAULT_SCENT_COOLDOWN_MS;
+
     /**
      * Cooldown between item use triggers (ms).
      */
@@ -188,6 +202,7 @@ public class TriggerSettings {
     public void validate() {
         // Validate cooldowns
         if (globalCooldownMs < 0) globalCooldownMs = DEFAULT_GLOBAL_COOLDOWN_MS;
+        if (scentCooldownMs < 0) scentCooldownMs = DEFAULT_SCENT_COOLDOWN_MS;
         if (itemUseCooldownMs < 0) itemUseCooldownMs = DEFAULT_ITEM_USE_COOLDOWN_MS;
         if (biomeCooldownMs < 0) biomeCooldownMs = DEFAULT_BIOME_COOLDOWN_MS;
         if (blockCooldownMs < 0) blockCooldownMs = DEFAULT_BLOCK_COOLDOWN_MS;

@@ -132,7 +132,7 @@ public final class ScentTriggerManager {
         // Check per-scent cooldown
         Long lastTime = lastTriggerTime.get(scentName);
         if (lastTime != null) {
-            long scentCooldown = settings.getItemUseCooldownMs(); // Default to item cooldown
+            long scentCooldown = settings.getScentCooldownMs();
             if (now - lastTime < scentCooldown) {
                 AromaAffect.LOGGER.debug("Scent '{}' on cooldown for {} more ms",
                         scentName, scentCooldown - (now - lastTime));
@@ -187,7 +187,7 @@ public final class ScentTriggerManager {
         // Check per-scent cooldown
         Long lastTime = lastTriggerTime.get(scentName);
         if (lastTime != null) {
-            long scentRemaining = settings.getItemUseCooldownMs() - (now - lastTime);
+            long scentRemaining = settings.getScentCooldownMs() - (now - lastTime);
             if (scentRemaining > 0) {
                 return scentRemaining;
             }
