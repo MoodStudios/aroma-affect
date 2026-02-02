@@ -181,6 +181,22 @@ public final class ScentItemRegistry {
     }
     
     /**
+     * Get all registered scent items that are aroma capsules.
+     *
+     * @return A list of all capsule-type scent items
+     */
+    public static List<ScentItem> getCapsuleItems() {
+        List<ScentItem> result = new ArrayList<>();
+        for (Map.Entry<String, RegistrySupplier<ScentItem>> entry : scentItems.entrySet()) {
+            ScentItemDefinition def = scentItemDefinitions.get(entry.getKey());
+            if (def != null && def.isCapsule() && entry.getValue().isPresent()) {
+                result.add(entry.getValue().get());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Get the number of registered scent items.
      * 
      * @return The scent item count

@@ -1,0 +1,433 @@
+{
+  "mobs": [
+    {
+      "entity_type": "minecraft:cow",
+      "scent_id": "barnyard",
+      "fallback_name": "Cow",
+      "color_html": "#443626",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:pig",
+      "scent_id": "barnyard",
+      "fallback_name": "Pig",
+      "color_html": "#F0A5A2",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:chicken",
+      "scent_id": "barnyard",
+      "fallback_name": "Chicken",
+      "color_html": "#FFFFFF",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:sheep",
+      "scent_id": "barnyard",
+      "fallback_name": "Sheep",
+      "color_html": "#E7E7E7",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:horse",
+      "scent_id": "barnyard",
+      "fallback_name": "Horse",
+      "color_html": "#C09E7B",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:donkey",
+      "scent_id": "barnyard",
+      "fallback_name": "Donkey",
+      "color_html": "#534033",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:mule",
+      "scent_id": "barnyard",
+      "fallback_name": "Mule",
+      "color_html": "#1C0E00",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:llama",
+      "scent_id": "barnyard",
+      "fallback_name": "Llama",
+      "color_html": "#C09E7B",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:goat",
+      "scent_id": "barnyard",
+      "fallback_name": "Goat",
+      "color_html": "#A49585",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:wolf",
+      "scent_id": "barnyard",
+      "fallback_name": "Wolf",
+      "color_html": "#D7D3D3",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:cat",
+      "scent_id": "kindred",
+      "fallback_name": "Cat",
+      "color_html": "#EFC88E",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:ocelot",
+      "scent_id": "evergreen",
+      "fallback_name": "Ocelot",
+      "color_html": "#EFDE7D",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:fox",
+      "scent_id": "evergreen",
+      "fallback_name": "Fox",
+      "color_html": "#D5843C",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:rabbit",
+      "scent_id": "floral",
+      "fallback_name": "Rabbit",
+      "color_html": "#995F40",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:bee",
+      "scent_id": "floral",
+      "fallback_name": "Bee",
+      "color_html": "#EDD35F",
+      "range": 3,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:polar_bear",
+      "scent_id": "winter",
+      "fallback_name": "Polar Bear",
+      "color_html": "#F2F2DC",
+      "range": 8,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:panda",
+      "scent_id": "evergreen",
+      "fallback_name": "Panda",
+      "color_html": "#E7E7E7",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:parrot",
+      "scent_id": "evergreen",
+      "fallback_name": "Parrot",
+      "color_html": "#FF0000",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:turtle",
+      "scent_id": "beach",
+      "fallback_name": "Turtle",
+      "color_html": "#41A03E",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:dolphin",
+      "scent_id": "marine",
+      "fallback_name": "Dolphin",
+      "color_html": "#7B9CAA",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:squid",
+      "scent_id": "marine",
+      "fallback_name": "Squid",
+      "color_html": "#223B4D",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:glow_squid",
+      "scent_id": "marine",
+      "fallback_name": "Glow Squid",
+      "color_html": "#09999C",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:cod",
+      "scent_id": "marine",
+      "fallback_name": "Cod",
+      "color_html": "#C0A56E",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:salmon",
+      "scent_id": "marine",
+      "fallback_name": "Salmon",
+      "color_html": "#A83534",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:tropical_fish",
+      "scent_id": "marine",
+      "fallback_name": "Tropical Fish",
+      "color_html": "#EF6915",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:pufferfish",
+      "scent_id": "marine",
+      "fallback_name": "Pufferfish",
+      "color_html": "#E5C834",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:axolotl",
+      "scent_id": "marine",
+      "fallback_name": "Axolotl",
+      "color_html": "#FFC0CB",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:frog",
+      "scent_id": "petrichor",
+      "fallback_name": "Frog",
+      "color_html": "#7A9A2D",
+      "range": 3,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:tadpole",
+      "scent_id": "petrichor",
+      "fallback_name": "Tadpole",
+      "color_html": "#6B5B3C",
+      "range": 2,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:sniffer",
+      "scent_id": "floral",
+      "fallback_name": "Sniffer",
+      "color_html": "#7A5A2E",
+      "range": 6,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:camel",
+      "scent_id": "desert",
+      "fallback_name": "Camel",
+      "color_html": "#FACB73",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:villager",
+      "scent_id": "kindred",
+      "fallback_name": "Villager",
+      "color_html": "#563C33",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:iron_golem",
+      "scent_id": "machina",
+      "fallback_name": "Iron Golem",
+      "color_html": "#DBCABB",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:snow_golem",
+      "scent_id": "winter",
+      "fallback_name": "Snow Golem",
+      "color_html": "#FFFFFF",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:zombie",
+      "scent_id": "smoky",
+      "fallback_name": "Zombie",
+      "color_html": "#00AFAF",
+      "range": 6,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:skeleton",
+      "scent_id": "smoky",
+      "fallback_name": "Skeleton",
+      "color_html": "#C1C1C1",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:creeper",
+      "scent_id": "smoky",
+      "fallback_name": "Creeper",
+      "color_html": "#0DA70B",
+      "range": 8,
+      "priority": "MEDLOW",
+      "intensity": 0.6
+    },
+    {
+      "entity_type": "minecraft:spider",
+      "scent_id": "terra_silva",
+      "fallback_name": "Spider",
+      "color_html": "#342D27",
+      "range": 5,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:cave_spider",
+      "scent_id": "terra_silva",
+      "fallback_name": "Cave Spider",
+      "color_html": "#0C424E",
+      "range": 4,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:enderman",
+      "scent_id": "machina",
+      "fallback_name": "Enderman",
+      "color_html": "#161616",
+      "range": 10,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:blaze",
+      "scent_id": "smoky",
+      "fallback_name": "Blaze",
+      "color_html": "#F6B201",
+      "range": 8,
+      "priority": "MEDLOW",
+      "intensity": 0.6
+    },
+    {
+      "entity_type": "minecraft:ghast",
+      "scent_id": "smoky",
+      "fallback_name": "Ghast",
+      "color_html": "#F9F9F9",
+      "range": 15,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:magma_cube",
+      "scent_id": "smoky",
+      "fallback_name": "Magma Cube",
+      "color_html": "#340000",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:piglin",
+      "scent_id": "smoky",
+      "fallback_name": "Piglin",
+      "color_html": "#F0A5A2",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:hoglin",
+      "scent_id": "barnyard",
+      "fallback_name": "Hoglin",
+      "color_html": "#C29D7A",
+      "range": 6,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:strider",
+      "scent_id": "smoky",
+      "fallback_name": "Strider",
+      "color_html": "#9B3131",
+      "range": 6,
+      "priority": "MEDLOW"
+    },
+    {
+      "entity_type": "minecraft:wither_skeleton",
+      "scent_id": "smoky",
+      "fallback_name": "Wither Skeleton",
+      "color_html": "#141414",
+      "range": 8,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:ender_dragon",
+      "scent_id": "machina",
+      "fallback_name": "Ender Dragon",
+      "color_html": "#161616",
+      "range": 50,
+      "priority": "MEDIUM",
+      "intensity": 0.8
+    },
+    {
+      "entity_type": "minecraft:wither",
+      "scent_id": "smoky",
+      "fallback_name": "Wither",
+      "color_html": "#141414",
+      "range": 30,
+      "priority": "MEDIUM",
+      "intensity": 0.8
+    },
+    {
+      "entity_type": "minecraft:warden",
+      "scent_id": "machina",
+      "fallback_name": "Warden",
+      "color_html": "#0A4749",
+      "range": 20,
+      "priority": "MEDIUM",
+      "intensity": 0.7
+    },
+    {
+      "entity_type": "minecraft:elder_guardian",
+      "scent_id": "marine",
+      "fallback_name": "Elder Guardian",
+      "color_html": "#CECCBA",
+      "range": 25,
+      "priority": "MEDIUM",
+      "intensity": 0.6
+    },
+    {
+      "entity_type": "minecraft:allay",
+      "scent_id": "floral",
+      "fallback_name": "Allay",
+      "color_html": "#00D4FF",
+      "range": 5,
+      "priority": "MEDLOW",
+      "intensity": 0.5
+    }
+  ]
+}

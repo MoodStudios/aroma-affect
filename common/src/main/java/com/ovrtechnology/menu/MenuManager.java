@@ -1,6 +1,7 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.guide.GuideManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
@@ -107,6 +108,27 @@ public final class MenuManager {
         minecraft.setScreen(new FlowersMenuScreen());
     }
     
+    /**
+     * Opens the AromaCraft guide book.
+     */
+    public static void openGuide() {
+        GuideManager.openGuideClient();
+    }
+
+    /**
+     * Opens the shop screen.
+     */
+    public static void openShopMenu() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaAffect.LOGGER.debug("Cannot open shop menu: no player");
+            return;
+        }
+
+        AromaAffect.LOGGER.debug("Opening shop menu");
+        minecraft.setScreen(new ShopScreen());
+    }
+
     /**
      * Opens the compass/tracking menu.
      */

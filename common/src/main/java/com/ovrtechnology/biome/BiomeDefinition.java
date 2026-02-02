@@ -1,6 +1,7 @@
 package com.ovrtechnology.biome;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.trigger.ScentPriority;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -93,7 +94,26 @@ public class BiomeDefinition {
      */
     @SerializedName("scent_id")
     private String scentId;
-    
+
+    /**
+     * Trigger mode: "ENTER" (once on entry) or "AMBIENT" (continuous).
+     */
+    @SerializedName("mode")
+    private String mode = "AMBIENT";
+
+    /**
+     * Priority level for this trigger.
+     */
+    @SerializedName("priority")
+    private ScentPriority priority = ScentPriority.LOW;
+
+    /**
+     * Scent intensity (0.0 to 1.0).
+     * If not specified, uses the global biome_intensity from settings.
+     */
+    @SerializedName("intensity")
+    private Double intensity;
+
     /**
      * Default constructor for GSON deserialization.
      */

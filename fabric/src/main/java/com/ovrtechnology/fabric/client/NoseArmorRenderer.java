@@ -38,6 +38,10 @@ public final class NoseArmorRenderer implements ArmorRenderer {
             return;
         }
 
+        if (!NoseRenderToggles.isNoseEnabled()) {
+            return;
+        }
+
         model.setAllVisible(false);
         model.head.visible = true;
         model.hat.visible = true;

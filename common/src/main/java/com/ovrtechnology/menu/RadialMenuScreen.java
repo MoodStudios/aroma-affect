@@ -2,7 +2,10 @@ package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.ovrtechnology.nose.EquippedNoseHelper;
+import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,14 +14,23 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Radial menu screen for selecting Aroma Affect modules/categories.
@@ -44,7 +56,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final float SEPARATOR_THICKNESS_PX = 2.0f;
     private static final float CENTER_ARROW_THICKNESS_PX = 2.5f;
 
-    private static final int COLOR_RING_BASE = 0x66D7D7D7;
+    private static final int COLOR_RING_BASE = 0x66FFFFFF;
     private static final int COLOR_RING_SELECTED = 0x809A7CFF;
     private static final int COLOR_RING_BORDER = 0x88FFFFFF;
     private static final int COLOR_RING_SEPARATOR = 0x80A88CFF;
@@ -58,9 +70,39 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private float[] selectionProgress = new float[0];
 
     /**
+     * Cache of grayscale texture variants keyed by original ResourceLocation.
+     * Generated once on first use via {@link #getGrayscaleIcon(ResourceLocation)}.
+     */
+    private static final Map<ResourceLocation, ResourceLocation> GRAYSCALE_CACHE = new HashMap<>();
+
+    /**
      * Selected slice index (computed during render based on mouse position).
      */
     private int selectedIndex = -1;
+
+    /**
+     * Previously hovered slice index, used to trigger hover sound on change.
+     */
+    private int previousHoverIndex = -1;
+
+    /**
+     * Cached locked state per slot, recomputed each frame in renderEntryIcons.
+     */
+    private boolean[] cachedLockedSlots = new boolean[0];
+
+    /**
+     * Per-slot shake animation timer (ticks remaining). Set when clicking a locked slot.
+     */
+    private float[] shakeTimers = new float[0];
+
+    private static final float SHAKE_DURATION = 8.0f;
+    private static final float SHAKE_AMPLITUDE = 3.0f;
+
+    /**
+     * Current rotation angle of the center arrow (radians). Smoothly interpolated toward the target.
+     * Default points up (-PI/2 in screen space where +Y is down).
+     */
+    private float arrowAngle = (float) (-Math.PI / 2.0);
 
     public RadialMenuScreen() {
         super(Component.translatable("menu.aromaaffect.radial.title"));
@@ -75,6 +117,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
     private static final ResourceLocation ICON_COMPASS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_compass.png");
     private static final ResourceLocation ICON_PASSIVE = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
+    private static final ResourceLocation ICON_CENTER_LOGO = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part1.png");
+    private static final ResourceLocation ICON_CENTER_ARROW = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part2.png");
 
     // Icon display size (will be scaled from high-res textures)
     private static final int ICON_DISPLAY_SIZE = 32;
@@ -126,7 +170,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
     protected void init() {
         super.init();
         selectionProgress = new float[entries.size()];
+        shakeTimers = new float[entries.size()];
+        cachedLockedSlots = new boolean[entries.size()];
         selectedIndex = -1;
+        previousHoverIndex = -1;
     }
 
     @Override
@@ -143,17 +190,59 @@ public class RadialMenuScreen extends BaseMenuScreen {
             } else {
                 selectionProgress[i] = Math.max(0.0f, selectionProgress[i] - 0.20f);
             }
+
+            // Decay shake timers
+            if (shakeTimers[i] > 0) {
+                shakeTimers[i] = Math.max(0, shakeTimers[i] - 1.0f);
+            }
+        }
+
+        // Play hover sound when entering a new slice
+        if (selectedIndex != previousHoverIndex) {
+            if (selectedIndex >= 0 && selectedIndex < entries.size()) {
+                playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3f, 1.5f);
+            }
+            previousHoverIndex = selectedIndex;
+        }
+
+        // Shop button glow animation
+        shopGlowPhase += 0.15f;
+
+        // Smoothly rotate arrow toward selected segment center, or back to default (up)
+        float targetAngle;
+        if (selectedIndex >= 0 && selectedIndex < entries.size()) {
+            float segmentAngle = TWO_PI / entries.size();
+            targetAngle = START_ANGLE_RAD + (selectedIndex + 0.5f) * segmentAngle;
+        } else {
+            targetAngle = (float) (-Math.PI / 2.0);
+        }
+        // Normalize the difference to [-PI, PI] for shortest-path rotation
+        float diff = targetAngle - arrowAngle;
+        diff = (float) ((diff + Math.PI) % TWO_PI - Math.PI);
+        arrowAngle += diff * 0.3f;
+    }
+
+    private static void playSound(net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getSoundManager() != null) {
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(sound, volume, pitch));
         }
     }
 
     // Track hover states for corner buttons
     private boolean isHoveringConfig = false;
     private boolean isHoveringCompass = false;
-    private boolean isHoveringPassive = false;
-    private boolean isHoveringStopPath = false;
+    private boolean isHoveringPassiveToggle = false;
+    private boolean isHoveringConfigGear = false;
+    private boolean isHoveringGuide = false;
+    private boolean isHoveringShop = false;
+    private boolean isHoveringPanelStop = false;
 
-    // Color for stop button (reddish)
-    private static final int COLOR_STOP_BUTTON = 0x80FF6B6B;
+    // Shop button animation
+    private float shopGlowPhase = 0f;
+
+    /** Bounds of the stop button rendered below the tracking panel. */
+    private int panelStopX, panelStopY, panelStopW, panelStopH;
 
     @Override
     protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
@@ -171,10 +260,14 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         submitRadialRenderState(graphics, centerX, centerY, innerRadius, outerRadius, animationProgress);
         renderEntryIcons(graphics, centerX, centerY, innerRadius, outerRadius, animationProgress);
+        renderCenterLogo(graphics, centerX, centerY, innerRadius, animationProgress);
         renderSelectionText(graphics, centerX, centerY, outerRadius, animationProgress);
 
         // Render corner buttons (config top-right, compass bottom-right)
         renderCornerButtons(graphics, mouseX, mouseY, animationProgress);
+
+        // Render active tracking info panel
+        renderTrackingPanel(graphics, mouseX, mouseY, animationProgress);
     }
 
     /**
@@ -197,14 +290,9 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int compassX = width - CORNER_BUTTON_PADDING - buttonSize;
         int compassY = height - CORNER_BUTTON_PADDING - buttonSize;
 
-        // Stop Path button position (bottom-left corner)
-        int stopX = CORNER_BUTTON_PADDING;
-        int stopY = height - CORNER_BUTTON_PADDING - buttonSize;
-
         // Check hover states
         isHoveringConfig = isInBounds(mouseX, mouseY, configX, configY, buttonSize, buttonSize);
         isHoveringCompass = isInBounds(mouseX, mouseY, compassX, compassY, buttonSize, buttonSize);
-        isHoveringStopPath = isInBounds(mouseX, mouseY, stopX, stopY, buttonSize, buttonSize);
 
         // Render config button background when hovered
         if (isHoveringConfig) {
@@ -222,12 +310,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
             renderOutline(graphics, compassX, compassY, buttonSize, buttonSize, borderColor);
         }
 
-        // Render stop path button background (always visible with slight tint, brighter when hovered)
-        int stopBgColor = isHoveringStopPath ? withAlpha(COLOR_STOP_BUTTON, appear) : withAlpha(0x40FF6B6B, appear);
-        graphics.fill(stopX, stopY, stopX + buttonSize, stopY + buttonSize, stopBgColor);
-        int stopBorderColor = withAlpha(isHoveringStopPath ? 0xFFFF6B6B : COLOR_RING_BORDER, appear);
-        renderOutline(graphics, stopX, stopY, buttonSize, buttonSize, stopBorderColor);
-
         // Render config icon
         float configScale = isHoveringConfig ? 1.1f : 1.0f;
         int configIconSize = (int) (CORNER_ICON_SIZE * configScale);
@@ -244,13 +326,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         graphics.blit(ICON_COMPASS, compassIconX, compassIconY, 0, 0, compassIconSize, compassIconSize, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
 
-        // Render stop path "X" icon (drawn as text since we don't have a texture)
-        int stopTextColor = withAlpha(isHoveringStopPath ? 0xFFFFFFFF : 0xFFDDDDDD, appear);
-        Component stopText = Component.literal("X");
-        int textX = stopX + buttonSize / 2 - font.width(stopText) / 2;
-        int textY = stopY + buttonSize / 2 - 4;
-        graphics.drawString(font, stopText, textX, textY, stopTextColor);
-
         // Render tooltips for corner buttons when hovered
         if (isHoveringConfig) {
             graphics.drawString(font, Component.translatable("menu.aromaaffect.button.config"),
@@ -264,52 +339,154 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     compassY + buttonSize / 2 - 4,
                     withAlpha(0xFFFFFFFF, appear));
         }
-        if (isHoveringStopPath) {
-            Component stopLabel = Component.literal("Stop Path");
-            graphics.drawString(font, stopLabel,
-                    stopX + buttonSize + 8,
-                    stopY + buttonSize / 2 - 4,
-                    withAlpha(0xFFFF6B6B, appear));
-        }
-
-        // Passive mode button position (top-left corner)
-        int passiveX = CORNER_BUTTON_PADDING;
-        int passiveY = CORNER_BUTTON_PADDING;
-
-        // Check hover state
-        isHoveringPassive = isInBounds(mouseX, mouseY, passiveX, passiveY, buttonSize, buttonSize);
-
-        // Render passive button background (green if enabled, gray if disabled)
+        // Top-left: Passive mode toggle pill + Gear config button (side by side)
         boolean isPassiveEnabled = PassiveModeManager.isPassiveModeEnabled();
-        int passiveBgColor;
-        if (isHoveringPassive) {
-            passiveBgColor = isPassiveEnabled ? 0xA066CC66 : 0xA0666666;
-        } else {
-            passiveBgColor = isPassiveEnabled ? 0x8044AA44 : 0x80444444;
-        }
-        graphics.fill(passiveX, passiveY, passiveX + buttonSize, passiveY + buttonSize,
-                withAlpha(passiveBgColor, appear));
+        int toggleW = 36;
+        int toggleH = 18;
+        int toggleX = CORNER_BUTTON_PADDING;
+        int toggleY = CORNER_BUTTON_PADDING;
 
-        int passiveBorderColor = withAlpha(COLOR_RING_BORDER, appear);
-        renderOutline(graphics, passiveX, passiveY, buttonSize, buttonSize, passiveBorderColor);
+        isHoveringPassiveToggle = isInBounds(mouseX, mouseY, toggleX, toggleY, toggleW, toggleH);
 
-        // Render passive icon
-        float passiveScale = isHoveringPassive ? 1.1f : 1.0f;
-        int passiveIconSize = (int) (CORNER_ICON_SIZE * passiveScale);
-        int passiveIconX = passiveX + iconOffset + (CORNER_ICON_SIZE - passiveIconSize) / 2;
-        int passiveIconY = passiveY + iconOffset + (CORNER_ICON_SIZE - passiveIconSize) / 2;
+        // Toggle pill background
+        int toggleBg = isPassiveEnabled
+                ? withAlpha(isHoveringPassiveToggle ? 0xDDAA8FFF : 0xCC9A7CFF, appear)
+                : withAlpha(isHoveringPassiveToggle ? 0xDD777777 : 0xCC555555, appear);
+        graphics.fill(toggleX, toggleY, toggleX + toggleW, toggleY + toggleH, toggleBg);
+        renderOutline(graphics, toggleX, toggleY, toggleW, toggleH, withAlpha(0x44FFFFFF, appear));
 
-        graphics.blit(ICON_PASSIVE, passiveIconX, passiveIconY, 0, 0,
-                passiveIconSize, passiveIconSize, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
+        // Toggle circle thumb
+        int circleSize = toggleH - 4;
+        int circleX = isPassiveEnabled ? toggleX + toggleW - circleSize - 2 : toggleX + 2;
+        int circleY = toggleY + 2;
+        graphics.fill(circleX, circleY, circleX + circleSize, circleY + circleSize, withAlpha(0xFFFFFFFF, appear));
 
-        // Render tooltip for passive button
-        if (isHoveringPassive) {
+        // Gear config button (right of toggle, same height as toggle)
+        int gearX = toggleX + toggleW + 4;
+        int gearY = CORNER_BUTTON_PADDING;
+        int gearBtnSize = toggleH; // match toggle height for consistent look
+
+        isHoveringConfigGear = isInBounds(mouseX, mouseY, gearX, gearY, gearBtnSize, gearBtnSize);
+
+        int gearBg = isHoveringConfigGear
+                ? withAlpha(COLOR_RING_SELECTED, appear)
+                : withAlpha(0x40FFFFFF, appear);
+        graphics.fill(gearX, gearY, gearX + gearBtnSize, gearY + gearBtnSize, gearBg);
+        renderOutline(graphics, gearX, gearY, gearBtnSize, gearBtnSize, withAlpha(COLOR_RING_BORDER, appear));
+
+        // Render gear icon scaled to fit inside the button with 2px padding
+        int gearIconSize = gearBtnSize - 4;
+        int gearIconX = gearX + 2;
+        int gearIconY = gearY + 2;
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                ICON_CONFIG,
+                gearIconX, gearIconY,
+                0.0f, 0.0f,
+                gearIconSize, gearIconSize,
+                gearIconSize, gearIconSize
+        );
+
+        // Guide button (right of gear, same height)
+        int guideX = gearX + gearBtnSize + 4;
+        int guideY = CORNER_BUTTON_PADDING;
+        int guideBtnSize = toggleH;
+
+        isHoveringGuide = isInBounds(mouseX, mouseY, guideX, guideY, guideBtnSize, guideBtnSize);
+
+        int guideBg = isHoveringGuide
+                ? withAlpha(COLOR_RING_SELECTED, appear)
+                : withAlpha(0x40FFFFFF, appear);
+        graphics.fill(guideX, guideY, guideX + guideBtnSize, guideY + guideBtnSize, guideBg);
+        renderOutline(graphics, guideX, guideY, guideBtnSize, guideBtnSize, withAlpha(COLOR_RING_BORDER, appear));
+
+        // Draw an open book icon procedurally
+        int bx = guideX + guideBtnSize / 2;
+        int by = guideY + guideBtnSize / 2;
+        int coverColor = withAlpha(0xFFCCA654, appear);  // Warm brown cover
+        int pageColor = withAlpha(0xFFF5ECD7, appear);   // Cream pages
+        int lineColor = withAlpha(0xFFAA9060, appear);   // Subtle text lines
+        int spineColor = withAlpha(0xFFFFFFFF, appear);   // White spine highlight
+        // Left cover (slightly larger than page for border effect)
+        graphics.fill(bx - 7, by - 5, bx - 1, by + 5, coverColor);
+        // Right cover
+        graphics.fill(bx + 1, by - 5, bx + 7, by + 5, coverColor);
+        // Left page (inset from cover)
+        graphics.fill(bx - 6, by - 4, bx - 1, by + 4, pageColor);
+        // Right page
+        graphics.fill(bx + 1, by - 4, bx + 6, by + 4, pageColor);
+        // Spine highlight
+        graphics.fill(bx - 1, by - 5, bx + 1, by + 5, spineColor);
+        // Text lines on left page
+        graphics.fill(bx - 5, by - 3, bx - 2, by - 2, lineColor);
+        graphics.fill(bx - 5, by - 1, bx - 2, by, lineColor);
+        graphics.fill(bx - 5, by + 1, bx - 3, by + 2, lineColor);
+        // Text lines on right page
+        graphics.fill(bx + 2, by - 3, bx + 5, by - 2, lineColor);
+        graphics.fill(bx + 2, by - 1, bx + 5, by, lineColor);
+        graphics.fill(bx + 2, by + 1, bx + 4, by + 2, lineColor);
+
+        // Shop button (right of guide, same height)
+        int shopX = guideX + guideBtnSize + 4;
+        int shopY = CORNER_BUTTON_PADDING;
+        int shopBtnSize = toggleH;
+
+        isHoveringShop = isInBounds(mouseX, mouseY, shopX, shopY, shopBtnSize, shopBtnSize);
+
+        // Animated glow behind shop button
+        float glowPulse = (float) (0.4f + 0.6f * Math.abs(Math.sin(shopGlowPhase)));
+        int glowA = (int) (50 * appear * glowPulse);
+        int glowColor = (glowA << 24) | 0x44DD44;
+        graphics.fill(shopX - 2, shopY - 2, shopX + shopBtnSize + 2, shopY + shopBtnSize + 2, glowColor);
+
+        int shopBg = isHoveringShop
+                ? withAlpha(0xCC44BB44, appear)
+                : withAlpha(0x8833AA33, appear);
+        graphics.fill(shopX, shopY, shopX + shopBtnSize, shopY + shopBtnSize, shopBg);
+        renderOutline(graphics, shopX, shopY, shopBtnSize, shopBtnSize, withAlpha(0x8844FF44, appear));
+
+        // Draw a cart icon procedurally (small basket shape)
+        int cx = shopX + shopBtnSize / 2;
+        int cy = shopY + shopBtnSize / 2;
+        int iconColor = withAlpha(0xFFFFFFFF, appear);
+        // Cart body
+        graphics.fill(cx - 5, cy - 2, cx + 5, cy + 3, iconColor);
+        // Cart bottom (narrower)
+        graphics.fill(cx - 4, cy + 3, cx + 4, cy + 4, iconColor);
+        // Handle
+        graphics.fill(cx - 6, cy - 4, cx - 5, cy - 1, iconColor);
+        graphics.fill(cx - 6, cy - 4, cx - 2, cy - 3, iconColor);
+        // Wheels
+        graphics.fill(cx - 3, cy + 5, cx - 1, cy + 7, iconColor);
+        graphics.fill(cx + 1, cy + 5, cx + 3, cy + 7, iconColor);
+
+        // Tooltips
+        int tooltipX = shopX + shopBtnSize + 8;
+        if (isHoveringPassiveToggle) {
             Component passiveLabel = isPassiveEnabled
                     ? Component.translatable("menu.aromaaffect.button.passive.on")
                     : Component.translatable("menu.aromaaffect.button.passive.off");
             graphics.drawString(font, passiveLabel,
-                    passiveX + buttonSize + 8,
-                    passiveY + buttonSize / 2 - 4,
+                    tooltipX,
+                    toggleY + toggleH / 2 - 4,
+                    withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isHoveringConfigGear) {
+            graphics.drawString(font, Component.translatable("config.aromaaffect.button.settings"),
+                    tooltipX,
+                    gearY + gearBtnSize / 2 - 4,
+                    withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isHoveringGuide) {
+            graphics.drawString(font, Component.translatable("guide.aromaaffect.button"),
+                    tooltipX,
+                    guideY + guideBtnSize / 2 - 4,
+                    withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isHoveringShop) {
+            graphics.drawString(font, Component.translatable("shop.aromaaffect.button"),
+                    tooltipX,
+                    shopY + shopBtnSize / 2 - 4,
                     withAlpha(0xFFFFFFFF, appear));
         }
     }
@@ -349,14 +526,33 @@ public class RadialMenuScreen extends BaseMenuScreen {
             MenuManager.openCompassMenu();
             return true;
         }
-        if (isHoveringStopPath) {
-            AromaAffect.LOGGER.debug("Stop Path button clicked");
-            executeStopPath();
+        if (isHoveringPassiveToggle) {
+            AromaAffect.LOGGER.debug("Passive mode toggle clicked");
+            PassiveModeManager.togglePassiveMode();
+            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.5f, PassiveModeManager.isPassiveModeEnabled() ? 1.3f : 0.9f);
             return true;
         }
-        if (isHoveringPassive) {
-            AromaAffect.LOGGER.debug("Passive mode button clicked");
-            PassiveModeManager.togglePassiveMode();
+        if (isHoveringConfigGear) {
+            AromaAffect.LOGGER.debug("Config gear button clicked");
+            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuManager.openConfigMenu();
+            return true;
+        }
+        if (isHoveringGuide) {
+            AromaAffect.LOGGER.debug("Guide button clicked");
+            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuManager.openGuide();
+            return true;
+        }
+        if (isHoveringShop) {
+            AromaAffect.LOGGER.debug("Shop button clicked");
+            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
+            MenuManager.openShopMenu();
+            return true;
+        }
+        if (isHoveringPanelStop) {
+            AromaAffect.LOGGER.debug("Panel stop button clicked");
+            executeStopPath();
             return true;
         }
 
@@ -374,6 +570,14 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return false;
         }
 
+        // Block interaction on locked slices
+        if (index < cachedLockedSlots.length && cachedLockedSlots[index]) {
+            shakeTimers[index] = SHAKE_DURATION;
+            playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
+            return true;
+        }
+
+        playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
         onEntrySelected(entries.get(index));
         return true;
     }
@@ -382,6 +586,9 @@ public class RadialMenuScreen extends BaseMenuScreen {
      * Executes the stop path command and closes the menu.
      */
     private void executeStopPath() {
+        // Clear client-side tracking state
+        ActiveTrackingState.clear();
+
         // Send the stop path command to the server
         if (Minecraft.getInstance().getConnection() != null) {
             Minecraft.getInstance().getConnection().sendCommand("aromatest path stop");
@@ -414,6 +621,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return;
         }
 
+        // Determine which categories are locked based on equipped nose abilities
+        boolean[] lockedSlots = computeLockedSlots();
+        cachedLockedSlots = lockedSlots;
+
         float iconRadius = (innerRadius + outerRadius) * 0.5f;
         float segmentAngle = TWO_PI / entries.size();
 
@@ -424,22 +635,385 @@ public class RadialMenuScreen extends BaseMenuScreen {
             float x = centerX + (float) Math.cos(angle) * iconRadius;
             float y = centerY + (float) Math.sin(angle) * iconRadius;
 
+            // Apply shake offset when a locked slot was clicked
+            if (shakeTimers[i] > 0) {
+                float shakeProgress = shakeTimers[i] / SHAKE_DURATION;
+                float shakeOffset = (float) Math.sin(shakeTimers[i] * 2.5f) * SHAKE_AMPLITUDE * shakeProgress;
+                x += shakeOffset;
+            }
+
             // Scale factor for selection feedback and appear animation
             float scale = (1.0f + 0.2f * selectionProgress[i]) * appear;
             int iconSize = (int) (ICON_DISPLAY_SIZE * scale);
             int halfSize = iconSize / 2;
 
-            // Render high-resolution texture
-            // For high-res icons, we sample the full texture (0,0 to ICON_TEXTURE_SIZE)
-            // and render it at the display size for proper downscaling
+            int drawX = (int)(x - halfSize);
+            int drawY = (int)(y - halfSize);
+
+            ResourceLocation icon = lockedSlots[i] ? getGrayscaleIcon(entry.icon()) : entry.icon();
+
             graphics.blit(
-                    entry.icon,
-                    (int)(x - halfSize), (int)(y - halfSize),  // render position
-                    0, 0,  // texture UV start (top-left of texture)
-                    iconSize, iconSize,  // render size (display dimensions)
-                    ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE   // source texture dimensions for UV mapping
+                    RenderPipelines.GUI_TEXTURED,
+                    icon,
+                    drawX, drawY,
+                    0.0f, 0.0f,
+                    iconSize, iconSize,
+                    iconSize, iconSize
             );
+
+            // Draw lock symbol on top of locked icons
+            if (lockedSlots[i]) {
+                renderLockIcon(graphics, drawX, drawY, iconSize);
+            }
+
+            // Draw tracking indicator if this category has an active track (only in TRACKING state)
+            if (!lockedSlots[i] && ActiveTrackingState.isActivelyTracking()) {
+                String catId = ActiveTrackingState.getCategoryId();
+                if (catId != null && catId.equals(entry.id())) {
+                    renderTrackingIndicator(graphics, drawX, drawY, iconSize, appear);
+                }
+            }
         }
+    }
+
+    /**
+     * Renders a small lock icon at the bottom-right corner of the given icon area.
+     * Drawn procedurally using fill calls (shackle arc + body rectangle).
+     */
+    private static void renderLockIcon(GuiGraphics graphics, int iconX, int iconY, int iconSize) {
+        // Position lock at bottom-right of icon
+        int lockW = 10;
+        int lockH = 8;
+        int lx = iconX + iconSize - lockW - 1;
+        int ly = iconY + iconSize - lockH - 1;
+
+        // Lock body (filled rectangle)
+        graphics.fill(lx, ly + 3, lx + lockW, ly + lockH, 0xDD444444);
+        // Lock body border
+        graphics.fill(lx, ly + 3, lx + lockW, ly + 4, 0xDD888888);
+        graphics.fill(lx, ly + lockH - 1, lx + lockW, ly + lockH, 0xDD888888);
+        graphics.fill(lx, ly + 3, lx + 1, ly + lockH, 0xDD888888);
+        graphics.fill(lx + lockW - 1, ly + 3, lx + lockW, ly + lockH, 0xDD888888);
+
+        // Shackle (U-shape on top)
+        int shackleL = lx + 2;
+        int shackleR = lx + lockW - 2;
+        graphics.fill(shackleL, ly, shackleL + 1, ly + 4, 0xDD888888);
+        graphics.fill(shackleR - 1, ly, shackleR, ly + 4, 0xDD888888);
+        graphics.fill(shackleL, ly, shackleR, ly + 1, 0xDD888888);
+    }
+
+    /**
+     * Renders an animated "online" indicator at the top-right corner of an icon.
+     * Smooth pulsing glow around a solid green dot — pure opacity animation,
+     * no moving geometry, so no integer-rounding jitter.
+     */
+    private static void renderTrackingIndicator(GuiGraphics graphics, int iconX, int iconY, int iconSize, float alpha) {
+        int dotSize = 6;
+        int dx = iconX + iconSize - dotSize;
+        int dy = iconY - 1;
+
+        // Continuous time in seconds for smooth per-frame interpolation
+        double t = System.nanoTime() / 1_000_000_000.0;
+
+        // Soft glow layers (fixed size, only opacity animates — perfectly smooth)
+        // Sine wave with ~3s period, phase-shifted per layer for a gentle ripple
+        float glow1 = 0.5f + 0.5f * (float) Math.sin(t * 2.1);        // ~3.0s
+        float glow2 = 0.5f + 0.5f * (float) Math.sin(t * 2.1 - 0.8);  // same speed, offset
+
+        int g1Alpha = (int) (45 * alpha * glow1);
+        int g2Alpha = (int) (28 * alpha * glow2);
+
+        // Outer glow (larger, fainter)
+        if (g2Alpha > 0) {
+            graphics.fill(dx - 4, dy - 4, dx + dotSize + 4, dy + dotSize + 4,
+                    (g2Alpha << 24) | 0x44FF44);
+        }
+        // Inner glow (tighter, brighter)
+        if (g1Alpha > 0) {
+            graphics.fill(dx - 2, dy - 2, dx + dotSize + 2, dy + dotSize + 2,
+                    (g1Alpha << 24) | 0x44FF44);
+        }
+
+        // Solid dot — subtle brightness breathing
+        float breathe = 0.9f + 0.1f * (float) Math.sin(t * 2.1 + 1.6);
+        int borderColor = (int) (200 * alpha * breathe) << 24 | 0x226622;
+        int dotColor = (int) (230 * alpha * breathe) << 24 | 0x44FF44;
+
+        graphics.fill(dx - 1, dy - 1, dx + dotSize + 1, dy + dotSize + 1, borderColor);
+        graphics.fill(dx, dy, dx + dotSize, dy + dotSize, dotColor);
+    }
+
+    /**
+     * Renders a compact tracking info panel flush to the top-right corner.
+     * Content varies based on tracking status state machine.
+     */
+    private void renderTrackingPanel(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
+        isHoveringPanelStop = false;
+        ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
+        if (status == ActiveTrackingState.TrackingStatus.IDLE) {
+            return;
+        }
+
+        float appear = Mth.clamp((animationProgress - 0.4f) / 0.6f, 0.0f, 1.0f);
+        if (appear <= 0.0f) {
+            return;
+        }
+
+        int pad = 6;
+        int iconSpace = 20;
+        int panelTop = 4;
+        int panelRight = width - 4;
+
+        // Choose accent color and content based on status
+        int accentArgb;
+        int borderArgb;
+
+        switch (status) {
+            case SEARCHING -> {
+                accentArgb = 0xDDFFCC44;   // yellow/amber
+                borderArgb = 0xAAAA8833;
+            }
+            case TRACKING -> {
+                accentArgb = 0xDD44FF44;   // green
+                borderArgb = 0xAA44AA44;
+            }
+            case ARRIVED -> {
+                accentArgb = 0xDD44FF44;   // green
+                borderArgb = 0xAA44FF44;
+            }
+            case NOT_FOUND, ERROR -> {
+                accentArgb = 0xDDFF6B6B;   // red
+                borderArgb = 0xAACC4444;
+            }
+            default -> {
+                accentArgb = 0xDD44FF44;
+                borderArgb = 0xAA44AA44;
+            }
+        }
+
+        // Build header
+        MenuCategory cat = ActiveTrackingState.getCategory();
+        String headerText;
+        switch (status) {
+            case SEARCHING -> headerText = Component.translatable("tracking.aromaaffect.status.searching").getString();
+            case TRACKING -> {
+                headerText = Component.translatable("menu.aromaaffect.tracking.label").getString();
+                if (cat != null) {
+                    headerText += " · " + cat.getDisplayName().getString();
+                }
+            }
+            case ARRIVED -> headerText = Component.translatable("tracking.aromaaffect.status.arrived").getString();
+            case NOT_FOUND -> headerText = Component.translatable("tracking.aromaaffect.status.not_found").getString();
+            case ERROR -> headerText = Component.translatable("tracking.aromaaffect.status.error").getString();
+            default -> headerText = "";
+        }
+
+        // Determine lines to show
+        Component targetName = ActiveTrackingState.getDisplayName();
+        String targetIdStr = ActiveTrackingState.getTargetId() != null ? ActiveTrackingState.getTargetId().toString() : null;
+
+        int dist = ActiveTrackingState.getDistance();
+        String distText = (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
+                ? dist + " blocks away" : null;
+
+        String failureReason = (status == ActiveTrackingState.TrackingStatus.NOT_FOUND
+                || status == ActiveTrackingState.TrackingStatus.ERROR)
+                ? ActiveTrackingState.getStatusMessage() : null;
+
+        // Measure all lines to size the panel
+        int maxText = font.width(headerText);
+        if (targetName != null) {
+            maxText = Math.max(maxText, font.width(targetName));
+        }
+        if (targetIdStr != null) {
+            maxText = Math.max(maxText, font.width(targetIdStr));
+        }
+        if (distText != null) {
+            maxText = Math.max(maxText, font.width(distText));
+        }
+        if (failureReason != null) {
+            maxText = Math.max(maxText, font.width(failureReason));
+        }
+
+        int panelWidth = maxText + iconSpace + pad * 2;
+
+        // Calculate panel height based on content
+        int lineCount = 1; // header always present
+        if (targetName != null && (status == ActiveTrackingState.TrackingStatus.SEARCHING
+                || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
+            lineCount++; // target name
+        }
+        if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
+            lineCount++; // target ID
+        }
+        if (distText != null) {
+            lineCount++; // distance
+        }
+        if (failureReason != null) {
+            lineCount++; // failure reason
+        }
+        int panelHeight = 10 + lineCount * 11;
+        int panelLeft = panelRight - panelWidth;
+
+        // Background
+        int bgColor = withAlpha(0xDD1A1A2E, appear);
+        graphics.fill(panelLeft, panelTop, panelRight, panelTop + panelHeight, bgColor);
+
+        // Border
+        int borderColor = withAlpha(borderArgb, appear);
+        renderOutline(graphics, panelLeft, panelTop, panelWidth, panelHeight, borderColor);
+
+        // Left accent bar
+        int accentColor = withAlpha(accentArgb, appear);
+        graphics.fill(panelLeft, panelTop, panelLeft + 2, panelTop + panelHeight, accentColor);
+
+        // Item icon
+        int iconX = panelLeft + pad + 1;
+        int iconY = panelTop + (panelHeight - 16) / 2;
+        if (ActiveTrackingState.getIcon() != null) {
+            graphics.renderItem(ActiveTrackingState.getIcon(), iconX, iconY);
+        }
+
+        int textX = iconX + iconSpace;
+        int currentY = panelTop + 5;
+
+        // Header line
+        int labelColor;
+        switch (status) {
+            case SEARCHING -> labelColor = withAlpha(0xFFFFCC44, appear);
+            case ARRIVED -> labelColor = withAlpha(0xFF44FF44, appear);
+            case NOT_FOUND, ERROR -> labelColor = withAlpha(0xFFFF6B6B, appear);
+            default -> labelColor = withAlpha(0xFF88CC88, appear);
+        }
+        graphics.drawString(font, headerText, textX, currentY, labelColor);
+        currentY += 11;
+
+        // Target name (for SEARCHING and TRACKING)
+        if (targetName != null && (status == ActiveTrackingState.TrackingStatus.SEARCHING
+                || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
+            int nameColor = withAlpha(0xFFFFFFFF, appear);
+            graphics.drawString(font, targetName, textX, currentY, nameColor);
+            currentY += 11;
+        }
+
+        // Target ID (TRACKING only)
+        if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
+            int idColor = withAlpha(0xFF777777, appear);
+            graphics.drawString(font, targetIdStr, textX, currentY, idColor);
+            currentY += 11;
+        }
+
+        // Distance (TRACKING only)
+        if (distText != null) {
+            int distColor = withAlpha(0xFF44CCFF, appear);
+            graphics.drawString(font, distText, textX, currentY, distColor);
+            currentY += 11;
+        }
+
+        // Failure reason
+        if (failureReason != null) {
+            int reasonColor = withAlpha(0xFFFFAAAA, appear);
+            graphics.drawString(font, failureReason, textX, currentY, reasonColor);
+        }
+
+        // Stop button below panel (only for SEARCHING and TRACKING states)
+        if (status == ActiveTrackingState.TrackingStatus.SEARCHING
+                || status == ActiveTrackingState.TrackingStatus.TRACKING) {
+            Component stopLabel = Component.translatable("tracking.aromaaffect.stop");
+            int stopTextW = font.width(stopLabel);
+            int stopBtnW = stopTextW + 12;
+            int stopBtnH = 14;
+            int stopBtnX = panelRight - stopBtnW;
+            int stopBtnY = panelTop + panelHeight + 2;
+
+            // Store bounds for click detection
+            panelStopX = stopBtnX;
+            panelStopY = stopBtnY;
+            panelStopW = stopBtnW;
+            panelStopH = stopBtnH;
+
+            isHoveringPanelStop = isInBounds(mouseX, mouseY, stopBtnX, stopBtnY, stopBtnW, stopBtnH);
+
+            int stopBg = isHoveringPanelStop
+                    ? withAlpha(0xC0FF4444, appear)
+                    : withAlpha(0x80CC3333, appear);
+            graphics.fill(stopBtnX, stopBtnY, stopBtnX + stopBtnW, stopBtnY + stopBtnH, stopBg);
+
+            int stopBorder = withAlpha(isHoveringPanelStop ? 0xEEFF6B6B : 0x88AA4444, appear);
+            renderOutline(graphics, stopBtnX, stopBtnY, stopBtnW, stopBtnH, stopBorder);
+
+            int stopTextColor = withAlpha(0xFFFFFFFF, appear);
+            graphics.drawCenteredString(font, stopLabel, stopBtnX + stopBtnW / 2, stopBtnY + 3, stopTextColor);
+        }
+    }
+
+    /**
+     * Returns a grayscale variant ResourceLocation for the given icon texture.
+     * Generates and registers a DynamicTexture on first call, then caches it.
+     */
+    private static ResourceLocation getGrayscaleIcon(ResourceLocation original) {
+        ResourceLocation cached = GRAYSCALE_CACHE.get(original);
+        if (cached != null) {
+            return cached;
+        }
+
+        try {
+            Resource resource = Minecraft.getInstance().getResourceManager().getResourceOrThrow(original);
+            try (InputStream stream = resource.open()) {
+                NativeImage source = NativeImage.read(stream);
+                // mappedCopy applies an IntUnaryOperator to each pixel in ABGR format
+                NativeImage grayscale = source.mappedCopy(pixel -> {
+                    int a = (pixel >> 24) & 0xFF;
+                    int b = (pixel >> 16) & 0xFF;
+                    int g = (pixel >> 8) & 0xFF;
+                    int r = pixel & 0xFF;
+
+                    // Luminance-weighted grayscale, dimmed for a "disabled" look
+                    int lum = (int) ((0.299f * r + 0.587f * g + 0.114f * b) * 0.6f);
+                    return (a << 24) | (lum << 16) | (lum << 8) | lum;
+                });
+                source.close();
+
+                String texName = original.getPath().replace('/', '_').replace('.', '_');
+                ResourceLocation grayLoc = ResourceLocation.fromNamespaceAndPath(
+                        AromaAffect.MOD_ID, "dynamic/gray_" + texName);
+                DynamicTexture dynamicTexture = new DynamicTexture(() -> texName, grayscale);
+                Minecraft.getInstance().getTextureManager().register(grayLoc, dynamicTexture);
+                GRAYSCALE_CACHE.put(original, grayLoc);
+                return grayLoc;
+            }
+        } catch (IOException e) {
+            AromaAffect.LOGGER.warn("Failed to generate grayscale icon for {}: {}", original, e.getMessage());
+            GRAYSCALE_CACHE.put(original, original);
+            return original;
+        }
+    }
+
+    /**
+     * Computes which radial menu slots are locked (no unlocks for that category).
+     */
+    private boolean[] computeLockedSlots() {
+        boolean[] locked = new boolean[entries.size()];
+        var player = Minecraft.getInstance().player;
+        if (player == null) {
+            java.util.Arrays.fill(locked, true);
+            return locked;
+        }
+
+        NoseAbilityResolver.ResolvedAbilities abilities = EquippedNoseHelper.getEquippedAbilities(player);
+
+        for (int i = 0; i < entries.size(); i++) {
+            locked[i] = switch (entries.get(i).id()) {
+                case "structures" -> abilities.getStructures().isEmpty();
+                case "biomes" -> abilities.getBiomes().isEmpty();
+                case "blocks" -> abilities.getBlocks().isEmpty();
+                case "flowers" -> abilities.getFlowers().isEmpty();
+                default -> false;
+            };
+        }
+
+        return locked;
     }
 
     private void renderSelectionText(GuiGraphics graphics, int centerX, int centerY, int outerRadius, float animationProgress) {
@@ -448,13 +1022,64 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         float alpha = Mth.clamp((animationProgress - 0.45f) / 0.55f, 0.0f, 1.0f);
-        int titleColor = ((int) (255 * alpha) << 24) | 0xFFFFFF;
-        int descColor = ((int) (200 * alpha) << 24) | 0xD0D0D0;
-
         RadialEntry entry = entries.get(selectedIndex);
         int y = centerY + outerRadius + 16;
-        graphics.drawCenteredString(font, entry.title, centerX, y, titleColor);
-        graphics.drawCenteredString(font, entry.description, centerX, y + 12, descColor);
+
+        boolean locked = selectedIndex < cachedLockedSlots.length && cachedLockedSlots[selectedIndex];
+        if (locked) {
+            int lockedTitleColor = ((int) (255 * alpha) << 24) | 0x999999;
+            int lockedDescColor = ((int) (180 * alpha) << 24) | 0xFF6B6B;
+            graphics.drawCenteredString(font, entry.title, centerX, y, lockedTitleColor);
+            graphics.drawCenteredString(font, Component.translatable("menu.aromaaffect.category.locked"), centerX, y + 12, lockedDescColor);
+        } else {
+            int titleColor = ((int) (255 * alpha) << 24) | 0xFFFFFF;
+            int descColor = ((int) (200 * alpha) << 24) | 0xD0D0D0;
+            graphics.drawCenteredString(font, entry.title, centerX, y, titleColor);
+            graphics.drawCenteredString(font, entry.description, centerX, y + 12, descColor);
+        }
+    }
+
+    // Source texture dimensions for the center logo (155x147 actual PNG size)
+    private static final int CENTER_LOGO_TEX_W = 155;
+    private static final int CENTER_LOGO_TEX_H = 147;
+
+    private void renderCenterLogo(GuiGraphics graphics, int centerX, int centerY, float innerRadius, float animationProgress) {
+        float appear = Mth.clamp(animationProgress / 0.6f, 0.0f, 1.0f);
+        if (appear <= 0.0f) {
+            return;
+        }
+
+        // Target size: fit inside the inner circle with padding
+        float diameter = innerRadius * 2.0f * 0.65f * appear;
+        float aspect = (float) CENTER_LOGO_TEX_W / CENTER_LOGO_TEX_H;
+        int renderW = (int) diameter;
+        int renderH = (int) (diameter / aspect);
+
+        // Rotate both parts together toward the selected segment
+        float rotation = arrowAngle - (float) (-Math.PI / 2.0);
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(centerX, centerY);
+        graphics.pose().rotate(rotation);
+
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                ICON_CENTER_LOGO,
+                -renderW / 2, -renderH / 2,
+                0.0f, 0.0f,
+                renderW, renderH,
+                renderW, renderH
+        );
+
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                ICON_CENTER_ARROW,
+                -renderW / 2, -renderH / 2,
+                0.0f, 0.0f,
+                renderW, renderH,
+                renderW, renderH
+        );
+
+        graphics.pose().popMatrix();
     }
 
     private void submitRadialRenderState(GuiGraphics graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
@@ -626,15 +1251,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 addRadialQuad(consumer, centerX, centerY, innerRadius, outerRadius, angle, SEPARATOR_THICKNESS_PX, separatorColor);
             }
 
-            // Indicator: centered arrow pointing to the selected segment (inside the inner circle).
-            if (selectedIndex >= 0 && selectedIndex < segments) {
-                float indicatorAlpha = selectionProgress[selectedIndex];
-                if (indicatorAlpha > 0.01f) {
-                    float angle = startAngleRad + (selectedIndex + 0.5f) * segmentAngle;
-                    int color = withAlpha(indicatorColor, indicatorAlpha);
-                    addCenterArrow(consumer, centerX, centerY, innerRadius, angle, color);
-                }
-            }
+            // Center logo is rendered via blit in renderContent, not here.
         }
 
         private void addCenterArrow(VertexConsumer consumer, float centerX, float centerY, float innerRadius, float angleRad, int color) {

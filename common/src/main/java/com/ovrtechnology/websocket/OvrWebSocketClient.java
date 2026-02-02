@@ -9,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Deque;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
@@ -92,6 +93,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     private final List<WebSocketMessageHandler> messageHandlers = new CopyOnWriteArrayList<>();
     private final List<WebSocketConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
     private final StringBuilder messageBuffer = new StringBuilder();
+
+    // ========================================
+    // Message history
+    // ========================================
+
+    private static final int MAX_MESSAGE_HISTORY = 50;
+    private final Deque<WebSocketMessage> messageHistory = new ConcurrentLinkedDeque<>();
 
     // ========================================
     // Health monitoring
@@ -375,6 +383,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         try {
             String rawText = message.toRawText();
             ws.sendText(rawText, true);
+            addToHistory(message);
 
             // Always log sent messages at info level for debugging OVR communication
             AromaAffect.LOGGER.info("WebSocket SENT: {}", rawText);
@@ -465,11 +474,27 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     /**
      * Gets the number of reconnection attempts since last successful connection.
-     * 
+     *
      * @return the attempt count
      */
     public int getReconnectAttempts() {
         return reconnectAttempts.get();
+    }
+
+    /**
+     * Gets a snapshot of the recent message history (newest first).
+     *
+     * @return an immutable copy of the message history
+     */
+    public List<WebSocketMessage> getMessageHistory() {
+        return List.copyOf(messageHistory);
+    }
+
+    private void addToHistory(WebSocketMessage message) {
+        messageHistory.addFirst(message);
+        while (messageHistory.size() > MAX_MESSAGE_HISTORY) {
+            messageHistory.removeLast();
+        }
     }
 
     // ========================================
@@ -505,6 +530,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 lastPongTime.set(System.currentTimeMillis());
                 awaitingPong.set(false);
             } else {
+                addToHistory(message);
                 // Dispatch to handlers on main thread
                 executeOnMainThread(() -> {
                     for (WebSocketMessageHandler handler : messageHandlers) {

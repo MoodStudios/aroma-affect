@@ -244,5 +244,21 @@ public final class NoseAbilityResolver {
         public boolean canDetectFlower(String flowerId) {
             return flowers.contains(flowerId);
         }
+
+        public Set<String> getBlocks() {
+            return blocks;
+        }
+
+        public Set<String> getBiomes() {
+            return biomes;
+        }
+
+        public Set<String> getStructures() {
+            return structures;
+        }
+
+        public Set<String> getFlowers() {
+            return flowers;
+        }
     }
 }
