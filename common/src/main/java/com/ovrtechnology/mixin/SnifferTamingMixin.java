@@ -318,8 +318,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             return;
         }
 
-        // Limpiar el cooldown de búsqueda para que pueda buscar de nuevo rápidamente
-        self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_COOLDOWN);
     }
 
     @Unique
