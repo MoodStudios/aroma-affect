@@ -111,8 +111,8 @@ public final class PassiveModeManager {
 
         // CRITICAL CHECKS - Early returns for performance
 
-        // Check if OVR hardware is connected (skip in DEV_MODE)
-        if (!DEV_MODE && !OvrWebSocketClient.getInstance().isConnected()) {
+        // Check if OVR hardware is connected
+        if (!OvrWebSocketClient.getInstance().isConnected()) {
             AromaAffect.LOGGER.debug("Passive-mode disabled: OVR hardware not connected");
             clearPassiveScent(player);
             return;
@@ -148,28 +148,28 @@ public final class PassiveModeManager {
         // 1. Check blocks (MEDIUM priority - highest)
         TriggerCandidate blockCandidate = evaluateBlockTriggers(level, playerPos);
         if (blockCandidate != null && canActivateScent(blockCandidate)) {
-            activateIfChanged(player, blockCandidate);
+            activateTrigger(player, blockCandidate);
             return;
         }
 
         // 2. Check mobs (MEDLOW priority)
         TriggerCandidate mobCandidate = evaluateMobTriggers(level, player);
         if (mobCandidate != null && canActivateScent(mobCandidate)) {
-            activateIfChanged(player, mobCandidate);
+            activateTrigger(player, mobCandidate);
             return;
         }
 
         // 3. Check structures (MEDLOW priority)
         TriggerCandidate structureCandidate = evaluateStructureTriggers(level, playerPos);
         if (structureCandidate != null && canActivateScent(structureCandidate)) {
-            activateIfChanged(player, structureCandidate);
+            activateTrigger(player, structureCandidate);
             return;
         }
 
         // 4. Check biomes (LOW priority - lowest)
         TriggerCandidate biomeCandidate = evaluateBiomeTriggers(level, playerPos);
         if (biomeCandidate != null && canActivateScent(biomeCandidate)) {
-            activateIfChanged(player, biomeCandidate);
+            activateTrigger(player, biomeCandidate);
             return;
         }
 
@@ -204,17 +204,11 @@ public final class PassiveModeManager {
 
     /**
      * Checks if a scent can be activated (respects per-type cooldown).
-     * If the scent is already active from the same source, it's allowed.
      *
      * @param candidate the trigger candidate to check
      * @return true if the scent can be activated
      */
     private static boolean canActivateScent(TriggerCandidate candidate) {
-        // If this is the same source as currently active, always allow (no change needed)
-        if (currentTriggerSource != null && currentTriggerSource.equals(candidate.source)) {
-            return true;
-        }
-
         // Get the appropriate cooldown based on trigger type
         String scentName = candidate.trigger.scentName();
         TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
@@ -483,55 +477,59 @@ public final class PassiveModeManager {
     }
 
     /**
-     * Activates the candidate trigger if it's different from the current one.
+     * Activates the candidate trigger.
+     * Always sends the trigger to hardware (cooldown was already checked).
+     * Only shows chat message when the source changes to avoid spam.
      */
-    private static void activateIfChanged(Player player, TriggerCandidate candidate) {
-        // Check if this is a different trigger than what's currently active
-        if (currentTriggerSource != null && currentTriggerSource.equals(candidate.source)) {
-            // Same source, no change needed
-            return;
-        }
+    private static void activateTrigger(Player player, TriggerCandidate candidate) {
+        boolean sourceChanged = currentTriggerSource == null || !currentTriggerSource.equals(candidate.source);
 
-        // Different trigger - activate it
+        // Update state
         currentPassiveTrigger = candidate.trigger;
         currentTriggerSource = candidate.source;
         currentTriggerType = candidate.type;
 
+        // Always send trigger to hardware (cooldown already verified)
         ScentTriggerManager.getInstance().trigger(candidate.trigger);
 
-        // Get trigger type name for message
-        String triggerTypeName = candidate.type.name().toLowerCase();
+        // Only show chat message when source changes (avoid spam every 15 seconds)
+        if (sourceChanged) {
+            // Get trigger type name for message
+            String triggerTypeName = candidate.type.name().toLowerCase();
 
-        // Format intensity as percentage
-        int intensityPercent = (int) Math.round(candidate.trigger.intensity() * 100);
+            // Format intensity as percentage
+            int intensityPercent = (int) Math.round(candidate.trigger.intensity() * 100);
 
-        // Build message based on trigger type
-        String message;
-        if (candidate.type == TriggerType.BIOME) {
-            // Biomes don't have range/distance
-            message = String.format("§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%%]",
-                candidate.trigger.scentName(),
-                triggerTypeName,
-                candidate.displayName,
-                intensityPercent
-            );
-        } else {
-            // Blocks, mobs, structures have range and distance
-            message = String.format("§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%% | %.1fm / %dm]",
-                candidate.trigger.scentName(),
-                triggerTypeName,
-                candidate.displayName,
-                intensityPercent,
-                candidate.distance,
-                candidate.range
-            );
+            // Build message based on trigger type
+            String message;
+            if (candidate.type == TriggerType.BIOME) {
+                // Biomes don't have range/distance
+                message = String.format("§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%%]",
+                    candidate.trigger.scentName(),
+                    triggerTypeName,
+                    candidate.displayName,
+                    intensityPercent
+                );
+            } else {
+                // Blocks, mobs, structures have range and distance
+                message = String.format("§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%% | %.1fm / %dm]",
+                    candidate.trigger.scentName(),
+                    triggerTypeName,
+                    candidate.displayName,
+                    intensityPercent,
+                    candidate.distance,
+                    candidate.range
+                );
+            }
+
+            // Send chat message to player
+            player.displayClientMessage(Component.literal(message), false);
         }
 
-        // Send chat message to player
-        player.displayClientMessage(Component.literal(message), false);
-
-        AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {})",
-            candidate.trigger.scentName(), candidate.source, intensityPercent, candidate.distance, candidate.range);
+        AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {}, sourceChanged: {})",
+            candidate.trigger.scentName(), candidate.source,
+            (int) Math.round(candidate.trigger.intensity() * 100),
+            candidate.distance, candidate.range, sourceChanged);
     }
 
     /**
