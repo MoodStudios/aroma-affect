@@ -65,6 +65,9 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Unique
     private static final double ENHANCED_SEARCH_CHANCE = 0.005; // 0.5% por tick = busca mucho más seguido (~10 segundos promedio)
 
+    @Unique
+    private static final double MINERAL_DROP_CHANCE = 0.40; // 40% de probabilidad de dropear mineral con Enhanced Nose
+
     // Campos para el drop con delay
     @Unique
     private ItemStack aromaaffect$pendingScentDrop = null;
@@ -263,19 +266,8 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Inject(method = "canDig(Lnet/minecraft/core/BlockPos;)Z", at = @At("HEAD"), cancellable = true)
     private void aromaaffect$canDigEnhanced(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         Sniffer self = (Sniffer) (Object) this;
-        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
 
-        // Solo si está domado y tiene la nariz mejorada
-        if (data.ownerUUID == null) {
-            return;
-        }
-
-        SnifferContainer container = new SnifferContainer(self);
-        if (!container.hasSnifferNose()) {
-            return;
-        }
-
-        // Verificar si el bloque está en nuestro tag personalizado
+        // Cualquier sniffer puede excavar en bloques del Nether/End (para obtener esencias)
         BlockState blockState = self.level().getBlockState(pos.below());
         if (blockState.is(ENHANCED_SNIFFER_DIGGABLE)) {
             cir.setReturnValue(true);
@@ -291,48 +283,27 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             return;
         }
 
-        // Intentar reemplazar el drop con una esencia de dimensión
-        if (aromaaffect$tryReplaceSeedWithScent(self)) {
-            ci.cancel(); // Cancelar el drop normal, ya dropeamos la esencia
-        }
-    }
-
-    @Inject(method = "finishDigging", at = @At("TAIL"))
-    private void aromaaffect$onFinishDigging(boolean found, CallbackInfoReturnable<Sniffer> cir) {
-        Sniffer self = (Sniffer) (Object) this;
-
-        // Solo procesar en servidor
-        if (self.level().isClientSide()) {
-            return;
-        }
-
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
-
-        // Solo si está domado y tiene la nariz mejorada
-        if (data.ownerUUID == null) {
-            return;
-        }
-
         SnifferContainer container = new SnifferContainer(self);
-        if (!container.hasSnifferNose()) {
+
+        // Si está domado Y tiene Enhanced Sniffer Nose: intentar dropear mineral ADEMÁS de la semilla normal
+        if (data.ownerUUID != null && container.hasSnifferNose()) {
+            aromaaffect$tryDropMineral(self);
+            // No cancelamos, la semilla normal también se dropea
             return;
         }
 
+        // Cualquier sniffer (domado o no) puede obtener esencias si NO tiene la Enhanced Sniffer Nose
+        if (!container.hasSnifferNose() && aromaaffect$tryReplaceSeedWithScent(self)) {
+            ci.cancel(); // Cancelar el drop normal, dropeamos la esencia en su lugar
+        }
     }
 
     @Unique
     private boolean aromaaffect$tryReplaceSeedWithScent(Sniffer sniffer) {
         SnifferTamingData data = SnifferTamingData.get(sniffer.getUUID());
 
-        // Requisitos: domado y con enhanced sniffer nose
-        if (data.ownerUUID == null) {
-            return false;
-        }
-
-        SnifferContainer container = new SnifferContainer(sniffer);
-        if (!container.hasSnifferNose()) {
-            return false;
-        }
+        // Cualquier sniffer puede obtener esencias (no requiere estar domado)
 
         // Determinar la dimensión actual
         ResourceKey<Level> dimension = sniffer.level().dimension();
@@ -394,6 +365,90 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         aromaaffect$pendingDimension = finalDimension;
 
         return true; // Indicar que reemplazamos el drop (el item saldrá después del delay)
+    }
+
+    @Unique
+    private void aromaaffect$tryDropMineral(Sniffer sniffer) {
+        // Probabilidad de dropear mineral
+        if (sniffer.getRandom().nextDouble() > MINERAL_DROP_CHANCE) {
+            return;
+        }
+
+        if (!(sniffer.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        // Seleccionar mineral aleatorio con pesos
+        // Más común: cobre, hierro, oro
+        // Más raro: diamantes, netherite scraps
+        ItemStack mineralStack = aromaaffect$selectRandomMineral(sniffer);
+        if (mineralStack.isEmpty()) {
+            return;
+        }
+
+        // Calcular posición 2 bloques adelante del Sniffer (donde mete la nariz)
+        double yawRad = Math.toRadians(sniffer.getYRot());
+        double offsetX = -Math.sin(yawRad) * 2.0;
+        double offsetZ = Math.cos(yawRad) * 2.0;
+
+        // Crear y spawnear el mineral
+        ItemEntity itemEntity = new ItemEntity(
+                serverLevel,
+                sniffer.getX() + offsetX,
+                sniffer.getY() + 0.5,
+                sniffer.getZ() + offsetZ,
+                mineralStack
+        );
+        itemEntity.setDefaultPickUpDelay();
+        serverLevel.addFreshEntity(itemEntity);
+
+        // Efectos visuales
+        serverLevel.sendParticles(
+                ParticleTypes.WAX_ON,
+                sniffer.getX() + offsetX, sniffer.getY() + 0.8, sniffer.getZ() + offsetZ,
+                10, 0.3, 0.3, 0.3, 0.05
+        );
+    }
+
+    @Unique
+    private ItemStack aromaaffect$selectRandomMineral(Sniffer sniffer) {
+        // Pesos: cobre(35), hierro(30), oro(20), diamante(10), netherite(5) = 100 total
+        double roll = sniffer.getRandom().nextDouble() * 100;
+
+        if (roll < 35) {
+            return new ItemStack(Items.RAW_COPPER);
+        } else if (roll < 65) {
+            return new ItemStack(Items.RAW_IRON);
+        } else if (roll < 85) {
+            return new ItemStack(Items.RAW_GOLD);
+        } else if (roll < 95) {
+            return new ItemStack(Items.DIAMOND);
+        } else {
+            return new ItemStack(Items.NETHERITE_SCRAP);
+        }
+    }
+
+    @Inject(method = "onDiggingComplete", at = @At("TAIL"))
+    private void aromaaffect$onFinishDigging(boolean found, CallbackInfoReturnable<Sniffer> cir) {
+        Sniffer self = (Sniffer) (Object) this;
+
+        // Solo procesar en servidor
+        if (self.level().isClientSide()) {
+            return;
+        }
+
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+
+        // Solo si está domado y tiene la nariz mejorada
+        if (data.ownerUUID == null) {
+            return;
+        }
+
+        SnifferContainer container = new SnifferContainer(self);
+        if (!container.hasSnifferNose()) {
+            return;
+        }
+
     }
 
     @Unique
