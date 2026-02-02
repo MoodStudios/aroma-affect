@@ -121,6 +121,19 @@ public final class PassiveModeManager {
         // Passive mode now works regardless of nose equipped state
         // User controls it via the radial menu toggle button
 
+        // Check if our passive trigger was replaced by a higher priority trigger that has since expired
+        // This allows passive mode to "retake" control after item use or other triggers finish
+        if (currentPassiveTrigger != null) {
+            ScentTrigger activeScent = ScentTriggerManager.getInstance().getActiveScent();
+            if (activeScent == null || activeScent.source() != ScentTriggerSource.PASSIVE_MODE) {
+                // Our trigger was replaced or expired - clear our state so we can re-evaluate
+                AromaAffect.LOGGER.debug("Passive trigger was replaced or expired, clearing state to re-evaluate");
+                currentPassiveTrigger = null;
+                currentTriggerSource = null;
+                currentTriggerType = null;
+            }
+        }
+
         // All conditions met - evaluate triggers by priority
         Level level = player.level();
         if (!level.isClientSide()) {
