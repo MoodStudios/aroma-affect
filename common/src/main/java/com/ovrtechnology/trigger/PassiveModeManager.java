@@ -55,7 +55,7 @@ public final class PassiveModeManager {
      * Development mode flag - bypasses OVR hardware check.
      * Set to false for production builds.
      */
-    private static final boolean DEV_MODE = false;
+    private static final boolean DEV_MODE = true;
 
     /**
      * How often to check for passive triggers (in ticks).
@@ -479,11 +479,9 @@ public final class PassiveModeManager {
     /**
      * Activates the candidate trigger.
      * Always sends the trigger to hardware (cooldown was already checked).
-     * Only shows chat message when the source changes to avoid spam.
+     * Only shows chat message in DEV_MODE for testing purposes.
      */
     private static void activateTrigger(Player player, TriggerCandidate candidate) {
-        boolean sourceChanged = currentTriggerSource == null || !currentTriggerSource.equals(candidate.source);
-
         // Update state
         currentPassiveTrigger = candidate.trigger;
         currentTriggerSource = candidate.source;
@@ -492,8 +490,8 @@ public final class PassiveModeManager {
         // Always send trigger to hardware (cooldown already verified)
         ScentTriggerManager.getInstance().trigger(candidate.trigger);
 
-        // Only show chat message when source changes (avoid spam every 15 seconds)
-        if (sourceChanged) {
+        // Only show chat message in DEV_MODE for testing
+        if (DEV_MODE) {
             // Get trigger type name for message
             String triggerTypeName = candidate.type.name().toLowerCase();
 
@@ -526,10 +524,10 @@ public final class PassiveModeManager {
             player.displayClientMessage(Component.literal(message), false);
         }
 
-        AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {}, sourceChanged: {})",
+        AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {})",
             candidate.trigger.scentName(), candidate.source,
             (int) Math.round(candidate.trigger.intensity() * 100),
-            candidate.distance, candidate.range, sourceChanged);
+            candidate.distance, candidate.range);
     }
 
     /**
