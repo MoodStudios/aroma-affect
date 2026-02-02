@@ -185,5 +185,8 @@
   "websocket.aromaaffect.status.connecting": "OVR Hardware: Connecting...",
   "websocket.aromaaffect.status.connected": "OVR Hardware: Connected",
   "websocket.aromaaffect.status.reconnecting": "OVR Hardware: Reconnecting...",
-  "websocket.aromaaffect.status.failed": "OVR Hardware: Connection Failed"
+  "websocket.aromaaffect.status.failed": "OVR Hardware: Connection Failed",
+
+  "advancement.aromaaffect.sniffer_journey.title": "The Sniffer's Journey",
+  "advancement.aromaaffect.sniffer_journey.description": "Collect all three dimension scents with a single Sniffer: Overworld, Nether, and End. Requires an Enhanced Sniffer Nose equipped."
 }

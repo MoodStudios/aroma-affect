@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:sniffer_egg"
+    },
+    "title": {
+      "translate": "advancement.aromaaffect.sniffer_journey.title",
+      "fallback": "The Sniffer's Journey"
+    },
+    "description": {
+      "translate": "advancement.aromaaffect.sniffer_journey.description",
+      "fallback": "Collect all three dimension scents with a single Sniffer equipped with an Enhanced Sniffer Nose: Overworld, Nether, and End."
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "complete_journey": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

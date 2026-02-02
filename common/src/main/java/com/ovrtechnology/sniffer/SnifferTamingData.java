@@ -15,7 +15,19 @@ public class SnifferTamingData {
     public ItemStack saddleItem = ItemStack.EMPTY;
     public ItemStack decorationItem = ItemStack.EMPTY;
 
+    // Tracking de esencias de dimensión obtenidas
+    public boolean hasOverworldScent = false;
+    public boolean hasNetherScent = false;
+    public boolean hasEndScent = false;
+
     public static SnifferTamingData get(UUID snifferUUID) {
         return DATA_MAP.computeIfAbsent(snifferUUID, k -> new SnifferTamingData());
+    }
+
+    /**
+     * Verifica si el Sniffer ha completado las 3 esencias
+     */
+    public boolean hasAllScents() {
+        return hasOverworldScent && hasNetherScent && hasEndScent;
     }
 }
