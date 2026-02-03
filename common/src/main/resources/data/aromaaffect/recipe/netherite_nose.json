@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "NNN",
+    "NAN",
+    "GNG"
+  ],
+  "key": {
+    "N": "minecraft:netherite_scrap",
+    "A": "aromaaffect:blaze_nose",
+    "G": "minecraft:ghast_tear"
+  },
+  "result": {
+    "id": "aromaaffect:netherite_nose",
+    "count": 1
+  }
+}

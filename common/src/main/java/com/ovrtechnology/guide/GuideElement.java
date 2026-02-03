@@ -1,5 +1,6 @@
 package com.ovrtechnology.guide;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +32,10 @@ public final class GuideElement {
         SEPARATOR,
         SPACER,
         TIP,
-        CRAFTING_GRID
+        CRAFTING_GRID,
+        ABILITY_LINK,
+        ICON_TEXT,
+        URL_LINK
     }
 
     private final Type type;
@@ -49,11 +53,14 @@ public final class GuideElement {
     private final ItemStack[] craftingGrid;
     @Nullable
     private final ItemStack craftingResult;
+    @Nullable
+    private final String targetPageId;
 
     private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
                          @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
                          int spacerHeight, int color,
-                         @Nullable ItemStack[] craftingGrid, @Nullable ItemStack craftingResult) {
+                         @Nullable ItemStack[] craftingGrid, @Nullable ItemStack craftingResult,
+                         @Nullable String targetPageId) {
         this.type = type;
         this.text = text;
         this.itemStack = itemStack;
@@ -64,12 +71,13 @@ public final class GuideElement {
         this.color = color;
         this.craftingGrid = craftingGrid;
         this.craftingResult = craftingResult;
+        this.targetPageId = targetPageId;
     }
 
     private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
                          @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
                          int spacerHeight, int color) {
-        this(type, text, itemStack, imageTexture, imageWidth, imageHeight, spacerHeight, color, null, null);
+        this(type, text, itemStack, imageTexture, imageWidth, imageHeight, spacerHeight, color, null, null, null);
     }
 
     public static GuideElement header(String text) {
@@ -134,7 +142,65 @@ public final class GuideElement {
     public static GuideElement craftingGrid(ItemStack[] grid, ItemStack result, String label) {
         if (grid.length != 9) throw new IllegalArgumentException("Crafting grid must have exactly 9 slots");
         return new GuideElement(Type.CRAFTING_GRID, Component.literal(label), null, null,
-                0, 0, 0, 0xFFFFFFFF, grid.clone(), result.copy());
+                0, 0, 0, 0xFFFFFFFF, grid.clone(), result.copy(), null);
+    }
+
+    /**
+     * Creates an ability link element that shows as "• AbilityName (inherited) →"
+     * and navigates to the specified page when clicked.
+     */
+    public static GuideElement abilityLink(String abilityName, String targetPageId) {
+        return new GuideElement(Type.ABILITY_LINK, Component.literal(abilityName), null, null,
+                0, 0, 0, 0xFFD0D0D0, null, null, targetPageId);
+    }
+
+    /**
+     * Creates a bold label for detection sub-categories (e.g. "Blocks", "Structures").
+     * Renders with an accent-colored dash prefix to visually separate from items below.
+     */
+    public static GuideElement detectionLabel(String text) {
+        return new GuideElement(Type.TEXT, Component.literal("\u25B8 " + text).withStyle(ChatFormatting.BOLD),
+                null, null, 0, 0, 0, 0xFFAAAACC);
+    }
+
+    /**
+     * Creates a compact element with a small item icon followed by text on the same line.
+     * Used for detection lists (blocks, structures, biomes, flowers).
+     */
+    public static GuideElement iconText(ItemStack icon, String text) {
+        return new GuideElement(Type.ICON_TEXT, Component.literal(text), icon.copy(), null,
+                0, 0, 0, 0xFFD0D0D0);
+    }
+
+    /**
+     * Creates a compact element with cycling item icons followed by text.
+     * The icon animates through the provided items in sequence.
+     */
+    public static GuideElement iconText(String text, ItemStack... icons) {
+        ItemStack[] copies = new ItemStack[icons.length];
+        for (int i = 0; i < icons.length; i++) copies[i] = icons[i].copy();
+        return new GuideElement(Type.ICON_TEXT, Component.literal(text), copies[0], null,
+                0, 0, 0, 0xFFD0D0D0, copies, null, null);
+    }
+
+    /**
+     * Creates a clickable URL link element that opens an external URL in the system browser.
+     * Renders as underlined text with a link icon.
+     *
+     * @param label the display text for the link
+     * @param url   the URL to open when clicked
+     */
+    public static GuideElement urlLink(String label, String url) {
+        return new GuideElement(Type.URL_LINK, Component.literal(label), null, null,
+                0, 0, 0, 0xFF6D9EF8, null, null, url);
+    }
+
+    /**
+     * Creates a non-linked ability element that shows as "• AbilityName — description".
+     */
+    public static GuideElement ability(String text) {
+        return new GuideElement(Type.TEXT, Component.literal("\u2022 " + text), null, null,
+                0, 0, 0, 0xFFD0D0D0);
     }
 
     public Type getType() {
@@ -180,5 +246,10 @@ public final class GuideElement {
     @Nullable
     public ItemStack getCraftingResult() {
         return craftingResult;
+    }
+
+    @Nullable
+    public String getTargetPageId() {
+        return targetPageId;
     }
 }

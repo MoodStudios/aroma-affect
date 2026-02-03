@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "DDD",
+    "DAD",
+    "EDE"
+  ],
+  "key": {
+    "D": "minecraft:dragon_breath",
+    "A": "aromaaffect:netherite_nose",
+    "E": "minecraft:ender_eye"
+  },
+  "result": {
+    "id": "aromaaffect:ultimate_nose",
+    "count": 1
+  }
+}

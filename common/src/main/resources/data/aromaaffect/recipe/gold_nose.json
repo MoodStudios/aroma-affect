@@ -1,15 +1,16 @@
-  {
+{
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
     "GGG",
     "GNG",
-    " D "
+    "SBS"
   ],
   "key": {
     "G": "minecraft:gold_ingot",
     "N": "aromaaffect:basic_nose",
-    "D": "minecraft:diamond"
+    "B": "minecraft:bone_meal",
+    "S": "minecraft:string"
   },
   "result": {
     "id": "aromaaffect:gold_nose",

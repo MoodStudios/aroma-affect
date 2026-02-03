@@ -1,0 +1,10 @@
+{
+  "sniff": {
+    "subtitle": "subtitles.aromaaffect.sniff",
+    "sounds": [
+      "aromaaffect:sniff/sniff1",
+      "aromaaffect:sniff/sniff2",
+      "aromaaffect:sniff/sniff3"
+    ]
+  }
+}

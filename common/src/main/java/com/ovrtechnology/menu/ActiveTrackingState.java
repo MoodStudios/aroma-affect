@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.registry.ModSounds;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -49,6 +51,9 @@ public final class ActiveTrackingState {
     /** Duration in milliseconds before terminal states auto-clear. */
     private static final long AUTO_CLEAR_MS = 3000;
 
+    /** Duration in milliseconds before ARRIVED state auto-clears (keeps outline visible longer). */
+    private static final long ARRIVED_CLEAR_MS = 8000;
+
     private ActiveTrackingState() {}
 
     /**
@@ -68,6 +73,12 @@ public final class ActiveTrackingState {
         status = TrackingStatus.SEARCHING;
         statusMessage = null;
         statusTimestamp = System.currentTimeMillis();
+
+        // Play random sniff sound
+        var player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.playSound(ModSounds.SNIFF.get(), 0.8f, 1.0f);
+        }
     }
 
     /**
@@ -92,7 +103,7 @@ public final class ActiveTrackingState {
      */
     public static void setArrived() {
         status = TrackingStatus.ARRIVED;
-        destination = null;
+        // Keep destination so the block outline stays visible during ARRIVED state
         statusMessage = null;
         statusTimestamp = System.currentTimeMillis();
     }
@@ -129,7 +140,11 @@ public final class ActiveTrackingState {
      * after {@link #AUTO_CLEAR_MS} milliseconds.
      */
     public static void tick() {
-        if (status == TrackingStatus.ARRIVED || status == TrackingStatus.NOT_FOUND || status == TrackingStatus.ERROR) {
+        if (status == TrackingStatus.ARRIVED) {
+            if (System.currentTimeMillis() - statusTimestamp > ARRIVED_CLEAR_MS) {
+                clear();
+            }
+        } else if (status == TrackingStatus.NOT_FOUND || status == TrackingStatus.ERROR) {
             if (System.currentTimeMillis() - statusTimestamp > AUTO_CLEAR_MS) {
                 clear();
             }
@@ -222,9 +237,9 @@ public final class ActiveTrackingState {
      * @return true if a block outline should be rendered for the current tracking target
      */
     public static boolean shouldShowOutline() {
-        return status == TrackingStatus.TRACKING
+        return (status == TrackingStatus.TRACKING || status == TrackingStatus.ARRIVED)
                 && destination != null
                 && distance >= 0 && distance <= 32
-                && (category == MenuCategory.BLOCKS || category == MenuCategory.FLOWERS);
+                && (category == MenuCategory.BLOCKS || category == MenuCategory.FLOWERS || category == MenuCategory.STRUCTURES);
     }
 }

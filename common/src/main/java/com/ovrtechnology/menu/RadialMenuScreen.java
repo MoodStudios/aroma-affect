@@ -8,6 +8,7 @@ import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -115,7 +116,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final ResourceLocation ICON_BLOCKS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
     private static final ResourceLocation ICON_FLOWERS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
     private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
-    private static final ResourceLocation ICON_COMPASS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_compass.png");
+
     private static final ResourceLocation ICON_PASSIVE = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
     private static final ResourceLocation ICON_CENTER_LOGO = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part1.png");
     private static final ResourceLocation ICON_CENTER_ARROW = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part2.png");
@@ -230,13 +231,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     // Track hover states for corner buttons
-    private boolean isHoveringConfig = false;
-    private boolean isHoveringCompass = false;
     private boolean isHoveringPassiveToggle = false;
     private boolean isHoveringConfigGear = false;
     private boolean isHoveringGuide = false;
     private boolean isHoveringShop = false;
     private boolean isHoveringPanelStop = false;
+    private boolean isHoveringPanelTeleport = false;
 
     // Shop button animation
     private float shopGlowPhase = 0f;
@@ -263,7 +263,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         renderCenterLogo(graphics, centerX, centerY, innerRadius, animationProgress);
         renderSelectionText(graphics, centerX, centerY, outerRadius, animationProgress);
 
-        // Render corner buttons (config top-right, compass bottom-right)
+        // Render corner buttons (top-left row)
         renderCornerButtons(graphics, mouseX, mouseY, animationProgress);
 
         // Render active tracking info panel
@@ -271,7 +271,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     /**
-     * Renders the corner buttons for config (top-right), compass (bottom-right), and stop path (bottom-left).
+     * Renders the corner buttons (top-left row: passive toggle, gear, guide, shop).
      */
     private void renderCornerButtons(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
         float appear = Mth.clamp((animationProgress - 0.3f) / 0.7f, 0.0f, 1.0f);
@@ -279,66 +279,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return;
         }
 
-        int buttonSize = CORNER_ICON_SIZE + 8;  // Icon size + padding for hover area
-        int iconOffset = 4;  // Center icon in button area
-
-        // Config button position (top-right corner)
-        int configX = width - CORNER_BUTTON_PADDING - buttonSize;
-        int configY = CORNER_BUTTON_PADDING;
-
-        // Compass button position (bottom-right corner)
-        int compassX = width - CORNER_BUTTON_PADDING - buttonSize;
-        int compassY = height - CORNER_BUTTON_PADDING - buttonSize;
-
-        // Check hover states
-        isHoveringConfig = isInBounds(mouseX, mouseY, configX, configY, buttonSize, buttonSize);
-        isHoveringCompass = isInBounds(mouseX, mouseY, compassX, compassY, buttonSize, buttonSize);
-
-        // Render config button background when hovered
-        if (isHoveringConfig) {
-            int bgColor = withAlpha(COLOR_RING_SELECTED, appear);
-            graphics.fill(configX, configY, configX + buttonSize, configY + buttonSize, bgColor);
-            int borderColor = withAlpha(COLOR_RING_BORDER, appear);
-            renderOutline(graphics, configX, configY, buttonSize, buttonSize, borderColor);
-        }
-
-        // Render compass button background when hovered
-        if (isHoveringCompass) {
-            int bgColor = withAlpha(COLOR_RING_SELECTED, appear);
-            graphics.fill(compassX, compassY, compassX + buttonSize, compassY + buttonSize, bgColor);
-            int borderColor = withAlpha(COLOR_RING_BORDER, appear);
-            renderOutline(graphics, compassX, compassY, buttonSize, buttonSize, borderColor);
-        }
-
-        // Render config icon
-        float configScale = isHoveringConfig ? 1.1f : 1.0f;
-        int configIconSize = (int) (CORNER_ICON_SIZE * configScale);
-        int configIconX = configX + iconOffset + (CORNER_ICON_SIZE - configIconSize) / 2;
-        int configIconY = configY + iconOffset + (CORNER_ICON_SIZE - configIconSize) / 2;
-
-        graphics.blit(ICON_CONFIG, configIconX, configIconY, 0, 0, configIconSize, configIconSize, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
-
-        // Render compass icon
-        float compassScale = isHoveringCompass ? 1.1f : 1.0f;
-        int compassIconSize = (int) (CORNER_ICON_SIZE * compassScale);
-        int compassIconX = compassX + iconOffset + (CORNER_ICON_SIZE - compassIconSize) / 2;
-        int compassIconY = compassY + iconOffset + (CORNER_ICON_SIZE - compassIconSize) / 2;
-
-        graphics.blit(ICON_COMPASS, compassIconX, compassIconY, 0, 0, compassIconSize, compassIconSize, ICON_TEXTURE_SIZE, ICON_TEXTURE_SIZE);
-
-        // Render tooltips for corner buttons when hovered
-        if (isHoveringConfig) {
-            graphics.drawString(font, Component.translatable("menu.aromaaffect.button.config"),
-                    configX - font.width(Component.translatable("menu.aromaaffect.button.config")) - 8,
-                    configY + buttonSize / 2 - 4,
-                    withAlpha(0xFFFFFFFF, appear));
-        }
-        if (isHoveringCompass) {
-            graphics.drawString(font, Component.translatable("menu.aromaaffect.button.compass"),
-                    compassX - font.width(Component.translatable("menu.aromaaffect.button.compass")) - 8,
-                    compassY + buttonSize / 2 - 4,
-                    withAlpha(0xFFFFFFFF, appear));
-        }
         // Top-left: Passive mode toggle pill + Gear config button (side by side)
         boolean isPassiveEnabled = PassiveModeManager.isPassiveModeEnabled();
         int toggleW = 36;
@@ -516,16 +456,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         // Check corner buttons first
-        if (isHoveringConfig) {
-            AromaAffect.LOGGER.debug("Config button clicked");
-            MenuManager.openConfigMenu();
-            return true;
-        }
-        if (isHoveringCompass) {
-            AromaAffect.LOGGER.debug("Compass button clicked");
-            MenuManager.openCompassMenu();
-            return true;
-        }
         if (isHoveringPassiveToggle) {
             AromaAffect.LOGGER.debug("Passive mode toggle clicked");
             PassiveModeManager.togglePassiveMode();
@@ -553,6 +483,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
         if (isHoveringPanelStop) {
             AromaAffect.LOGGER.debug("Panel stop button clicked");
             executeStopPath();
+            return true;
+        }
+        if (isHoveringPanelTeleport) {
+            AromaAffect.LOGGER.debug("Panel teleport button clicked");
+            executeTeleport();
             return true;
         }
 
@@ -596,6 +531,25 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         // Close the menu
+        if (minecraft != null) {
+            minecraft.setScreen(null);
+        }
+    }
+
+    /**
+     * Teleports the player to the active tracking destination via /tp command.
+     * Only works in creative mode.
+     */
+    private void executeTeleport() {
+        BlockPos dest = ActiveTrackingState.getDestination();
+        if (dest == null) return;
+
+        if (Minecraft.getInstance().getConnection() != null) {
+            String cmd = String.format("tp @s %d %d %d", dest.getX(), dest.getY() + 1, dest.getZ());
+            Minecraft.getInstance().getConnection().sendCommand(cmd);
+            AromaAffect.LOGGER.debug("Sent teleport command to {}", dest);
+        }
+
         if (minecraft != null) {
             minecraft.setScreen(null);
         }
@@ -750,6 +704,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
      */
     private void renderTrackingPanel(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
         isHoveringPanelStop = false;
+        isHoveringPanelTeleport = false;
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
         if (status == ActiveTrackingState.TrackingStatus.IDLE) {
             return;
@@ -945,6 +900,30 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
             int stopTextColor = withAlpha(0xFFFFFFFF, appear);
             graphics.drawCenteredString(font, stopLabel, stopBtnX + stopBtnW / 2, stopBtnY + 3, stopTextColor);
+
+            // Teleport button (creative mode only, left of stop button)
+            var player = Minecraft.getInstance().player;
+            if (player != null && player.isCreative() && ActiveTrackingState.getDestination() != null) {
+                Component tpLabel = Component.literal("Teleport");
+                int tpTextW = font.width(tpLabel);
+                int tpBtnW = tpTextW + 12;
+                int tpBtnH = 14;
+                int tpBtnX = stopBtnX - tpBtnW - 4;
+                int tpBtnY = stopBtnY;
+
+                isHoveringPanelTeleport = isInBounds(mouseX, mouseY, tpBtnX, tpBtnY, tpBtnW, tpBtnH);
+
+                int tpBg = isHoveringPanelTeleport
+                        ? withAlpha(0xC044AAFF, appear)
+                        : withAlpha(0x803388CC, appear);
+                graphics.fill(tpBtnX, tpBtnY, tpBtnX + tpBtnW, tpBtnY + tpBtnH, tpBg);
+
+                int tpBorder = withAlpha(isHoveringPanelTeleport ? 0xEE66CCFF : 0x884488AA, appear);
+                renderOutline(graphics, tpBtnX, tpBtnY, tpBtnW, tpBtnH, tpBorder);
+
+                int tpTextColor = withAlpha(0xFFFFFFFF, appear);
+                graphics.drawCenteredString(font, tpLabel, tpBtnX + tpBtnW / 2, tpBtnY + 3, tpTextColor);
+            }
         }
     }
 

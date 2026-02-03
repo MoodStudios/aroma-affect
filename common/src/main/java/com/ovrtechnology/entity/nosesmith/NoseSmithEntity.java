@@ -24,6 +24,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
@@ -87,7 +90,11 @@ public class NoseSmithEntity extends Villager {
     @Nullable
     private UUID dialoguePlayerId;
     private int dialogueKeepAliveTicks = 0;
-    
+
+    private int headNodTicks = 0;
+    int smellCooldownTicks = 0;
+    int sniffEntityCooldownTicks = 0;
+
     public NoseSmithEntity(EntityType<? extends Villager> entityType, Level level) {
         super(entityType, level);
         this.setCustomName(Component.translatable("entity.aromaaffect.nose_smith"));
@@ -160,6 +167,30 @@ public class NoseSmithEntity extends Villager {
 
         if (!(this.level() instanceof ServerLevel serverLevel)) {
             return;
+        }
+
+        if (headNodTicks > 0) {
+            headNodTicks--;
+            this.setXRot((float) (Math.sin(headNodTicks * 0.5) * 20));
+            if (headNodTicks == 0) {
+                this.setXRot(0);
+            }
+        }
+
+        if (smellCooldownTicks > 0) {
+            smellCooldownTicks--;
+        }
+
+        if (sniffEntityCooldownTicks > 0) {
+            sniffEntityCooldownTicks--;
+        }
+
+        // Passive regeneration: heal 1 HP every 80 ticks if not recently hurt
+        if (this.tickCount % 80 == 0 && this.getHealth() < this.getMaxHealth()) {
+            int lastHurtTime = this.getLastHurtByMobTimestamp();
+            if (this.tickCount - lastHurtTime > 100) {
+                this.heal(1.0F);
+            }
         }
 
         tickDialogueSession(serverLevel);
@@ -245,7 +276,7 @@ public class NoseSmithEntity extends Villager {
         }
     }
 
-    private boolean isInDialogue() {
+    boolean isInDialogue() {
         return dialogueKeepAliveTicks > 0 && dialoguePlayerId != null;
     }
 
@@ -439,6 +470,8 @@ public class NoseSmithEntity extends Villager {
             AromaAffect.LOGGER.warn("Failed to drop basic_nose: item not registered");
         }
 
+        headNodTicks = 40;
+
         serverLevel.playSound(null, this.blockPosition(), SoundEvents.VILLAGER_YES, SoundSource.NEUTRAL, 1.0F, 1.0F);
         serverLevel.playSound(null, this.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.75F, 1.2F);
     }
@@ -551,20 +584,28 @@ public class NoseSmithEntity extends Villager {
      */
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 25.0D) // Slightly more health than regular villager
+                .add(Attributes.MAX_HEALTH, 40.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.5D)
-                .add(Attributes.FOLLOW_RANGE, 48.0D);
+                .add(Attributes.FOLLOW_RANGE, 48.0D)
+                .add(Attributes.ATTACK_DAMAGE, 5.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.3D);
     }
     
     @Override
     protected void registerGoals() {
-        // Basic AI goals for the Nose Smith
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new DialogueHoldGoal(this));
         this.goalSelector.addGoal(2, new PanicGoal(this, 0.5D));
-        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.35D));
+        this.goalSelector.addGoal(3, new NoseSmithSleepGoal(this));
+        this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 0.6D, true));
+        this.goalSelector.addGoal(5, new NoseSmithSmellFlowerGoal(this));
+        this.goalSelector.addGoal(5, new NoseSmithSniffEntityGoal(this));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.35D));
+
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Player.class));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Monster.class, true));
     }
 
     private static final class DialogueHoldGoal extends Goal {

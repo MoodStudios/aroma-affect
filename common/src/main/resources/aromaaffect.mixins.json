@@ -8,7 +8,8 @@
     "SnifferRendererMixin"
   ],
   "mixins": [
-    "SnifferTamingMixin"
+    "SnifferTamingMixin",
+    "JigsawPriorityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

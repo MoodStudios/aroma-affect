@@ -21,6 +21,7 @@ import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
+import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.sniffer.SnifferMenuRegistry;
@@ -74,6 +75,9 @@ public final class AromaAffect {
 
         // Initialize Sniffer menu registry
         SnifferMenuRegistry.init();
+
+        // Initialize custom sounds
+        ModSounds.init();
 
         // Initialize creative tab
         ModCreativeTab.init();
