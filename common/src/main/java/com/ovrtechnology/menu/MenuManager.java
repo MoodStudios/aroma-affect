@@ -116,6 +116,20 @@ public final class MenuManager {
     }
 
     /**
+     * Opens the tracking history screen.
+     */
+    public static void openHistoryMenu() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaAffect.LOGGER.debug("Cannot open history menu: no player");
+            return;
+        }
+
+        AromaAffect.LOGGER.debug("Opening history menu");
+        minecraft.setScreen(new HistoryMenuScreen());
+    }
+
+    /**
      * Opens the shop screen.
      */
     public static void openShopMenu() {

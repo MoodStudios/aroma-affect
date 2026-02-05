@@ -1,0 +1,113 @@
+{
+  "id": "sniffer",
+  "title": { "translate": "guide.aromaaffect.sniffer.category_title" },
+  "icon": { "type": "item", "item": "minecraft:sniffer_egg" },
+  "accent_color": "#FF4EC9B0",
+  "pages": [
+    {
+      "id": "sniffer_overview",
+      "title": { "translate": "guide.aromaaffect.sniffer.overview.title" },
+      "icon": { "type": "item", "item": "minecraft:sniffer_egg" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.sniffer.overview.header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.overview.intro" },
+        { "type": "spacer", "height": 8 },
+        { "type": "tip", "translate": "guide.aromaaffect.sniffer.overview.tip_ancient" },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.overview.link_precise", "target_page": "netherite_nose" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.overview.what_can_header" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.overview.what_can_list" },
+        { "type": "spacer", "height": 6 },
+        { "type": "item_showcase", "item": "aromaaffect:scent_base", "translate": "guide.aromaaffect.sniffer.overview.scent_base_desc" }
+      ]
+    },
+    {
+      "id": "sniffer_taming",
+      "title": { "translate": "guide.aromaaffect.sniffer.taming.title" },
+      "icon": { "type": "item", "item": "minecraft:saddle" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.sniffer.taming.header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.taming.tame_header" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.taming.tame_desc" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "minecraft:torchflower", "translate": "guide.aromaaffect.sniffer.taming.torchflower_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.taming.riding_header" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.taming.riding_desc" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "minecraft:saddle", "translate": "guide.aromaaffect.sniffer.taming.saddle_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.taming.inventory_header" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.taming.inventory_desc" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.taming.inventory_slots" },
+        { "type": "spacer", "height": 6 },
+        { "type": "tip", "translate": "guide.aromaaffect.sniffer.taming.riding_tip" }
+      ]
+    },
+    {
+      "id": "dimensional_tour",
+      "title": { "translate": "guide.aromaaffect.sniffer.tour.title" },
+      "icon": { "type": "item", "item": "minecraft:nether_star" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.sniffer.tour.header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.tour.intro" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.tour.how_header" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.tour.how_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.tour.scents_header" },
+        { "type": "item_showcase", "item": "aromaaffect:overworld_scent", "translate": "guide.aromaaffect.sniffer.tour.overworld_desc" },
+        { "type": "spacer", "height": 2 },
+        { "type": "item_showcase", "item": "aromaaffect:nether_scent", "translate": "guide.aromaaffect.sniffer.tour.nether_desc" },
+        { "type": "spacer", "height": 2 },
+        { "type": "item_showcase", "item": "aromaaffect:end_scent", "translate": "guide.aromaaffect.sniffer.tour.end_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "tip", "translate": "guide.aromaaffect.sniffer.tour.tip_advancement" },
+        { "type": "spacer", "height": 6 },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.tour.craft_hint" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.tour.link_enhanced", "target_page": "enhanced_sniffer_nose" }
+      ]
+    },
+    {
+      "id": "enhanced_sniffer_nose",
+      "title": { "translate": "guide.aromaaffect.sniffer.enhanced.title" },
+      "icon": { "type": "item", "item": "aromaaffect:enhanced_sniffer_nose" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.sniffer.enhanced.header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:enhanced_sniffer_nose", "translate": "guide.aromaaffect.sniffer.enhanced.stats" },
+        { "type": "spacer", "height": 6 },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.enhanced.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.enhanced.abilities_header" },
+        { "type": "ability", "translate": "guide.aromaaffect.sniffer.enhanced.ability_base" },
+        { "type": "ability", "translate": "guide.aromaaffect.sniffer.enhanced.ability_sniffing" },
+        { "type": "ability", "translate": "guide.aromaaffect.sniffer.enhanced.ability_rare" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:scent_base", "translate": "guide.aromaaffect.sniffer.enhanced.scent_base_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.enhanced.equip_header" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.enhanced.equip_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.enhanced.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "", "aromaaffect:overworld_scent", "",
+            "aromaaffect:nether_scent", "aromaaffect:ultimate_nose", "aromaaffect:end_scent",
+            "", "minecraft:diamond", ""
+          ],
+          "result": "aromaaffect:enhanced_sniffer_nose",
+          "translate": "guide.aromaaffect.sniffer.enhanced.recipe_label"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "tip", "translate": "guide.aromaaffect.sniffer.enhanced.tip_dragon" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.enhanced.link_dragon", "target_page": "ultimate_nose" }
+      ]
+    }
+  ]
+}

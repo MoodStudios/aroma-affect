@@ -138,6 +138,14 @@ public class GuideScreen extends BaseMenuScreen {
     }
 
     @Override
+    public void onClose() {
+        // Close instantly — no fade-out animation
+        if (this.minecraft != null) {
+            this.minecraft.setScreen(null);
+        }
+    }
+
+    @Override
     protected void init() {
         super.init();
         if (currentPage == null) {
@@ -188,10 +196,12 @@ public class GuideScreen extends BaseMenuScreen {
 
         float alpha = animationProgress;
 
-        int wLeft = WINDOW_MARGIN;
-        int wTop = WINDOW_MARGIN;
-        int wRight = width - WINDOW_MARGIN;
-        int wBottom = height - WINDOW_MARGIN;
+        // Opening animation: window grows from center
+        int extraMargin = (int) ((1.0f - alpha) * 30);
+        int wLeft = WINDOW_MARGIN + extraMargin;
+        int wTop = WINDOW_MARGIN + extraMargin;
+        int wRight = width - WINDOW_MARGIN - extraMargin;
+        int wBottom = height - WINDOW_MARGIN - extraMargin;
 
         // Window background with subtle gradient effect
         g.fill(wLeft, wTop, wRight, wBottom, applyAlpha(COLOR_WINDOW_BG, alpha));

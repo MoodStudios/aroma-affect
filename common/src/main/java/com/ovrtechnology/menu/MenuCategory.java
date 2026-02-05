@@ -1,7 +1,9 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.LookupType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -10,100 +12,88 @@ import net.minecraft.world.item.Items;
  * Each category corresponds to a type of target that can be tracked by the Nose.
  */
 public enum MenuCategory {
-    /**
-     * Blocks category - for tracking specific blocks like ores.
-     */
-    BLOCKS("blocks", LookupType.BLOCK, Items.DIAMOND_ORE.getDefaultInstance(), 
-           "menu.aromaaffect.category.blocks", "menu.aromaaffect.category.blocks.description"),
-    
-    /**
-     * Biomes category - for tracking biome transitions.
-     */
+    BLOCKS("blocks", LookupType.BLOCK, Items.DIAMOND_ORE.getDefaultInstance(),
+           "menu.aromaaffect.category.blocks", "menu.aromaaffect.category.blocks.description",
+           ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png"),
+           "block"),
+
     BIOMES("biomes", LookupType.BIOME, Items.OAK_SAPLING.getDefaultInstance(),
-           "menu.aromaaffect.category.biomes", "menu.aromaaffect.category.biomes.description"),
-    
-    /**
-     * Structures category - for tracking structures like villages, strongholds, etc.
-     */
+           "menu.aromaaffect.category.biomes", "menu.aromaaffect.category.biomes.description",
+           ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png"),
+           "biome"),
+
     STRUCTURES("structures", LookupType.STRUCTURE, Items.BELL.getDefaultInstance(),
-               "menu.aromaaffect.category.structures", "menu.aromaaffect.category.structures.description"),
-    
-    /**
-     * Flowers/Flora category - for tracking flower-type blocks and plants.
-     */
+               "menu.aromaaffect.category.structures", "menu.aromaaffect.category.structures.description",
+               ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png"),
+               "structure"),
+
     FLOWERS("flowers", LookupType.FLOWER, Items.POPPY.getDefaultInstance(),
-            "menu.aromaaffect.category.flowers", "menu.aromaaffect.category.flowers.description");
-    
+            "menu.aromaaffect.category.flowers", "menu.aromaaffect.category.flowers.description",
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png"),
+            "block");
+
     private final String id;
     private final LookupType lookupType;
     private final ItemStack iconItem;
     private final String translationKey;
     private final String descriptionKey;
-    
-    MenuCategory(String id, LookupType lookupType, ItemStack iconItem, 
-                 String translationKey, String descriptionKey) {
+    private final ResourceLocation headerIcon;
+    private final String pathCommandType;
+
+    MenuCategory(String id, LookupType lookupType, ItemStack iconItem,
+                 String translationKey, String descriptionKey,
+                 ResourceLocation headerIcon, String pathCommandType) {
         this.id = id;
         this.lookupType = lookupType;
         this.iconItem = iconItem;
         this.translationKey = translationKey;
         this.descriptionKey = descriptionKey;
+        this.headerIcon = headerIcon;
+        this.pathCommandType = pathCommandType;
     }
-    
-    /**
-     * Gets the unique identifier for this category.
-     */
+
     public String getId() {
         return id;
     }
-    
-    /**
-     * Gets the corresponding lookup type for this category.
-     */
+
     public LookupType getLookupType() {
         return lookupType;
     }
-    
-    /**
-     * Gets the item stack used as an icon for this category.
-     */
+
     public ItemStack getIconItem() {
         return iconItem.copy();
     }
-    
-    /**
-     * Gets the translation key for the category name.
-     */
+
     public String getTranslationKey() {
         return translationKey;
     }
-    
-    /**
-     * Gets the translation key for the category description.
-     */
+
     public String getDescriptionKey() {
         return descriptionKey;
     }
-    
+
     /**
-     * Gets the translated display name component.
+     * Gets the texture used as the header icon in selection menus.
      */
+    public ResourceLocation getHeaderIcon() {
+        return headerIcon;
+    }
+
+    /**
+     * Gets the path command type string (e.g. "block", "biome", "structure").
+     */
+    public String getPathCommandType() {
+        return pathCommandType;
+    }
+
     public Component getDisplayName() {
         return Component.translatable(translationKey);
     }
-    
-    /**
-     * Gets the translated description component.
-     */
+
     public Component getDescription() {
         return Component.translatable(descriptionKey);
     }
-    
-    /**
-     * Gets a category by its ID.
-     * 
-     * @param id the category ID
-     * @return the category, or null if not found
-     */
+
     public static MenuCategory fromId(String id) {
         for (MenuCategory category : values()) {
             if (category.id.equalsIgnoreCase(id)) {
@@ -112,13 +102,7 @@ public enum MenuCategory {
         }
         return null;
     }
-    
-    /**
-     * Gets a category from a lookup type.
-     * 
-     * @param type the lookup type
-     * @return the category, or null if not found
-     */
+
     public static MenuCategory fromLookupType(LookupType type) {
         for (MenuCategory category : values()) {
             if (category.lookupType == type) {

@@ -1,0 +1,50 @@
+{
+  "id": "welcome",
+  "title": { "translate": "guide.aromaaffect.welcome.category_title" },
+  "icon": { "type": "texture", "texture": "aromaaffect:textures/gui/guide/icon_getting_started.png", "width": 32, "height": 32 },
+  "accent_color": "#FF6D5EF8",
+  "pages": [
+    {
+      "id": "welcome",
+      "title": { "translate": "guide.aromaaffect.welcome.page_title" },
+      "icon": { "type": "item", "item": "aromaaffect:aroma_guide" },
+      "elements": [
+        { "type": "image", "texture": "aromaaffect:textures/gui/guide/ovr_logo.png", "width": 180, "height": 80 },
+        { "type": "spacer", "height": 6 },
+        { "type": "header", "translate": "guide.aromaaffect.welcome.header" },
+        { "type": "spacer", "height": 6 },
+        { "type": "text", "translate": "guide.aromaaffect.welcome.intro" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.welcome.aroma_guide_header" },
+        { "type": "item_showcase", "item": "aromaaffect:aroma_guide", "translate": "guide.aromaaffect.welcome.aroma_guide_desc" },
+        { "type": "spacer", "height": 6 },
+        { "type": "text", "translate": "guide.aromaaffect.welcome.craft_hint" },
+        { "type": "spacer", "height": 10 },
+        { "type": "crafting_grid",
+          "grid": [
+            "", "", "",
+            "minecraft:compass", "minecraft:paper", "",
+            "", "", ""
+          ],
+          "result": "aromaaffect:aroma_guide",
+          "translate": "guide.aromaaffect.welcome.recipe_label"
+        },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.welcome.nose_smith_header" },
+        { "type": "text", "translate": "guide.aromaaffect.welcome.nose_smith_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.welcome.noses_header" },
+        { "type": "text", "translate": "guide.aromaaffect.welcome.noses_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.welcome.ovr_header" },
+        { "type": "text", "translate": "guide.aromaaffect.welcome.ovr_desc" },
+        { "type": "spacer", "height": 4 },
+        { "type": "text", "translate": "guide.aromaaffect.welcome.ovr_bridge_desc" },
+        { "type": "spacer", "height": 4 },
+        { "type": "url_link", "translate": "guide.aromaaffect.welcome.ovr_link", "url": "https://www.ovrtechnology.com/" },
+        { "type": "spacer", "height": 6 },
+        { "type": "tip", "translate": "guide.aromaaffect.welcome.bridge_tip" }
+      ]
+    }
+  ]
+}

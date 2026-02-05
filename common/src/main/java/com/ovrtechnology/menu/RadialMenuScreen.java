@@ -16,7 +16,6 @@ import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -201,7 +200,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Play hover sound when entering a new slice
         if (selectedIndex != previousHoverIndex) {
             if (selectedIndex >= 0 && selectedIndex < entries.size()) {
-                playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3f, 1.5f);
+                MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3f, 1.5f);
             }
             previousHoverIndex = selectedIndex;
         }
@@ -223,18 +222,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
         arrowAngle += diff * 0.3f;
     }
 
-    private static void playSound(net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.getSoundManager() != null) {
-            mc.getSoundManager().play(SimpleSoundInstance.forUI(sound, volume, pitch));
-        }
-    }
-
     // Track hover states for corner buttons
     private boolean isHoveringPassiveToggle = false;
     private boolean isHoveringConfigGear = false;
     private boolean isHoveringGuide = false;
     private boolean isHoveringShop = false;
+    private boolean isHoveringHistory = false;
     private boolean isHoveringPanelStop = false;
     private boolean isHoveringPanelTeleport = false;
 
@@ -290,16 +283,16 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Toggle pill background
         int toggleBg = isPassiveEnabled
-                ? withAlpha(isHoveringPassiveToggle ? 0xDDAA8FFF : 0xCC9A7CFF, appear)
-                : withAlpha(isHoveringPassiveToggle ? 0xDD777777 : 0xCC555555, appear);
+                ? MenuRenderUtils.withAlpha(isHoveringPassiveToggle ? 0xDDAA8FFF : 0xCC9A7CFF, appear)
+                : MenuRenderUtils.withAlpha(isHoveringPassiveToggle ? 0xDD777777 : 0xCC555555, appear);
         graphics.fill(toggleX, toggleY, toggleX + toggleW, toggleY + toggleH, toggleBg);
-        renderOutline(graphics, toggleX, toggleY, toggleW, toggleH, withAlpha(0x44FFFFFF, appear));
+        MenuRenderUtils.renderOutline(graphics, toggleX, toggleY, toggleW, toggleH, MenuRenderUtils.withAlpha(0x44FFFFFF, appear));
 
         // Toggle circle thumb
         int circleSize = toggleH - 4;
         int circleX = isPassiveEnabled ? toggleX + toggleW - circleSize - 2 : toggleX + 2;
         int circleY = toggleY + 2;
-        graphics.fill(circleX, circleY, circleX + circleSize, circleY + circleSize, withAlpha(0xFFFFFFFF, appear));
+        graphics.fill(circleX, circleY, circleX + circleSize, circleY + circleSize, MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
 
         // Gear config button (right of toggle, same height as toggle)
         int gearX = toggleX + toggleW + 4;
@@ -309,10 +302,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
         isHoveringConfigGear = isInBounds(mouseX, mouseY, gearX, gearY, gearBtnSize, gearBtnSize);
 
         int gearBg = isHoveringConfigGear
-                ? withAlpha(COLOR_RING_SELECTED, appear)
-                : withAlpha(0x40FFFFFF, appear);
+                ? MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, appear)
+                : MenuRenderUtils.withAlpha(0x40FFFFFF, appear);
         graphics.fill(gearX, gearY, gearX + gearBtnSize, gearY + gearBtnSize, gearBg);
-        renderOutline(graphics, gearX, gearY, gearBtnSize, gearBtnSize, withAlpha(COLOR_RING_BORDER, appear));
+        MenuRenderUtils.renderOutline(graphics, gearX, gearY, gearBtnSize, gearBtnSize, MenuRenderUtils.withAlpha(COLOR_RING_BORDER, appear));
 
         // Render gear icon scaled to fit inside the button with 2px padding
         int gearIconSize = gearBtnSize - 4;
@@ -335,18 +328,18 @@ public class RadialMenuScreen extends BaseMenuScreen {
         isHoveringGuide = isInBounds(mouseX, mouseY, guideX, guideY, guideBtnSize, guideBtnSize);
 
         int guideBg = isHoveringGuide
-                ? withAlpha(COLOR_RING_SELECTED, appear)
-                : withAlpha(0x40FFFFFF, appear);
+                ? MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, appear)
+                : MenuRenderUtils.withAlpha(0x40FFFFFF, appear);
         graphics.fill(guideX, guideY, guideX + guideBtnSize, guideY + guideBtnSize, guideBg);
-        renderOutline(graphics, guideX, guideY, guideBtnSize, guideBtnSize, withAlpha(COLOR_RING_BORDER, appear));
+        MenuRenderUtils.renderOutline(graphics, guideX, guideY, guideBtnSize, guideBtnSize, MenuRenderUtils.withAlpha(COLOR_RING_BORDER, appear));
 
         // Draw an open book icon procedurally
         int bx = guideX + guideBtnSize / 2;
         int by = guideY + guideBtnSize / 2;
-        int coverColor = withAlpha(0xFFCCA654, appear);  // Warm brown cover
-        int pageColor = withAlpha(0xFFF5ECD7, appear);   // Cream pages
-        int lineColor = withAlpha(0xFFAA9060, appear);   // Subtle text lines
-        int spineColor = withAlpha(0xFFFFFFFF, appear);   // White spine highlight
+        int coverColor = MenuRenderUtils.withAlpha(0xFFCCA654, appear);  // Warm brown cover
+        int pageColor = MenuRenderUtils.withAlpha(0xFFF5ECD7, appear);   // Cream pages
+        int lineColor = MenuRenderUtils.withAlpha(0xFFAA9060, appear);   // Subtle text lines
+        int spineColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);   // White spine highlight
         // Left cover (slightly larger than page for border effect)
         graphics.fill(bx - 7, by - 5, bx - 1, by + 5, coverColor);
         // Right cover
@@ -380,15 +373,15 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.fill(shopX - 2, shopY - 2, shopX + shopBtnSize + 2, shopY + shopBtnSize + 2, glowColor);
 
         int shopBg = isHoveringShop
-                ? withAlpha(0xCC44BB44, appear)
-                : withAlpha(0x8833AA33, appear);
+                ? MenuRenderUtils.withAlpha(0xCC44BB44, appear)
+                : MenuRenderUtils.withAlpha(0x8833AA33, appear);
         graphics.fill(shopX, shopY, shopX + shopBtnSize, shopY + shopBtnSize, shopBg);
-        renderOutline(graphics, shopX, shopY, shopBtnSize, shopBtnSize, withAlpha(0x8844FF44, appear));
+        MenuRenderUtils.renderOutline(graphics, shopX, shopY, shopBtnSize, shopBtnSize, MenuRenderUtils.withAlpha(0x8844FF44, appear));
 
         // Draw a cart icon procedurally (small basket shape)
         int cx = shopX + shopBtnSize / 2;
         int cy = shopY + shopBtnSize / 2;
-        int iconColor = withAlpha(0xFFFFFFFF, appear);
+        int iconColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
         // Cart body
         graphics.fill(cx - 5, cy - 2, cx + 5, cy + 3, iconColor);
         // Cart bottom (narrower)
@@ -400,8 +393,35 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.fill(cx - 3, cy + 5, cx - 1, cy + 7, iconColor);
         graphics.fill(cx + 1, cy + 5, cx + 3, cy + 7, iconColor);
 
+        // History button (right of shop, same height)
+        int histX = shopX + shopBtnSize + 4;
+        int histY = CORNER_BUTTON_PADDING;
+        int histBtnSize = toggleH;
+
+        isHoveringHistory = isInBounds(mouseX, mouseY, histX, histY, histBtnSize, histBtnSize);
+
+        int histBg = isHoveringHistory
+                ? MenuRenderUtils.withAlpha(0xCC6688CC, appear)
+                : MenuRenderUtils.withAlpha(0x804466AA, appear);
+        graphics.fill(histX, histY, histX + histBtnSize, histY + histBtnSize, histBg);
+        MenuRenderUtils.renderOutline(graphics, histX, histY, histBtnSize, histBtnSize,
+                MenuRenderUtils.withAlpha(0x886B8CFF, appear));
+
+        // Draw a clock icon procedurally (circle + hands)
+        int hx = histX + histBtnSize / 2;
+        int hy = histY + histBtnSize / 2;
+        int clockColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
+        // Circle outline (square approximation)
+        graphics.fill(hx - 5, hy - 6, hx + 5, hy - 5, clockColor); // top
+        graphics.fill(hx - 5, hy + 5, hx + 5, hy + 6, clockColor); // bottom
+        graphics.fill(hx - 6, hy - 5, hx - 5, hy + 5, clockColor); // left
+        graphics.fill(hx + 5, hy - 5, hx + 6, hy + 5, clockColor); // right
+        // Clock hands — minute (up) + hour (right)
+        graphics.fill(hx, hy - 4, hx + 1, hy + 1, clockColor);  // minute hand (up)
+        graphics.fill(hx, hy, hx + 3, hy + 1, clockColor);       // hour hand (right)
+
         // Tooltips
-        int tooltipX = shopX + shopBtnSize + 8;
+        int tooltipX = histX + histBtnSize + 8;
         if (isHoveringPassiveToggle) {
             Component passiveLabel = isPassiveEnabled
                     ? Component.translatable("menu.aromaaffect.button.passive.on")
@@ -409,44 +429,36 @@ public class RadialMenuScreen extends BaseMenuScreen {
             graphics.drawString(font, passiveLabel,
                     tooltipX,
                     toggleY + toggleH / 2 - 4,
-                    withAlpha(0xFFFFFFFF, appear));
+                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringConfigGear) {
             graphics.drawString(font, Component.translatable("config.aromaaffect.button.settings"),
                     tooltipX,
                     gearY + gearBtnSize / 2 - 4,
-                    withAlpha(0xFFFFFFFF, appear));
+                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringGuide) {
             graphics.drawString(font, Component.translatable("guide.aromaaffect.button"),
                     tooltipX,
                     guideY + guideBtnSize / 2 - 4,
-                    withAlpha(0xFFFFFFFF, appear));
+                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringShop) {
             graphics.drawString(font, Component.translatable("shop.aromaaffect.button"),
                     tooltipX,
                     shopY + shopBtnSize / 2 - 4,
-                    withAlpha(0xFFFFFFFF, appear));
+                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isHoveringHistory) {
+            graphics.drawString(font, Component.translatable("history.aromaaffect.button"),
+                    tooltipX,
+                    histY + histBtnSize / 2 - 4,
+                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
     }
 
     private static boolean isInBounds(double x, double y, int bx, int by, int bw, int bh) {
         return x >= bx && x < bx + bw && y >= by && y < by + bh;
-    }
-
-    /**
-     * Renders a rectangular outline using fill commands.
-     */
-    private static void renderOutline(GuiGraphics graphics, int x, int y, int width, int height, int color) {
-        // Top edge
-        graphics.fill(x, y, x + width, y + 1, color);
-        // Bottom edge
-        graphics.fill(x, y + height - 1, x + width, y + height, color);
-        // Left edge
-        graphics.fill(x, y, x + 1, y + height, color);
-        // Right edge
-        graphics.fill(x + width - 1, y, x + width, y + height, color);
     }
 
     @Override
@@ -459,25 +471,31 @@ public class RadialMenuScreen extends BaseMenuScreen {
         if (isHoveringPassiveToggle) {
             AromaAffect.LOGGER.debug("Passive mode toggle clicked");
             PassiveModeManager.togglePassiveMode();
-            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.5f, PassiveModeManager.isPassiveModeEnabled() ? 1.3f : 0.9f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.5f, PassiveModeManager.isPassiveModeEnabled() ? 1.3f : 0.9f);
             return true;
         }
         if (isHoveringConfigGear) {
             AromaAffect.LOGGER.debug("Config gear button clicked");
-            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
             MenuManager.openConfigMenu();
             return true;
         }
         if (isHoveringGuide) {
             AromaAffect.LOGGER.debug("Guide button clicked");
-            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
             MenuManager.openGuide();
             return true;
         }
         if (isHoveringShop) {
             AromaAffect.LOGGER.debug("Shop button clicked");
-            playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
             MenuManager.openShopMenu();
+            return true;
+        }
+        if (isHoveringHistory) {
+            AromaAffect.LOGGER.debug("History button clicked");
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuManager.openHistoryMenu();
             return true;
         }
         if (isHoveringPanelStop) {
@@ -508,11 +526,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Block interaction on locked slices
         if (index < cachedLockedSlots.length && cachedLockedSlots[index]) {
             shakeTimers[index] = SHAKE_DURATION;
-            playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
+            MenuRenderUtils.playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
             return true;
         }
 
-        playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+        MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
         onEntrySelected(entries.get(index));
         return true;
     }
@@ -812,15 +830,15 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int panelLeft = panelRight - panelWidth;
 
         // Background
-        int bgColor = withAlpha(0xDD1A1A2E, appear);
+        int bgColor = MenuRenderUtils.withAlpha(0xDD1A1A2E, appear);
         graphics.fill(panelLeft, panelTop, panelRight, panelTop + panelHeight, bgColor);
 
         // Border
-        int borderColor = withAlpha(borderArgb, appear);
-        renderOutline(graphics, panelLeft, panelTop, panelWidth, panelHeight, borderColor);
+        int borderColor = MenuRenderUtils.withAlpha(borderArgb, appear);
+        MenuRenderUtils.renderOutline(graphics, panelLeft, panelTop, panelWidth, panelHeight, borderColor);
 
         // Left accent bar
-        int accentColor = withAlpha(accentArgb, appear);
+        int accentColor = MenuRenderUtils.withAlpha(accentArgb, appear);
         graphics.fill(panelLeft, panelTop, panelLeft + 2, panelTop + panelHeight, accentColor);
 
         // Item icon
@@ -836,10 +854,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Header line
         int labelColor;
         switch (status) {
-            case SEARCHING -> labelColor = withAlpha(0xFFFFCC44, appear);
-            case ARRIVED -> labelColor = withAlpha(0xFF44FF44, appear);
-            case NOT_FOUND, ERROR -> labelColor = withAlpha(0xFFFF6B6B, appear);
-            default -> labelColor = withAlpha(0xFF88CC88, appear);
+            case SEARCHING -> labelColor = MenuRenderUtils.withAlpha(0xFFFFCC44, appear);
+            case ARRIVED -> labelColor = MenuRenderUtils.withAlpha(0xFF44FF44, appear);
+            case NOT_FOUND, ERROR -> labelColor = MenuRenderUtils.withAlpha(0xFFFF6B6B, appear);
+            default -> labelColor = MenuRenderUtils.withAlpha(0xFF88CC88, appear);
         }
         graphics.drawString(font, headerText, textX, currentY, labelColor);
         currentY += 11;
@@ -847,28 +865,28 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Target name (for SEARCHING and TRACKING)
         if (targetName != null && (status == ActiveTrackingState.TrackingStatus.SEARCHING
                 || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
-            int nameColor = withAlpha(0xFFFFFFFF, appear);
+            int nameColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
             graphics.drawString(font, targetName, textX, currentY, nameColor);
             currentY += 11;
         }
 
         // Target ID (TRACKING only)
         if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
-            int idColor = withAlpha(0xFF777777, appear);
+            int idColor = MenuRenderUtils.withAlpha(0xFF777777, appear);
             graphics.drawString(font, targetIdStr, textX, currentY, idColor);
             currentY += 11;
         }
 
         // Distance (TRACKING only)
         if (distText != null) {
-            int distColor = withAlpha(0xFF44CCFF, appear);
+            int distColor = MenuRenderUtils.withAlpha(0xFF44CCFF, appear);
             graphics.drawString(font, distText, textX, currentY, distColor);
             currentY += 11;
         }
 
         // Failure reason
         if (failureReason != null) {
-            int reasonColor = withAlpha(0xFFFFAAAA, appear);
+            int reasonColor = MenuRenderUtils.withAlpha(0xFFFFAAAA, appear);
             graphics.drawString(font, failureReason, textX, currentY, reasonColor);
         }
 
@@ -891,14 +909,14 @@ public class RadialMenuScreen extends BaseMenuScreen {
             isHoveringPanelStop = isInBounds(mouseX, mouseY, stopBtnX, stopBtnY, stopBtnW, stopBtnH);
 
             int stopBg = isHoveringPanelStop
-                    ? withAlpha(0xC0FF4444, appear)
-                    : withAlpha(0x80CC3333, appear);
+                    ? MenuRenderUtils.withAlpha(0xC0FF4444, appear)
+                    : MenuRenderUtils.withAlpha(0x80CC3333, appear);
             graphics.fill(stopBtnX, stopBtnY, stopBtnX + stopBtnW, stopBtnY + stopBtnH, stopBg);
 
-            int stopBorder = withAlpha(isHoveringPanelStop ? 0xEEFF6B6B : 0x88AA4444, appear);
-            renderOutline(graphics, stopBtnX, stopBtnY, stopBtnW, stopBtnH, stopBorder);
+            int stopBorder = MenuRenderUtils.withAlpha(isHoveringPanelStop ? 0xEEFF6B6B : 0x88AA4444, appear);
+            MenuRenderUtils.renderOutline(graphics, stopBtnX, stopBtnY, stopBtnW, stopBtnH, stopBorder);
 
-            int stopTextColor = withAlpha(0xFFFFFFFF, appear);
+            int stopTextColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
             graphics.drawCenteredString(font, stopLabel, stopBtnX + stopBtnW / 2, stopBtnY + 3, stopTextColor);
 
             // Teleport button (creative mode only, left of stop button)
@@ -914,14 +932,14 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 isHoveringPanelTeleport = isInBounds(mouseX, mouseY, tpBtnX, tpBtnY, tpBtnW, tpBtnH);
 
                 int tpBg = isHoveringPanelTeleport
-                        ? withAlpha(0xC044AAFF, appear)
-                        : withAlpha(0x803388CC, appear);
+                        ? MenuRenderUtils.withAlpha(0xC044AAFF, appear)
+                        : MenuRenderUtils.withAlpha(0x803388CC, appear);
                 graphics.fill(tpBtnX, tpBtnY, tpBtnX + tpBtnW, tpBtnY + tpBtnH, tpBg);
 
-                int tpBorder = withAlpha(isHoveringPanelTeleport ? 0xEE66CCFF : 0x884488AA, appear);
-                renderOutline(graphics, tpBtnX, tpBtnY, tpBtnW, tpBtnH, tpBorder);
+                int tpBorder = MenuRenderUtils.withAlpha(isHoveringPanelTeleport ? 0xEE66CCFF : 0x884488AA, appear);
+                MenuRenderUtils.renderOutline(graphics, tpBtnX, tpBtnY, tpBtnW, tpBtnH, tpBorder);
 
-                int tpTextColor = withAlpha(0xFFFFFFFF, appear);
+                int tpTextColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
                 graphics.drawCenteredString(font, tpLabel, tpBtnX + tpBtnW / 2, tpBtnY + 3, tpTextColor);
             }
         }
@@ -1062,11 +1080,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     private void submitRadialRenderState(GuiGraphics graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
-        int baseColor = withAlpha(COLOR_RING_BASE, animationProgress);
-        int selectedColor = withAlpha(COLOR_RING_SELECTED, animationProgress);
-        int borderColor = withAlpha(COLOR_RING_BORDER, animationProgress);
-        int separatorColor = withAlpha(COLOR_RING_SEPARATOR, animationProgress);
-        int indicatorColor = withAlpha(COLOR_INDICATOR, animationProgress);
+        int baseColor = MenuRenderUtils.withAlpha(COLOR_RING_BASE, animationProgress);
+        int selectedColor = MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, animationProgress);
+        int borderColor = MenuRenderUtils.withAlpha(COLOR_RING_BORDER, animationProgress);
+        int separatorColor = MenuRenderUtils.withAlpha(COLOR_RING_SEPARATOR, animationProgress);
+        int indicatorColor = MenuRenderUtils.withAlpha(COLOR_INDICATOR, animationProgress);
 
         int boundsPadding = 4;
         int boundsLeft = centerX - outerRadius - boundsPadding;
@@ -1126,13 +1144,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         int index = (int) (relative / step);
         return (index >= 0 && index < segmentCount) ? index : -1;
-    }
-
-    private static int withAlpha(int argb, float alphaMul) {
-        int a = (argb >>> 24) & 0xFF;
-        int rgb = argb & 0x00FFFFFF;
-        int na = Mth.clamp((int) (a * alphaMul), 0, 255);
-        return (na << 24) | rgb;
     }
 
     private static int lerpColor(int color1, int color2, float t) {

@@ -12,6 +12,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Lookup strategy for finding specific blocks.
  * <p>
@@ -45,6 +48,15 @@ public class BlockLookupStrategy implements LookupStrategy {
     
     @Override
     public LookupResult lookup(ServerLevel level, BlockPos origin, LookupTarget target, int maxRadius) {
+        return lookup(level, origin, target, maxRadius, Collections.emptySet());
+    }
+
+    /**
+     * Performs a lookup while excluding specific positions from results.
+     * Used to implement blacklist: finds the nearest block that isn't excluded.
+     */
+    public LookupResult lookup(ServerLevel level, BlockPos origin, LookupTarget target,
+                                int maxRadius, Set<BlockPos> excludedPositions) {
         if (target.type() != LookupType.BLOCK) {
             return LookupResult.failure(
                     target,
@@ -54,14 +66,14 @@ public class BlockLookupStrategy implements LookupStrategy {
                     LookupResult.FailureReason.INVALID_TARGET
             );
         }
-        
+
         long startTime = System.currentTimeMillis();
-        
+
         try {
             // Resolve the block from registry
             ResourceLocation blockId = target.resourceId();
             Block targetBlock = BuiltInRegistries.BLOCK.getOptional(blockId).orElse(null);
-            
+
             if (targetBlock == null) {
                 return LookupResult.failure(
                         target,
@@ -71,14 +83,14 @@ public class BlockLookupStrategy implements LookupStrategy {
                         LookupResult.FailureReason.INVALID_TARGET
                 );
             }
-            
+
             int clampedRadius = Math.min(maxRadius, MAX_RADIUS);
-            
+
             // Use spiral search pattern for chunk scanning
-            BlockPos foundPos = spiralChunkSearch(level, origin, targetBlock, clampedRadius);
-            
+            BlockPos foundPos = spiralChunkSearch(level, origin, targetBlock, clampedRadius, excludedPositions);
+
             long searchTime = System.currentTimeMillis() - startTime;
-            
+
             if (foundPos != null) {
                 return LookupResult.success(
                         target,
@@ -112,7 +124,8 @@ public class BlockLookupStrategy implements LookupStrategy {
      * Performs a spiral outward search through chunks to find the target block.
      * This ensures we find the nearest occurrence first.
      */
-    private BlockPos spiralChunkSearch(ServerLevel level, BlockPos origin, Block targetBlock, int radius) {
+    private BlockPos spiralChunkSearch(ServerLevel level, BlockPos origin, Block targetBlock,
+                                        int radius, Set<BlockPos> excludedPositions) {
         int originChunkX = origin.getX() >> 4;
         int originChunkZ = origin.getZ() >> 4;
         int radiusInChunks = (radius >> 4) + 1;
@@ -141,7 +154,7 @@ public class BlockLookupStrategy implements LookupStrategy {
                     }
                     
                     // Scan this chunk for the target block
-                    BlockPos found = scanChunkForBlock(level, chunk, origin, targetBlock);
+                    BlockPos found = scanChunkForBlock(level, chunk, origin, targetBlock, excludedPositions);
                     if (found != null) {
                         double distSq = origin.distSqr(found);
                         if (distSq < closestDistanceSq) {
@@ -173,7 +186,8 @@ public class BlockLookupStrategy implements LookupStrategy {
             ServerLevel level,
             ChunkAccess chunk,
             BlockPos origin,
-            Block targetBlock
+            Block targetBlock,
+            Set<BlockPos> excludedPositions
     ) {
         int minY = Math.max(level.getMinY(), origin.getY() - Y_SCAN_RANGE);
         int maxY = Math.min(level.getMaxY(), origin.getY() + Y_SCAN_RANGE);
@@ -192,7 +206,8 @@ public class BlockLookupStrategy implements LookupStrategy {
                     mutablePos.set(chunkMinX + x, y, chunkMinZ + z);
                     
                     BlockState state = chunk.getBlockState(mutablePos);
-                    if (state.is(targetBlock)) {
+                    if (state.is(targetBlock)
+                            && (excludedPositions.isEmpty() || !excludedPositions.contains(mutablePos))) {
                         double distSq = origin.distSqr(mutablePos);
                         if (distSq < closestDistSq) {
                             closestDistSq = distSq;
