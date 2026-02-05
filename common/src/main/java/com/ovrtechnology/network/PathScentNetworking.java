@@ -1,17 +1,25 @@
 package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.history.BlacklistEntry;
+import com.ovrtechnology.history.HistoryEntry;
+import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.ScentTriggerSource;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handles server-to-client networking for path tracking scent triggers.
@@ -35,6 +43,9 @@ public final class PathScentNetworking {
 
     private static final ResourceLocation PATH_STATUS_ARRIVED_PACKET_ID =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_status_arrived");
+
+    private static final ResourceLocation PATH_BLACKLIST_SYNC_PACKET_ID =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_blacklist_sync");
 
     /**
      * Default duration for path tracking scent triggers (in ticks).
@@ -96,8 +107,21 @@ public final class PathScentNetworking {
             BlockPos destination = buf.readBlockPos();
 
             context.queue(() -> {
-                ActiveTrackingState.setTracking(distance, destination);
                 AromaAffect.LOGGER.debug("Path status: found (distance: {}, destination: {})", distance, destination);
+
+                ActiveTrackingState.setTracking(distance, destination);
+
+                // Capture to tracking history
+                if (ActiveTrackingState.getTargetId() != null && ActiveTrackingState.getCategory() != null) {
+                    TrackingHistoryData.getInstance().addHistoryEntry(new HistoryEntry(
+                            ActiveTrackingState.getTargetId().toString(),
+                            ActiveTrackingState.getDisplayName() != null
+                                    ? ActiveTrackingState.getDisplayName().getString() : "",
+                            ActiveTrackingState.getCategory().getId(),
+                            destination.getX(), destination.getY(), destination.getZ(),
+                            System.currentTimeMillis()
+                    ));
+                }
             });
         });
 
@@ -116,6 +140,27 @@ public final class PathScentNetworking {
             context.queue(() -> {
                 ActiveTrackingState.setArrived();
                 AromaAffect.LOGGER.debug("Path status: arrived");
+            });
+        });
+
+        // Register server-side receiver for blacklist sync (C2S)
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, PATH_BLACKLIST_SYNC_PACKET_ID, (buf, context) -> {
+            int count = buf.readVarInt();
+            List<BlacklistSyncManager.ExcludedPosition> positions = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                String targetId = buf.readUtf();
+                int x = buf.readInt();
+                int y = buf.readInt();
+                int z = buf.readInt();
+                positions.add(new BlacklistSyncManager.ExcludedPosition(targetId, x, y, z));
+            }
+
+            context.queue(() -> {
+                if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+                    BlacklistSyncManager.getInstance().setExclusions(serverPlayer.getUUID(), positions);
+                    AromaAffect.LOGGER.debug("Received blacklist sync from {}: {} entries",
+                            serverPlayer.getName().getString(), positions.size());
+                }
             });
         });
 
@@ -211,5 +256,28 @@ public final class PathScentNetworking {
         );
 
         NetworkManager.sendToPlayer(player, PATH_STATUS_ARRIVED_PACKET_ID, buf);
+    }
+
+    /**
+     * Sends the client's blacklist to the server before a path command.
+     * Call this from the client before sending any path tracking command.
+     *
+     * @param registryAccess the client's registry access
+     */
+    public static void sendBlacklistSync(RegistryAccess registryAccess) {
+        List<BlacklistEntry> blacklist = TrackingHistoryData.getInstance().getBlacklist();
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
+                Unpooled.buffer(), registryAccess);
+
+        buf.writeVarInt(blacklist.size());
+        for (BlacklistEntry entry : blacklist) {
+            buf.writeUtf(entry.targetId);
+            buf.writeInt(entry.x);
+            buf.writeInt(entry.y);
+            buf.writeInt(entry.z);
+        }
+
+        NetworkManager.sendToServer(PATH_BLACKLIST_SYNC_PACKET_ID, buf);
+        AromaAffect.LOGGER.debug("Sent blacklist sync to server: {} entries", blacklist.size());
     }
 }

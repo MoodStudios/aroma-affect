@@ -1,0 +1,439 @@
+{
+  "id": "endgame",
+  "title": { "translate": "guide.aromaaffect.endgame.category_title" },
+  "icon": { "type": "item", "item": "aromaaffect:scent_container" },
+  "accent_color": "#FFD4AF37",
+  "pages": [
+    {
+      "id": "scent_container",
+      "title": { "translate": "guide.aromaaffect.endgame.container.title" },
+      "icon": { "type": "item", "item": "aromaaffect:scent_container" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.container.header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:scent_container", "translate": "guide.aromaaffect.endgame.container.showcase_desc" },
+        { "type": "spacer", "height": 6 },
+        { "type": "text", "translate": "guide.aromaaffect.endgame.container.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "", "minecraft:iron_nugget", "",
+            "minecraft:iron_nugget", "minecraft:glass_bottle", "minecraft:iron_nugget",
+            "minecraft:iron_nugget", "minecraft:iron_nugget", "minecraft:iron_nugget"
+          ],
+          "result": "aromaaffect:scent_container",
+          "translate": "guide.aromaaffect.endgame.container.recipe_label"
+        },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.container.ingredients_header" },
+        { "type": "item_showcase", "item": "aromaaffect:scent_base", "translate": "guide.aromaaffect.endgame.container.scent_base_desc" },
+        { "type": "spacer", "height": 2 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.container.link_scent_base", "target_page": "enhanced_sniffer_nose" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.container.all_scents_header" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.winter.title", "target_page": "scent_winter" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.barnyard.title", "target_page": "scent_barnyard" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.sweet.title", "target_page": "scent_sweet" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.floral.title", "target_page": "scent_floral" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.beach.title", "target_page": "scent_beach" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.kindred.title", "target_page": "scent_kindred" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.petrichor.title", "target_page": "scent_petrichor" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.marine.title", "target_page": "scent_marine" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.evergreen.title", "target_page": "scent_evergreen" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.terra_silva.title", "target_page": "scent_terra_silva" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.citrus.title", "target_page": "scent_citrus" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.desert.title", "target_page": "scent_desert" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.savory_spice.title", "target_page": "scent_savory_spice" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.timber.title", "target_page": "scent_timber" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.smoky.title", "target_page": "scent_smoky" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.machina.title", "target_page": "scent_machina" }
+      ]
+    },
+    {
+      "id": "scent_winter",
+      "title": { "translate": "guide.aromaaffect.endgame.winter.title" },
+      "icon": { "type": "item", "item": "aromaaffect:winter_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.winter.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:winter_scent", "translate": "guide.aromaaffect.endgame.winter.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:light_blue_dye", "aromaaffect:scent_base", "minecraft:light_blue_dye",
+            "minecraft:blue_ice", "aromaaffect:scent_container", "minecraft:blue_ice",
+            "minecraft:light_blue_dye", "minecraft:white_dye", "minecraft:light_blue_dye"
+          ],
+          "result": "aromaaffect:winter_scent",
+          "translate": "guide.aromaaffect.endgame.winter.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_barnyard",
+      "title": { "translate": "guide.aromaaffect.endgame.barnyard.title" },
+      "icon": { "type": "item", "item": "aromaaffect:barnyard_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.barnyard.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:barnyard_scent", "translate": "guide.aromaaffect.endgame.barnyard.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:yellow_dye", "aromaaffect:scent_base", "minecraft:yellow_dye",
+            "minecraft:hay_block", "aromaaffect:scent_container", "minecraft:hay_block",
+            "minecraft:yellow_dye", "minecraft:brown_dye", "minecraft:yellow_dye"
+          ],
+          "result": "aromaaffect:barnyard_scent",
+          "translate": "guide.aromaaffect.endgame.barnyard.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_sweet",
+      "title": { "translate": "guide.aromaaffect.endgame.sweet.title" },
+      "icon": { "type": "item", "item": "aromaaffect:sweet_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.sweet.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:sweet_scent", "translate": "guide.aromaaffect.endgame.sweet.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:yellow_dye", "aromaaffect:scent_base", "minecraft:yellow_dye",
+            "minecraft:honey_block", "aromaaffect:scent_container", "minecraft:honey_block",
+            "minecraft:pink_dye", "minecraft:orange_dye", "minecraft:pink_dye"
+          ],
+          "result": "aromaaffect:sweet_scent",
+          "translate": "guide.aromaaffect.endgame.sweet.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_floral",
+      "title": { "translate": "guide.aromaaffect.endgame.floral.title" },
+      "icon": { "type": "item", "item": "aromaaffect:floral_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.floral.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:floral_scent", "translate": "guide.aromaaffect.endgame.floral.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:pink_dye", "aromaaffect:scent_base", "minecraft:pink_dye",
+            "minecraft:rose_bush", "aromaaffect:scent_container", "minecraft:rose_bush",
+            "minecraft:magenta_dye", "minecraft:red_dye", "minecraft:magenta_dye"
+          ],
+          "result": "aromaaffect:floral_scent",
+          "translate": "guide.aromaaffect.endgame.floral.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_beach",
+      "title": { "translate": "guide.aromaaffect.endgame.beach.title" },
+      "icon": { "type": "item", "item": "aromaaffect:beach_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.beach.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:beach_scent", "translate": "guide.aromaaffect.endgame.beach.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:cyan_dye", "aromaaffect:scent_base", "minecraft:cyan_dye",
+            "minecraft:nautilus_shell", "aromaaffect:scent_container", "minecraft:nautilus_shell",
+            "minecraft:yellow_dye", "minecraft:light_blue_dye", "minecraft:yellow_dye"
+          ],
+          "result": "aromaaffect:beach_scent",
+          "translate": "guide.aromaaffect.endgame.beach.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_kindred",
+      "title": { "translate": "guide.aromaaffect.endgame.kindred.title" },
+      "icon": { "type": "item", "item": "aromaaffect:kindred_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.kindred.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:kindred_scent", "translate": "guide.aromaaffect.endgame.kindred.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:brown_dye", "aromaaffect:scent_base", "minecraft:brown_dye",
+            "minecraft:leather", "aromaaffect:scent_container", "minecraft:leather",
+            "minecraft:orange_dye", "minecraft:red_dye", "minecraft:orange_dye"
+          ],
+          "result": "aromaaffect:kindred_scent",
+          "translate": "guide.aromaaffect.endgame.kindred.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_petrichor",
+      "title": { "translate": "guide.aromaaffect.endgame.petrichor.title" },
+      "icon": { "type": "item", "item": "aromaaffect:petrichor_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.petrichor.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:petrichor_scent", "translate": "guide.aromaaffect.endgame.petrichor.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:gray_dye", "aromaaffect:scent_base", "minecraft:gray_dye",
+            "minecraft:clay", "aromaaffect:scent_container", "minecraft:clay",
+            "minecraft:blue_dye", "minecraft:brown_dye", "minecraft:blue_dye"
+          ],
+          "result": "aromaaffect:petrichor_scent",
+          "translate": "guide.aromaaffect.endgame.petrichor.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_marine",
+      "title": { "translate": "guide.aromaaffect.endgame.marine.title" },
+      "icon": { "type": "item", "item": "aromaaffect:marine_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.marine.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:marine_scent", "translate": "guide.aromaaffect.endgame.marine.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:cyan_dye", "aromaaffect:scent_base", "minecraft:cyan_dye",
+            "minecraft:kelp", "aromaaffect:scent_container", "minecraft:kelp",
+            "minecraft:cyan_dye", "minecraft:blue_dye", "minecraft:cyan_dye"
+          ],
+          "result": "aromaaffect:marine_scent",
+          "translate": "guide.aromaaffect.endgame.marine.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_evergreen",
+      "title": { "translate": "guide.aromaaffect.endgame.evergreen.title" },
+      "icon": { "type": "item", "item": "aromaaffect:evergreen_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.evergreen.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:evergreen_scent", "translate": "guide.aromaaffect.endgame.evergreen.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:green_dye", "aromaaffect:scent_base", "minecraft:green_dye",
+            "minecraft:spruce_leaves", "aromaaffect:scent_container", "minecraft:spruce_leaves",
+            "minecraft:cyan_dye", "minecraft:lime_dye", "minecraft:cyan_dye"
+          ],
+          "result": "aromaaffect:evergreen_scent",
+          "translate": "guide.aromaaffect.endgame.evergreen.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_terra_silva",
+      "title": { "translate": "guide.aromaaffect.endgame.terra_silva.title" },
+      "icon": { "type": "item", "item": "aromaaffect:terra_silva_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.terra_silva.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:terra_silva_scent", "translate": "guide.aromaaffect.endgame.terra_silva.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:green_dye", "aromaaffect:scent_base", "minecraft:green_dye",
+            "minecraft:moss_block", "aromaaffect:scent_container", "minecraft:moss_block",
+            "minecraft:lime_dye", "minecraft:brown_dye", "minecraft:lime_dye"
+          ],
+          "result": "aromaaffect:terra_silva_scent",
+          "translate": "guide.aromaaffect.endgame.terra_silva.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_citrus",
+      "title": { "translate": "guide.aromaaffect.endgame.citrus.title" },
+      "icon": { "type": "item", "item": "aromaaffect:citrus_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.citrus.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:citrus_scent", "translate": "guide.aromaaffect.endgame.citrus.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:orange_dye", "aromaaffect:scent_base", "minecraft:orange_dye",
+            "minecraft:melon_slice", "aromaaffect:scent_container", "minecraft:melon_slice",
+            "minecraft:lime_dye", "minecraft:yellow_dye", "minecraft:lime_dye"
+          ],
+          "result": "aromaaffect:citrus_scent",
+          "translate": "guide.aromaaffect.endgame.citrus.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_desert",
+      "title": { "translate": "guide.aromaaffect.endgame.desert.title" },
+      "icon": { "type": "item", "item": "aromaaffect:desert_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.desert.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:desert_scent", "translate": "guide.aromaaffect.endgame.desert.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:yellow_dye", "aromaaffect:scent_base", "minecraft:yellow_dye",
+            "minecraft:sand", "aromaaffect:scent_container", "minecraft:sand",
+            "minecraft:yellow_dye", "minecraft:orange_dye", "minecraft:yellow_dye"
+          ],
+          "result": "aromaaffect:desert_scent",
+          "translate": "guide.aromaaffect.endgame.desert.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_savory_spice",
+      "title": { "translate": "guide.aromaaffect.endgame.savory_spice.title" },
+      "icon": { "type": "item", "item": "aromaaffect:savory_spice_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.savory_spice.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:savory_spice_scent", "translate": "guide.aromaaffect.endgame.savory_spice.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:brown_dye", "aromaaffect:scent_base", "minecraft:brown_dye",
+            "minecraft:dried_kelp", "aromaaffect:scent_container", "minecraft:dried_kelp",
+            "minecraft:brown_dye", "minecraft:orange_dye", "minecraft:brown_dye"
+          ],
+          "result": "aromaaffect:savory_spice_scent",
+          "translate": "guide.aromaaffect.endgame.savory_spice.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_timber",
+      "title": { "translate": "guide.aromaaffect.endgame.timber.title" },
+      "icon": { "type": "item", "item": "aromaaffect:timber_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.timber.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:timber_scent", "translate": "guide.aromaaffect.endgame.timber.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:brown_dye", "aromaaffect:scent_base", "minecraft:brown_dye",
+            "minecraft:oak_log", "aromaaffect:scent_container", "minecraft:oak_log",
+            "minecraft:brown_dye", "minecraft:green_dye", "minecraft:brown_dye"
+          ],
+          "result": "aromaaffect:timber_scent",
+          "translate": "guide.aromaaffect.endgame.timber.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_smoky",
+      "title": { "translate": "guide.aromaaffect.endgame.smoky.title" },
+      "icon": { "type": "item", "item": "aromaaffect:smoky_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.smoky.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:smoky_scent", "translate": "guide.aromaaffect.endgame.smoky.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:gray_dye", "aromaaffect:scent_base", "minecraft:gray_dye",
+            "minecraft:campfire", "aromaaffect:scent_container", "minecraft:campfire",
+            "minecraft:gray_dye", "minecraft:black_dye", "minecraft:gray_dye"
+          ],
+          "result": "aromaaffect:smoky_scent",
+          "translate": "guide.aromaaffect.endgame.smoky.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    },
+    {
+      "id": "scent_machina",
+      "title": { "translate": "guide.aromaaffect.endgame.machina.title" },
+      "icon": { "type": "item", "item": "aromaaffect:machina_scent" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.endgame.machina.title" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:machina_scent", "translate": "guide.aromaaffect.endgame.machina.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.endgame.shared.recipe_header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "crafting_grid",
+          "grid": [
+            "minecraft:gray_dye", "aromaaffect:scent_base", "minecraft:gray_dye",
+            "minecraft:iron_ingot", "aromaaffect:scent_container", "minecraft:iron_ingot",
+            "minecraft:gray_dye", "minecraft:black_dye", "minecraft:gray_dye"
+          ],
+          "result": "aromaaffect:machina_scent",
+          "translate": "guide.aromaaffect.endgame.machina.title"
+        },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.endgame.shared.link_back", "target_page": "scent_container" }
+      ]
+    }
+  ]
+}

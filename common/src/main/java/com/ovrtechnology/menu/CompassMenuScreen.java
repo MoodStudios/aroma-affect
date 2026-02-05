@@ -48,14 +48,14 @@ public class CompassMenuScreen extends BaseMenuScreen {
         float alpha = animationProgress;
         
         // Render panel background
-        int bgColor = withAlpha(COLOR_PANEL_BG, alpha);
-        int borderColor = withAlpha(COLOR_PANEL_BORDER, alpha);
+        int bgColor = MenuRenderUtils.withAlpha(COLOR_PANEL_BG, alpha);
+        int borderColor = MenuRenderUtils.withAlpha(COLOR_PANEL_BORDER, alpha);
         
         graphics.fill(panelX, panelY, panelX + PANEL_WIDTH, panelY + PANEL_HEIGHT, bgColor);
-        renderOutline(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT, borderColor);
+        MenuRenderUtils.renderOutline(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT, borderColor);
         
         // Render title
-        int titleColor = withAlpha(COLOR_TEXT_TITLE, alpha);
+        int titleColor = MenuRenderUtils.withAlpha(COLOR_TEXT_TITLE, alpha);
         Component title = Component.translatable("menu.aromaaffect.compass.title");
         graphics.drawCenteredString(font, title, width / 2, panelY + 12, titleColor);
         
@@ -63,8 +63,8 @@ public class CompassMenuScreen extends BaseMenuScreen {
         graphics.fill(panelX + 10, panelY + 28, panelX + PANEL_WIDTH - 10, panelY + 29, borderColor);
         
         // Render tracking status
-        int infoColor = withAlpha(COLOR_TEXT_INFO, alpha);
-        int inactiveColor = withAlpha(COLOR_TEXT_INACTIVE, alpha);
+        int infoColor = MenuRenderUtils.withAlpha(COLOR_TEXT_INFO, alpha);
+        int inactiveColor = MenuRenderUtils.withAlpha(COLOR_TEXT_INACTIVE, alpha);
         
         // Current target (placeholder)
         Component targetLabel = Component.translatable("menu.aromaaffect.compass.target");
@@ -114,28 +114,7 @@ public class CompassMenuScreen extends BaseMenuScreen {
                          Math.max(x1, x2) + 1, Math.max(y1, y2) + 1, color);
         }
     }
-    
-    private static int withAlpha(int argb, float alphaMul) {
-        int a = (argb >>> 24) & 0xFF;
-        int rgb = argb & 0x00FFFFFF;
-        int na = Mth.clamp((int) (a * alphaMul), 0, 255);
-        return (na << 24) | rgb;
-    }
 
-    /**
-     * Renders a rectangular outline using fill commands.
-     */
-    private static void renderOutline(GuiGraphics graphics, int x, int y, int width, int height, int color) {
-        // Top edge
-        graphics.fill(x, y, x + width, y + 1, color);
-        // Bottom edge
-        graphics.fill(x, y + height - 1, x + width, y + height, color);
-        // Left edge
-        graphics.fill(x, y, x + 1, y + height, color);
-        // Right edge
-        graphics.fill(x + width - 1, y, x + width, y + height, color);
-    }
-    
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
         // Close on any click for now (placeholder behavior)

@@ -96,19 +96,19 @@ public class ShopScreen extends BaseMenuScreen {
         graphics.pose().scale(scaleA, scaleA);
         graphics.pose().translate(-centerX, -centerY);
 
-        graphics.fill(panelLeft, panelTop, panelRight, panelBottom, withAlpha(COL_BG_PANEL, a));
-        renderOutline(graphics, panelLeft, panelTop, panelW, panelH, withAlpha(0x66FFFFFF, a));
+        graphics.fill(panelLeft, panelTop, panelRight, panelBottom, MenuRenderUtils.withAlpha(COL_BG_PANEL, a));
+        MenuRenderUtils.renderOutline(graphics, panelLeft, panelTop, panelW, panelH, MenuRenderUtils.withAlpha(0x66FFFFFF, a));
 
         // Accent top bar
-        graphics.fill(panelLeft, panelTop, panelRight, panelTop + 3, withAlpha(COL_ACCENT, a));
+        graphics.fill(panelLeft, panelTop, panelRight, panelTop + 3, MenuRenderUtils.withAlpha(COL_ACCENT, a));
 
         // Title
         Component title = Component.translatable("shop.aromaaffect.title");
-        graphics.drawCenteredString(font, title, centerX, panelTop + 10, withAlpha(COL_TEXT, a));
+        graphics.drawCenteredString(font, title, centerX, panelTop + 10, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         // Subtitle
         Component subtitle = Component.translatable("shop.aromaaffect.subtitle");
-        graphics.drawCenteredString(font, subtitle, centerX, panelTop + 24, withAlpha(COL_TEXT_DIM, a));
+        graphics.drawCenteredString(font, subtitle, centerX, panelTop + 24, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
 
         // Content area
         int contentTop = panelTop + 40;
@@ -169,25 +169,25 @@ public class ShopScreen extends BaseMenuScreen {
             // View Info button
             isHoveringInfo = mouseX >= btn1X && mouseX < btn1X + btnW
                     && mouseY >= btnY && mouseY < btnY + btnH && t < 0.5f;
-            int infoBg = isHoveringInfo ? withAlpha(0xDD9A7CFF, btnAlpha) : withAlpha(0x889A7CFF, btnAlpha);
+            int infoBg = isHoveringInfo ? MenuRenderUtils.withAlpha(0xDD9A7CFF, btnAlpha) : MenuRenderUtils.withAlpha(0x889A7CFF, btnAlpha);
             graphics.fill(btn1X, btnY, btn1X + btnW, btnY + btnH, infoBg);
-            renderOutline(graphics, btn1X, btnY, btnW, btnH, withAlpha(0x66FFFFFF, btnAlpha));
+            MenuRenderUtils.renderOutline(graphics, btn1X, btnY, btnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, btnAlpha));
             Component infoLabel = Component.translatable("shop.aromaaffect.view_info");
             graphics.drawCenteredString(font, infoLabel, btn1X + btnW / 2, btnY + 7,
-                    withAlpha(COL_TEXT, btnAlpha));
+                    MenuRenderUtils.withAlpha(COL_TEXT, btnAlpha));
 
             // Buy Now button with pulsing glow
             isHoveringBuy = mouseX >= btn2X && mouseX < btn2X + btnW
                     && mouseY >= btnY && mouseY < btnY + btnH && t < 0.5f;
             float pulse = (float) (0.7f + 0.3f * Math.sin((tickCount + partialTick) * 0.15));
-            int buyGlow = withAlpha(0x4444DD44, btnAlpha * pulse);
+            int buyGlow = MenuRenderUtils.withAlpha(0x4444DD44, btnAlpha * pulse);
             graphics.fill(btn2X - 2, btnY - 2, btn2X + btnW + 2, btnY + btnH + 2, buyGlow);
-            int buyBg = isHoveringBuy ? withAlpha(0xDD44DD44, btnAlpha) : withAlpha(0x9944BB44, btnAlpha);
+            int buyBg = isHoveringBuy ? MenuRenderUtils.withAlpha(0xDD44DD44, btnAlpha) : MenuRenderUtils.withAlpha(0x9944BB44, btnAlpha);
             graphics.fill(btn2X, btnY, btn2X + btnW, btnY + btnH, buyBg);
-            renderOutline(graphics, btn2X, btnY, btnW, btnH, withAlpha(0x66FFFFFF, btnAlpha));
+            MenuRenderUtils.renderOutline(graphics, btn2X, btnY, btnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, btnAlpha));
             Component buyLabel = Component.translatable("shop.aromaaffect.buy_now");
             graphics.drawCenteredString(font, buyLabel, btn2X + btnW / 2, btnY + 7,
-                    withAlpha(COL_TEXT, btnAlpha));
+                    MenuRenderUtils.withAlpha(COL_TEXT, btnAlpha));
         }
 
         // Info view: back arrow button (top-left of info area)
@@ -201,7 +201,7 @@ public class ShopScreen extends BaseMenuScreen {
                     && mouseY >= backY && mouseY < backY + backSize + 4 && t > 0.5f;
 
             if (isHoveringInfoBack) {
-                int hoverBg = withAlpha(COL_HOVER, backAlpha);
+                int hoverBg = MenuRenderUtils.withAlpha(COL_HOVER, backAlpha);
                 graphics.fill(backX - 2, backY - 2, backX + backSize + 6, backY + backSize + 6, hoverBg);
             }
 
@@ -223,14 +223,14 @@ public class ShopScreen extends BaseMenuScreen {
                     && mouseY >= buyBtnY && mouseY < buyBtnY + btnH;
 
             float pulse = (float) (0.7f + 0.3f * Math.sin((tickCount + partialTick) * 0.15));
-            int buyGlow = withAlpha(0x4444DD44, backAlpha * pulse);
+            int buyGlow = MenuRenderUtils.withAlpha(0x4444DD44, backAlpha * pulse);
             graphics.fill(buyBtnX - 2, buyBtnY - 2, buyBtnX + buyBtnW + 2, buyBtnY + btnH + 2, buyGlow);
-            int buyBg = isHoveringBuy ? withAlpha(0xDD44DD44, backAlpha) : withAlpha(0x9944BB44, backAlpha);
+            int buyBg = isHoveringBuy ? MenuRenderUtils.withAlpha(0xDD44DD44, backAlpha) : MenuRenderUtils.withAlpha(0x9944BB44, backAlpha);
             graphics.fill(buyBtnX, buyBtnY, buyBtnX + buyBtnW, buyBtnY + btnH, buyBg);
-            renderOutline(graphics, buyBtnX, buyBtnY, buyBtnW, btnH, withAlpha(0x66FFFFFF, backAlpha));
+            MenuRenderUtils.renderOutline(graphics, buyBtnX, buyBtnY, buyBtnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, backAlpha));
             Component buyLabel = Component.translatable("shop.aromaaffect.buy_now");
             graphics.drawCenteredString(font, buyLabel, buyBtnX + buyBtnW / 2, buyBtnY + 7,
-                    withAlpha(COL_TEXT, backAlpha));
+                    MenuRenderUtils.withAlpha(COL_TEXT, backAlpha));
         }
 
         graphics.pose().popMatrix();
@@ -241,9 +241,9 @@ public class ShopScreen extends BaseMenuScreen {
 
     private void renderInfoPanel(GuiGraphics graphics, int x, int y, int w, int h, float t, float a) {
         float alpha = t * a;
-        int textColor = withAlpha(COL_TEXT, alpha);
-        int dimColor = withAlpha(COL_TEXT_DIM, alpha);
-        int accentColor = withAlpha(COL_ACCENT, alpha);
+        int textColor = MenuRenderUtils.withAlpha(COL_TEXT, alpha);
+        int dimColor = MenuRenderUtils.withAlpha(COL_TEXT_DIM, alpha);
+        int accentColor = MenuRenderUtils.withAlpha(COL_ACCENT, alpha);
 
         int textX = x + 24; // offset for back button space
         int textY = y + 4;
@@ -280,7 +280,7 @@ public class ShopScreen extends BaseMenuScreen {
 
         // Compatible badge
         Component compatible = Component.translatable("shop.aromaaffect.compatible");
-        graphics.drawString(font, compatible, textX, textY, withAlpha(COL_GREEN, alpha));
+        graphics.drawString(font, compatible, textX, textY, MenuRenderUtils.withAlpha(COL_GREEN, alpha));
     }
 
     private void renderBackButton(GuiGraphics graphics, int mouseX, int mouseY, float a) {
@@ -295,10 +295,10 @@ public class ShopScreen extends BaseMenuScreen {
                 && mouseY >= by && mouseY < by + bSize;
 
         if (isHoveringBack) {
-            int bgColor = withAlpha(0x809A7CFF, appear);
+            int bgColor = MenuRenderUtils.withAlpha(0x809A7CFF, appear);
             graphics.fill(bx, by, bx + bSize, by + bSize, bgColor);
-            int borderColor = withAlpha(0x88FFFFFF, appear);
-            renderOutline(graphics, bx, by, bSize, bSize, borderColor);
+            int borderColor = MenuRenderUtils.withAlpha(0x88FFFFFF, appear);
+            MenuRenderUtils.renderOutline(graphics, bx, by, bSize, bSize, borderColor);
         }
 
         float scale = isHoveringBack ? 1.1f : 1.0f;
@@ -357,19 +357,4 @@ public class ShopScreen extends BaseMenuScreen {
         return false;
     }
 
-    // --- Utility ---
-
-    private static void renderOutline(GuiGraphics graphics, int x, int y, int w, int h, int color) {
-        graphics.fill(x, y, x + w, y + 1, color);
-        graphics.fill(x, y + h - 1, x + w, y + h, color);
-        graphics.fill(x, y, x + 1, y + h, color);
-        graphics.fill(x + w - 1, y, x + w, y + h, color);
-    }
-
-    private static int withAlpha(int argb, float alphaMul) {
-        int a = (argb >>> 24) & 0xFF;
-        int rgb = argb & 0x00FFFFFF;
-        int na = Mth.clamp((int) (a * alphaMul), 0, 255);
-        return (na << 24) | rgb;
-    }
 }

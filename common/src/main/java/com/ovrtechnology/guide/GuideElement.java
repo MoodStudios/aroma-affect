@@ -108,6 +108,10 @@ public final class GuideElement {
         return new GuideElement(Type.TEXT, Component.literal(text), null, null, 0, 0, 0, color);
     }
 
+    public static GuideElement coloredText(Component text, int color) {
+        return new GuideElement(Type.TEXT, text, null, null, 0, 0, 0, color);
+    }
+
     public static GuideElement itemShowcase(ItemStack stack, Component description) {
         return new GuideElement(Type.ITEM_SHOWCASE, description, stack, null, 0, 0, 0, 0xFFD0D0D0);
     }
@@ -155,11 +159,27 @@ public final class GuideElement {
     }
 
     /**
+     * Creates an ability link element using a translatable component.
+     */
+    public static GuideElement abilityLink(Component abilityName, String targetPageId) {
+        return new GuideElement(Type.ABILITY_LINK, abilityName, null, null,
+                0, 0, 0, 0xFFD0D0D0, null, null, targetPageId);
+    }
+
+    /**
      * Creates a bold label for detection sub-categories (e.g. "Blocks", "Structures").
      * Renders with an accent-colored dash prefix to visually separate from items below.
      */
     public static GuideElement detectionLabel(String text) {
         return new GuideElement(Type.TEXT, Component.literal("\u25B8 " + text).withStyle(ChatFormatting.BOLD),
+                null, null, 0, 0, 0, 0xFFAAAACC);
+    }
+
+    /**
+     * Creates a detection label using a translatable component with the accent-colored prefix.
+     */
+    public static GuideElement detectionLabel(Component text) {
+        return new GuideElement(Type.TEXT, Component.literal("\u25B8 ").withStyle(ChatFormatting.BOLD).append(text),
                 null, null, 0, 0, 0, 0xFFAAAACC);
     }
 
@@ -173,6 +193,14 @@ public final class GuideElement {
     }
 
     /**
+     * Creates a compact element with a small item icon followed by a translatable text.
+     */
+    public static GuideElement iconText(ItemStack icon, Component text) {
+        return new GuideElement(Type.ICON_TEXT, text, icon.copy(), null,
+                0, 0, 0, 0xFFD0D0D0);
+    }
+
+    /**
      * Creates a compact element with cycling item icons followed by text.
      * The icon animates through the provided items in sequence.
      */
@@ -180,6 +208,16 @@ public final class GuideElement {
         ItemStack[] copies = new ItemStack[icons.length];
         for (int i = 0; i < icons.length; i++) copies[i] = icons[i].copy();
         return new GuideElement(Type.ICON_TEXT, Component.literal(text), copies[0], null,
+                0, 0, 0, 0xFFD0D0D0, copies, null, null);
+    }
+
+    /**
+     * Creates a compact element with cycling item icons followed by translatable text.
+     */
+    public static GuideElement iconText(Component text, ItemStack... icons) {
+        ItemStack[] copies = new ItemStack[icons.length];
+        for (int i = 0; i < icons.length; i++) copies[i] = icons[i].copy();
+        return new GuideElement(Type.ICON_TEXT, text, copies[0], null,
                 0, 0, 0, 0xFFD0D0D0, copies, null, null);
     }
 
@@ -196,11 +234,36 @@ public final class GuideElement {
     }
 
     /**
+     * Creates a clickable URL link element using a translatable label.
+     */
+    public static GuideElement urlLink(Component label, String url) {
+        return new GuideElement(Type.URL_LINK, label, null, null,
+                0, 0, 0, 0xFF6D9EF8, null, null, url);
+    }
+
+    /**
      * Creates a non-linked ability element that shows as "• AbilityName — description".
      */
     public static GuideElement ability(String text) {
         return new GuideElement(Type.TEXT, Component.literal("\u2022 " + text), null, null,
                 0, 0, 0, 0xFFD0D0D0);
+    }
+
+    /**
+     * Creates a non-linked ability element using a translatable component.
+     */
+    public static GuideElement ability(Component text) {
+        return new GuideElement(Type.TEXT, Component.literal("\u2022 ").append(text), null, null,
+                0, 0, 0, 0xFFD0D0D0);
+    }
+
+    /**
+     * Creates a crafting grid element using a translatable label component.
+     */
+    public static GuideElement craftingGrid(ItemStack[] grid, ItemStack result, Component label) {
+        if (grid.length != 9) throw new IllegalArgumentException("Crafting grid must have exactly 9 slots");
+        return new GuideElement(Type.CRAFTING_GRID, label, null, null,
+                0, 0, 0, 0xFFFFFFFF, grid.clone(), result.copy(), null);
     }
 
     public Type getType() {

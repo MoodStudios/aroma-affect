@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.SubCommand;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.lookup.LookupManager;
@@ -13,6 +14,7 @@ import com.ovrtechnology.lookup.LookupResult;
 import com.ovrtechnology.lookup.LookupTarget;
 import com.ovrtechnology.lookup.LookupType;
 import com.ovrtechnology.lookup.StructurePositionRefiner;
+import com.ovrtechnology.network.BlacklistSyncManager;
 import com.ovrtechnology.network.PathScentNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -25,6 +27,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.Set;
 
 /**
  * Subcommand to create a particle path towards biomes, structures, or blocks.
@@ -225,15 +229,33 @@ public class PathSubCommand implements SubCommand {
             ), false);
         }
 
-        // Execute asynchronous search
-        LookupManager.getInstance().lookupAsync(level, origin, target, radius, result -> {
-            createPath(source, result, origin, level, player);
-        });
+        // Collect excluded positions from blacklist sync
+        Set<BlockPos> excludedPositions = player != null
+                ? BlacklistSyncManager.getInstance().getExcludedPositionsForTarget(
+                    player.getUUID(), resourceId.toString())
+                : Set.of();
+
+        // Execute asynchronous search (with exclusions for block/flower types)
+        if ((type == LookupType.BLOCK || type == LookupType.FLOWER) && !excludedPositions.isEmpty()) {
+            LookupManager.getInstance().lookupAsyncWithExclusions(
+                    level, origin, target, radius, excludedPositions, result -> {
+                        createPath(source, result, origin, level, player, 0);
+                    });
+        } else {
+            LookupManager.getInstance().lookupAsync(level, origin, target, radius, result -> {
+                createPath(source, result, origin, level, player, 0);
+            });
+        }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private void createPath(CommandSourceStack source, LookupResult result, BlockPos origin, ServerLevel level, ServerPlayer player) {
+    private static final int MAX_BLACKLIST_RETRIES = 3;
+    private static final int STRUCTURE_EXCLUSION_THRESHOLD = 128;
+    private static final int BIOME_EXCLUSION_THRESHOLD = 256;
+
+    private void createPath(CommandSourceStack source, LookupResult result, BlockPos origin,
+                             ServerLevel level, ServerPlayer player, int retryCount) {
         if (result.isSuccess()) {
             BlockPos destination = result.getPosition();
 
@@ -249,6 +271,35 @@ public class PathSubCommand implements SubCommand {
             } else {
                 int yLevel = LookupManager.getInstance().findYLevel(level, destination.getX(), destination.getZ(), lookupType);
                 finalDestination = new BlockPos(destination.getX(), yLevel, destination.getZ());
+            }
+
+            // Check if this destination is blacklisted (for structures/biomes only;
+            // blocks are already filtered by BlockLookupStrategy exclusions)
+            if (player != null && (lookupType == LookupType.STRUCTURE || lookupType == LookupType.BIOME)) {
+                String targetId = result.target().resourceId().toString();
+                int threshold = lookupType == LookupType.STRUCTURE
+                        ? STRUCTURE_EXCLUSION_THRESHOLD : BIOME_EXCLUSION_THRESHOLD;
+
+                if (BlacklistSyncManager.getInstance().isExcludedNearby(
+                        player.getUUID(), targetId, finalDestination, threshold)) {
+                    if (retryCount < MAX_BLACKLIST_RETRIES) {
+                        // Retry with shifted origin — search past the blacklisted position
+                        BlockPos shiftedOrigin = computeShiftedOrigin(origin, finalDestination);
+                        AromaAffect.LOGGER.debug("Blacklisted position found at {}, retrying with shifted origin {} (attempt {})",
+                                finalDestination, shiftedOrigin, retryCount + 1);
+                        LookupManager.getInstance().lookupAsync(level, shiftedOrigin, result.target(), -1, retryResult -> {
+                            createPath(source, retryResult, origin, level, player, retryCount + 1);
+                        });
+                        return;
+                    }
+                    // Max retries — all nearby locations are blacklisted
+                    if (verbose) {
+                        source.sendFailure(Component.literal(
+                                "§6[Aroma Affect] §cAll nearby locations are blacklisted"));
+                    }
+                    PathScentNetworking.sendPathNotFound(player, "All nearby locations are blacklisted");
+                    return;
+                }
             }
 
             if (verbose) {
@@ -273,7 +324,7 @@ public class PathSubCommand implements SubCommand {
 
                 ActivePathManager.getInstance().createPath(player, level, finalDestination, targetType, targetId);
 
-                // Notify client that path was found
+                // Notify client that path was found (use original player origin for distance)
                 int dist = (int) Math.sqrt(
                         Math.pow(origin.getX() - finalDestination.getX(), 2) +
                         Math.pow(origin.getZ() - finalDestination.getZ(), 2)
@@ -306,6 +357,28 @@ public class PathSubCommand implements SubCommand {
                 PathScentNetworking.sendPathNotFound(failedPlayer, reason);
             }
         }
+    }
+
+    /**
+     * Computes a search origin that's past the blacklisted position,
+     * so the next search finds a different target.
+     */
+    private BlockPos computeShiftedOrigin(BlockPos playerOrigin, BlockPos blacklistedPos) {
+        double dx = blacklistedPos.getX() - playerOrigin.getX();
+        double dz = blacklistedPos.getZ() - playerOrigin.getZ();
+        double dist = Math.sqrt(dx * dx + dz * dz);
+
+        if (dist < 1.0) {
+            // Player is at the blacklisted position, shift in arbitrary direction
+            return new BlockPos(blacklistedPos.getX() + 500, playerOrigin.getY(), blacklistedPos.getZ());
+        }
+
+        // Shift 500 blocks past the blacklisted position in the same direction
+        double nx = dx / dist;
+        double nz = dz / dist;
+        int shiftX = blacklistedPos.getX() + (int) (nx * 500);
+        int shiftZ = blacklistedPos.getZ() + (int) (nz * 500);
+        return new BlockPos(shiftX, playerOrigin.getY(), shiftZ);
     }
 
     /**

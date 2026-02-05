@@ -25,7 +25,7 @@ public final class GuideManager {
 
         AromaAffect.LOGGER.debug("Opening AromaCraft guide");
         minecraft.execute(() -> {
-            GuideBook book = AromaCraftGuideContent.getBook();
+            GuideBook book = AromaAffectGuideContent.getBook();
             minecraft.setScreen(new GuideScreen(book));
         });
     }

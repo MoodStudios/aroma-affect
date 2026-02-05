@@ -14,9 +14,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.Heightmap;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -361,6 +363,63 @@ public final class LookupManager {
                 });
     }
     
+    /**
+     * Performs an async block lookup with excluded positions.
+     * The excluded positions are only applied for BLOCK/FLOWER lookups.
+     * For other types, this delegates to the regular lookupAsync.
+     */
+    public void lookupAsyncWithExclusions(
+            ServerLevel level,
+            BlockPos origin,
+            LookupTarget target,
+            int radius,
+            Set<BlockPos> excludedPositions,
+            Consumer<LookupResult> callback
+    ) {
+        if ((target.type() != LookupType.BLOCK && target.type() != LookupType.FLOWER)
+                || excludedPositions.isEmpty()) {
+            lookupAsync(level, origin, target, radius, callback);
+            return;
+        }
+
+        LookupStrategy strategy = strategies.get(target.type());
+        if (strategy == null) {
+            callback.accept(LookupResult.failure(
+                    target, level.dimension(), origin, 0,
+                    LookupResult.FailureReason.INVALID_TARGET));
+            return;
+        }
+
+        int searchRadius = radius > 0 ? radius : strategy.getDefaultRadius();
+        BlockLookupStrategy blockStrategy = (BlockLookupStrategy) strategy;
+
+        final MinecraftServer capturedServer = this.server;
+
+        CompletableFuture.supplyAsync(() -> {
+            if (capturedServer != null) {
+                try {
+                    return capturedServer.submit(() ->
+                            blockStrategy.lookup(level, origin, target, searchRadius, excludedPositions)
+                    ).get(DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    return LookupResult.failure(target, level.dimension(), origin,
+                            DEFAULT_TIMEOUT_MS, LookupResult.FailureReason.TIMEOUT);
+                } catch (Exception e) {
+                    return LookupResult.failure(target, level.dimension(), origin,
+                            0, LookupResult.FailureReason.ERROR);
+                }
+            }
+            return LookupResult.failure(target, level.dimension(), origin,
+                    0, LookupResult.FailureReason.ERROR);
+        }, executor).thenAccept(result -> {
+            if (capturedServer != null) {
+                capturedServer.execute(() -> callback.accept(result));
+            } else {
+                callback.accept(result);
+            }
+        });
+    }
+
     /**
      * Convenience method for looking up from a player's position.
      */
