@@ -244,9 +244,10 @@ public final class ActivePathManager {
             BlockPos playerPos = player.blockPosition();
             BlockPos destination = path.destination();
 
-            // Check if player has arrived
+            // Check if player has arrived (3D distance — prevents false arrival above underground targets)
             double distanceToDestination = Math.sqrt(
                     Math.pow(playerPos.getX() - destination.getX(), 2) +
+                    Math.pow(playerPos.getY() - destination.getY(), 2) +
                     Math.pow(playerPos.getZ() - destination.getZ(), 2)
             );
 

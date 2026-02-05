@@ -800,10 +800,12 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             MenuRenderUtils.renderOutline(g, bx - pad, by - pad,
                     badgeSize + pad * 2, badgeSize + pad * 2, borderColor);
 
-            // Render the specific item small
+            // Render the specific item small, centered within the badge
             g.pose().pushMatrix();
-            g.pose().translate(bx, by);
-            float scale = (badgeSize - 2) / 16.0f;
+            float itemSize = badgeSize - 2;
+            float offset = (badgeSize - itemSize) / 2.0f;
+            g.pose().translate(bx + offset, by + offset);
+            float scale = itemSize / 16.0f;
             g.pose().scale(scale, scale);
             g.renderItem(specificIcon, 0, 0);
             g.pose().popMatrix();

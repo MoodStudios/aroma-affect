@@ -1,6 +1,7 @@
 package com.ovrtechnology.neoforge.client;
 
 import com.ovrtechnology.render.BlockOutlineRenderer;
+import com.ovrtechnology.render.PathTrailRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
@@ -17,6 +18,12 @@ public final class BlockOutlineRendererNeoForge {
 
     private static void onAfterTranslucent(RenderLevelStageEvent.AfterTranslucentBlocks event) {
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+
+        PathTrailRenderer.renderTrail(
+                event.getPoseStack(),
+                event.getLevelRenderState().cameraRenderState.pos,
+                bufferSource
+        );
 
         BlockOutlineRenderer.renderOutline(
                 event.getPoseStack(),
