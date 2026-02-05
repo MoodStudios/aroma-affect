@@ -19,6 +19,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -32,9 +34,11 @@ import java.util.OptionalDouble;
  * Client-side X-ray trail renderer that draws a glowing path from the player
  * to the tracked destination, visible through walls.
  * <p>
- * Uses a custom NO_DEPTH_TEST pipeline so the trail is always visible,
- * with a traveling pulse animation, color gradient, and glow effect.
- * Trail points are cached and anchored to world positions for stability.
+ * The trail uses a pulse-reveal system: a bright wave periodically fires from
+ * the player toward the destination. As the wave sweeps forward, it BUILDS
+ * the path behind it. The trail is ONLY visible through the pulse — each
+ * section fades to invisible ~2.5s after the pulse passes, then reappears
+ * when the next pulse sweeps through.
  */
 public final class PathTrailRenderer {
 
@@ -52,24 +56,40 @@ public final class PathTrailRenderer {
     private static final double WAVE2_FREQUENCY = 0.324;
     private static final double WAVE2_PHASE_OFFSET = 1.3;
 
-    // ── Animation parameters ────────────────────────────────────────────
+    // ── Pulse timing ────────────────────────────────────────────────────
 
-    private static final double PULSE_LENGTH = 30.0;
-    private static final long PULSE_PERIOD_MS = 4000;
+    /** Time for the pulse wave to sweep from player to destination. */
+    private static final long PULSE_DURATION_MS = 2500;
+    /** Total cycle time between pulse fires. */
+    private static final long PULSE_CYCLE_MS = 4000;
+    /** Breathing animation period. */
     private static final long BREATHE_PERIOD_MS = 3000;
 
-    // ── Cache parameters ────────────────────────────────────────────────
+    // ── Pulse visibility ────────────────────────────────────────────────
 
-    private static final double CACHE_RECOMPUTE_MOVE_THRESHOLD = 5.0;
-    private static final long CACHE_MIN_INTERVAL_MS = 500;
-    private static final long CACHE_FORCE_INTERVAL_MS = 3000;
+    /** How long each trail section stays visible after the pulse passes. */
+    private static final long WAKE_VISIBLE_MS = 2500;
+    /** How long the fade-out takes after the visible period ends. */
+    private static final long WAKE_FADE_MS = 1000;
 
-    // ── Cache state ─────────────────────────────────────────────────────
+    // ── Pulse visual parameters ─────────────────────────────────────────
 
-    private static List<Vec3> cachedPoints = List.of();
+    /** Width (in blocks) of the bright leading-edge flash. */
+    private static final double LEADING_EDGE_WIDTH = 6.0;
+    /** Width (in blocks) of elevated brightness behind the leading edge. */
+    private static final double WAKE_GLOW_WIDTH = 20.0;
+    // ── Two-path state (stable + incoming revealed by pulse) ────────────
+
+    private static List<Vec3> stablePath = new ArrayList<>();
+    private static List<Vec3> incomingPath = null;
+    private static List<Vec3> prevStablePath = null;
     private static BlockPos cachedDest = null;
-    private static Vec3 cachedComputeOrigin = null;
-    private static long lastComputeTime = 0;
+    private static long lastPulseStart = 0;
+    private static long prevPulseStart = 0;
+
+    // ── Client-side particle spawning ───────────────────────────────────
+    private static final long PARTICLE_SPAWN_INTERVAL_MS = 250;
+    private static long lastParticleSpawnTime = 0;
 
     // ── Pipeline (shared by both glow and core render types) ────────────
 
@@ -96,10 +116,6 @@ public final class PathTrailRenderer {
 
     // ── Public entry point ──────────────────────────────────────────────
 
-    /**
-     * Renders the X-ray trail from the player toward the tracked destination.
-     * Called each frame from the platform-specific world render hook.
-     */
     public static void renderTrail(PoseStack poseStack, Vec3 cameraPos, MultiBufferSource consumers) {
         if (!ActiveTrackingState.isActivelyTracking()) return;
 
@@ -110,100 +126,99 @@ public final class PathTrailRenderer {
         if (mc.player == null || mc.level == null) return;
 
         Vec3 playerPos = mc.player.position();
+        long now = System.currentTimeMillis();
 
-        // Update cached trail if needed
-        updateCache(playerPos, dest, mc.level);
+        // ── Destination changed → reset everything ──
+        if (!dest.equals(cachedDest)) {
+            stablePath = computeTrailPoints(playerPos, dest, mc.level);
+            cachedDest = dest;
+            incomingPath = new ArrayList<>(stablePath);
+            prevStablePath = null;
+            prevPulseStart = 0;
+            lastPulseStart = now;
+        }
 
-        // Prepare render points: trim behind player, prepend connector
-        List<Vec3> points = prepareRenderPoints(playerPos);
-        if (points.size() < 2) return;
+        // ── Manage pulse lifecycle ──
+        long elapsed = now - lastPulseStart;
+        boolean pulseActive = incomingPath != null && elapsed < PULSE_DURATION_MS;
 
-        // Resolve trail color from scent/block definitions
+        // Pulse just completed → adopt incoming as stable
+        if (!pulseActive && incomingPath != null) {
+            stablePath = incomingPath;
+            incomingPath = null;
+        }
+
+        // Time for a new pulse → recompute path from current player position
+        if (incomingPath == null && elapsed >= PULSE_CYCLE_MS) {
+            prevStablePath = stablePath;
+            incomingPath = computeTrailPoints(playerPos, dest, mc.level);
+            prevPulseStart = lastPulseStart;
+            lastPulseStart = now;
+            elapsed = 0;
+            pulseActive = true;
+        }
+
+        // ── Use whichever path is current (static in world, no per-frame adjustment) ──
+        List<Vec3> renderPoints = (pulseActive && incomingPath != null && !incomingPath.isEmpty())
+                ? incomingPath : stablePath;
+        if (renderPoints.size() < 2) return;
+
+        // ── Color & animation ──
         float[] color = resolveColor();
         float r = color[0], g = color[1], b = color[2];
 
-        // Animation timing
-        long now = System.currentTimeMillis();
-        double totalLen = totalLength(points);
-        double pulsePos = ((now % PULSE_PERIOD_MS) / (double) PULSE_PERIOD_MS) * (totalLen + PULSE_LENGTH);
-        float breathe = 0.85f + 0.15f * (float) Math.sin((now % BREATHE_PERIOD_MS) / (double) BREATHE_PERIOD_MS * Math.PI * 2.0);
+        double totalLen = totalLength(renderPoints);
+        float breathe = 0.85f + 0.15f * (float) Math.sin(
+                (now % BREATHE_PERIOD_MS) / (double) BREATHE_PERIOD_MS * Math.PI * 2.0);
 
         PoseStack.Pose pose = poseStack.last();
 
-        // Glow layer (thick, faint) — drawn first for correct blend order
+        // ── Render previous path fading on its own geometry ──
+        if (prevStablePath != null && prevStablePath.size() >= 2 && prevPulseStart > 0) {
+            double prevTotalLen = totalLength(prevStablePath);
+            long lastPointReach = prevPulseStart + PULSE_DURATION_MS;
+            if (now - lastPointReach < WAKE_VISIBLE_MS + WAKE_FADE_MS) {
+                renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_GLOW),
+                        prevStablePath, r, g, b, 0.12f * breathe,
+                        now, prevPulseStart, 0, prevTotalLen, true);
+                renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_CORE),
+                        prevStablePath, r, g, b, 0.55f * breathe,
+                        now, prevPulseStart, 0, prevTotalLen, false);
+            } else {
+                prevStablePath = null;
+            }
+        }
+
+        // ── Render current path (current pulse only) ──
         renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_GLOW),
-                points, r, g, b, 0.12f * breathe, pulsePos, totalLen, true);
-
-        // Core layer (thin, bright)
+                renderPoints, r, g, b, 0.12f * breathe,
+                now, lastPulseStart, 0, totalLen, true);
         renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_CORE),
-                points, r, g, b, 0.55f * breathe, pulsePos, totalLen, false);
-    }
+                renderPoints, r, g, b, 0.55f * breathe,
+                now, lastPulseStart, 0, totalLen, false);
 
-    // ── Cache management ────────────────────────────────────────────────
-
-    private static void updateCache(Vec3 playerPos, BlockPos dest, ClientLevel level) {
-        long now = System.currentTimeMillis();
-
-        boolean destChanged = !dest.equals(cachedDest);
-        boolean playerMoved = cachedComputeOrigin == null
-                || playerPos.distanceTo(cachedComputeOrigin) > CACHE_RECOMPUTE_MOVE_THRESHOLD;
-        boolean minIntervalPassed = (now - lastComputeTime) >= CACHE_MIN_INTERVAL_MS;
-        boolean forceRefresh = (now - lastComputeTime) >= CACHE_FORCE_INTERVAL_MS;
-
-        if (destChanged || (playerMoved && minIntervalPassed) || forceRefresh) {
-            cachedPoints = computeTrailPoints(playerPos, dest, level);
-            cachedDest = dest;
-            cachedComputeOrigin = playerPos;
-            lastComputeTime = now;
+        // ── Client-side particle spawning (synchronized with pulse) ──
+        if (now - lastParticleSpawnTime >= PARTICLE_SPAWN_INTERVAL_MS) {
+            lastParticleSpawnTime = now;
+            spawnPulseParticles(mc.level, renderPoints, totalLen, now, lastPulseStart, color);
+            if (prevStablePath != null && prevStablePath.size() >= 2) {
+                double prevTotalLen = totalLength(prevStablePath);
+                spawnPulseParticles(mc.level, prevStablePath, prevTotalLen, now, prevPulseStart, color);
+            }
         }
     }
 
     /**
-     * Clears the trail cache. Call when tracking stops.
+     * Clears all trail state. Call when tracking stops.
      */
     public static void clearCache() {
-        cachedPoints = List.of();
+        stablePath = new ArrayList<>();
+        incomingPath = null;
+        prevStablePath = null;
         cachedDest = null;
-        cachedComputeOrigin = null;
-        lastComputeTime = 0;
-    }
-
-    // ── Prepare render points (trim + connector) ────────────────────────
-
-    private static List<Vec3> prepareRenderPoints(Vec3 playerPos) {
-        if (cachedPoints.size() < 2) return cachedPoints;
-
-        // Find nearest cached point to the player
-        int nearestIdx = 0;
-        double nearestDistSq = Double.MAX_VALUE;
-        for (int i = 0; i < cachedPoints.size(); i++) {
-            double dSq = cachedPoints.get(i).distanceToSqr(playerPos);
-            if (dSq < nearestDistSq) {
-                nearestDistSq = dSq;
-                nearestIdx = i;
-            }
-        }
-
-        // Trim all points behind the nearest (player already passed them)
-        // Keep at least from nearestIdx onward
-        int startIdx = Math.max(0, nearestIdx - 1);
-
-        // Build result: prepend player position as smooth connector, then cached points ahead
-        List<Vec3> result = new ArrayList<>(cachedPoints.size() - startIdx + 1);
-
-        // Skip cached points too close to player (avoid z-fighting / visual clutter)
-        Vec3 firstCached = cachedPoints.get(startIdx);
-        double distToFirst = playerPos.distanceTo(firstCached);
-        if (distToFirst > 1.0) {
-            // Add player position as connector point
-            result.add(new Vec3(playerPos.x, playerPos.y + HEIGHT_OFFSET, playerPos.z));
-        }
-
-        for (int i = startIdx; i < cachedPoints.size(); i++) {
-            result.add(cachedPoints.get(i));
-        }
-
-        return result;
+        lastPulseStart = 0;
+        prevPulseStart = 0;
+        lastParticleSpawnTime = 0;
     }
 
     // ── Trail point computation ─────────────────────────────────────────
@@ -255,7 +270,6 @@ public final class PathTrailRenderer {
             // Smart Y interpolation: lerp between player and dest
             double interpY = playerPos.y + (destY - playerPos.y) * (dist / horizDist);
             double surfaceY = getGroundHeight(level, (int) x, (int) z) + HEIGHT_OFFSET;
-            // Follow terrain when above ground, dive underground when dest is below
             double targetY = Math.min(interpY, surfaceY);
 
             // Y-smoothing: clamp vertical change per step
@@ -270,10 +284,6 @@ public final class PathTrailRenderer {
         return points;
     }
 
-    /**
-     * Gets walkable ground height at (x, z) using client-side world data.
-     * Scans downward from the heightmap to skip trees, fences, etc.
-     */
     private static int getGroundHeight(ClientLevel level, int x, int z) {
         try {
             if (!level.getChunkSource().hasChunk(x >> 4, z >> 4)) {
@@ -317,8 +327,8 @@ public final class PathTrailRenderer {
 
     private static void renderLayer(PoseStack.Pose pose, Vec3 cam, VertexConsumer consumer,
                                      List<Vec3> points, float r, float g, float b,
-                                     float baseAlpha, double pulsePos, double totalLen,
-                                     boolean isGlow) {
+                                     float baseAlpha, long now, long pulseStart,
+                                     long prevPulse, double totalLen, boolean isGlow) {
         double accumulated = 0.0;
 
         for (int i = 0; i < points.size() - 1; i++) {
@@ -326,16 +336,15 @@ public final class PathTrailRenderer {
             Vec3 next = points.get(i + 1);
             double segLen = a.distanceTo(next);
 
-            float alphaA = computeAlpha(accumulated, totalLen, pulsePos, baseAlpha, isGlow);
-            float alphaB = computeAlpha(accumulated + segLen, totalLen, pulsePos, baseAlpha, isGlow);
+            float alphaA = computeAlpha(accumulated, totalLen, now, pulseStart, prevPulse, baseAlpha, isGlow);
+            float alphaB = computeAlpha(accumulated + segLen, totalLen, now, pulseStart, prevPulse, baseAlpha, isGlow);
 
-            // Skip nearly-invisible segments
-            if (alphaA < 0.01f && alphaB < 0.01f) {
+            if (alphaA < 0.005f && alphaB < 0.005f) {
                 accumulated += segLen;
                 continue;
             }
 
-            // Subtle gradient: color shifts slightly toward white near destination
+            // Base gradient: shifts toward white near destination
             float gradA = (float) (accumulated / totalLen);
             float gradB = (float) ((accumulated + segLen) / totalLen);
             float rA = r + (1.0f - r) * gradA * 0.25f;
@@ -345,7 +354,17 @@ public final class PathTrailRenderer {
             float gB = g + (1.0f - g) * gradB * 0.25f;
             float bB = b + (1.0f - b) * gradB * 0.25f;
 
-            // Normal = segment direction (used for line screen-space expansion)
+            // Pulse leading-edge whitening
+            float whitenA = computePulseWhiten(accumulated, now, pulseStart, totalLen);
+            float whitenB = computePulseWhiten(accumulated + segLen, now, pulseStart, totalLen);
+            rA += (1.0f - rA) * whitenA;
+            gA += (1.0f - gA) * whitenA;
+            bA += (1.0f - bA) * whitenA;
+            rB += (1.0f - rB) * whitenB;
+            gB += (1.0f - gB) * whitenB;
+            bB += (1.0f - bB) * whitenB;
+
+            // Normal = segment direction
             float nx = (float) (next.x - a.x);
             float ny = (float) (next.y - a.y);
             float nz = (float) (next.z - a.z);
@@ -371,26 +390,97 @@ public final class PathTrailRenderer {
         }
     }
 
+    // ── Time-based pulse alpha ──────────────────────────────────────────
+
     /**
-     * Computes per-vertex alpha with fade-at-ends and traveling pulse modulation.
+     * Computes alpha for a single pulse given its start time.
+     * Returns 0 if the pulse hasn't reached this point yet,
+     * or if the point has fully faded since the pulse passed.
      */
-    private static float computeAlpha(double dist, double totalLen, double pulsePos,
+    private static float computeAlphaForPulse(double dist, double totalLen,
+                                               long now, long pulseStart,
+                                               float baseAlpha, boolean isGlow) {
+        if (pulseStart <= 0) return 0;
+
+        // When did the pulse reach this point?
+        double reachTime = pulseStart + (dist / totalLen) * PULSE_DURATION_MS;
+        double timeSincePassed = now - reachTime;
+
+        if (timeSincePassed < 0) {
+            // Pulse hasn't reached this point yet → invisible
+            return 0;
+        }
+
+        // Visibility decay: visible for WAKE_VISIBLE_MS, then fades over WAKE_FADE_MS
+        float visibility = 1.0f;
+        if (timeSincePassed > WAKE_VISIBLE_MS) {
+            double fadeTime = timeSincePassed - WAKE_VISIBLE_MS;
+            if (fadeTime >= WAKE_FADE_MS) {
+                return 0; // Fully faded
+            }
+            visibility = 1.0f - (float) (fadeTime / WAKE_FADE_MS);
+        }
+
+        // Distance-based leading-edge glow (only during active sweep)
+        float pulseMod = 1.0f;
+        long elapsed = now - pulseStart;
+        if (elapsed >= 0 && elapsed < PULSE_DURATION_MS) {
+            double frontierDist = ((double) elapsed / PULSE_DURATION_MS) * totalLen;
+            double distToFrontier = Math.abs(dist - frontierDist);
+
+            if (distToFrontier < LEADING_EDGE_WIDTH) {
+                // Leading edge: intense bright flash centered on the wavefront
+                float intensity = 1.0f - (float) (distToFrontier / LEADING_EDGE_WIDTH);
+                intensity *= intensity; // Quadratic for sharp peak
+                pulseMod = 1.0f + intensity * (isGlow ? 10.0f : 6.0f);
+            } else if (dist < frontierDist) {
+                // Wake glow: behind the pulse, gradually dimming
+                double wakeDist = frontierDist - dist - LEADING_EDGE_WIDTH;
+                if (wakeDist > 0 && wakeDist < WAKE_GLOW_WIDTH) {
+                    float wakeIntensity = 1.0f - (float) (wakeDist / WAKE_GLOW_WIDTH);
+                    pulseMod = 1.0f + wakeIntensity * (isGlow ? 3.0f : 1.5f);
+                }
+            }
+        }
+
+        return Math.min(1.0f, baseAlpha * visibility * pulseMod);
+    }
+
+    /**
+     * Computes the final alpha as the MAX of the current pulse and the
+     * previous pulse. This prevents points from briefly blinking out when
+     * a new pulse fires while the old trail is still fading.
+     */
+    private static float computeAlpha(double dist, double totalLen,
+                                       long now, long pulseStart, long prevPulse,
                                        float baseAlpha, boolean isGlow) {
-        // Fade at both ends of the trail
+        // End-of-trail fade
         float fade = 1.0f;
         if (dist < 4.0) fade = (float) (dist / 4.0);
         if (dist > totalLen - 4.0) fade = (float) ((totalLen - dist) / 4.0);
         fade = Math.max(0.0f, Math.min(1.0f, fade));
 
-        // Traveling pulse: brightens a section moving along the trail
-        double distToPulse = Math.abs(dist - pulsePos);
-        float pulseMod = 1.0f;
-        if (distToPulse < PULSE_LENGTH * 0.5) {
-            float intensity = 1.0f - (float) (distToPulse / (PULSE_LENGTH * 0.5));
-            pulseMod = 1.0f + intensity * (isGlow ? 3.0f : 2.0f);
-        }
+        float alphaCurrent = computeAlphaForPulse(dist, totalLen, now, pulseStart, baseAlpha * fade, isGlow);
+        float alphaPrev = computeAlphaForPulse(dist, totalLen, now, prevPulse, baseAlpha * fade, isGlow);
 
-        return Math.min(1.0f, baseAlpha * fade * pulseMod);
+        return Math.max(alphaCurrent, alphaPrev);
+    }
+
+    /**
+     * Computes color whitening at the pulse leading edge.
+     * Returns 0..0.7 — the fraction to shift color toward white.
+     */
+    private static float computePulseWhiten(double dist, long now, long pulseStart, double totalLen) {
+        long elapsed = now - pulseStart;
+        if (elapsed < 0 || elapsed >= PULSE_DURATION_MS) return 0;
+
+        double frontierDist = ((double) elapsed / PULSE_DURATION_MS) * totalLen;
+        double absDist = Math.abs(dist - frontierDist);
+        if (absDist < LEADING_EDGE_WIDTH) {
+            float intensity = 1.0f - (float) (absDist / LEADING_EDGE_WIDTH);
+            return intensity * intensity * 0.7f;
+        }
+        return 0;
     }
 
     // ── Color resolution ────────────────────────────────────────────────
@@ -401,13 +491,11 @@ public final class PathTrailRenderer {
         MenuCategory cat = ActiveTrackingState.getCategory();
 
         if (targetId != null) {
-            // Block registry color (for blocks with custom definitions)
             var blockDef = BlockRegistry.getBlock(targetId);
             if (blockDef.isPresent()) {
                 return blockDef.get().getColorAsFloats();
             }
 
-            // Scent trigger → scent color (works for flowers, blocks, biomes, structures)
             var blockTrigger = ScentTriggerConfigLoader.getBlockTrigger(targetId);
             if (blockTrigger.isPresent()) {
                 var scent = ScentRegistry.getScentByName(blockTrigger.get().getScentName());
@@ -436,7 +524,6 @@ public final class PathTrailRenderer {
             }
         }
 
-        // Category-based fallback colors
         if (cat == MenuCategory.STRUCTURES) {
             return new float[]{1.0f, 0.8f, 0.2f};
         }
@@ -444,8 +531,56 @@ public final class PathTrailRenderer {
             return new float[]{0.3f, 0.9f, 0.5f};
         }
 
-        // Default: soft white-blue
         return new float[]{0.8f, 0.85f, 1.0f};
+    }
+
+    // ── Client-side particle spawning ──────────────────────────────────
+
+    private static void spawnPulseParticles(ClientLevel level, List<Vec3> points,
+                                             double totalLen, long now, long pulseStart,
+                                             float[] color) {
+        if (pulseStart <= 0 || points.size() < 2 || totalLen < 1.0) return;
+
+        int argb = 0xFF000000
+                | (Math.min(255, (int) (color[0] * 255)) << 16)
+                | (Math.min(255, (int) (color[1] * 255)) << 8)
+                | Math.min(255, (int) (color[2] * 255));
+        var particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, argb);
+
+        double accum = 0.0;
+        for (int i = 0; i < points.size(); i++) {
+            Vec3 pt = points.get(i);
+            if (i > 0) accum += points.get(i - 1).distanceTo(pt);
+
+            int count = getParticleCount(accum, totalLen, now, pulseStart);
+            if (count <= 0) continue;
+            if (count == 1 && i % 2 != 0) continue;
+
+            for (int c = 0; c < count; c++) {
+                level.addParticle(particle, pt.x, pt.y, pt.z, 0, 0, 0);
+            }
+        }
+    }
+
+    private static int getParticleCount(double dist, double totalLen, long now, long pulseStart) {
+        if (pulseStart <= 0) return 0;
+
+        double reachTime = pulseStart + (dist / totalLen) * PULSE_DURATION_MS;
+        double timeSincePassed = now - reachTime;
+
+        if (timeSincePassed < 0) return 0;
+        if (timeSincePassed > WAKE_VISIBLE_MS) return 0;
+
+        long elapsed = now - pulseStart;
+        if (elapsed >= 0 && elapsed < PULSE_DURATION_MS) {
+            double frontierDist = ((double) elapsed / PULSE_DURATION_MS) * totalLen;
+            double distToFrontier = Math.abs(dist - frontierDist);
+
+            if (distToFrontier < LEADING_EDGE_WIDTH) return 3;
+            if (dist < frontierDist && (frontierDist - dist) < WAKE_GLOW_WIDTH) return 2;
+        }
+
+        return 1;
     }
 
     // ── Utility ─────────────────────────────────────────────────────────

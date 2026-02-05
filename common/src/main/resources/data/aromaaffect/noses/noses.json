@@ -209,7 +209,9 @@
         ],
         "biomes": [],
         "structures": [
-          "minecraft:monument"
+          "minecraft:monument",
+          "minecraft:ocean_ruin_cold",
+          "minecraft:ocean_ruin_warm"
         ],
         "flowers": [],
         "abilities": [
@@ -241,8 +243,6 @@
           "minecraft:ruined_portal",
           "minecraft:ruined_portal_nether",
           "minecraft:shipwreck",
-          "minecraft:ocean_ruin_cold",
-          "minecraft:ocean_ruin_warm",
           "minecraft:buried_treasure",
           "minecraft:pillager_outpost",
           "minecraft:igloo",
