@@ -2,7 +2,10 @@ package com.ovrtechnology.nose;
 
 import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
@@ -85,7 +89,17 @@ public class NoseItem extends Item {
                 .build();
         
         properties.component(DataComponents.EQUIPPABLE, equippable);
-        
+
+        // Add Repairable component for anvil repair
+        String repairId = definition.getRepair();
+        if (repairId != null && !repairId.isEmpty()) {
+            ResourceLocation repairLoc = ResourceLocation.parse(repairId);
+            BuiltInRegistries.ITEM.getOptional(repairLoc).ifPresent(repairItem -> {
+                Holder<Item> holder = BuiltInRegistries.ITEM.wrapAsHolder(repairItem);
+                properties.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(holder)));
+            });
+        }
+
         return properties;
     }
     

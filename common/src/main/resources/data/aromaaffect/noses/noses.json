@@ -7,6 +7,7 @@
       "tier": 1,
       "durability": 100,
       "repair": "minecraft:leather",
+      "track_cost": 10,
       "unlock": {
         "blocks": [
           "minecraft:water",
@@ -86,6 +87,7 @@
       "tier": 2,
       "durability": 150,
       "repair": "minecraft:gold_ingot",
+      "track_cost": 10,
       "unlock": {
         "blocks": [
           "minecraft:gold_ore",
@@ -150,6 +152,7 @@
       "tier": 3,
       "durability": 500,
       "repair": "minecraft:diamond",
+      "track_cost": 10,
       "unlock": {
         "blocks": [
           "minecraft:diamond_ore",
@@ -181,6 +184,7 @@
       "tier": 4,
       "durability": 500,
       "repair": "minecraft:blaze_rod",
+      "track_cost": 10,
       "unlock": {
         "blocks": [],
         "biomes": [],
@@ -203,6 +207,7 @@
       "tier": 5,
       "durability": 750,
       "repair": "minecraft:netherite_ingot",
+      "track_cost": 10,
       "unlock": {
         "blocks": [
           "minecraft:ancient_debris"
@@ -229,6 +234,7 @@
       "tier": 6,
       "durability": 1000,
       "repair": "minecraft:nether_star",
+      "track_cost": 10,
       "unlock": {
         "blocks": [
           "minecraft:nether_quartz_ore",

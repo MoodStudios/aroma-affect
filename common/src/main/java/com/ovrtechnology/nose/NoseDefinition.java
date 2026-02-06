@@ -61,6 +61,12 @@ public class NoseDefinition {
      */
     @SerializedName("tier")
     private int tier;
+
+    /**
+     * Durability cost per tracking search (defaults to 10)
+     */
+    @SerializedName("track_cost")
+    private int trackCost;
     
     // Override getters with defaults
     
@@ -70,6 +76,10 @@ public class NoseDefinition {
     
     public int getDurability() {
         return durability > 0 ? durability : 100;
+    }
+
+    public int getTrackCost() {
+        return trackCost > 0 ? trackCost : 10;
     }
     
     public NoseUnlock getUnlock() {
