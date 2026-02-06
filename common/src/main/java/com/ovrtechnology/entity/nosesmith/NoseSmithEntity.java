@@ -487,7 +487,7 @@ public class NoseSmithEntity extends Villager {
                 continue;
             }
 
-            int slotsToFill = 1 + random.nextInt(4);
+            int slotsToFill = 1 + random.nextInt(2); // 1-2 slots (reduced from 1-4)
             int slotsFilled = 0;
             int containerSize = chest.getContainerSize();
 
@@ -498,8 +498,12 @@ public class NoseSmithEntity extends Villager {
                 }
 
                 ScentItem scent = scents.get(random.nextInt(scents.size()));
-                int count = 1 + random.nextInt(2);
-                chest.setItem(slot, new ItemStack(scent, count));
+                ItemStack scentStack = new ItemStack(scent, 1);
+                // Set to 1 durability remaining (single use) for village spawns
+                if (scentStack.isDamageableItem()) {
+                    scentStack.setDamageValue(scentStack.getMaxDamage() - 1);
+                }
+                chest.setItem(slot, scentStack);
                 slotsFilled++;
             }
         }

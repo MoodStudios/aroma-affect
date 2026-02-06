@@ -16,6 +16,7 @@ import com.ovrtechnology.lookup.LookupType;
 import com.ovrtechnology.lookup.StructurePositionRefiner;
 import com.ovrtechnology.network.BlacklistSyncManager;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.nose.NoseItem;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -27,6 +28,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Set;
 
@@ -323,6 +326,12 @@ public class PathSubCommand implements SubCommand {
                 String targetId = result.target().resourceId().toString();
 
                 ActivePathManager.getInstance().createPath(player, level, finalDestination, targetType, targetId);
+
+                // Deduct durability from equipped nose
+                ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+                if (headStack.getItem() instanceof NoseItem noseItem) {
+                    headStack.hurtAndBreak(noseItem.getDefinition().getTrackCost(), player, EquipmentSlot.HEAD);
+                }
 
                 // Notify client that path was found (use original player origin for distance)
                 int dist = (int) Math.sqrt(

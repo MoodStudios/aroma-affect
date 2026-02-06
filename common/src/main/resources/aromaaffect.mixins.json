@@ -9,7 +9,8 @@
   ],
   "mixins": [
     "SnifferTamingMixin",
-    "JigsawPriorityMixin"
+    "JigsawPriorityMixin",
+    "AnvilRepairMixin"
   ],
   "injectors": {
     "defaultRequire": 1

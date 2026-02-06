@@ -35,10 +35,8 @@ import java.util.OptionalDouble;
  * to the tracked destination, visible through walls.
  * <p>
  * The trail uses a pulse-reveal system: a bright wave periodically fires from
- * the player toward the destination. As the wave sweeps forward, it BUILDS
- * the path behind it. The trail is ONLY visible through the pulse — each
- * section fades to invisible ~2.5s after the pulse passes, then reappears
- * when the next pulse sweeps through.
+ * the DESTINATION toward the player. As the wave sweeps back, it BUILDS
+ * the path behind it. Every Nth pulse is a "power pulse" with enhanced visuals.
  */
 public final class PathTrailRenderer {
 
@@ -58,7 +56,7 @@ public final class PathTrailRenderer {
 
     // ── Pulse timing ────────────────────────────────────────────────────
 
-    /** Time for the pulse wave to sweep from player to destination. */
+    /** Time for the pulse wave to sweep from destination to player. */
     private static final long PULSE_DURATION_MS = 2500;
     /** Total cycle time between pulse fires. */
     private static final long PULSE_CYCLE_MS = 4000;
@@ -72,12 +70,21 @@ public final class PathTrailRenderer {
     /** How long the fade-out takes after the visible period ends. */
     private static final long WAKE_FADE_MS = 1000;
 
-    // ── Pulse visual parameters ─────────────────────────────────────────
+    // ── Pulse visual parameters (normal) ────────────────────────────────
 
     /** Width (in blocks) of the bright leading-edge flash. */
     private static final double LEADING_EDGE_WIDTH = 6.0;
     /** Width (in blocks) of elevated brightness behind the leading edge. */
     private static final double WAKE_GLOW_WIDTH = 20.0;
+
+    // ── Power pulse parameters ──────────────────────────────────────────
+
+    /** Every Nth pulse is a power pulse (configurable). */
+    private static final int POWER_PULSE_INTERVAL = 5;
+
+    private static final double POWER_LEADING_EDGE_WIDTH = 10.0;
+    private static final double POWER_WAKE_GLOW_WIDTH = 35.0;
+
     // ── Two-path state (stable + incoming revealed by pulse) ────────────
 
     private static List<Vec3> stablePath = new ArrayList<>();
@@ -86,6 +93,18 @@ public final class PathTrailRenderer {
     private static BlockPos cachedDest = null;
     private static long lastPulseStart = 0;
     private static long prevPulseStart = 0;
+
+    // ── Player-tracking: where the player was when each path was computed ──
+
+    private static Vec3 stablePathOrigin = null;
+    private static Vec3 incomingPathOrigin = null;
+    private static Vec3 prevPathOrigin = null;
+
+    // ── Power pulse tracking ────────────────────────────────────────────
+
+    private static int pulseCount = 0;
+    private static boolean currentPulseIsPower = false;
+    private static boolean prevPulseIsPower = false;
 
     // ── Client-side particle spawning ───────────────────────────────────
     private static final long PARTICLE_SPAWN_INTERVAL_MS = 250;
@@ -112,6 +131,9 @@ public final class PathTrailRenderer {
     private static final RenderType TRAIL_GLOW = TrailRenderType.create("aromaaffect_trail_glow", 5.0);
     private static final RenderType TRAIL_CORE = TrailRenderType.create("aromaaffect_trail_core", 1.5);
 
+    private static final RenderType TRAIL_GLOW_POWER = TrailRenderType.create("aromaaffect_trail_glow_power", 8.0);
+    private static final RenderType TRAIL_CORE_POWER = TrailRenderType.create("aromaaffect_trail_core_power", 2.5);
+
     private PathTrailRenderer() {}
 
     // ── Public entry point ──────────────────────────────────────────────
@@ -131,11 +153,17 @@ public final class PathTrailRenderer {
         // ── Destination changed → reset everything ──
         if (!dest.equals(cachedDest)) {
             stablePath = computeTrailPoints(playerPos, dest, mc.level);
+            stablePathOrigin = playerPos;
             cachedDest = dest;
             incomingPath = new ArrayList<>(stablePath);
+            incomingPathOrigin = playerPos;
             prevStablePath = null;
+            prevPathOrigin = null;
             prevPulseStart = 0;
             lastPulseStart = now;
+            pulseCount = 1;
+            currentPulseIsPower = false;
+            prevPulseIsPower = false;
         }
 
         // ── Manage pulse lifecycle ──
@@ -145,23 +173,32 @@ public final class PathTrailRenderer {
         // Pulse just completed → adopt incoming as stable
         if (!pulseActive && incomingPath != null) {
             stablePath = incomingPath;
+            stablePathOrigin = incomingPathOrigin;
             incomingPath = null;
         }
 
         // Time for a new pulse → recompute path from current player position
         if (incomingPath == null && elapsed >= PULSE_CYCLE_MS) {
             prevStablePath = stablePath;
+            prevPathOrigin = stablePathOrigin;
             incomingPath = computeTrailPoints(playerPos, dest, mc.level);
+            incomingPathOrigin = playerPos;
             prevPulseStart = lastPulseStart;
+            prevPulseIsPower = currentPulseIsPower;
             lastPulseStart = now;
+            pulseCount++;
+            currentPulseIsPower = (pulseCount % POWER_PULSE_INTERVAL == 0);
             elapsed = 0;
             pulseActive = true;
         }
 
-        // ── Use whichever path is current (static in world, no per-frame adjustment) ──
-        List<Vec3> renderPoints = (pulseActive && incomingPath != null && !incomingPath.isEmpty())
-                ? incomingPath : stablePath;
-        if (renderPoints.size() < 2) return;
+        // ── Use whichever path is current, adjusted to follow the player ──
+        boolean useIncoming = pulseActive && incomingPath != null && !incomingPath.isEmpty();
+        List<Vec3> basePath = useIncoming ? incomingPath : stablePath;
+        Vec3 baseOrigin = useIncoming ? incomingPathOrigin : stablePathOrigin;
+        if (basePath.size() < 2) return;
+
+        List<Vec3> renderPoints = adjustedForPlayer(basePath, baseOrigin, playerPos);
 
         // ── Color & animation ──
         float[] color = resolveColor();
@@ -175,35 +212,46 @@ public final class PathTrailRenderer {
 
         // ── Render previous path fading on its own geometry ──
         if (prevStablePath != null && prevStablePath.size() >= 2 && prevPulseStart > 0) {
-            double prevTotalLen = totalLength(prevStablePath);
+            List<Vec3> adjustedPrev = adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos);
+            double prevTotalLen = totalLength(adjustedPrev);
             long lastPointReach = prevPulseStart + PULSE_DURATION_MS;
             if (now - lastPointReach < WAKE_VISIBLE_MS + WAKE_FADE_MS) {
-                renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_GLOW),
-                        prevStablePath, r, g, b, 0.12f * breathe,
-                        now, prevPulseStart, 0, prevTotalLen, true);
-                renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_CORE),
-                        prevStablePath, r, g, b, 0.55f * breathe,
-                        now, prevPulseStart, 0, prevTotalLen, false);
+                RenderType prevGlow = prevPulseIsPower ? TRAIL_GLOW_POWER : TRAIL_GLOW;
+                RenderType prevCore = prevPulseIsPower ? TRAIL_CORE_POWER : TRAIL_CORE;
+                float prevGlowAlpha = prevPulseIsPower ? 0.20f : 0.12f;
+                float prevCoreAlpha = prevPulseIsPower ? 0.75f : 0.55f;
+                renderLayer(pose, cameraPos, consumers.getBuffer(prevGlow),
+                        adjustedPrev, r, g, b, prevGlowAlpha * breathe,
+                        now, prevPulseStart, 0, prevTotalLen, true, prevPulseIsPower);
+                renderLayer(pose, cameraPos, consumers.getBuffer(prevCore),
+                        adjustedPrev, r, g, b, prevCoreAlpha * breathe,
+                        now, prevPulseStart, 0, prevTotalLen, false, prevPulseIsPower);
             } else {
                 prevStablePath = null;
+                prevPathOrigin = null;
             }
         }
 
         // ── Render current path (current pulse only) ──
-        renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_GLOW),
-                renderPoints, r, g, b, 0.12f * breathe,
-                now, lastPulseStart, 0, totalLen, true);
-        renderLayer(pose, cameraPos, consumers.getBuffer(TRAIL_CORE),
-                renderPoints, r, g, b, 0.55f * breathe,
-                now, lastPulseStart, 0, totalLen, false);
+        RenderType curGlow = currentPulseIsPower ? TRAIL_GLOW_POWER : TRAIL_GLOW;
+        RenderType curCore = currentPulseIsPower ? TRAIL_CORE_POWER : TRAIL_CORE;
+        float curGlowAlpha = currentPulseIsPower ? 0.20f : 0.12f;
+        float curCoreAlpha = currentPulseIsPower ? 0.75f : 0.55f;
+        renderLayer(pose, cameraPos, consumers.getBuffer(curGlow),
+                renderPoints, r, g, b, curGlowAlpha * breathe,
+                now, lastPulseStart, 0, totalLen, true, currentPulseIsPower);
+        renderLayer(pose, cameraPos, consumers.getBuffer(curCore),
+                renderPoints, r, g, b, curCoreAlpha * breathe,
+                now, lastPulseStart, 0, totalLen, false, currentPulseIsPower);
 
         // ── Client-side particle spawning (synchronized with pulse) ──
         if (now - lastParticleSpawnTime >= PARTICLE_SPAWN_INTERVAL_MS) {
             lastParticleSpawnTime = now;
-            spawnPulseParticles(mc.level, renderPoints, totalLen, now, lastPulseStart, color);
+            spawnPulseParticles(mc.level, renderPoints, totalLen, now, lastPulseStart, color, currentPulseIsPower);
             if (prevStablePath != null && prevStablePath.size() >= 2) {
-                double prevTotalLen = totalLength(prevStablePath);
-                spawnPulseParticles(mc.level, prevStablePath, prevTotalLen, now, prevPulseStart, color);
+                List<Vec3> adjustedPrevParticles = adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos);
+                double prevTotalLen = totalLength(adjustedPrevParticles);
+                spawnPulseParticles(mc.level, adjustedPrevParticles, prevTotalLen, now, prevPulseStart, color, prevPulseIsPower);
             }
         }
     }
@@ -219,6 +267,12 @@ public final class PathTrailRenderer {
         lastPulseStart = 0;
         prevPulseStart = 0;
         lastParticleSpawnTime = 0;
+        pulseCount = 0;
+        currentPulseIsPower = false;
+        prevPulseIsPower = false;
+        stablePathOrigin = null;
+        incomingPathOrigin = null;
+        prevPathOrigin = null;
     }
 
     // ── Trail point computation ─────────────────────────────────────────
@@ -328,7 +382,8 @@ public final class PathTrailRenderer {
     private static void renderLayer(PoseStack.Pose pose, Vec3 cam, VertexConsumer consumer,
                                      List<Vec3> points, float r, float g, float b,
                                      float baseAlpha, long now, long pulseStart,
-                                     long prevPulse, double totalLen, boolean isGlow) {
+                                     long prevPulse, double totalLen, boolean isGlow,
+                                     boolean isPower) {
         double accumulated = 0.0;
 
         for (int i = 0; i < points.size() - 1; i++) {
@@ -336,8 +391,8 @@ public final class PathTrailRenderer {
             Vec3 next = points.get(i + 1);
             double segLen = a.distanceTo(next);
 
-            float alphaA = computeAlpha(accumulated, totalLen, now, pulseStart, prevPulse, baseAlpha, isGlow);
-            float alphaB = computeAlpha(accumulated + segLen, totalLen, now, pulseStart, prevPulse, baseAlpha, isGlow);
+            float alphaA = computeAlpha(accumulated, totalLen, now, pulseStart, prevPulse, baseAlpha, isGlow, isPower);
+            float alphaB = computeAlpha(accumulated + segLen, totalLen, now, pulseStart, prevPulse, baseAlpha, isGlow, isPower);
 
             if (alphaA < 0.005f && alphaB < 0.005f) {
                 accumulated += segLen;
@@ -355,8 +410,8 @@ public final class PathTrailRenderer {
             float bB = b + (1.0f - b) * gradB * 0.25f;
 
             // Pulse leading-edge whitening
-            float whitenA = computePulseWhiten(accumulated, now, pulseStart, totalLen);
-            float whitenB = computePulseWhiten(accumulated + segLen, now, pulseStart, totalLen);
+            float whitenA = computePulseWhiten(accumulated, now, pulseStart, totalLen, isPower);
+            float whitenB = computePulseWhiten(accumulated + segLen, now, pulseStart, totalLen, isPower);
             rA += (1.0f - rA) * whitenA;
             gA += (1.0f - gA) * whitenA;
             bA += (1.0f - bA) * whitenA;
@@ -394,16 +449,16 @@ public final class PathTrailRenderer {
 
     /**
      * Computes alpha for a single pulse given its start time.
-     * Returns 0 if the pulse hasn't reached this point yet,
-     * or if the point has fully faded since the pulse passed.
+     * The pulse sweeps from destination (dist=totalLen) toward the player (dist=0).
      */
     private static float computeAlphaForPulse(double dist, double totalLen,
                                                long now, long pulseStart,
-                                               float baseAlpha, boolean isGlow) {
+                                               float baseAlpha, boolean isGlow,
+                                               boolean isPower) {
         if (pulseStart <= 0) return 0;
 
-        // When did the pulse reach this point?
-        double reachTime = pulseStart + (dist / totalLen) * PULSE_DURATION_MS;
+        // Reversed: pulse starts at dest (dist=totalLen) and sweeps toward player (dist=0)
+        double reachTime = pulseStart + ((totalLen - dist) / totalLen) * PULSE_DURATION_MS;
         double timeSincePassed = now - reachTime;
 
         if (timeSincePassed < 0) {
@@ -421,24 +476,33 @@ public final class PathTrailRenderer {
             visibility = 1.0f - (float) (fadeTime / WAKE_FADE_MS);
         }
 
+        // Pulse parameters (normal vs power)
+        double leadingEdgeW = isPower ? POWER_LEADING_EDGE_WIDTH : LEADING_EDGE_WIDTH;
+        double wakeGlowW = isPower ? POWER_WAKE_GLOW_WIDTH : WAKE_GLOW_WIDTH;
+
         // Distance-based leading-edge glow (only during active sweep)
         float pulseMod = 1.0f;
         long elapsed = now - pulseStart;
         if (elapsed >= 0 && elapsed < PULSE_DURATION_MS) {
-            double frontierDist = ((double) elapsed / PULSE_DURATION_MS) * totalLen;
+            // Reversed frontier: starts at totalLen, moves toward 0
+            double frontierDist = totalLen * (1.0 - (double) elapsed / PULSE_DURATION_MS);
             double distToFrontier = Math.abs(dist - frontierDist);
 
-            if (distToFrontier < LEADING_EDGE_WIDTH) {
+            if (distToFrontier < leadingEdgeW) {
                 // Leading edge: intense bright flash centered on the wavefront
-                float intensity = 1.0f - (float) (distToFrontier / LEADING_EDGE_WIDTH);
+                float intensity = 1.0f - (float) (distToFrontier / leadingEdgeW);
                 intensity *= intensity; // Quadratic for sharp peak
-                pulseMod = 1.0f + intensity * (isGlow ? 10.0f : 6.0f);
-            } else if (dist < frontierDist) {
-                // Wake glow: behind the pulse, gradually dimming
-                double wakeDist = frontierDist - dist - LEADING_EDGE_WIDTH;
-                if (wakeDist > 0 && wakeDist < WAKE_GLOW_WIDTH) {
-                    float wakeIntensity = 1.0f - (float) (wakeDist / WAKE_GLOW_WIDTH);
-                    pulseMod = 1.0f + wakeIntensity * (isGlow ? 3.0f : 1.5f);
+                float glowMult = isPower ? 16.0f : 10.0f;
+                float coreMult = isPower ? 10.0f : 6.0f;
+                pulseMod = 1.0f + intensity * (isGlow ? glowMult : coreMult);
+            } else if (dist > frontierDist) {
+                // Wake glow: behind the pulse (already passed), gradually dimming
+                double wakeDist = dist - frontierDist - leadingEdgeW;
+                if (wakeDist > 0 && wakeDist < wakeGlowW) {
+                    float wakeIntensity = 1.0f - (float) (wakeDist / wakeGlowW);
+                    float wakeGlowMult = isPower ? 5.0f : 3.0f;
+                    float wakeCoreMult = isPower ? 3.0f : 1.5f;
+                    pulseMod = 1.0f + wakeIntensity * (isGlow ? wakeGlowMult : wakeCoreMult);
                 }
             }
         }
@@ -453,32 +517,38 @@ public final class PathTrailRenderer {
      */
     private static float computeAlpha(double dist, double totalLen,
                                        long now, long pulseStart, long prevPulse,
-                                       float baseAlpha, boolean isGlow) {
+                                       float baseAlpha, boolean isGlow,
+                                       boolean isPower) {
         // End-of-trail fade
         float fade = 1.0f;
         if (dist < 4.0) fade = (float) (dist / 4.0);
         if (dist > totalLen - 4.0) fade = (float) ((totalLen - dist) / 4.0);
         fade = Math.max(0.0f, Math.min(1.0f, fade));
 
-        float alphaCurrent = computeAlphaForPulse(dist, totalLen, now, pulseStart, baseAlpha * fade, isGlow);
-        float alphaPrev = computeAlphaForPulse(dist, totalLen, now, prevPulse, baseAlpha * fade, isGlow);
+        float alphaCurrent = computeAlphaForPulse(dist, totalLen, now, pulseStart, baseAlpha * fade, isGlow, isPower);
+        float alphaPrev = computeAlphaForPulse(dist, totalLen, now, prevPulse, baseAlpha * fade, isGlow, isPower);
 
         return Math.max(alphaCurrent, alphaPrev);
     }
 
     /**
      * Computes color whitening at the pulse leading edge.
-     * Returns 0..0.7 — the fraction to shift color toward white.
+     * Returns 0..0.7 (normal) or 0..0.9 (power) — the fraction to shift color toward white.
      */
-    private static float computePulseWhiten(double dist, long now, long pulseStart, double totalLen) {
+    private static float computePulseWhiten(double dist, long now, long pulseStart,
+                                             double totalLen, boolean isPower) {
         long elapsed = now - pulseStart;
         if (elapsed < 0 || elapsed >= PULSE_DURATION_MS) return 0;
 
-        double frontierDist = ((double) elapsed / PULSE_DURATION_MS) * totalLen;
+        double leadingEdgeW = isPower ? POWER_LEADING_EDGE_WIDTH : LEADING_EDGE_WIDTH;
+
+        // Reversed frontier: starts at totalLen, moves toward 0
+        double frontierDist = totalLen * (1.0 - (double) elapsed / PULSE_DURATION_MS);
         double absDist = Math.abs(dist - frontierDist);
-        if (absDist < LEADING_EDGE_WIDTH) {
-            float intensity = 1.0f - (float) (absDist / LEADING_EDGE_WIDTH);
-            return intensity * intensity * 0.7f;
+        if (absDist < leadingEdgeW) {
+            float intensity = 1.0f - (float) (absDist / leadingEdgeW);
+            float maxWhiten = isPower ? 0.9f : 0.7f;
+            return intensity * intensity * maxWhiten;
         }
         return 0;
     }
@@ -538,7 +608,7 @@ public final class PathTrailRenderer {
 
     private static void spawnPulseParticles(ClientLevel level, List<Vec3> points,
                                              double totalLen, long now, long pulseStart,
-                                             float[] color) {
+                                             float[] color, boolean isPower) {
         if (pulseStart <= 0 || points.size() < 2 || totalLen < 1.0) return;
 
         int argb = 0xFF000000
@@ -552,7 +622,7 @@ public final class PathTrailRenderer {
             Vec3 pt = points.get(i);
             if (i > 0) accum += points.get(i - 1).distanceTo(pt);
 
-            int count = getParticleCount(accum, totalLen, now, pulseStart);
+            int count = getParticleCount(accum, totalLen, now, pulseStart, isPower);
             if (count <= 0) continue;
             if (count == 1 && i % 2 != 0) continue;
 
@@ -562,25 +632,57 @@ public final class PathTrailRenderer {
         }
     }
 
-    private static int getParticleCount(double dist, double totalLen, long now, long pulseStart) {
+    private static int getParticleCount(double dist, double totalLen, long now, long pulseStart,
+                                         boolean isPower) {
         if (pulseStart <= 0) return 0;
 
-        double reachTime = pulseStart + (dist / totalLen) * PULSE_DURATION_MS;
+        // Reversed: pulse starts at dest (dist=totalLen)
+        double reachTime = pulseStart + ((totalLen - dist) / totalLen) * PULSE_DURATION_MS;
         double timeSincePassed = now - reachTime;
 
         if (timeSincePassed < 0) return 0;
         if (timeSincePassed > WAKE_VISIBLE_MS) return 0;
 
+        double leadingEdgeW = isPower ? POWER_LEADING_EDGE_WIDTH : LEADING_EDGE_WIDTH;
+        double wakeGlowW = isPower ? POWER_WAKE_GLOW_WIDTH : WAKE_GLOW_WIDTH;
+
         long elapsed = now - pulseStart;
         if (elapsed >= 0 && elapsed < PULSE_DURATION_MS) {
-            double frontierDist = ((double) elapsed / PULSE_DURATION_MS) * totalLen;
+            // Reversed frontier
+            double frontierDist = totalLen * (1.0 - (double) elapsed / PULSE_DURATION_MS);
             double distToFrontier = Math.abs(dist - frontierDist);
 
-            if (distToFrontier < LEADING_EDGE_WIDTH) return 3;
-            if (dist < frontierDist && (frontierDist - dist) < WAKE_GLOW_WIDTH) return 2;
+            if (distToFrontier < leadingEdgeW) return isPower ? 5 : 3;
+            if (dist > frontierDist && (dist - frontierDist) < wakeGlowW) return isPower ? 3 : 2;
         }
 
         return 1;
+    }
+
+    // ── Player-tracking adjustment ──────────────────────────────────────
+
+    /** Number of points to blend when adjusting the trail start to the player. */
+    private static final int PLAYER_BLEND_POINTS = 10;
+
+    /**
+     * Returns a copy of the path with the first few points shifted so that
+     * point[0] matches the current player position. Uses quadratic falloff
+     * so the adjustment blends smoothly back to the original computed path.
+     * The original list is NEVER mutated.
+     */
+    private static List<Vec3> adjustedForPlayer(List<Vec3> path, Vec3 originalPlayerPos, Vec3 currentPlayerPos) {
+        if (path == null || path.size() < 2 || originalPlayerPos == null) return path;
+        Vec3 delta = currentPlayerPos.subtract(originalPlayerPos);
+        if (delta.lengthSqr() < 0.001) return path; // No significant movement
+
+        List<Vec3> adjusted = new ArrayList<>(path);
+        int blendCount = Math.min(PLAYER_BLEND_POINTS, adjusted.size());
+        for (int i = 0; i < blendCount; i++) {
+            double weight = 1.0 - (double) i / blendCount;
+            weight *= weight; // Quadratic for smooth blend
+            adjusted.set(i, path.get(i).add(delta.scale(weight)));
+        }
+        return adjusted;
     }
 
     // ── Utility ─────────────────────────────────────────────────────────

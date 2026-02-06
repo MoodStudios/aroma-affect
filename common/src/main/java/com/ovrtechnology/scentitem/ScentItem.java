@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -63,19 +64,24 @@ public class ScentItem extends Item {
      */
     private static Properties createProperties(ScentItemDefinition definition, String itemId) {
         Properties properties = new Properties();
-        
+
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
-                Registries.ITEM, 
+                Registries.ITEM,
                 ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
         ));
-        
-        // Scent items stack up to 64
-        properties.stacksTo(64);
-        
+
+        // Capsule items have durability (100 uses); other scent items stack normally
+        if (definition.isCapsule()) {
+            properties.stacksTo(1);
+            properties.durability(100);
+        } else {
+            properties.stacksTo(64);
+        }
+
         // Set rarity based on priority
         properties.rarity(getRarityForPriority(definition.getPriority()));
-        
+
         return properties;
     }
     
@@ -108,79 +114,77 @@ public class ScentItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        
-        // Only process on client side (WebSocket is client-side)
+
+        // Server-side: handle capsule durability deduction
         if (!level.isClientSide()) {
+            if (definition.isCapsule()) {
+                EquipmentSlot slot = hand == InteractionHand.MAIN_HAND
+                        ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+                stack.hurtAndBreak(1, player, slot);
+
+                level.playSound(null, player.blockPosition(), SoundEvents.BOTTLE_EMPTY,
+                        SoundSource.PLAYERS, 1.0f,
+                        1.0f + (level.random.nextFloat() - 0.5f) * 0.2f);
+
+                return InteractionResult.SUCCESS;
+            }
             return InteractionResult.PASS;
         }
-        
-        // Get the full item ID
+
+        // Client-side: OVR hardware scent triggering
         String fullItemId = AromaAffect.MOD_ID + ":" + itemId;
-        
-        // Look up trigger configuration
+
         Optional<ItemTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getItemTrigger(fullItemId);
-        
         if (triggerOpt.isEmpty()) {
-            // No trigger configured for this item
             AromaAffect.LOGGER.debug("No trigger configured for item: {}", fullItemId);
             return InteractionResult.PASS;
         }
-        
+
         ItemTriggerDefinition triggerDef = triggerOpt.get();
-        
-        // Only process USE triggers
         if (!triggerDef.isUseTriggered()) {
             return InteractionResult.PASS;
         }
-        
+
         String scentName = triggerDef.getScentName();
         long cooldownMs = triggerDef.getCooldownMsOrDefault();
-        
-        // Get intensity from trigger definition, falling back to global setting
+
         TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
         double intensity = triggerDef.getIntensityOrDefault(settings.getItemIntensity());
-        
-        // Check cooldown BEFORE consuming the item
+
+        // Check cooldown BEFORE consuming — returns FAIL so server is not called
         if (!ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs)) {
-            // Show cooldown message to player
             long remaining = ScentTriggerManager.getInstance().getRemainingCooldown(scentName);
             player.displayClientMessage(
-                Component.translatable("message.aromaaffect.scent_cooldown", 
+                Component.translatable("message.aromaaffect.scent_cooldown",
                     String.format("%.1f", remaining / 1000.0)),
                 true
             );
-            return InteractionResult.FAIL; // Don't consume item
+            return InteractionResult.FAIL;
         }
-        
-        // Create and execute the trigger with intensity
+
         ScentTrigger trigger = ScentTrigger.fromItemUse(
             scentName,
             triggerDef.getDurationTicks(),
             intensity
         );
-        
+
         boolean triggered = ScentTriggerManager.getInstance().trigger(trigger);
-        
+
         if (triggered) {
-            // Consume the item (if not in creative mode)
-            if (!player.getAbilities().instabuild) {
+            // For non-capsule items, consume via shrink (original behavior)
+            // Capsule durability is handled server-side via hurtAndBreak
+            if (!definition.isCapsule() && !player.getAbilities().instabuild) {
                 stack.shrink(1);
             }
-            
-            // Play a sound effect
-            level.playSound(
-                player, 
-                player.blockPosition(), 
-                SoundEvents.BOTTLE_EMPTY,
-                SoundSource.PLAYERS, 
-                1.0f, 
-                1.0f + (level.random.nextFloat() - 0.5f) * 0.2f
-            );
-            
+
+            level.playSound(player, player.blockPosition(), SoundEvents.BOTTLE_EMPTY,
+                    SoundSource.PLAYERS, 1.0f,
+                    1.0f + (level.random.nextFloat() - 0.5f) * 0.2f);
+
             AromaAffect.LOGGER.debug("Item {} triggered scent '{}'", fullItemId, scentName);
             return InteractionResult.SUCCESS;
         }
-        
+
         return InteractionResult.PASS;
     }
     
