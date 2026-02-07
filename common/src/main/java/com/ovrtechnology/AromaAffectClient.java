@@ -3,15 +3,19 @@ package com.ovrtechnology;
 import com.ovrtechnology.entity.nosesmith.client.NoseSmithClientRegistry;
 import com.ovrtechnology.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.menu.MenuKeyBindings;
-import com.ovrtechnology.nose.client.NoseInventoryUi;
 import com.ovrtechnology.search.SearchKeyBindings;
 import com.ovrtechnology.guide.AromaGuideTracker;
 import com.ovrtechnology.trigger.ScentTriggerHandler;
 import com.ovrtechnology.menu.TrackingHud;
 import com.ovrtechnology.trigger.client.PassiveModeHud;
+import com.ovrtechnology.network.NoseRenderNetworking;
+import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
+import dev.architectury.event.events.client.ClientTickEvent;
 import lombok.experimental.UtilityClass;
+import net.minecraft.client.Minecraft;
 
 /**
  * Client-side initialization for the Aroma Affect mod.
@@ -52,8 +56,13 @@ public final class AromaAffectClient {
         // Initialize search keybindings (for activating search with Nose equipped)
         SearchKeyBindings.init();
 
-        // Inventory UI integration (strap toggle button, etc.)
-        NoseInventoryUi.init();
+        // Sync strap state from persisted config
+        com.ovrtechnology.trigger.config.ClientConfig clientCfg = com.ovrtechnology.trigger.config.ClientConfig.getInstance();
+        com.ovrtechnology.nose.client.NoseRenderToggles.setStrapEnabled(clientCfg.isNoseRenderEnabled() && clientCfg.isStrapEnabled());
+
+        // Send nose render preferences to server when joining a world,
+        // and clean up cache when leaving
+        initNoseRenderSync();
 
         // Initialize Aroma Guide village tracker (action bar distance + compass)
         AromaGuideTracker.init();
@@ -79,6 +88,36 @@ public final class AromaAffectClient {
         AromaAffect.LOGGER.info("Aroma Affect client initialized successfully!");
     }
     
+    /**
+     * Registers a client tick handler that sends nose render preferences
+     * to the server when the local player joins a world, and clears the
+     * client-side preference cache when leaving.
+     */
+    private static boolean sentInitialPrefs = false;
+
+    private static void initNoseRenderSync() {
+        ClientTickEvent.CLIENT_POST.register(minecraft -> {
+            if (minecraft.player != null && !sentInitialPrefs) {
+                sentInitialPrefs = true;
+                ClientConfig cfg = ClientConfig.getInstance();
+                boolean noseEnabled = cfg.isNoseRenderEnabled();
+                boolean strapEnabled = cfg.isNoseRenderEnabled() && cfg.isStrapEnabled();
+
+                // Update local client cache for our own player
+                NoseRenderPreferencesManager.setClientPrefs(
+                        minecraft.player.getUUID(), noseEnabled, strapEnabled);
+
+                // Tell the server so it can broadcast to other players
+                NoseRenderNetworking.sendPrefsToServer(
+                        minecraft.player.registryAccess(), noseEnabled, strapEnabled);
+            }
+            if (minecraft.player == null && sentInitialPrefs) {
+                sentInitialPrefs = false;
+                NoseRenderPreferencesManager.clearClientCache();
+            }
+        });
+    }
+
     /**
      * Initializes the OVR WebSocket client with default configuration.
      * 

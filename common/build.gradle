@@ -1,3 +1,7 @@
+loom {
+    accessWidenerPath = file("src/main/resources/aromaaffect.accesswidener")
+}
+
 architectury {
     common rootProject.enabled_platforms.split(',')
 }

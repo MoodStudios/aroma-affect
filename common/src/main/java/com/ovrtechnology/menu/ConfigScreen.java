@@ -1,6 +1,8 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.network.NoseRenderNetworking;
+import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import com.ovrtechnology.trigger.config.ClientConfig;
@@ -86,7 +88,9 @@ public class ConfigScreen extends BaseMenuScreen {
     protected void init() {
         super.init();
         // Load current config values into NoseRenderToggles on screen open
-        NoseRenderToggles.setNoseEnabled(ClientConfig.getInstance().isNoseRenderEnabled());
+        ClientConfig cfg = ClientConfig.getInstance();
+        NoseRenderToggles.setNoseEnabled(cfg.isNoseRenderEnabled());
+        NoseRenderToggles.setStrapEnabled(cfg.isNoseRenderEnabled() && cfg.isStrapEnabled());
     }
 
     @Override
@@ -243,6 +247,17 @@ public class ConfigScreen extends BaseMenuScreen {
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.drawString(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        rowY += ROW_HEIGHT + 4;
+
+        // Nose Strap toggle (only interactive when 3D Nose Render is enabled)
+        boolean strapActive = config.isNoseRenderEnabled() && config.isStrapEnabled();
+        int strapTextColor = config.isNoseRenderEnabled() ? COL_TEXT : COL_TEXT_DIM;
+        graphics.drawString(font, Component.translatable("config.aromaaffect.nose_strap"), x, rowY + 4, MenuRenderUtils.withAlpha(strapTextColor, a));
+        renderTogglePill(graphics, toggleX, rowY + 1, strapActive, a);
+        Component strapLabel = strapActive
+                ? Component.translatable("config.aromaaffect.on")
+                : Component.translatable("config.aromaaffect.off");
+        graphics.drawString(font, strapLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
     }
 
     private void renderPassiveSection(GuiGraphics graphics, int x, int y, int w, int mx, int my, float a) {
@@ -709,12 +724,41 @@ public class ConfigScreen extends BaseMenuScreen {
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
             config.setNoseRenderEnabled(!config.isNoseRenderEnabled());
             NoseRenderToggles.setNoseEnabled(config.isNoseRenderEnabled());
+            // If nose render is disabled, also disable strap
+            if (!config.isNoseRenderEnabled()) {
+                config.setStrapEnabled(false);
+                NoseRenderToggles.setStrapEnabled(false);
+            }
             MenuRenderUtils.playToggleSound(config.isNoseRenderEnabled());
             config.save();
+            syncNosePrefsToServer(config);
+            return true;
+        }
+        rowY += ROW_HEIGHT + 4;
+
+        // Nose strap toggle (only if nose render is enabled)
+        if (config.isNoseRenderEnabled() && mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
+            config.setStrapEnabled(!config.isStrapEnabled());
+            NoseRenderToggles.setStrapEnabled(config.isStrapEnabled());
+            MenuRenderUtils.playToggleSound(config.isStrapEnabled());
+            config.save();
+            syncNosePrefsToServer(config);
             return true;
         }
 
         return false;
+    }
+
+    private void syncNosePrefsToServer(ClientConfig config) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            boolean noseEnabled = config.isNoseRenderEnabled();
+            boolean strapEnabled = config.isNoseRenderEnabled() && config.isStrapEnabled();
+            NoseRenderPreferencesManager.setClientPrefs(
+                    mc.player.getUUID(), noseEnabled, strapEnabled);
+            NoseRenderNetworking.sendPrefsToServer(
+                    mc.player.registryAccess(), noseEnabled, strapEnabled);
+        }
     }
 
     private boolean handlePassiveClick(int mx, int my, int x, int y, int w) {

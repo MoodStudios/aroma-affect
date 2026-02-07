@@ -2,6 +2,8 @@ package com.ovrtechnology.fabric.client;
 
 import com.ovrtechnology.AromaAffectClient;
 import com.ovrtechnology.nose.client.NoseClient;
+import com.ovrtechnology.omara.OmaraDeviceRegistry;
+import com.ovrtechnology.omara.OmaraDeviceScreen;
 import com.ovrtechnology.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.sniffer.SnifferScreen;
 import net.fabricmc.api.ClientModInitializer;
@@ -18,6 +20,9 @@ public final class ExampleModFabricClient implements ClientModInitializer {
 
         // Register Sniffer menu screen
         MenuScreens.register(SnifferMenuRegistry.SNIFFER_MENU.get(), SnifferScreen::new);
+
+        // Register Omara Device menu screen
+        MenuScreens.register(OmaraDeviceRegistry.OMARA_DEVICE_MENU.get(), OmaraDeviceScreen::new);
 
         // Register Fabric-specific armor renderer for 3D Nose models
         NoseRenderingFabric.init();

@@ -4,6 +4,8 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.AromaAffectClient;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
+import com.ovrtechnology.omara.OmaraDeviceRegistry;
+import com.ovrtechnology.omara.OmaraDeviceScreen;
 import com.ovrtechnology.nose.client.NoseClient;
 import com.ovrtechnology.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.sniffer.SnifferScreen;
@@ -37,6 +39,7 @@ public final class AromaAffectNeoForgeClient {
 
     private void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
         event.register(SnifferMenuRegistry.SNIFFER_MENU.get(), SnifferScreen::new);
+        event.register(OmaraDeviceRegistry.OMARA_DEVICE_MENU.get(), OmaraDeviceScreen::new);
 
         // Register block outline renderer for X-ray wireframe
         BlockOutlineRendererNeoForge.init();

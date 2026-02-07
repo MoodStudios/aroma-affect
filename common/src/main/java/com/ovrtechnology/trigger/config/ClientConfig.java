@@ -42,6 +42,10 @@ public final class ClientConfig {
     @Getter @Setter
     private boolean noseRenderEnabled = true;
 
+    /** Whether nose strap rendering is enabled */
+    @Getter @Setter
+    private boolean strapEnabled = false;
+
     private ClientConfig() {
     }
 
@@ -91,6 +95,7 @@ public final class ClientConfig {
         globalIntensityMultiplier = 1.0;
         globalCooldownMs = 3000;
         noseRenderEnabled = true;
+        strapEnabled = false;
         save();
     }
 

@@ -23,6 +23,7 @@
       "com.ovrtechnology.fabric.client.ExampleModFabricClient"
     ]
   },
+  "accessWidener": "aromaaffect.accesswidener",
   "mixins": [
     "aromaaffect.mixins.json"
   ],
