@@ -1,8 +1,8 @@
 package com.ovrtechnology.mixin;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.sniffer.SnifferTamingData;
-import com.ovrtechnology.sniffer.client.TamedSnifferRenderState;
+import com.ovrtechnology.entity.sniffer.SnifferTamingData;
+import com.ovrtechnology.entity.sniffer.client.TamedSnifferRenderState;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import net.minecraft.client.renderer.entity.SnifferRenderer;
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;

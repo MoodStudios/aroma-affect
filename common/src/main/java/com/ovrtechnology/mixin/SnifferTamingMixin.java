@@ -2,10 +2,11 @@ package com.ovrtechnology.mixin;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
-import com.ovrtechnology.sniffer.SnifferContainer;
-import com.ovrtechnology.sniffer.SnifferMenuRegistry;
-import com.ovrtechnology.sniffer.SnifferTamingData;
+import com.ovrtechnology.entity.sniffer.SnifferContainer;
+import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
+import com.ovrtechnology.entity.sniffer.SnifferTamingData;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
+import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPos;
@@ -26,15 +27,17 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
+import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -63,10 +66,24 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     private static final int SCENT_DROP_DELAY_TICKS = 25; // ~1.25 segundos de delay para sincronizar con animación
 
     @Unique
-    private static final double ENHANCED_SEARCH_CHANCE = 0.005; // 0.5% por tick = busca mucho más seguido (~10 segundos promedio)
+    private static final int ENHANCED_SEARCH_INTERVAL = 200; // 10 segundos (200 ticks)
 
+    // Probabilidades de drop con Enhanced Nose (usando un solo roll):
+    // 0-25%: Mineral, 25-43.75%: Scent Base, 43.75-100%: Solo semilla
     @Unique
-    private static final double MINERAL_DROP_CHANCE = 0.40; // 40% de probabilidad de dropear mineral con Enhanced Nose
+    private static final double MINERAL_DROP_THRESHOLD = 25.0;
+    @Unique
+    private static final double SCENT_BASE_DROP_THRESHOLD = 43.75; // 25 + (75 * 0.25)
+
+    // Contador para búsqueda con nariz mejorada
+    @Unique
+    private int aromaaffect$enhancedSearchTimer = 0;
+
+    // Contador para forzar estado SEARCHING (evita que la IA vanilla lo cancele)
+    @Unique
+    private int aromaaffect$forceSearchingTicks = 0;
+    @Unique
+    private static final int FORCE_SEARCHING_DURATION = 100; // 5 segundos forzando búsqueda
 
     // Campos para el drop con delay
     @Unique
@@ -182,14 +199,39 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             }
         }
 
-        // Búsqueda más frecuente cuando tiene la nariz mejorada equipada
+        // Búsqueda forzada cada 10 segundos cuando tiene la nariz mejorada equipada
+        // El timer siempre corre si está domado y no montado (no se resetea al quitar nariz para evitar exploits)
         if (!self.level().isClientSide() && data.ownerUUID != null && !self.isVehicle()) {
-            SnifferContainer noseContainer = new SnifferContainer(self);
-            if (noseContainer.hasSnifferNose()) {
-                // Si está en IDLING, hay chance de que empiece a buscar
-                if (getState() == Sniffer.State.IDLING && self.getRandom().nextDouble() < ENHANCED_SEARCH_CHANCE) {
-                    // Transicionar a SCENTING para que empiece a buscar
-                    self.transitionTo(Sniffer.State.SCENTING);
+            aromaaffect$enhancedSearchTimer++;
+
+            // Manejar búsqueda forzada activa
+            if (aromaaffect$forceSearchingTicks > 0) {
+                Sniffer.State currentState = getState();
+
+                // Si empezó a excavar, dejar de forzar (encontró algo)
+                if (currentState == Sniffer.State.DIGGING || currentState == Sniffer.State.RISING) {
+                    aromaaffect$forceSearchingTicks = 0;
+                } else {
+                    // Mantener en SEARCHING
+                    aromaaffect$forceSearchingTicks--;
+                    if (currentState != Sniffer.State.SEARCHING && currentState != Sniffer.State.SCENTING) {
+                        self.transitionTo(Sniffer.State.SEARCHING);
+                    }
+                }
+            }
+
+            // Activar nueva búsqueda cada 10 segundos
+            if (aromaaffect$enhancedSearchTimer >= ENHANCED_SEARCH_INTERVAL) {
+                aromaaffect$enhancedSearchTimer = 0;
+
+                // Solo forzar búsqueda si tiene nariz y no está excavando
+                SnifferContainer noseContainer = new SnifferContainer(self);
+                if (noseContainer.hasSnifferNose()) {
+                    Sniffer.State currentState = getState();
+                    if (currentState != Sniffer.State.DIGGING && currentState != Sniffer.State.RISING) {
+                        aromaaffect$forceSearchingTicks = FORCE_SEARCHING_DURATION;
+                        self.transitionTo(Sniffer.State.SEARCHING);
+                    }
                 }
             }
         }
@@ -286,10 +328,23 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
         SnifferContainer container = new SnifferContainer(self);
 
-        // Si está domado Y tiene Enhanced Sniffer Nose: intentar dropear mineral ADEMÁS de la semilla normal
+        // Si está domado Y tiene Enhanced Sniffer Nose: drops mutuamente excluyentes
         if (data.ownerUUID != null && container.hasSnifferNose()) {
-            aromaaffect$tryDropMineral(self);
-            // No cancelamos, la semilla normal también se dropea
+            // Usar un solo roll para determinar qué sale (mutuamente excluyente)
+            double roll = self.getRandom().nextDouble() * 100;
+
+            if (roll < MINERAL_DROP_THRESHOLD) {
+                // 25% - Solo mineral (sin semilla)
+                aromaaffect$doDropMineral(self);
+                ci.cancel();
+                return;
+            } else if (roll < SCENT_BASE_DROP_THRESHOLD) {
+                // 18.75% - Solo scent base (sin semilla)
+                aromaaffect$doDropScentBase(self);
+                ci.cancel();
+                return;
+            }
+            // 56.25% - Solo semilla normal (no cancelamos, deja que vanilla la dropee)
             return;
         }
 
@@ -368,19 +423,12 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     }
 
     @Unique
-    private void aromaaffect$tryDropMineral(Sniffer sniffer) {
-        // Probabilidad de dropear mineral
-        if (sniffer.getRandom().nextDouble() > MINERAL_DROP_CHANCE) {
-            return;
-        }
-
+    private void aromaaffect$doDropMineral(Sniffer sniffer) {
         if (!(sniffer.level() instanceof ServerLevel serverLevel)) {
             return;
         }
 
         // Seleccionar mineral aleatorio con pesos
-        // Más común: cobre, hierro, oro
-        // Más raro: diamantes, netherite scraps
         ItemStack mineralStack = aromaaffect$selectRandomMineral(sniffer);
         if (mineralStack.isEmpty()) {
             return;
@@ -428,6 +476,44 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         } else {
             return new ItemStack(Items.NETHERITE_SCRAP);
         }
+    }
+
+    @Unique
+    private void aromaaffect$doDropScentBase(Sniffer sniffer) {
+        if (!(sniffer.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        // Obtener el item scent_base del registro
+        var scentBaseOpt = ScentItemRegistry.getScentItem("scent_base");
+        if (scentBaseOpt.isEmpty()) {
+            return;
+        }
+
+        ItemStack scentBaseStack = new ItemStack(scentBaseOpt.get());
+
+        // Calcular posición 2 bloques adelante del Sniffer (donde mete la nariz)
+        double yawRad = Math.toRadians(sniffer.getYRot());
+        double offsetX = -Math.sin(yawRad) * 2.0;
+        double offsetZ = Math.cos(yawRad) * 2.0;
+
+        // Crear y spawnear el scent base
+        ItemEntity itemEntity = new ItemEntity(
+                serverLevel,
+                sniffer.getX() + offsetX,
+                sniffer.getY() + 0.5,
+                sniffer.getZ() + offsetZ,
+                scentBaseStack
+        );
+        itemEntity.setDefaultPickUpDelay();
+        serverLevel.addFreshEntity(itemEntity);
+
+        // Efectos visuales (partículas diferentes para distinguirlo de minerales)
+        serverLevel.sendParticles(
+                ParticleTypes.HAPPY_VILLAGER,
+                sniffer.getX() + offsetX, sniffer.getY() + 0.8, sniffer.getZ() + offsetZ,
+                8, 0.3, 0.3, 0.3, 0.05
+        );
     }
 
     @Inject(method = "onDiggingComplete", at = @At("TAIL"))
@@ -531,6 +617,48 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 sniffer.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
             }
         }
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+
+        Sniffer self = (Sniffer) (Object) this;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+
+        output.putInt("AromaAffect.TamingProgress", data.tamingProgress);
+        if (data.ownerUUID != null) {
+            output.putString("AromaAffect.OwnerUUID", data.ownerUUID.toString());
+        }
+        output.putBoolean("AromaAffect.HasSaddle", !data.saddleItem.isEmpty());
+        if (!data.decorationItem.isEmpty() && data.decorationItem.getItem() instanceof SnifferNoseItem noseItem) {
+            output.putString("AromaAffect.DecorationId", noseItem.getItemId());
+        }
+        output.putBoolean("AromaAffect.HasOverworldScent", data.hasOverworldScent);
+        output.putBoolean("AromaAffect.HasNetherScent", data.hasNetherScent);
+        output.putBoolean("AromaAffect.HasEndScent", data.hasEndScent);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+
+        Sniffer self = (Sniffer) (Object) this;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+
+        data.tamingProgress = input.getIntOr("AromaAffect.TamingProgress", 0);
+        input.getString("AromaAffect.OwnerUUID").ifPresent(s -> data.ownerUUID = UUID.fromString(s));
+        if (input.getBooleanOr("AromaAffect.HasSaddle", false)) {
+            data.saddleItem = new ItemStack(Items.SADDLE);
+        }
+        input.getString("AromaAffect.DecorationId").ifPresent(id ->
+                SnifferNoseRegistry.getSnifferNose(id).ifPresent(nose ->
+                        data.decorationItem = new ItemStack(nose)
+                )
+        );
+        data.hasOverworldScent = input.getBooleanOr("AromaAffect.HasOverworldScent", false);
+        data.hasNetherScent = input.getBooleanOr("AromaAffect.HasNetherScent", false);
+        data.hasEndScent = input.getBooleanOr("AromaAffect.HasEndScent", false);
     }
 
 }

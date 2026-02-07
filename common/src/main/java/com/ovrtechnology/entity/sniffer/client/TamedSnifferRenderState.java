@@ -1,4 +1,4 @@
-package com.ovrtechnology.sniffer.client;
+package com.ovrtechnology.entity.sniffer.client;
 
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;
 

@@ -1,7 +1,7 @@
 package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.sniffer.SnifferTamingData;
+import com.ovrtechnology.entity.sniffer.SnifferTamingData;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.RegistryFriendlyByteBuf;
