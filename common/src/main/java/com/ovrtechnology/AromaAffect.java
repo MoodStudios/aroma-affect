@@ -6,7 +6,6 @@ import com.ovrtechnology.ability.AbilityRegistry;
 import com.ovrtechnology.ability.PreciseSnifferAbility;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinitionLoader;
-import com.ovrtechnology.command.AromaGuideCommand;
 import com.ovrtechnology.command.AromaTestCommand;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
@@ -112,7 +111,6 @@ public final class AromaAffect {
         ScentTriggerManager.init();
 
         // Initialize commands
-        AromaGuideCommand.init();
         AromaTestCommand.init();
 
         // Give Aroma Guide on first join
