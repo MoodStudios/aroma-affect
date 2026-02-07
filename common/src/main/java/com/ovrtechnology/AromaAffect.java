@@ -26,7 +26,7 @@ import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
-import com.ovrtechnology.sniffer.SnifferMenuRegistry;
+import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
