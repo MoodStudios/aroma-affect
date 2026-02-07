@@ -18,6 +18,7 @@ import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.network.AromaGuideNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -52,6 +53,7 @@ public final class AromaAffect {
         PathScentNetworking.init();
         SnifferEquipmentNetworking.init();
         NoseRenderNetworking.init();
+        AromaGuideNetworking.init();
 
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();

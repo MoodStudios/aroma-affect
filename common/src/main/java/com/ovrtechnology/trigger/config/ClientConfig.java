@@ -46,6 +46,10 @@ public final class ClientConfig {
     @Getter @Setter
     private boolean strapEnabled = false;
 
+    /** Whether to show persistent tracking toast while actively tracking */
+    @Getter @Setter
+    private boolean trackingToastPersistent = false;
+
     private ClientConfig() {
     }
 
@@ -96,6 +100,7 @@ public final class ClientConfig {
         globalCooldownMs = 3000;
         noseRenderEnabled = true;
         strapEnabled = false;
+        trackingToastPersistent = false;
         save();
     }
 

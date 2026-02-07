@@ -59,6 +59,12 @@ public final class ActivePathManager {
     private static final int PATH_SCENT_DURATION_TICKS = 100;
 
     /**
+     * Keeps recurring path puffs aligned with the moment the visual pulse
+     * reaches the player on the client (instead of firing at pulse start).
+     */
+    private static final long TRAIL_PLAYER_REACH_OFFSET_MS = 2500L;
+
+    /**
      * Map of player UUIDs to their last scent trigger time.
      * Used to enforce cooldowns between scent triggers during path tracking.
      */
@@ -130,7 +136,11 @@ public final class ActivePathManager {
         // Trigger initial scent immediately
         if (targetType != null && targetId != null) {
             triggerPathScent(player, targetType, targetId);
-            lastScentTriggerTime.put(playerId, System.currentTimeMillis());
+            long now = System.currentTimeMillis();
+            long cooldownMs = ScentTriggerConfigLoader.getSettings().getPathTrackingCooldownMs();
+            long offset = Math.max(0L, cooldownMs - TRAIL_PLAYER_REACH_OFFSET_MS);
+            // Prime cooldown so the next recurring puff lines up with player-reach time.
+            lastScentTriggerTime.put(playerId, now - offset);
         }
     }
 
