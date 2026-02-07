@@ -4,7 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ovrtechnology.nose.client.NoseClient;
 import com.ovrtechnology.nose.client.NoseMaskModel;
 import com.ovrtechnology.nose.client.NoseModelLayers;
+import com.ovrtechnology.nose.client.NoseRenderContext;
+import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
+import java.util.UUID;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.RenderType;
@@ -38,14 +41,28 @@ public final class NoseArmorRenderer implements ArmorRenderer {
             return;
         }
 
-        if (!NoseRenderToggles.isNoseEnabled()) {
+        // Use per-player preferences for multiplayer support
+        UUID entityUuid = NoseRenderContext.getCurrentEntityUuid();
+        boolean noseEnabled;
+        boolean strapEnabled;
+        if (entityUuid != null) {
+            NoseRenderPreferencesManager.NosePrefs prefs =
+                    NoseRenderPreferencesManager.getClientPrefs(entityUuid);
+            noseEnabled = prefs.noseEnabled();
+            strapEnabled = prefs.strapEnabled();
+        } else {
+            noseEnabled = NoseRenderToggles.isNoseEnabled();
+            strapEnabled = NoseRenderToggles.isStrapEnabled();
+        }
+
+        if (!noseEnabled) {
             return;
         }
 
         model.setAllVisible(false);
         model.head.visible = true;
         model.hat.visible = true;
-        model.setStrapVisible(NoseRenderToggles.isStrapEnabled());
+        model.setStrapVisible(strapEnabled);
 
         ResourceLocation texture = NoseClient.getArmorTexture(stack);
         RenderType renderType = RenderType.armorCutoutNoCull(texture);

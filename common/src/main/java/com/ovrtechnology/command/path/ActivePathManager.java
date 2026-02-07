@@ -3,6 +3,7 @@ package com.ovrtechnology.command.path;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
@@ -172,6 +173,14 @@ public final class ActivePathManager {
             if (player == null) {
                 // Player disconnected, remove path
                 iterator.remove();
+                continue;
+            }
+
+            // Check if player still has a nose equipped
+            if (!EquippedNoseHelper.hasNoseEquipped(player)) {
+                PathScentNetworking.sendPathNotFound(player, "Nose unequipped");
+                iterator.remove();
+                lastScentTriggerTime.remove(playerId);
                 continue;
             }
 

@@ -3,6 +3,7 @@ package com.ovrtechnology.registry;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.guide.AromaGuideRegistry;
+import com.ovrtechnology.omara.OmaraDeviceRegistry;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
@@ -72,6 +73,11 @@ public final class ModCreativeTab {
                     // Add Aroma Guide
                     if (AromaGuideRegistry.getAROMA_GUIDE().isPresent()) {
                         output.accept(new ItemStack(AromaGuideRegistry.getAROMA_GUIDE().get()));
+                    }
+
+                    // Add Omara Device
+                    if (OmaraDeviceRegistry.OMARA_DEVICE_ITEM.isPresent()) {
+                        output.accept(new ItemStack(OmaraDeviceRegistry.OMARA_DEVICE_ITEM.get()));
                     }
 
                     // Add spawn eggs

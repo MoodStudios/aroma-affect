@@ -3,7 +3,10 @@ package com.ovrtechnology.neoforge.client;
 import com.ovrtechnology.nose.client.NoseClient;
 import com.ovrtechnology.nose.client.NoseMaskModel;
 import com.ovrtechnology.nose.client.NoseModelLayers;
+import com.ovrtechnology.nose.client.NoseRenderContext;
+import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
@@ -13,6 +16,15 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public final class NoseItemClientExtensions implements IClientItemExtensions {
     private static volatile NoseMaskModel model;
+
+    private static NoseRenderPreferencesManager.NosePrefs getCurrentEntityPrefs() {
+        UUID entityUuid = NoseRenderContext.getCurrentEntityUuid();
+        if (entityUuid != null) {
+            return NoseRenderPreferencesManager.getClientPrefs(entityUuid);
+        }
+        return new NoseRenderPreferencesManager.NosePrefs(
+                NoseRenderToggles.isNoseEnabled(), NoseRenderToggles.isStrapEnabled());
+    }
 
     @Override
     public Model getHumanoidArmorModel(ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {
@@ -28,14 +40,15 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
             model = baked;
         }
 
-        if (!NoseRenderToggles.isNoseEnabled()) {
+        NoseRenderPreferencesManager.NosePrefs prefs = getCurrentEntityPrefs();
+        if (!prefs.noseEnabled()) {
             return original;
         }
 
         baked.setAllVisible(false);
         baked.head.visible = true;
         baked.hat.visible = true;
-        baked.setStrapVisible(NoseRenderToggles.isStrapEnabled());
+        baked.setStrapVisible(prefs.strapEnabled());
         return baked;
     }
 
@@ -46,7 +59,7 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
             EquipmentClientInfo.Layer layer,
             ResourceLocation defaultTexture
     ) {
-        if (!NoseRenderToggles.isNoseEnabled()) {
+        if (!getCurrentEntityPrefs().noseEnabled()) {
             return defaultTexture;
         }
         return NoseClient.getArmorTexture(stack);
@@ -54,7 +67,7 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
 
     @Override
     public int getArmorLayerTintColor(ItemStack stack, EquipmentClientInfo.Layer layer, int layerIdx, int defaultColor) {
-        if (!NoseRenderToggles.isNoseEnabled()) {
+        if (!getCurrentEntityPrefs().noseEnabled()) {
             return defaultColor;
         }
         // Render only the base layer, with no tinting.
