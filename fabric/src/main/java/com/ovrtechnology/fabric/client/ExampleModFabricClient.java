@@ -2,8 +2,8 @@ package com.ovrtechnology.fabric.client;
 
 import com.ovrtechnology.AromaAffectClient;
 import com.ovrtechnology.nose.client.NoseClient;
-import com.ovrtechnology.sniffer.SnifferMenuRegistry;
-import com.ovrtechnology.sniffer.SnifferScreen;
+import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
+import com.ovrtechnology.entity.sniffer.SnifferScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.screens.MenuScreens;
 

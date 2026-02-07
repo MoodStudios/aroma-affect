@@ -1,4 +1,4 @@
-package com.ovrtechnology.sniffer;
+package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
