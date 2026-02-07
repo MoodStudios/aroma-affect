@@ -145,7 +145,7 @@ public final class ScentTriggerManager {
 
     /**
      * Checks if a specific scent can be triggered with a custom cooldown.
-     * 
+     *
      * @param scentName  the scent name
      * @param cooldownMs the cooldown to check against
      * @return true if can trigger
@@ -162,6 +162,30 @@ public final class ScentTriggerManager {
         // Check per-scent cooldown
         Long lastTime = lastTriggerTime.get(scentName);
         if (lastTime != null && now - lastTime < cooldownMs) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if a scent can be triggered, skipping the global cooldown.
+     * Used for immediate proximity bypass (≤2 blocks) and mob interrupts.
+     * Still respects the per-scent/type cooldown.
+     *
+     * @param scentName the scent name
+     * @param cooldownMs the per-type cooldown to check
+     * @return true if can trigger (ignoring global cooldown)
+     */
+    public boolean canTriggerSkipGlobal(String scentName, long cooldownMs) {
+        long now = System.currentTimeMillis();
+
+        // Skip global cooldown check - this is the bypass
+
+        // Check per-scent cooldown only
+        Long lastTime = lastTriggerTime.get(scentName);
+        if (lastTime != null && now - lastTime < cooldownMs) {
+            AromaAffect.LOGGER.debug("Scent '{}' blocked by per-scent cooldown (skip global active)", scentName);
             return false;
         }
 

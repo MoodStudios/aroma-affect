@@ -34,23 +34,27 @@ public class TriggerSettings {
     
     /**
      * Default cooldown for biome triggers (ms).
+     * Set to 15 seconds for re-trigger while in biome.
      */
-    public static final long DEFAULT_BIOME_COOLDOWN_MS = 10000;
-    
+    public static final long DEFAULT_BIOME_COOLDOWN_MS = 15000;
+
     /**
      * Default cooldown for block triggers (ms).
+     * Set to 8 seconds for re-trigger while near block.
      */
-    public static final long DEFAULT_BLOCK_COOLDOWN_MS = 5000;
-    
+    public static final long DEFAULT_BLOCK_COOLDOWN_MS = 8000;
+
     /**
      * Default cooldown for mob proximity triggers (ms).
+     * Set to 8 seconds for re-trigger while near mob.
      */
-    public static final long DEFAULT_MOB_COOLDOWN_MS = 5000;
-    
+    public static final long DEFAULT_MOB_COOLDOWN_MS = 8000;
+
     /**
      * Default cooldown for structure proximity triggers (ms).
+     * Set to 10 seconds for re-trigger while inside structure.
      */
-    public static final long DEFAULT_STRUCTURE_COOLDOWN_MS = 15000;
+    public static final long DEFAULT_STRUCTURE_COOLDOWN_MS = 10000;
 
     /**
      * Default cooldown per scent in passive mode (ms).
