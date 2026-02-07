@@ -25,6 +25,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -59,9 +61,45 @@ public final class PassiveModeManager {
 
     /**
      * How often to check for passive triggers (in ticks).
-     * Checking every 300 ticks (15 seconds)
+     * Checking every 20 ticks (~1 second).
      */
-    private static final int CHECK_INTERVAL_TICKS = 300;
+    private static final int CHECK_INTERVAL_TICKS = 20;
+
+    /**
+     * Activation range for mob triggers (in blocks).
+     * Mobs have the highest priority for player safety.
+     */
+    private static final double MOB_ACTIVATION_RANGE = 5.0;
+
+    /**
+     * Activation range for block triggers (in blocks).
+     * Blocks require immediate proximity.
+     */
+    private static final double BLOCK_ACTIVATION_RANGE = 2.0;
+
+    /**
+     * Activation range for structure triggers (in blocks).
+     * Player must be inside the structure (distance 0 from bounding box).
+     */
+    private static final double STRUCTURE_ACTIVATION_RANGE = 0.0;
+
+    /**
+     * Distance threshold for immediate proximity bypass (in blocks).
+     * When player is within this range, global cooldown is skipped.
+     */
+    private static final double IMMEDIATE_PROXIMITY_RANGE = 2.0;
+
+    /**
+     * Number of ticks to wait after first tick before starting scans.
+     * Allows the world to finish loading chunks before adding scan overhead.
+     */
+    private static final int STARTUP_DELAY_TICKS = 100; // ~5 seconds
+
+    /**
+     * Maximum age for source trigger entries before cleanup (ms).
+     * Entries older than this are purged to prevent unbounded map growth.
+     */
+    private static final long SOURCE_TRIGGER_MAX_AGE_MS = 30_000;
 
     /**
      * Currently active passive trigger (for change detection).
@@ -78,7 +116,20 @@ public final class PassiveModeManager {
      */
     private static TriggerType currentTriggerType = null;
 
+    /**
+     * Last biome the player was in (for detecting biome changes).
+     */
+    private static String lastBiomeId = null;
+
+    /**
+     * Tracks the last trigger timestamp for each source.
+     * Used to prevent ping-pong between multiple nearby triggers.
+     */
+    private static final Map<String, Long> sourceTriggerTimes = new HashMap<>();
+
     private static int tickCounter = 0;
+    private static int startupTicksElapsed = 0;
+    private static boolean startupComplete = false;
 
     private PassiveModeManager() {
     }
@@ -101,6 +152,15 @@ public final class PassiveModeManager {
             return;
         }
 
+        // Wait for world to finish loading before starting scans
+        if (!startupComplete) {
+            if (++startupTicksElapsed < STARTUP_DELAY_TICKS) {
+                return;
+            }
+            startupComplete = true;
+            AromaAffect.LOGGER.info("[PassiveMode] Startup delay complete, beginning passive scans");
+        }
+
         // Only check every N ticks for performance
         if (++tickCounter < CHECK_INTERVAL_TICKS) {
             return;
@@ -111,8 +171,8 @@ public final class PassiveModeManager {
 
         // CRITICAL CHECKS - Early returns for performance
 
-        // Check if OVR hardware is connected
-        if (!OvrWebSocketClient.getInstance().isConnected()) {
+        // Check if OVR hardware is connected (skip in DEV_MODE)
+        if (!DEV_MODE && !OvrWebSocketClient.getInstance().isConnected()) {
             AromaAffect.LOGGER.debug("Passive-mode disabled: OVR hardware not connected");
             clearPassiveScent(player);
             return;
@@ -142,40 +202,34 @@ public final class PassiveModeManager {
 
         BlockPos playerPos = player.blockPosition();
 
-        // Evaluate triggers in priority order (highest first)
-        // Only the first match that passes cooldown check will be used
+        // Cleanup old source trigger entries to prevent unbounded map growth
+        cleanupSourceTriggerTimes();
 
-        // 1. Check blocks (MEDIUM priority - highest)
-        TriggerCandidate blockCandidate = evaluateBlockTriggers(level, playerPos);
-        if (blockCandidate != null && canActivateScent(blockCandidate)) {
-            activateTrigger(player, blockCandidate);
-            return;
-        }
-
-        // 2. Check mobs (MEDLOW priority)
+        // Evaluate ALL triggers to maintain tracking state (e.g., biome transitions)
         TriggerCandidate mobCandidate = evaluateMobTriggers(level, player);
-        if (mobCandidate != null && canActivateScent(mobCandidate)) {
-            activateTrigger(player, mobCandidate);
-            return;
-        }
-
-        // 3. Check structures (MEDLOW priority)
+        TriggerCandidate blockCandidate = evaluateBlockTriggers(level, playerPos);
         TriggerCandidate structureCandidate = evaluateStructureTriggers(level, playerPos);
-        if (structureCandidate != null && canActivateScent(structureCandidate)) {
-            activateTrigger(player, structureCandidate);
-            return;
-        }
-
-        // 4. Check biomes (LOW priority - lowest)
         TriggerCandidate biomeCandidate = evaluateBiomeTriggers(level, playerPos);
-        if (biomeCandidate != null && canActivateScent(biomeCandidate)) {
-            activateTrigger(player, biomeCandidate);
+
+        // Select highest priority candidate only (Mobs > Blocks > Structures > Biomes)
+        // If a higher priority source exists nearby, lower priorities are suppressed
+        // even if the higher priority is on cooldown — prevents ping-pong between triggers
+        TriggerCandidate bestCandidate = mobCandidate;
+        if (bestCandidate == null) bestCandidate = blockCandidate;
+        if (bestCandidate == null) bestCandidate = structureCandidate;
+        if (bestCandidate == null) bestCandidate = biomeCandidate;
+
+        if (bestCandidate != null) {
+            if (canActivateScent(bestCandidate)) {
+                activateTrigger(player, bestCandidate);
+            }
+            // Even if on cooldown, don't fall through to lower priorities
             return;
         }
 
-        // No valid triggers found (either none present or all on cooldown)
+        // No candidates found — player moved away from all triggers
         if (currentPassiveTrigger != null) {
-            AromaAffect.LOGGER.debug("No valid passive triggers found, clearing active scent");
+            AromaAffect.LOGGER.debug("No trigger candidates nearby, clearing active scent");
             clearPassiveScent(player);
         }
     }
@@ -203,22 +257,71 @@ public final class PassiveModeManager {
     ) {}
 
     /**
-     * Checks if a scent can be activated (respects per-type cooldown).
+     * Checks if a scent can be activated (respects cooldowns with special bypass rules).
+     *
+     * <p>Special rules:</p>
+     * <ul>
+     *   <li>First approach to a source: Triggers immediately</li>
+     *   <li>Source recently triggered: Respects per-type cooldown</li>
+     *   <li>Mobs can interrupt non-mob triggers on first appearance</li>
+     * </ul>
      *
      * @param candidate the trigger candidate to check
      * @return true if the scent can be activated
      */
     private static boolean canActivateScent(TriggerCandidate candidate) {
-        // Get the appropriate cooldown based on trigger type
         String scentName = candidate.trigger.scentName();
         TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
         long cooldownMs = getCooldownForType(candidate.type, settings);
+        long now = System.currentTimeMillis();
 
+        // Check if THIS SOURCE was recently triggered (not just if it's the current one)
+        // This prevents ping-pong between multiple nearby triggers
+        Long lastTriggerTime = sourceTriggerTimes.get(candidate.source);
+        boolean sourceRecentlyTriggered = lastTriggerTime != null && (now - lastTriggerTime) < cooldownMs;
+
+        // If this source was recently triggered, it must wait for its cooldown
+        if (sourceRecentlyTriggered) {
+            if (DEV_MODE) {
+                long remaining = cooldownMs - (now - lastTriggerTime);
+                AromaAffect.LOGGER.info("[PassiveMode] Blocked by source cooldown: {} ({}ms remaining)",
+                    candidate.source, remaining);
+            }
+            return false;
+        }
+
+        // Source hasn't been triggered recently - check if it's a valid trigger scenario
+
+        // IMMEDIATE TRIGGER: Close proximity (≤2 blocks) to a new/cooled-down source
+        if (candidate.distance <= IMMEDIATE_PROXIMITY_RANGE) {
+            if (DEV_MODE) {
+                AromaAffect.LOGGER.info("[PassiveMode] IMMEDIATE TRIGGER (dist<=2): {} at distance {}",
+                    scentName, candidate.distance);
+            }
+            return true;
+        }
+
+        // MOB INTERRUPT: Mobs can trigger immediately when entering range
+        // (only if they haven't been triggered recently - already checked above)
+        if (candidate.type == TriggerType.MOB) {
+            ScentTrigger activeScent = ScentTriggerManager.getInstance().getActiveScent();
+            // Only interrupt if there's a non-mob trigger active
+            if (activeScent != null && activeScent.source() == ScentTriggerSource.PASSIVE_MODE
+                && currentTriggerType != TriggerType.MOB) {
+                if (DEV_MODE) {
+                    AromaAffect.LOGGER.info("[PassiveMode] MOB INTERRUPT: {} at distance {}",
+                        scentName, candidate.distance);
+                }
+                return true;
+            }
+        }
+
+        // Normal distance triggers - also check the global ScentTriggerManager cooldown
         boolean canTrigger = ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs);
 
-        if (!canTrigger) {
-            AromaAffect.LOGGER.debug("Scent '{}' blocked by {} cooldown ({}ms)",
-                scentName, candidate.type, cooldownMs);
+        if (DEV_MODE && !canTrigger) {
+            AromaAffect.LOGGER.info("[PassiveMode] Blocked by global cooldown: {} (type={})",
+                scentName, candidate.type);
         }
 
         return canTrigger;
@@ -239,28 +342,39 @@ public final class PassiveModeManager {
     /**
      * Minimum intensity value (at maximum range).
      */
-    private static final double MIN_INTENSITY = 0.1;
+    private static final double MIN_INTENSITY = 0.3;
+
+    /**
+     * Distance threshold for maximum intensity (100%).
+     * If player is within this distance, intensity is always 100%.
+     */
+    private static final double FULL_INTENSITY_DISTANCE = 1.5;
 
     /**
      * Calculates intensity based on distance from trigger source.
-     * Closer distance = higher intensity.
+     * - Distance <= 1.5 blocks: 100% intensity (touching/very close)
+     * - Distance > 1.5 to max range: scales down to MIN_INTENSITY
      *
      * @param distance current distance to the trigger
      * @param maxRange maximum detection range
-     * @param maxIntensity the configured max intensity (at distance 0)
-     * @return calculated intensity between MIN_INTENSITY and maxIntensity
+     * @return calculated intensity between MIN_INTENSITY and 1.0
      */
-    private static double calculateIntensityByDistance(double distance, double maxRange, double maxIntensity) {
-        if (maxRange <= 0) {
-            return maxIntensity;
+    private static double calculateIntensityByDistance(double distance, double maxRange) {
+        // Very close = 100% intensity
+        if (distance <= FULL_INTENSITY_DISTANCE) {
+            return 1.0;
         }
 
-        // Clamp distance to range
-        distance = Math.max(0, Math.min(distance, maxRange));
+        if (maxRange <= FULL_INTENSITY_DISTANCE) {
+            return 1.0;
+        }
 
-        // Linear interpolation: at distance 0 -> maxIntensity, at maxRange -> MIN_INTENSITY
-        double ratio = distance / maxRange;
-        double intensity = maxIntensity - (ratio * (maxIntensity - MIN_INTENSITY));
+        // Scale from 100% at FULL_INTENSITY_DISTANCE to MIN_INTENSITY at maxRange
+        double effectiveRange = maxRange - FULL_INTENSITY_DISTANCE;
+        double effectiveDistance = distance - FULL_INTENSITY_DISTANCE;
+
+        double ratio = effectiveDistance / effectiveRange;
+        double intensity = 1.0 - (ratio * (1.0 - MIN_INTENSITY));
 
         // Clamp result to valid range
         return Math.max(MIN_INTENSITY, Math.min(1.0, intensity));
@@ -268,40 +382,40 @@ public final class PassiveModeManager {
 
     /**
      * Evaluates block triggers and returns the first match.
-     * Intensity scales with distance - closer blocks have higher intensity.
+     * Uses fixed activation range of 2 blocks for immediate proximity detection.
      */
     private static TriggerCandidate evaluateBlockTriggers(Level level, BlockPos playerPos) {
+        int searchRange = (int) Math.ceil(BLOCK_ACTIVATION_RANGE);
+
         for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
             if (!trigger.isProximityTrigger() || !trigger.isValid()) {
                 continue;
             }
 
             String blockId = trigger.getBlockId();
-            int range = trigger.getRange();
 
-            Optional<BlockPos> foundPos = findNearbyBlock(level, playerPos, blockId, range);
+            Optional<BlockPos> foundPos = findNearbyBlock(level, playerPos, blockId, searchRange);
 
             if (foundPos.isPresent()) {
-                // Calculate distance to the found block
                 double distance = Math.sqrt(playerPos.distSqr(foundPos.get()));
 
-                TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
-                double maxIntensity = trigger.getIntensityOrDefault(settings.getBlockIntensity());
+                // Only activate if within activation range
+                if (distance <= BLOCK_ACTIVATION_RANGE) {
+                    double intensity = calculateIntensityByDistance(distance, BLOCK_ACTIVATION_RANGE);
 
-                // Calculate intensity based on distance
-                double intensity = calculateIntensityByDistance(distance, range, maxIntensity);
+                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
+                        trigger.getScentName(),
+                        ScentPriority.MEDIUM,
+                        -1,
+                        intensity
+                    );
 
-                ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                    trigger.getScentName(),
-                    trigger.getPriority(),
-                    -1,
-                    intensity
-                );
+                    String source = "block:" + blockId;
+                    String displayName = getBlockDisplayName(level, blockId);
 
-                String source = "block:" + blockId;
-                String displayName = getBlockDisplayName(level, blockId);
-
-                return new TriggerCandidate(scentTrigger, source, displayName, TriggerType.BLOCK, range, distance);
+                    return new TriggerCandidate(scentTrigger, source, displayName,
+                        TriggerType.BLOCK, (int) BLOCK_ACTIVATION_RANGE, distance);
+                }
             }
         }
         return null;
@@ -309,40 +423,42 @@ public final class PassiveModeManager {
 
     /**
      * Evaluates mob triggers and returns the first match.
-     * Intensity scales with distance - closer mobs have higher intensity.
+     * Uses fixed activation range of 5 blocks for real-time detection.
+     * Mobs have HIGH priority for player safety.
      */
     private static TriggerCandidate evaluateMobTriggers(Level level, Player player) {
+        int searchRange = (int) Math.ceil(MOB_ACTIVATION_RANGE);
+
         for (MobTriggerDefinition trigger : ScentTriggerConfigLoader.getAllMobTriggers()) {
             if (!trigger.isValid()) {
                 continue;
             }
 
             String entityTypeId = trigger.getEntityType();
-            int range = trigger.getRange();
 
-            Optional<Entity> foundEntity = findNearbyMob(level, player, entityTypeId, range);
+            Optional<Entity> foundEntity = findNearbyMob(level, player, entityTypeId, searchRange);
 
             if (foundEntity.isPresent()) {
-                // Calculate distance to the found mob
                 double distance = player.distanceTo(foundEntity.get());
 
-                TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
-                double maxIntensity = trigger.getIntensityOrDefault(settings.getMobIntensity());
+                // Only activate if within activation range
+                if (distance <= MOB_ACTIVATION_RANGE) {
+                    double intensity = calculateIntensityByDistance(distance, MOB_ACTIVATION_RANGE);
 
-                // Calculate intensity based on distance
-                double intensity = calculateIntensityByDistance(distance, range, maxIntensity);
+                    // Mobs use HIGH priority for player safety
+                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
+                        trigger.getScentName(),
+                        ScentPriority.HIGH,
+                        -1,
+                        intensity
+                    );
 
-                ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                    trigger.getScentName(),
-                    trigger.getPriority(),
-                    -1,
-                    intensity
-                );
+                    String source = "mob:" + entityTypeId;
+                    String displayName = getMobDisplayName(foundEntity.get());
 
-                String source = "mob:" + entityTypeId;
-                String displayName = getMobDisplayName(foundEntity.get());
-
-                return new TriggerCandidate(scentTrigger, source, displayName, TriggerType.MOB, range, distance);
+                    return new TriggerCandidate(scentTrigger, source, displayName,
+                        TriggerType.MOB, (int) MOB_ACTIVATION_RANGE, distance);
+                }
             }
         }
         return null;
@@ -401,7 +517,7 @@ public final class PassiveModeManager {
 
     /**
      * Evaluates structure triggers and returns the first match.
-     * Intensity scales with distance - closer structures have higher intensity.
+     * Only activates when player is INSIDE the structure (distance 0 from bounding box).
      */
     private static TriggerCandidate evaluateStructureTriggers(Level level, BlockPos playerPos) {
         ServerLevel serverLevel = getServerLevel(level);
@@ -415,49 +531,66 @@ public final class PassiveModeManager {
             }
 
             String structureId = trigger.getStructureId();
-            int range = trigger.getRange();
 
-            var distanceOpt = getDistanceToStructure(serverLevel, playerPos, structureId, range);
+            // Search nearby chunks only — player must be inside to activate (range 0)
+            var distanceOpt = getDistanceToStructure(serverLevel, playerPos, structureId, 16);
+
             if (distanceOpt.isPresent()) {
                 double distance = distanceOpt.getAsDouble();
 
-                TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
-                double maxIntensity = trigger.getIntensityOrDefault(settings.getStructureIntensity());
+                // Only activate if player is INSIDE the structure (distance ≤ 0)
+                if (distance <= STRUCTURE_ACTIVATION_RANGE) {
+                    // Player is inside structure, use full intensity
+                    double intensity = 1.0;
 
-                // Calculate intensity based on distance
-                double intensity = calculateIntensityByDistance(distance, range, maxIntensity);
+                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
+                        trigger.getScentName(),
+                        ScentPriority.MEDLOW,
+                        -1,
+                        intensity
+                    );
 
-                ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                    trigger.getScentName(),
-                    trigger.getPriority(),
-                    -1,
-                    intensity
-                );
+                    String source = "structure:" + structureId;
+                    String displayName = formatResourceId(structureId);
 
-                String source = "structure:" + structureId;
-                String displayName = formatResourceId(structureId);
-
-                return new TriggerCandidate(scentTrigger, source, displayName, TriggerType.STRUCTURE, range, distance);
+                    return new TriggerCandidate(scentTrigger, source, displayName,
+                        TriggerType.STRUCTURE, 0, distance);
+                }
             }
         }
         return null;
     }
 
     /**
-     * Evaluates biome triggers and returns the match for current biome.
+     * Evaluates biome triggers and returns a trigger only when entering a NEW biome.
+     * The trigger fires once when the player enters a biome, then only fires again
+     * if they leave and return (or enter a different biome).
      */
     private static TriggerCandidate evaluateBiomeTriggers(Level level, BlockPos playerPos) {
         var biomeHolder = level.getBiome(playerPos);
-        String biomeId = Objects.requireNonNull(level.registryAccess().lookupOrThrow(Registries.BIOME)
+        String currentBiomeId = Objects.requireNonNull(level.registryAccess().lookupOrThrow(Registries.BIOME)
                 .getKey(biomeHolder.value())).toString();
 
-        Optional<BiomeTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getBiomeTrigger(biomeId);
+        // Only trigger if biome changed
+        if (currentBiomeId.equals(lastBiomeId)) {
+            return null; // Same biome, don't trigger again
+        }
+
+        // Biome changed - update tracking
+        String previousBiome = lastBiomeId;
+        lastBiomeId = currentBiomeId;
+
+        if (DEV_MODE) {
+            AromaAffect.LOGGER.info("[PassiveMode] Biome changed: {} -> {}", previousBiome, currentBiomeId);
+        }
+
+        Optional<BiomeTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getBiomeTrigger(currentBiomeId);
 
         if (triggerOpt.isPresent()) {
             BiomeTriggerDefinition trigger = triggerOpt.get();
 
-            TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
-            double intensity = trigger.getIntensityOrDefault(settings.getBiomeIntensity());
+            // Biome triggers use full intensity (1.0) since player just entered
+            double intensity = 1.0;
 
             ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
                 trigger.getScentName(),
@@ -466,8 +599,8 @@ public final class PassiveModeManager {
                 intensity
             );
 
-            String source = "biome:" + biomeId;
-            String displayName = getBiomeDisplayName(biomeId);
+            String source = "biome:" + currentBiomeId;
+            String displayName = getBiomeDisplayName(currentBiomeId);
 
             // Biomes don't have range/distance concept - player is "inside" the biome
             return new TriggerCandidate(scentTrigger, source, displayName, TriggerType.BIOME, 0, 0);
@@ -482,13 +615,31 @@ public final class PassiveModeManager {
      * Only shows chat message in DEV_MODE for testing purposes.
      */
     private static void activateTrigger(Player player, TriggerCandidate candidate) {
+        ScentTriggerManager manager = ScentTriggerManager.getInstance();
+
+        // In passive mode, we need to clear any previous passive trigger first
+        // This allows lower priority triggers to activate when higher priority sources are gone
+        // (e.g., block can activate after mob leaves, even though block has lower priority)
+        ScentTrigger currentActive = manager.getActiveScent();
+        if (currentActive != null && currentActive.source() == ScentTriggerSource.PASSIVE_MODE) {
+            // Clear previous passive trigger to allow new one regardless of priority
+            manager.stop();
+        }
+
         // Update state
         currentPassiveTrigger = candidate.trigger;
         currentTriggerSource = candidate.source;
         currentTriggerType = candidate.type;
 
-        // Always send trigger to hardware (cooldown already verified)
-        ScentTriggerManager.getInstance().trigger(candidate.trigger);
+        // Record this source's trigger time to prevent rapid re-triggering
+        sourceTriggerTimes.put(candidate.source, System.currentTimeMillis());
+
+        // Send trigger to hardware (cooldown already verified)
+        boolean triggered = manager.trigger(candidate.trigger);
+
+        if (DEV_MODE) {
+            AromaAffect.LOGGER.info("[PassiveMode] activateTrigger: {} -> triggered={}", candidate.source, triggered);
+        }
 
         // Only show chat message in DEV_MODE for testing
         if (DEV_MODE) {
@@ -709,6 +860,19 @@ public final class PassiveModeManager {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Removes source trigger entries older than SOURCE_TRIGGER_MAX_AGE_MS.
+     * Only runs when the map has more than 5 entries to avoid unnecessary iteration.
+     */
+    private static void cleanupSourceTriggerTimes() {
+        if (sourceTriggerTimes.size() > 5) {
+            long now = System.currentTimeMillis();
+            sourceTriggerTimes.entrySet().removeIf(entry ->
+                (now - entry.getValue()) > SOURCE_TRIGGER_MAX_AGE_MS
+            );
+        }
     }
 
     /**
