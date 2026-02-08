@@ -29,6 +29,7 @@ import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
+import com.ovrtechnology.entity.sniffer.SnifferSyncHandler;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -83,6 +84,9 @@ public final class AromaAffect {
 
         // Initialize Sniffer menu registry
         SnifferMenuRegistry.init();
+
+        // Initialize Sniffer sync handler (syncs taming data to clients on join)
+        SnifferSyncHandler.init();
 
         // Initialize Omara Device block
         OmaraDeviceRegistry.init();

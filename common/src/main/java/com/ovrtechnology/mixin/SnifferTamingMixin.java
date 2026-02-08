@@ -40,6 +40,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
+import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -110,6 +111,13 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 if (data.tamingProgress >= TORCH_FLOWERS_NEEDED) {
                     // ¡Doma exitosa!
                     data.ownerUUID = player.getUUID();
+
+                    // Sincronizar a todos los jugadores cercanos
+                    for (ServerPlayer nearbyPlayer : serverLevel.players()) {
+                        if (nearbyPlayer.distanceToSqr(self) <= 128 * 128) {
+                            SnifferEquipmentNetworking.sendEquipmentSync(nearbyPlayer, self.getUUID(), data);
+                        }
+                    }
 
                     // Partículas de éxito (corazones)
                     serverLevel.sendParticles(
@@ -211,9 +219,14 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
         SnifferContainer container = new SnifferContainer(self);
 
-        // Solo permite control si está domado, tiene silla y es jugador
-        if (data.ownerUUID != null && this.getFirstPassenger() instanceof Player player && container.hasSaddle()) {
-            return player;
+        // En cliente: si hay un jugador montado y tiene silla, permitir control
+        // (el servidor ya validó que puede montar en mobInteract)
+        // En servidor: verificar que esté domado, tenga silla y sea jugador
+        if (this.getFirstPassenger() instanceof Player player && container.hasSaddle()) {
+            // En servidor verificamos ownerUUID, en cliente confiamos en que el servidor validó
+            if (self.level().isClientSide() || data.ownerUUID != null) {
+                return player;
+            }
         }
         return null;
     }
