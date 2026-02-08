@@ -50,6 +50,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         BIOME_ICONS.put("minecraft:flower_forest", Items.PEONY.getDefaultInstance());
         BIOME_ICONS.put("minecraft:cherry_grove", Items.CHERRY_LOG.getDefaultInstance());
         BIOME_ICONS.put("minecraft:windswept_forest", Items.OAK_LEAVES.getDefaultInstance());
+        BIOME_ICONS.put("minecraft:pale_garden", Items.PALE_MOSS_BLOCK.getDefaultInstance());
 
         // Overworld - Taiga
         BIOME_ICONS.put("minecraft:taiga", Items.SPRUCE_LOG.getDefaultInstance());

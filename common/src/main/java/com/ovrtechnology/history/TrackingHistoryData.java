@@ -23,6 +23,12 @@ public final class TrackingHistoryData {
 
     private static TrackingHistoryData instance;
 
+    /**
+     * The world ID that the current instance was loaded for.
+     * Used to detect when the world changes (e.g. "unknown" → real world).
+     */
+    private static String loadedWorldId;
+
     private List<HistoryEntry> history = new ArrayList<>();
     private List<SavedEntry> saved = new ArrayList<>();
     private List<BlacklistEntry> blacklist = new ArrayList<>();
@@ -30,8 +36,19 @@ public final class TrackingHistoryData {
     private TrackingHistoryData() {}
 
     public static TrackingHistoryData getInstance() {
+        String currentWorldId = WorldIdentifier.getCurrentWorldId();
+
+        // If the instance was loaded for a different world (e.g. loaded as "unknown"
+        // before the server was ready, now the real world ID is available), reload.
+        if (instance != null && !currentWorldId.equals(loadedWorldId)) {
+            AromaAffect.LOGGER.info("World ID changed from '{}' to '{}', reloading tracking history",
+                    loadedWorldId, currentWorldId);
+            instance = null;
+        }
+
         if (instance == null) {
             instance = load();
+            loadedWorldId = currentWorldId;
         }
         return instance;
     }
@@ -46,6 +63,7 @@ public final class TrackingHistoryData {
             instance.save();
         }
         instance = null;
+        loadedWorldId = null;
     }
 
     // ── History ──────────────────────────────────────────────────────────
@@ -177,6 +195,15 @@ public final class TrackingHistoryData {
     // ── Persistence ──────────────────────────────────────────────────────
 
     private static TrackingHistoryData load() {
+        String worldId = WorldIdentifier.getCurrentWorldId();
+
+        // World not ready yet — return empty, non-persisted instance.
+        // getInstance() will detect the world ID change and reload once it's available.
+        if ("unknown".equals(worldId)) {
+            AromaAffect.LOGGER.debug("World not ready yet, returning empty tracking history");
+            return new TrackingHistoryData();
+        }
+
         Path worldPath = getConfigPath();
 
         if (Files.exists(worldPath)) {
@@ -184,18 +211,28 @@ public final class TrackingHistoryData {
             if (data != null) return data;
         }
 
-        // Migrate legacy global file if per-world file doesn't exist yet
+        // Migrate legacy global file once (rename it after migration so it never repeats)
         Path legacyPath = Platform.getConfigFolder().resolve(LEGACY_CONFIG_FILE_NAME);
         if (Files.exists(legacyPath)) {
             TrackingHistoryData data = loadFrom(legacyPath);
             if (data != null) {
-                AromaAffect.LOGGER.info("Migrated legacy tracking history to per-world file");
                 data.save(); // persist into the new per-world path
+                try {
+                    Path migratedPath = legacyPath.resolveSibling(LEGACY_CONFIG_FILE_NAME + ".migrated");
+                    Files.move(legacyPath, migratedPath);
+                    AromaAffect.LOGGER.info("Migrated legacy tracking history to per-world file and renamed legacy file");
+                } catch (IOException e) {
+                    // If rename fails, delete to prevent repeated migration
+                    try {
+                        Files.delete(legacyPath);
+                    } catch (IOException ignored) {}
+                    AromaAffect.LOGGER.warn("Could not rename legacy history file, deleted it instead");
+                }
                 return data;
             }
         }
 
-        AromaAffect.LOGGER.info("Creating default tracking history");
+        AromaAffect.LOGGER.info("Creating default tracking history for world '{}'", worldId);
         TrackingHistoryData data = new TrackingHistoryData();
         data.save();
         return data;
@@ -220,6 +257,10 @@ public final class TrackingHistoryData {
     }
 
     public void save() {
+        // Never persist when the world is not identified yet.
+        if ("unknown".equals(WorldIdentifier.getCurrentWorldId())) {
+            return;
+        }
         Path configPath = getConfigPath();
         try {
             Files.createDirectories(configPath.getParent());

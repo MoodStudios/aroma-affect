@@ -89,6 +89,14 @@
       "track_cost": 10
     },
     {
+      "biome_id": "minecraft:pale_garden",
+      "image": "biome/pale_garden",
+      "fallback_name": "Pale Garden",
+      "color_html": "#8A8A71",
+      "scent_id": "evergreen",
+      "track_cost": 10
+    },
+    {
       "biome_id": "minecraft:old_growth_birch_forest",
       "image": "biome/birch_forest",
       "fallback_name": "Old Growth Birch Forest",

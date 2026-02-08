@@ -82,7 +82,7 @@
         { "type": "icon_text", "translate": "guide.aromaaffect.noses.diamond_nose.detect_spawner", "items": ["minecraft:spawner"] },
         { "type": "spacer", "height": 4 },
         { "type": "detection_label", "translate": "guide.aromaaffect.noses.diamond_nose.detects_biomes" },
-        { "type": "icon_text", "translate": "guide.aromaaffect.noses.diamond_nose.detect_biome_overworld", "items": ["minecraft:grass_block", "minecraft:oak_log", "minecraft:sand", "minecraft:spruce_log"] },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.diamond_nose.detect_biome_overworld", "items": ["minecraft:grass_block", "minecraft:oak_log", "minecraft:pale_oak_log", "minecraft:sand", "minecraft:spruce_log"] },
         { "type": "icon_text", "translate": "guide.aromaaffect.noses.diamond_nose.detect_biome_cold_and_wet", "items": ["minecraft:snow_block", "minecraft:lily_pad", "minecraft:water_bucket"] },
         { "type": "icon_text", "translate": "guide.aromaaffect.noses.diamond_nose.detect_biome_meadow_jungle", "items": ["minecraft:oxeye_daisy", "minecraft:jungle_log"] },
         { "type": "spacer", "height": 4 },
