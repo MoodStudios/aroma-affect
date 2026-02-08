@@ -24,6 +24,8 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
 
     private static final int THUMB_W = 72;
     private static final int THUMB_H = 48;
+    private static final int TEX_W = 288;
+    private static final int TEX_H = 192;
 
     private static final ResourceLocation PLACEHOLDER_IMG = ResourceLocation.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/biomes/placeholder.png");
@@ -175,7 +177,8 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         Component displayName = Component.literal(biomeName);
         Component description = Component.translatable("menu.aromaaffect.biomes.card.description", displayName);
 
-        cards.add(new SelectionCard(biomeId, displayName, icon, isUnlocked, description));
+        ResourceLocation thumbnail = BiomeThumbnailResolver.resolve(biomeId);
+        cards.add(new SelectionCard(biomeId, displayName, icon, isUnlocked, description, thumbnail));
     }
 
     @Override
@@ -214,14 +217,20 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
             int thumbBorder = (int) (100 * imgAlpha) << 24 | 0x666666;
             graphics.fill(thumbX - 1, thumbY - 1, thumbX + THUMB_W + 1, thumbY + THUMB_H + 1, thumbBorder);
 
+            ResourceLocation thumbTex = card.thumbnail != null ? card.thumbnail : PLACEHOLDER_IMG;
+            float thumbScale = (float) THUMB_W / TEX_W;
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(thumbX, thumbY);
+            graphics.pose().scale(thumbScale, thumbScale);
             graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
-                    PLACEHOLDER_IMG,
-                    thumbX, thumbY,
+                    thumbTex,
+                    0, 0,
                     0.0f, 0.0f,
-                    THUMB_W, THUMB_H,
-                    THUMB_W, THUMB_H
+                    TEX_W, TEX_H,
+                    TEX_W, TEX_H
             );
+            graphics.pose().popMatrix();
         }
 
         // Item icon (after thumbnail)

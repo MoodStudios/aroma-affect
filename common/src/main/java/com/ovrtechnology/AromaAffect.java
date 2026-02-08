@@ -6,7 +6,6 @@ import com.ovrtechnology.ability.AbilityRegistry;
 import com.ovrtechnology.ability.PreciseSnifferAbility;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinitionLoader;
-import com.ovrtechnology.command.AromaGuideCommand;
 import com.ovrtechnology.command.AromaTestCommand;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
@@ -16,10 +15,12 @@ import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.mob.MobDefinitionLoader;
+import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
+import com.ovrtechnology.omara.OmaraDeviceRegistry;
 import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -50,6 +51,7 @@ public final class AromaAffect {
         NoseSmithDialogueNetworking.init();
         PathScentNetworking.init();
         SnifferEquipmentNetworking.init();
+        NoseRenderNetworking.init();
 
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();
@@ -75,6 +77,9 @@ public final class AromaAffect {
 
         // Initialize Sniffer menu registry
         SnifferMenuRegistry.init();
+
+        // Initialize Omara Device block
+        OmaraDeviceRegistry.init();
 
         // Initialize custom sounds
         ModSounds.init();
@@ -106,7 +111,6 @@ public final class AromaAffect {
         ScentTriggerManager.init();
 
         // Initialize commands
-        AromaGuideCommand.init();
         AromaTestCommand.init();
 
         // Give Aroma Guide on first join

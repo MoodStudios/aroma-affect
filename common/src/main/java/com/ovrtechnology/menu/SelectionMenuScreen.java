@@ -401,18 +401,25 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         public final ItemStack icon;
         public boolean isUnlocked;
         public final Component description;
+        public final ResourceLocation thumbnail;
 
         public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon,
-                            boolean isUnlocked, Component description) {
+                            boolean isUnlocked, Component description, ResourceLocation thumbnail) {
             this.id = id;
             this.displayName = displayName;
             this.icon = icon;
             this.isUnlocked = isUnlocked;
             this.description = description;
+            this.thumbnail = thumbnail;
+        }
+
+        public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon,
+                            boolean isUnlocked, Component description) {
+            this(id, displayName, icon, isUnlocked, description, null);
         }
 
         public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon, boolean isUnlocked) {
-            this(id, displayName, icon, isUnlocked, null);
+            this(id, displayName, icon, isUnlocked, null, null);
         }
     }
 }

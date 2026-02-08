@@ -2,6 +2,28 @@ plugins {
     id 'com.gradleup.shadow'
 }
 
+loom {
+    accessWidenerPath = project(":common").loom.accessWidenerPath
+    runs {
+        serverDev {
+            server()
+            runDir("../run/fabric/server")
+        }
+        clientDev1 {
+            client()
+            runDir("../run/fabric/client1")
+            programArg("--username")
+            programArg("FabricDev1")
+        }
+        clientDev2 {
+            client()
+            runDir("../run/fabric/client2")
+            programArg("--username")
+            programArg("FabricDev2")
+        }
+    }
+}
+
 architectury {
     platformSetupLoomIde()
     fabric()
@@ -52,4 +74,109 @@ shadowJar {
 
 remapJar {
     inputFile.set shadowJar.archiveFile
+}
+
+tasks.register('prepareMultiplayerDev') {
+    group = 'loom'
+    description = 'Prepares Fabric dev server/client run directories for multiplayer testing.'
+
+    doLast {
+        def baseDir = rootProject.file('run/fabric')
+        def serverDir = new File(baseDir, 'server')
+        def client1Dir = new File(baseDir, 'client1')
+        def client2Dir = new File(baseDir, 'client2')
+
+        serverDir.mkdirs()
+        client1Dir.mkdirs()
+        client2Dir.mkdirs()
+
+        copy {
+            from rootProject.file('dev/multiplayer/servers.fabric.dat')
+            into client1Dir
+            rename { 'servers.dat' }
+        }
+        copy {
+            from rootProject.file('dev/multiplayer/servers.fabric.dat')
+            into client2Dir
+            rename { 'servers.dat' }
+        }
+
+        new File(serverDir, 'eula.txt').text = "eula=true${System.lineSeparator()}"
+        new File(serverDir, 'server.properties').text = """\
+server-port=25565
+online-mode=false
+enforce-secure-profile=false
+motd=AromaCraft Fabric Dev Server
+pvp=false
+allow-flight=true
+view-distance=10
+simulation-distance=8
+""".stripIndent()
+
+        def offlineUuid = { String name ->
+            java.util.UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString()
+        }
+
+        def opNames = ['FabricDev1', 'FabricDev2', 'NeoForgeDev1', 'NeoForgeDev2']
+        def opsEntries = opNames.collect { name ->
+            [
+                uuid: offlineUuid(name),
+                name: name,
+                level: 4,
+                bypassesPlayerLimit: false
+            ]
+        }
+        new File(serverDir, 'ops.json').text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(opsEntries))
+    }
+}
+
+tasks.register('runMultiplayerDev') {
+    group = 'loom'
+    description = 'Launches Fabric dev server + two clients for multiplayer testing.'
+    dependsOn('prepareMultiplayerDev')
+
+    doLast {
+        def isWindows = System.getProperty('os.name').toLowerCase().contains('win')
+        def gradleCmd = isWindows ? 'gradlew.bat' : './gradlew'
+        def javaHome = System.getProperty('java.home')
+        def javaHomeEscaped = javaHome.replace("'", "''")
+
+        def launchDetached = { String taskPath, String tabTitle, String tabColor ->
+            if (isWindows) {
+                def rootDir = rootProject.projectDir.absolutePath.replace('\\', '/')
+                exec {
+                    workingDir rootProject.projectDir
+                    commandLine 'powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command',
+                        "\$env:JAVA_HOME='${javaHomeEscaped}'; Start-Process -FilePath 'wt.exe' -WorkingDirectory '${rootDir}' -ArgumentList @('-w','last','new-tab','-d','${rootDir}','--title','${tabTitle}','--tabColor','${tabColor}','cmd','/k','gradlew.bat ${taskPath}')"
+                }
+            } else {
+                exec {
+                    workingDir rootProject.projectDir
+                    commandLine 'sh', '-c', "JAVA_HOME='${javaHome}' ${gradleCmd} ${taskPath} > run/${project.name}-${taskPath.replace(':', '_')}.log 2>&1 &"
+                }
+            }
+        }
+
+        if (isWindows) {
+            def rootDir = rootProject.projectDir.absolutePath.replace('\\', '/')
+            exec {
+                workingDir rootProject.projectDir
+                commandLine 'powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command',
+                    "\$env:JAVA_HOME='${javaHomeEscaped}'; Start-Process -FilePath 'wt.exe' -WorkingDirectory '${rootDir}' -ArgumentList @('-w','new','new-tab','-d','${rootDir}','--title','Fabric-Server','--tabColor','#2E7D32','cmd','/k','gradlew.bat :fabric:runServerDev',';','new-tab','-d','${rootDir}','--title','Fabric-Client-1','--tabColor','#1565C0','cmd','/k','gradlew.bat :fabric:runClientDev1',';','new-tab','-d','${rootDir}','--title','Fabric-Client-2','--tabColor','#6A1B9A','cmd','/k','gradlew.bat :fabric:runClientDev2')"
+            }
+            return
+        }
+
+        launchDetached(':fabric:runServerDev', 'Fabric-Server', '#2E7D32')
+        Thread.sleep(9000L)
+        launchDetached(':fabric:runClientDev1', 'Fabric-Client-1', '#1565C0')
+        Thread.sleep(1500L)
+        launchDetached(':fabric:runClientDev2', 'Fabric-Client-2', '#6A1B9A')
+    }
+}
+
+tasks.register('runServerMultiplayer') {
+    group = 'loom'
+    description = 'Alias: launches Fabric dev server + two clients for multiplayer testing.'
+    dependsOn('runMultiplayerDev')
 }

@@ -233,6 +233,7 @@
   "config.aromaaffect.intensity": "Global Intensity",
   "config.aromaaffect.cooldown": "Global Cooldown",
   "config.aromaaffect.nose_render": "3D Nose Render",
+  "config.aromaaffect.nose_strap": "Nose Strap",
   "config.aromaaffect.passive_enabled": "Passive Mode",
   "config.aromaaffect.passive_cooldown": "Passive Cooldown",
   "config.aromaaffect.scent_values.blocks": "Blocks",
@@ -523,5 +524,15 @@
   "shop.aromaaffect.feature6": "Low-noise operation",
   "shop.aromaaffect.compatible": "\u2713 Compatible with Aroma Affect",
   "shop.aromaaffect.view_info": "View Info",
-  "shop.aromaaffect.buy_now": "Pre Order"
+  "shop.aromaaffect.buy_now": "Pre Order",
+
+  "block.aromaaffect.omara_device": "Omara Device",
+
+  "gui.aromaaffect.omara_device.no_capsule": "No Capsule",
+  "gui.aromaaffect.omara_device.ready": "Ready",
+  "gui.aromaaffect.omara_device.charges": "Charges",
+  "gui.aromaaffect.omara_device.mode.auto": "Auto",
+  "gui.aromaaffect.omara_device.mode.redstone": "Redstone",
+  "gui.aromaaffect.omara_device.interval.60s": "Every 60s",
+  "gui.aromaaffect.omara_device.interval.5min": "Every 5min"
 }

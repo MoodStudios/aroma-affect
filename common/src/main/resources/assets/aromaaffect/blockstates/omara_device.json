@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "aromaaffect:block/omara_device"
+    },
+    "facing=south": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 270
+    },
+    "facing=west": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 270
+    }
+  }
+}
