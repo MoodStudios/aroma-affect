@@ -30,6 +30,7 @@ import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferSyncHandler;
+import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -81,6 +82,9 @@ public final class AromaAffect {
 
         // Initialize the Nose Smith entity registry
         NoseSmithRegistry.init();
+
+        // Initialize Sniffer config (load before other sniffer systems)
+        SnifferConfigLoader.init();
 
         // Initialize Sniffer menu registry
         SnifferMenuRegistry.init();
