@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferContainer;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
+import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import net.minecraft.advancements.AdvancementHolder;
@@ -242,9 +243,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
     }
 
-    // Los drops del sniffer ahora se manejan con loot table en:
-    // data/minecraft/loot_table/gameplay/sniffer_digging.json
-
+    // Loot table vanilla solo tiene semillas. Esencias se generan desde código.
     @Inject(method = "onDiggingComplete", at = @At("TAIL"))
     private void aromaaffect$onFinishDigging(boolean found, CallbackInfoReturnable<Sniffer> cir) {
         Sniffer self = (Sniffer) (Object) this;
@@ -254,22 +253,52 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             return;
         }
 
+        ServerLevel serverLevel = (ServerLevel) self.level();
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
-
-        // Solo si está domado y tiene la nariz mejorada
-        if (data.ownerUUID == null) {
-            return;
-        }
-
         SnifferContainer container = new SnifferContainer(self);
-        if (!container.hasSnifferNose()) {
-            return;
+        boolean hasNose = data.ownerUUID != null && container.hasSnifferNose();
+
+        // Generar esencia si no la tiene (99% probabilidad)
+        if (serverLevel.getRandom().nextFloat() < 0.99f) {
+            aromaaffect$tryDropDimensionScent(self, serverLevel, data);
         }
 
-        // Resetear el cooldown de búsqueda para que vuelva a buscar rápido
-        self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
-        self.getBrain().eraseMemory(MemoryModuleType.SNIFF_COOLDOWN);
-        self.getBrain().setMemoryWithExpiry(MemoryModuleType.SNIFF_COOLDOWN, Unit.INSTANCE, 200L);
+        // Verificar si completó todas las esencias
+        if (data.hasAllScents()) {
+            aromaaffect$grantSnifferJourneyAdvancement(self, data);
+        }
+
+        // Si tiene nariz, cooldown más rápido
+        if (hasNose) {
+            self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
+            self.getBrain().eraseMemory(MemoryModuleType.SNIFF_COOLDOWN);
+            self.getBrain().setMemoryWithExpiry(MemoryModuleType.SNIFF_COOLDOWN, Unit.INSTANCE, 200L);
+        }
+    }
+
+    @Unique
+    private void aromaaffect$tryDropDimensionScent(Sniffer sniffer, ServerLevel level, SnifferTamingData data) {
+        ResourceLocation dimension = level.dimension().location();
+        String scentId = null;
+
+        // Verificar dimensión y si ya tiene la esencia
+        if (dimension.equals(Level.OVERWORLD.location()) && !data.hasOverworldScent) {
+            scentId = "overworld_scent";
+            data.hasOverworldScent = true;
+        } else if (dimension.equals(Level.NETHER.location()) && !data.hasNetherScent) {
+            scentId = "nether_scent";
+            data.hasNetherScent = true;
+        } else if (dimension.equals(Level.END.location()) && !data.hasEndScent) {
+            scentId = "end_scent";
+            data.hasEndScent = true;
+        }
+
+        // Dropear la esencia si corresponde
+        if (scentId != null) {
+            ScentItemRegistry.getScentItem(scentId).ifPresent(scentItem -> {
+                sniffer.spawnAtLocation(level, new ItemStack(scentItem));
+            });
+        }
     }
 
     @Unique
