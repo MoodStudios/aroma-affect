@@ -36,9 +36,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
+import com.ovrtechnology.scentitem.ScentItemRegistry;
 import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -62,6 +67,10 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
     @Shadow
     public abstract Sniffer.State getState();
+
+    @Shadow
+    @Final
+    private static EntityDataAccessor<Integer> DATA_DROP_SEED_AT_TICK;
 
     protected SnifferTamingMixin(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
@@ -239,6 +248,118 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         BlockState blockState = self.level().getBlockState(pos.below());
         if (blockState.is(ENHANCED_SNIFFER_DIGGABLE)) {
             cir.setReturnValue(true);
+        }
+    }
+
+    // ==========================================
+    // SISTEMA DE SCENTS DIMENSIONALES
+    // ==========================================
+    // Cada scent se consigue:
+    // 1. Una sola vez por sniffer
+    // 2. En su respectiva dimensión
+    // 3. Sin necesidad de estar domado ni con nariz
+    // 4. Con 100% de probabilidad si no la ha sacado
+
+    /**
+     * Intercepta el drop del Sniffer para agregar la scent dimensional si corresponde.
+     * Se inyecta al inicio de dropSeed() para verificar si debemos dropear una scent
+     * en lugar del loot normal.
+     */
+    @Inject(method = "dropSeed", at = @At("HEAD"), cancellable = true)
+    private void aromaaffect$onDropSeed(CallbackInfo ci) {
+        Sniffer self = (Sniffer) (Object) this;
+
+        if (!(self.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+        ResourceKey<Level> dimension = serverLevel.dimension();
+
+        // Verificar si el sniffer necesita una scent de esta dimensión
+        ItemStack scentToDrop = aromaaffect$getScentForDimension(dimension, data);
+
+        if (!scentToDrop.isEmpty()) {
+            // Verificar que estamos en el tick correcto para el drop
+            // (replicamos la lógica de vanilla para el timing)
+            int dropSeedAtTick = self.getEntityData().get(DATA_DROP_SEED_AT_TICK);
+            if (dropSeedAtTick != self.tickCount) {
+                return; // No es el tick del drop, dejar que vanilla maneje
+            }
+
+            // Dropear la scent en la posición de la cabeza del sniffer (igual que vanilla)
+            BlockPos headPos = aromaaffect$getHeadBlock(self);
+            ItemEntity itemEntity = new ItemEntity(
+                    self.level(),
+                    headPos.getX(),
+                    headPos.getY(),
+                    headPos.getZ(),
+                    scentToDrop
+            );
+            itemEntity.setDefaultPickUpDelay();
+            serverLevel.addFreshEntity(itemEntity);
+
+            // Reproducir sonido (igual que vanilla)
+            self.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
+
+            // Marcar que ya tiene esta scent
+            aromaaffect$markScentObtained(dimension, data);
+
+            AromaAffect.LOGGER.debug("Sniffer {} obtained {} scent",
+                    self.getUUID(), dimension.location().getPath());
+
+            // Verificar si completó todas las scents (para advancement)
+            if (data.hasAllScents()) {
+                aromaaffect$grantSnifferJourneyAdvancement(self, data);
+            }
+
+            // Cancelar el método vanilla para que no dropee nada más
+            ci.cancel();
+        }
+    }
+
+    /**
+     * Obtiene la posición de la cabeza del sniffer (replica lógica de getHeadBlock privado).
+     */
+    @Unique
+    private BlockPos aromaaffect$getHeadBlock(Sniffer sniffer) {
+        Vec3 headPos = sniffer.position().add(sniffer.getForward().scale(2.25));
+        return BlockPos.containing(headPos.x(), sniffer.getY() + 0.2, headPos.z());
+    }
+
+
+    /**
+     * Obtiene la scent correspondiente a la dimensión si el sniffer no la tiene.
+     */
+    @Unique
+    private ItemStack aromaaffect$getScentForDimension(ResourceKey<Level> dimension, SnifferTamingData data) {
+        if (dimension == Level.OVERWORLD && !data.hasOverworldScent) {
+            return ScentItemRegistry.getScentItem("overworld_scent")
+                    .map(ItemStack::new)
+                    .orElse(ItemStack.EMPTY);
+        } else if (dimension == Level.NETHER && !data.hasNetherScent) {
+            return ScentItemRegistry.getScentItem("nether_scent")
+                    .map(ItemStack::new)
+                    .orElse(ItemStack.EMPTY);
+        } else if (dimension == Level.END && !data.hasEndScent) {
+            return ScentItemRegistry.getScentItem("end_scent")
+                    .map(ItemStack::new)
+                    .orElse(ItemStack.EMPTY);
+        }
+        return ItemStack.EMPTY;
+    }
+
+    /**
+     * Marca la scent como obtenida para la dimensión correspondiente.
+     */
+    @Unique
+    private void aromaaffect$markScentObtained(ResourceKey<Level> dimension, SnifferTamingData data) {
+        if (dimension == Level.OVERWORLD) {
+            data.hasOverworldScent = true;
+        } else if (dimension == Level.NETHER) {
+            data.hasNetherScent = true;
+        } else if (dimension == Level.END) {
+            data.hasEndScent = true;
         }
     }
 
