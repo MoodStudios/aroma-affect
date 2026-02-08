@@ -39,15 +39,18 @@ public final class SnifferEquipmentNetworking {
         // Register client-side receiver for equipment sync packets (S2C)
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SNIFFER_EQUIPMENT_SYNC_ID, (buf, context) -> {
             UUID snifferUUID = buf.readUUID();
+            boolean hasOwner = buf.readBoolean();
+            UUID ownerUUID = hasOwner ? buf.readUUID() : null;
             ItemStack saddleItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
             ItemStack decorationItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
 
             context.queue(() -> {
                 SnifferTamingData data = SnifferTamingData.get(snifferUUID);
+                data.ownerUUID = ownerUUID;
                 data.saddleItem = saddleItem;
                 data.decorationItem = decorationItem;
-                AromaAffect.LOGGER.debug("Received sniffer equipment sync for {}: saddle={}, decoration={}",
-                        snifferUUID, !saddleItem.isEmpty(), !decorationItem.isEmpty());
+                AromaAffect.LOGGER.debug("Received sniffer equipment sync for {}: owner={}, saddle={}, decoration={}",
+                        snifferUUID, ownerUUID, !saddleItem.isEmpty(), !decorationItem.isEmpty());
             });
         });
 
@@ -68,6 +71,10 @@ public final class SnifferEquipmentNetworking {
         );
 
         buf.writeUUID(snifferUUID);
+        buf.writeBoolean(data.ownerUUID != null);
+        if (data.ownerUUID != null) {
+            buf.writeUUID(data.ownerUUID);
+        }
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, data.saddleItem);
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, data.decorationItem);
 
