@@ -5,6 +5,7 @@ import com.ovrtechnology.history.BlacklistEntry;
 import com.ovrtechnology.history.HistoryEntry;
 import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.menu.ActiveTrackingState;
+import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
 import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
@@ -87,6 +88,9 @@ public final class PathScentNetworking {
                 );
 
                 boolean triggered = ScentTriggerManager.getInstance().trigger(trigger);
+                if (triggered) {
+                    PathTrackingMaskOverlay.onPathScentPuff(scentName, intensity);
+                }
                 AromaAffect.LOGGER.debug("Received path scent trigger from server: {} (triggered: {})",
                         scentName, triggered);
             });

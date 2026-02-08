@@ -3,6 +3,7 @@ package com.ovrtechnology.menu;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.sounds.SoundManager;
@@ -102,6 +103,12 @@ public final class TrackingHud {
         }
 
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
+        if (ClientConfig.getInstance().isTrackingToastPersistent()
+                && (status == ActiveTrackingState.TrackingStatus.SEARCHING
+                || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
+            renderPersistentTrackingToast(graphics, mc, status);
+        }
+
         if (status != ActiveTrackingState.TrackingStatus.ARRIVED
                 && status != ActiveTrackingState.TrackingStatus.NOT_FOUND
                 && status != ActiveTrackingState.TrackingStatus.ERROR) {
@@ -176,5 +183,105 @@ public final class TrackingHud {
             int nameColor = (a << 24) | 0xCCCCCC;
             graphics.drawString(font, targetText, textX, boxY + 20, nameColor, false);
         }
+    }
+
+    private static void renderPersistentTrackingToast(
+            GuiGraphics graphics,
+            Minecraft mc,
+            ActiveTrackingState.TrackingStatus status
+    ) {
+        int screenW = mc.getWindow().getGuiScaledWidth();
+        int panelTop = 4;
+        int panelRight = screenW - 4;
+        int pad = 6;
+        int iconSpace = 20;
+
+        int accentArgb = (status == ActiveTrackingState.TrackingStatus.SEARCHING) ? 0xDDFFCC44 : 0xDD44FF44;
+        int borderArgb = (status == ActiveTrackingState.TrackingStatus.SEARCHING) ? 0xAAAA8833 : 0xAA44AA44;
+
+        String headerText;
+        if (status == ActiveTrackingState.TrackingStatus.SEARCHING) {
+            headerText = Component.translatable("tracking.aromaaffect.status.searching").getString();
+        } else {
+            MenuCategory cat = ActiveTrackingState.getCategory();
+            headerText = Component.translatable("menu.aromaaffect.tracking.label").getString();
+            if (cat != null) {
+                headerText += " · " + cat.getDisplayName().getString();
+            }
+        }
+
+        Component targetName = ActiveTrackingState.getDisplayName();
+        String targetIdStr = ActiveTrackingState.getTargetId() != null ? ActiveTrackingState.getTargetId().toString() : null;
+        int dist = ActiveTrackingState.getDistance();
+        String distText = (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
+                ? dist + " blocks away"
+                : null;
+        TrackingDirectionIndicator.Kind dirKind = (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
+                ? TrackingDirectionIndicator.resolve(mc, ActiveTrackingState.getDestination())
+                : null;
+
+        var font = mc.font;
+        int maxText = font.width(headerText);
+        if (targetName != null) {
+            maxText = Math.max(maxText, font.width(targetName));
+        }
+        if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
+            maxText = Math.max(maxText, font.width(targetIdStr));
+        }
+        if (distText != null) {
+            maxText = Math.max(maxText, TrackingDirectionIndicator.getColumnWidth() + font.width(distText));
+        }
+
+        int lineCount = 1;
+        if (targetName != null) lineCount++;
+        if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) lineCount++;
+        if (distText != null) lineCount++;
+
+        int panelWidth = maxText + iconSpace + pad * 2;
+        int panelHeight = 10 + lineCount * 11;
+        int panelLeft = panelRight - panelWidth;
+
+        graphics.fill(panelLeft, panelTop, panelRight, panelTop + panelHeight, 0xDD1A1A2E);
+        MenuRenderUtils.renderOutline(graphics, panelLeft, panelTop, panelWidth, panelHeight, borderArgb);
+        graphics.fill(panelLeft, panelTop, panelLeft + 2, panelTop + panelHeight, accentArgb);
+
+        int iconX = panelLeft + pad + 1;
+        int iconY = panelTop + (panelHeight - 16) / 2;
+        if (ActiveTrackingState.getIcon() != null) {
+            graphics.renderItem(ActiveTrackingState.getIcon(), iconX, iconY);
+        }
+
+        int textX = iconX + iconSpace;
+        int currentY = panelTop + 5;
+
+        int labelColor = (status == ActiveTrackingState.TrackingStatus.SEARCHING) ? 0xFFFFCC44 : 0xFF88CC88;
+        graphics.drawString(font, headerText, textX, currentY, labelColor);
+        currentY += 11;
+
+        if (targetName != null) {
+            graphics.drawString(font, targetName, textX, currentY, 0xFFFFFFFF);
+            currentY += 11;
+        }
+        if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
+            graphics.drawString(font, targetIdStr, textX, currentY, 0xFF777777);
+            currentY += 11;
+        }
+        if (distText != null && dirKind != null) {
+            drawDistanceLine(graphics, textX, currentY, dirKind, distText, 0xFF44CCFF);
+        }
+    }
+
+    private static void drawDistanceLine(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            TrackingDirectionIndicator.Kind directionKind,
+            String distanceText,
+            int color
+    ) {
+        Minecraft mc = Minecraft.getInstance();
+        int indicatorColor = TrackingDirectionIndicator.colorForKind(directionKind, color);
+        TrackingDirectionIndicator.draw(graphics, x, y, directionKind, indicatorColor);
+        graphics.drawString(mc.font, distanceText, x + TrackingDirectionIndicator.getColumnWidth(), y, indicatorColor, false);
     }
 }

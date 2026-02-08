@@ -8,6 +8,7 @@ import com.ovrtechnology.guide.AromaGuideTracker;
 import com.ovrtechnology.trigger.ScentTriggerHandler;
 import com.ovrtechnology.menu.TrackingHud;
 import com.ovrtechnology.trigger.client.PassiveModeHud;
+import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
 import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.trigger.config.ClientConfig;
@@ -76,6 +77,9 @@ public final class AromaAffectClient {
         // Initialize tracking HUD (Arrived! notifications + global state tick)
         TrackingHud.init();
 
+        // Initialize active-tracking scent mask overlay (fullscreen pulse on each path puff)
+        PathTrackingMaskOverlay.init();
+
         // Initialize OVR WebSocket client for scent hardware integration
         // The connection is optional - the mod works without it
         initWebSocketClient();
@@ -94,25 +98,54 @@ public final class AromaAffectClient {
      * client-side preference cache when leaving.
      */
     private static boolean sentInitialPrefs = false;
+    private static boolean lastSentNoseEnabled = true;
+    private static boolean lastSentStrapEnabled = false;
+    private static java.util.UUID lastPlayerUuid = null;
 
     private static void initNoseRenderSync() {
         ClientTickEvent.CLIENT_POST.register(minecraft -> {
             if (minecraft.player != null && !sentInitialPrefs) {
                 sentInitialPrefs = true;
-                ClientConfig cfg = ClientConfig.getInstance();
-                boolean noseEnabled = cfg.isNoseRenderEnabled();
-                boolean strapEnabled = cfg.isNoseRenderEnabled() && cfg.isStrapEnabled();
+                boolean noseEnabled = com.ovrtechnology.nose.client.NoseRenderToggles.isNoseEnabled();
+                boolean strapEnabled = noseEnabled && com.ovrtechnology.nose.client.NoseRenderToggles.isStrapEnabled();
+                java.util.UUID playerUuid = minecraft.player.getUUID();
+                lastPlayerUuid = playerUuid;
+                lastSentNoseEnabled = noseEnabled;
+                lastSentStrapEnabled = strapEnabled;
 
                 // Update local client cache for our own player
                 NoseRenderPreferencesManager.setClientPrefs(
-                        minecraft.player.getUUID(), noseEnabled, strapEnabled);
+                        playerUuid, noseEnabled, strapEnabled);
 
                 // Tell the server so it can broadcast to other players
                 NoseRenderNetworking.sendPrefsToServer(
                         minecraft.player.registryAccess(), noseEnabled, strapEnabled);
             }
+            if (minecraft.player != null) {
+                java.util.UUID playerUuid = minecraft.player.getUUID();
+                boolean noseEnabled = com.ovrtechnology.nose.client.NoseRenderToggles.isNoseEnabled();
+                boolean strapEnabled = noseEnabled && com.ovrtechnology.nose.client.NoseRenderToggles.isStrapEnabled();
+
+                // Keep own cache entry fresh for local third-person rendering paths.
+                NoseRenderPreferencesManager.setClientPrefs(playerUuid, noseEnabled, strapEnabled);
+
+                // Re-sync if preferences changed (or player instance changed).
+                if (!sentInitialPrefs
+                        || lastPlayerUuid == null
+                        || !lastPlayerUuid.equals(playerUuid)
+                        || noseEnabled != lastSentNoseEnabled
+                        || strapEnabled != lastSentStrapEnabled) {
+                    sentInitialPrefs = true;
+                    lastPlayerUuid = playerUuid;
+                    lastSentNoseEnabled = noseEnabled;
+                    lastSentStrapEnabled = strapEnabled;
+                    NoseRenderNetworking.sendPrefsToServer(
+                            minecraft.player.registryAccess(), noseEnabled, strapEnabled);
+                }
+            }
             if (minecraft.player == null && sentInitialPrefs) {
                 sentInitialPrefs = false;
+                lastPlayerUuid = null;
                 NoseRenderPreferencesManager.clearClientCache();
             }
         });

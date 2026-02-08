@@ -47,6 +47,7 @@ public final class ActiveTrackingState {
     private static TrackingStatus status = TrackingStatus.IDLE;
     private static String statusMessage;
     private static long statusTimestamp;
+    private static ResourceLocation lastDimensionId;
 
     /** Duration in milliseconds before terminal states auto-clear. */
     private static final long AUTO_CLEAR_MS = 3000;
@@ -140,6 +141,17 @@ public final class ActiveTrackingState {
      * after {@link #AUTO_CLEAR_MS} milliseconds.
      */
     public static void tick() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.player.level() != null) {
+            ResourceLocation currentDimensionId = mc.player.level().dimension().location();
+            if (lastDimensionId != null && !lastDimensionId.equals(currentDimensionId) && status != TrackingStatus.IDLE) {
+                clear();
+            }
+            lastDimensionId = currentDimensionId;
+        } else {
+            lastDimensionId = null;
+        }
+
         if (status == TrackingStatus.ARRIVED) {
             if (System.currentTimeMillis() - statusTimestamp > ARRIVED_CLEAR_MS) {
                 clear();

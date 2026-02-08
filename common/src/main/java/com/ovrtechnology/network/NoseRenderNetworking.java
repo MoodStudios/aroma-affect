@@ -49,6 +49,13 @@ public final class NoseRenderNetworking {
             boolean strapEnabled = buf.readBoolean();
 
             context.queue(() -> {
+                // Local player preferences are authoritative on this client.
+                // Ignore echoed server packets for self to avoid out-of-order flicker/desync
+                // when toggling rapidly.
+                if (net.minecraft.client.Minecraft.getInstance().player != null
+                        && playerUuid.equals(net.minecraft.client.Minecraft.getInstance().player.getUUID())) {
+                    return;
+                }
                 NoseRenderPreferencesManager.setClientPrefs(playerUuid, noseEnabled, strapEnabled);
                 AromaAffect.LOGGER.debug("Received nose prefs for {}: nose={}, strap={}",
                         playerUuid, noseEnabled, strapEnabled);

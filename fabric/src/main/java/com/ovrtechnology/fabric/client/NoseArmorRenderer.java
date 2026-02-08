@@ -8,6 +8,7 @@ import com.ovrtechnology.nose.client.NoseRenderContext;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
 import java.util.UUID;
+import net.minecraft.client.Minecraft;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.RenderType;
@@ -45,14 +46,18 @@ public final class NoseArmorRenderer implements ArmorRenderer {
         UUID entityUuid = NoseRenderContext.getCurrentEntityUuid();
         boolean noseEnabled;
         boolean strapEnabled;
-        if (entityUuid != null) {
+        if (entityUuid != null && Minecraft.getInstance().player != null
+                && entityUuid.equals(Minecraft.getInstance().player.getUUID())) {
+            noseEnabled = NoseRenderToggles.isNoseEnabled();
+            strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
+        } else if (entityUuid != null) {
             NoseRenderPreferencesManager.NosePrefs prefs =
                     NoseRenderPreferencesManager.getClientPrefs(entityUuid);
             noseEnabled = prefs.noseEnabled();
             strapEnabled = prefs.strapEnabled();
         } else {
             noseEnabled = NoseRenderToggles.isNoseEnabled();
-            strapEnabled = NoseRenderToggles.isStrapEnabled();
+            strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
         }
 
         if (!noseEnabled) {

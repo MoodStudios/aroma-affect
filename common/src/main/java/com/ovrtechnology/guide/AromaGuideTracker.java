@@ -1,6 +1,6 @@
 package com.ovrtechnology.guide;
 
-import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
+import com.ovrtechnology.network.AromaGuideNetworking;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -8,15 +8,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
-import net.minecraft.world.phys.AABB;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,14 +27,12 @@ import java.util.Optional;
  * to the Nose Smith NPC if one is alive and loaded nearby. Otherwise it falls
  * back to the village center position.
  * <p>
- * Village lookup runs on the integrated server thread every 100 ticks
- * (~5 seconds) to avoid performance issues.
+ * Village lookup is performed on the server and synced to this tracker
+ * every 100 ticks (~5 seconds) while the player is holding the guide.
  */
 public final class AromaGuideTracker {
 
     private static final int SEARCH_INTERVAL_TICKS = 100;
-    private static final int SEARCH_RADIUS = 100; // in chunks
-    private static final double NOSE_SMITH_SEARCH_RADIUS = 100.0;
 
     @Nullable
     private static BlockPos nearestVillagePos = null;
@@ -95,7 +89,7 @@ public final class AromaGuideTracker {
 
         if (tickCounter >= SEARCH_INTERVAL_TICKS) {
             tickCounter = 0;
-            locateNearestVillage(client, player);
+            AromaGuideNetworking.requestGuideTarget(player.registryAccess());
         }
 
         // Update the lodestone tracker component on held Aroma Guide stacks
@@ -149,72 +143,8 @@ public final class AromaGuideTracker {
                 || (!offHand.isEmpty() && offHand.getItem() instanceof AromaGuideItem);
     }
 
-    private static void locateNearestVillage(Minecraft client, LocalPlayer player) {
-        if (client.getSingleplayerServer() == null) return;
-
-        ServerLevel serverLevel = client.getSingleplayerServer().getLevel(player.level().dimension());
-        if (serverLevel == null) return;
-
-        BlockPos playerPos = player.blockPosition();
-
-        var result = serverLevel.getChunkSource().getGenerator()
-                .findNearestMapStructure(
-                        serverLevel,
-                        serverLevel.registryAccess()
-                                .lookupOrThrow(net.minecraft.core.registries.Registries.STRUCTURE)
-                                .getOrThrow(net.minecraft.tags.StructureTags.VILLAGE),
-                        playerPos,
-                        SEARCH_RADIUS,
-                        false
-                );
-
-        if (result != null) {
-            nearestVillagePos = result.getFirst();
-
-            // When close enough, try to find a living Nose Smith near the village
-            double distToVillage = Math.sqrt(playerPos.distSqr(nearestVillagePos));
-            if (distToVillage <= NOSE_SMITH_SEARCH_RADIUS) {
-                BlockPos smithPos = findNoseSmithNear(serverLevel, nearestVillagePos);
-                compassTargetPos = smithPos != null ? smithPos : nearestVillagePos;
-            } else {
-                compassTargetPos = nearestVillagePos;
-            }
-        } else {
-            nearestVillagePos = null;
-            compassTargetPos = null;
-        }
-    }
-
-    /**
-     * Searches for a living Nose Smith entity near the given position.
-     * Only finds entities in loaded chunks.
-     *
-     * @param level the server level
-     * @param center the position to search around
-     * @return the Nose Smith's block position, or null if not found
-     */
-    @Nullable
-    private static BlockPos findNoseSmithNear(ServerLevel level, BlockPos center) {
-        AABB searchBox = new AABB(center).inflate(NOSE_SMITH_SEARCH_RADIUS);
-        List<NoseSmithEntity> smiths = level.getEntitiesOfClass(
-                NoseSmithEntity.class, searchBox, Entity::isAlive
-        );
-
-        if (smiths.isEmpty()) {
-            return null;
-        }
-
-        // Find the closest one to the village center
-        NoseSmithEntity closest = null;
-        double closestDist = Double.MAX_VALUE;
-        for (NoseSmithEntity smith : smiths) {
-            double dist = smith.blockPosition().distSqr(center);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = smith;
-            }
-        }
-
-        return closest != null ? closest.blockPosition() : null;
+    public static void applyServerTarget(@Nullable BlockPos nearestVillage, @Nullable BlockPos compassTarget) {
+        nearestVillagePos = nearestVillage;
+        compassTargetPos = compassTarget;
     }
 }

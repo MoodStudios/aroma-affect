@@ -22,6 +22,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -575,7 +576,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
     @Override
     protected boolean handleKeyPress(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256) { // Escape
+        if (keyCode == 256 || keyCode == GLFW.GLFW_KEY_R) { // Escape or radial toggle key
             onClose();
             return true;
         }
@@ -788,7 +789,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         int dist = ActiveTrackingState.getDistance();
         String distText = (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
-                ? dist + " blocks away" : null;
+                ? dist + " blocks away"
+                : null;
+        TrackingDirectionIndicator.Kind dirKind = (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
+                ? TrackingDirectionIndicator.resolve(Minecraft.getInstance(), ActiveTrackingState.getDestination())
+                : null;
 
         String failureReason = (status == ActiveTrackingState.TrackingStatus.NOT_FOUND
                 || status == ActiveTrackingState.TrackingStatus.ERROR)
@@ -803,7 +808,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             maxText = Math.max(maxText, font.width(targetIdStr));
         }
         if (distText != null) {
-            maxText = Math.max(maxText, font.width(distText));
+            maxText = Math.max(maxText, TrackingDirectionIndicator.getColumnWidth() + font.width(distText));
         }
         if (failureReason != null) {
             maxText = Math.max(maxText, font.width(failureReason));
@@ -878,9 +883,9 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         // Distance (TRACKING only)
-        if (distText != null) {
+        if (distText != null && dirKind != null) {
             int distColor = MenuRenderUtils.withAlpha(0xFF44CCFF, appear);
-            graphics.drawString(font, distText, textX, currentY, distColor);
+            drawDistanceLine(graphics, textX, currentY, dirKind, distText, distColor);
             currentY += 11;
         }
 
@@ -1181,6 +1186,19 @@ public class RadialMenuScreen extends BaseMenuScreen {
             }
         }
         throw new IllegalStateException("Unable to locate GuiRenderState field on GuiGraphics");
+    }
+
+    private void drawDistanceLine(
+            GuiGraphics graphics,
+            int x,
+            int y,
+            TrackingDirectionIndicator.Kind directionKind,
+            String distanceText,
+            int color
+    ) {
+        int indicatorColor = TrackingDirectionIndicator.colorForKind(directionKind, color);
+        TrackingDirectionIndicator.draw(graphics, x, y, directionKind, indicatorColor);
+        graphics.drawString(font, distanceText, x + TrackingDirectionIndicator.getColumnWidth(), y, indicatorColor, false);
     }
 
     private record RadialEntry(

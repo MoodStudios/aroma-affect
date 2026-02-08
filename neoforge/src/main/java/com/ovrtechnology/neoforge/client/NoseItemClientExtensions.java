@@ -19,6 +19,12 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
 
     private static NoseRenderPreferencesManager.NosePrefs getCurrentEntityPrefs() {
         UUID entityUuid = NoseRenderContext.getCurrentEntityUuid();
+        if (entityUuid != null && Minecraft.getInstance().player != null
+                && entityUuid.equals(Minecraft.getInstance().player.getUUID())) {
+            boolean noseEnabled = NoseRenderToggles.isNoseEnabled();
+            boolean strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
+            return new NoseRenderPreferencesManager.NosePrefs(noseEnabled, strapEnabled);
+        }
         if (entityUuid != null) {
             return NoseRenderPreferencesManager.getClientPrefs(entityUuid);
         }
