@@ -9,19 +9,21 @@ public class SavedEntry {
     public String customName;
     public String categoryId;
     public int x, y, z;
+    public String dimension;
     public long timestamp;
 
     /** No-arg constructor for Gson deserialization. */
     public SavedEntry() {}
 
     public SavedEntry(String targetId, String customName, String categoryId,
-                      int x, int y, int z, long timestamp) {
+                      int x, int y, int z, String dimension, long timestamp) {
         this.targetId = targetId;
         this.customName = customName;
         this.categoryId = categoryId;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.dimension = dimension;
         this.timestamp = timestamp;
     }
 }

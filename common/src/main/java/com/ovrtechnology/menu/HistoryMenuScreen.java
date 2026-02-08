@@ -7,6 +7,7 @@ import com.ovrtechnology.history.SavedEntry;
 import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
+import com.ovrtechnology.tracking.TrackingConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -15,6 +16,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -364,8 +366,15 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.drawString(font, coords, coordsX, y + 15,
                 MenuRenderUtils.withAlpha(0xFF888888, ap));
 
-        // Status badges after coords
-        int statusX = coordsX + font.width(coords) + 4;
+        // Dimension label after coords
+        String dimLabel = formatDimension(entry.dimension);
+        int dimColor = getDimensionColor(entry.dimension);
+        int dimX = coordsX + font.width(coords) + 4;
+        g.drawString(font, dimLabel, dimX, y + 15,
+                MenuRenderUtils.withAlpha(dimColor, ap));
+
+        // Status badges after dimension
+        int statusX = dimX + font.width(dimLabel) + 4;
         if (isSaved) {
             statusX = renderBadge(g, statusX, y + 14, "SAVED", 0xFFFFCC44, 0x60FFCC44, ap);
         }
@@ -379,10 +388,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         // Action buttons when hovered
         if (hovered) {
+            // Cross-dimension check: disable Go button if player is in wrong dimension
+            boolean wrongDimension = entry.dimension != null
+                    && !entry.dimension.equals(getCurrentDimension());
+
             // Go button (far right, with zigzag separator)
             int goRight = x + w;
             renderGoButton(g, goRight - GO_BTN_W, y, GO_BTN_W, ROW_HEIGHT,
-                    entry.targetId, entry.categoryId, mouseX, mouseY, ap, filteredIdx, 2, false);
+                    entry.targetId, entry.categoryId, mouseX, mouseY, ap, filteredIdx, 2, wrongDimension);
             renderZigzagSeparator(g, goRight - GO_BTN_W - ZIGZAG_W, y, ZIGZAG_W, ROW_HEIGHT, ap);
 
             // Icon buttons (left of zigzag): Delete, TP, and conditionally Blacklist/Save
@@ -434,16 +447,26 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.drawString(font, coords, coordsX, y + 15,
                 MenuRenderUtils.withAlpha(0xFF888888, ap));
 
+        // Dimension label after coords
+        String dimLabel = formatDimension(entry.dimension);
+        int dimColor = getDimensionColor(entry.dimension);
+        int dimX = coordsX + font.width(coords) + 4;
+        g.drawString(font, dimLabel, dimX, y + 15,
+                MenuRenderUtils.withAlpha(dimColor, ap));
+
         // Status badge if blacklisted
         if (isBlacklisted) {
-            renderBadge(g, coordsX + font.width(coords) + 4, y + 14,
+            renderBadge(g, dimX + font.width(dimLabel) + 4, y + 14,
                     "BLOCKED", 0xFFFF6B6B, 0x60FF4444, ap);
         }
 
         if (hovered) {
+            boolean wrongDimension = entry.dimension != null
+                    && !entry.dimension.equals(getCurrentDimension());
+
             int goRight = x + w;
             renderGoButton(g, goRight - GO_BTN_W, y, GO_BTN_W, ROW_HEIGHT,
-                    entry.targetId, entry.categoryId, mouseX, mouseY, ap, filteredIdx, 0, false);
+                    entry.targetId, entry.categoryId, mouseX, mouseY, ap, filteredIdx, 0, wrongDimension);
             renderZigzagSeparator(g, goRight - GO_BTN_W - ZIGZAG_W, y, ZIGZAG_W, ROW_HEIGHT, ap);
 
             int btnX = goRight - GO_BTN_W - ZIGZAG_W - 4;
@@ -483,8 +506,15 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 MenuRenderUtils.withAlpha(badgeColor, ap));
 
         String coords = String.format("(%d, %d, %d)", entry.x, entry.y, entry.z);
-        g.drawString(font, coords, textX + font.width(catLabel) + 4, y + 15,
+        int coordsX = textX + font.width(catLabel) + 4;
+        g.drawString(font, coords, coordsX, y + 15,
                 MenuRenderUtils.withAlpha(0xFF888888, ap));
+
+        // Dimension label after coords
+        String dimLabel = formatDimension(entry.dimension);
+        int dimColor = getDimensionColor(entry.dimension);
+        g.drawString(font, dimLabel, coordsX + font.width(coords) + 4, y + 15,
+                MenuRenderUtils.withAlpha(dimColor, ap));
 
         if (hovered) {
             int btnX = x + w - 4;
@@ -542,13 +572,23 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             g.fill(px, py, px + pw, py + 1, arrowColor);
         }
 
+        // Retrack cost number below arrow
+        if (canRetrack) {
+            int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
+            String costStr = String.valueOf(retrackCost);
+            int costW = font.width(costStr);
+            int costColor = MenuRenderUtils.withAlpha(0xFFFFAA00, ap);
+            g.drawString(font, costStr, cx - costW / 2, cy + 6, costColor);
+        }
+
         // Tooltip
         if (hov) {
             Component tip;
             if (forceDisabled) {
-                tip = Component.translatable("history.aromaaffect.retrack.blacklisted");
+                tip = Component.translatable("history.aromaaffect.wrong_dimension");
             } else if (canRetrack) {
-                tip = Component.translatable("history.aromaaffect.action.retrack");
+                int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
+                tip = Component.translatable("history.aromaaffect.action.retrack.cost", retrackCost);
             } else {
                 tip = Component.translatable("history.aromaaffect.retrack.disabled");
             }
@@ -978,7 +1018,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             case 2 -> {
                 if (canRetrackTarget(entry.targetId, entry.categoryId)) {
                     MenuRenderUtils.playClickSound();
-                    executeRetrack(entry.targetId, entry.categoryId, entry.displayName);
+                    executeRetrack(entry.targetId, entry.categoryId, entry.displayName,
+                            entry.x, entry.y, entry.z, entry.dimension);
                 } else {
                     MenuRenderUtils.playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
                 }
@@ -1001,7 +1042,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             case 0 -> {
                 if (canRetrackTarget(entry.targetId, entry.categoryId)) {
                     MenuRenderUtils.playClickSound();
-                    executeRetrack(entry.targetId, entry.categoryId, entry.customName);
+                    executeRetrack(entry.targetId, entry.categoryId, entry.customName,
+                            entry.x, entry.y, entry.z, entry.dimension);
                 } else {
                     MenuRenderUtils.playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
                 }
@@ -1042,22 +1084,43 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         };
     }
 
-    private void executeRetrack(String targetId, String categoryId, String displayName) {
+    private void executeRetrack(String targetId, String categoryId, String displayName,
+                                int x, int y, int z, String dimension) {
         MenuCategory cat = MenuCategory.fromId(categoryId);
         if (cat == null) return;
+
+        // Block re-tracking from wrong dimension
+        var player = Minecraft.getInstance().player;
+        if (player != null && dimension != null && !dimension.equals(getCurrentDimension())) {
+            player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
+            AromaAffect.LOGGER.info("Cannot re-track from wrong dimension: entry is in {}, player is in {}",
+                    dimension, getCurrentDimension());
+            return;
+        }
+
+        // Pre-validate durability for recall cost
+        if (player != null) {
+            int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
+            ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+            if (!headStack.isEmpty() && headStack.isDamageableItem()) {
+                int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
+                if (remaining < retrackCost) {
+                    player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
+                    AromaAffect.LOGGER.info("Not enough nose durability for recall: need {}, have {}",
+                            retrackCost, remaining);
+                    return;
+                }
+            }
+        }
 
         ResourceLocation targetLoc = ResourceLocation.parse(targetId);
         ItemStack icon = getItemForTarget(targetId, categoryId);
         ActiveTrackingState.set(targetLoc, Component.literal(displayName), icon, cat);
 
-        // Sync blacklist to server before path command
-        if (Minecraft.getInstance().getConnection() != null) {
-            PathScentNetworking.sendBlacklistSync(
-                    Minecraft.getInstance().getConnection().registryAccess());
-        }
-
-        String command = String.format("aromatest path %s %s", cat.getPathCommandType(), targetId);
-        AromaAffect.LOGGER.debug("Re-tracking: {}", command);
+        // Use recall command to go directly to known coordinates (no search needed)
+        String dimArg = dimension != null ? dimension : "minecraft:overworld";
+        String command = String.format("aromatest path recall %s %d %d %d %s", targetId, x, y, z, dimArg);
+        AromaAffect.LOGGER.debug("Re-tracking via recall: {}", command);
 
         if (Minecraft.getInstance().getConnection() != null) {
             Minecraft.getInstance().getConnection().sendCommand(command);
@@ -1212,6 +1275,32 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         MenuCategory cat = MenuCategory.fromId(categoryId);
         if (cat != null) return cat.getIconItem();
         return new ItemStack(Items.BARRIER);
+    }
+
+    private static String getCurrentDimension() {
+        return Minecraft.getInstance().level != null
+                ? Minecraft.getInstance().level.dimension().location().toString()
+                : null;
+    }
+
+    private static String formatDimension(String dimension) {
+        if (dimension == null) return "Unknown";
+        return switch (dimension) {
+            case "minecraft:overworld" -> "Overworld";
+            case "minecraft:the_nether" -> "Nether";
+            case "minecraft:the_end" -> "The End";
+            default -> dimension;
+        };
+    }
+
+    private static int getDimensionColor(String dimension) {
+        if (dimension == null) return 0xFF888888;
+        return switch (dimension) {
+            case "minecraft:overworld" -> 0xFF55FF55;
+            case "minecraft:the_nether" -> 0xFFFF5555;
+            case "minecraft:the_end" -> 0xFFDD88FF;
+            default -> 0xFF888888;
+        };
     }
 
     private static int getCategoryBadgeColor(String categoryId) {

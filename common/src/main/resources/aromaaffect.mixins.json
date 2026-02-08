@@ -5,13 +5,19 @@
   "minVersion": "0.8",
   "client": [
     "AbstractContainerScreenAccessor",
+    "EntityRenderStateMixin",
     "EntityRendererMixin",
-    "SnifferRendererMixin"
+    "LivingEntityRendererMixin",
+    "SnifferRendererMixin",
+    "IronGolemModelMixin",
+    "IronGolemRendererMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",
     "JigsawPriorityMixin",
-    "AnvilRepairMixin"
+    "AnvilRepairMixin",
+    "ZombieVillagerConversionMixin",
+    "IronGolemNoseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -5,449 +5,512 @@
       "image": "biome/plains",
       "fallback_name": "Plains",
       "color_html": "#8DB360",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:sunflower_plains",
       "image": "biome/plains",
       "fallback_name": "Sunflower Plains",
       "color_html": "#B5DB88",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:snowy_plains",
       "image": "biome/snowy_plains",
       "fallback_name": "Snowy Plains",
       "color_html": "#FFFAFA",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:ice_spikes",
       "image": "biome/ice_spikes",
       "fallback_name": "Ice Spikes",
       "color_html": "#B4DCDC",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:desert",
       "image": "biome/desert",
       "fallback_name": "Desert",
       "color_html": "#FA9418",
-      "scent_id": "desert"
+      "scent_id": "desert",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:swamp",
       "image": "biome/swamp",
       "fallback_name": "Swamp",
       "color_html": "#4C763C",
-      "scent_id": "petrichor"
+      "scent_id": "petrichor",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:mangrove_swamp",
       "image": "biome/swamp",
       "fallback_name": "Mangrove Swamp",
       "color_html": "#6A7039",
-      "scent_id": "petrichor"
+      "scent_id": "petrichor",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:forest",
       "image": "biome/forest",
       "fallback_name": "Forest",
       "color_html": "#4C763C",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:flower_forest",
       "image": "biome/flower_forest",
       "fallback_name": "Flower Forest",
       "color_html": "#7BA331",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:birch_forest",
       "image": "biome/birch_forest",
       "fallback_name": "Birch Forest",
       "color_html": "#589C6C",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:dark_forest",
       "image": "biome/dark_forest",
       "fallback_name": "Dark Forest",
       "color_html": "#28340A",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:old_growth_birch_forest",
       "image": "biome/birch_forest",
       "fallback_name": "Old Growth Birch Forest",
       "color_html": "#507A32",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:old_growth_pine_taiga",
       "image": "biome/taiga",
       "fallback_name": "Old Growth Pine Taiga",
       "color_html": "#596651",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:old_growth_spruce_taiga",
       "image": "biome/taiga",
       "fallback_name": "Old Growth Spruce Taiga",
       "color_html": "#596651",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:taiga",
       "image": "biome/taiga",
       "fallback_name": "Taiga",
       "color_html": "#596651",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:snowy_taiga",
       "image": "biome/snowy_taiga",
       "fallback_name": "Snowy Taiga",
       "color_html": "#31554A",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:savanna",
       "image": "biome/savanna",
       "fallback_name": "Savanna",
       "color_html": "#BDB25F",
-      "scent_id": "desert"
+      "scent_id": "desert",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:savanna_plateau",
       "image": "biome/savanna",
       "fallback_name": "Savanna Plateau",
       "color_html": "#AEA42A",
-      "scent_id": "desert"
+      "scent_id": "desert",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:windswept_hills",
       "image": "biome/mountains",
       "fallback_name": "Windswept Hills",
       "color_html": "#597D72",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:windswept_gravelly_hills",
       "image": "biome/mountains",
       "fallback_name": "Windswept Gravelly Hills",
       "color_html": "#789878",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:windswept_forest",
       "image": "biome/mountains",
       "fallback_name": "Windswept Forest",
       "color_html": "#4C763C",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:windswept_savanna",
       "image": "biome/savanna",
       "fallback_name": "Windswept Savanna",
       "color_html": "#8DB360",
-      "scent_id": "desert"
+      "scent_id": "desert",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:jungle",
       "image": "biome/jungle",
       "fallback_name": "Jungle",
       "color_html": "#537B09",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:sparse_jungle",
       "image": "biome/jungle",
       "fallback_name": "Sparse Jungle",
       "color_html": "#64C73F",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:bamboo_jungle",
       "image": "biome/jungle",
       "fallback_name": "Bamboo Jungle",
       "color_html": "#64C73F",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:badlands",
       "image": "biome/badlands",
       "fallback_name": "Badlands",
       "color_html": "#D94515",
-      "scent_id": "desert"
+      "scent_id": "desert",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:eroded_badlands",
       "image": "biome/badlands",
       "fallback_name": "Eroded Badlands",
       "color_html": "#D94515",
-      "scent_id": "desert"
+      "scent_id": "desert",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:wooded_badlands",
       "image": "biome/badlands",
       "fallback_name": "Wooded Badlands",
       "color_html": "#D94515",
-      "scent_id": "desert"
+      "scent_id": "desert",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:meadow",
       "image": "biome/meadow",
       "fallback_name": "Meadow",
       "color_html": "#83BB6D",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:cherry_grove",
       "image": "biome/cherry_grove",
       "fallback_name": "Cherry Grove",
       "color_html": "#FFB7C5",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:grove",
       "image": "biome/grove",
       "fallback_name": "Grove",
       "color_html": "#73A35D",
-      "scent_id": "evergreen"
+      "scent_id": "evergreen",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:snowy_slopes",
       "image": "biome/snowy_slopes",
       "fallback_name": "Snowy Slopes",
       "color_html": "#E0E8E0",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:frozen_peaks",
       "image": "biome/frozen_peaks",
       "fallback_name": "Frozen Peaks",
       "color_html": "#C0D8DF",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:jagged_peaks",
       "image": "biome/jagged_peaks",
       "fallback_name": "Jagged Peaks",
       "color_html": "#C0D8DF",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:stony_peaks",
       "image": "biome/stony_peaks",
       "fallback_name": "Stony Peaks",
       "color_html": "#7E8E7E",
-      "scent_id": "terra_silva"
+      "scent_id": "terra_silva",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:river",
       "image": "biome/river",
       "fallback_name": "River",
       "color_html": "#3F76E4",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:frozen_river",
       "image": "biome/frozen_river",
       "fallback_name": "Frozen River",
       "color_html": "#3938C9",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:beach",
       "image": "biome/beach",
       "fallback_name": "Beach",
       "color_html": "#FADE55",
-      "scent_id": "beach"
+      "scent_id": "beach",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:snowy_beach",
       "image": "biome/snowy_beach",
       "fallback_name": "Snowy Beach",
       "color_html": "#FAF0C0",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:stony_shore",
       "image": "biome/stony_shore",
       "fallback_name": "Stony Shore",
       "color_html": "#A2A284",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:warm_ocean",
       "image": "biome/ocean",
       "fallback_name": "Warm Ocean",
       "color_html": "#43D5EE",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:lukewarm_ocean",
       "image": "biome/ocean",
       "fallback_name": "Lukewarm Ocean",
       "color_html": "#45ADF2",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:deep_lukewarm_ocean",
       "image": "biome/ocean",
       "fallback_name": "Deep Lukewarm Ocean",
       "color_html": "#3998DF",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:ocean",
       "image": "biome/ocean",
       "fallback_name": "Ocean",
       "color_html": "#000070",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:deep_ocean",
       "image": "biome/ocean",
       "fallback_name": "Deep Ocean",
       "color_html": "#000030",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:cold_ocean",
       "image": "biome/ocean",
       "fallback_name": "Cold Ocean",
       "color_html": "#2070DD",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 5
     },
     {
       "biome_id": "minecraft:deep_cold_ocean",
       "image": "biome/ocean",
       "fallback_name": "Deep Cold Ocean",
       "color_html": "#2050C0",
-      "scent_id": "marine"
+      "scent_id": "marine",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:frozen_ocean",
       "image": "biome/frozen_ocean",
       "fallback_name": "Frozen Ocean",
       "color_html": "#3938C9",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:deep_frozen_ocean",
       "image": "biome/frozen_ocean",
       "fallback_name": "Deep Frozen Ocean",
       "color_html": "#3D57D6",
-      "scent_id": "winter"
+      "scent_id": "winter",
+      "track_cost": 10
     },
     {
       "biome_id": "minecraft:mushroom_fields",
       "image": "biome/mushroom_fields",
       "fallback_name": "Mushroom Fields",
       "color_html": "#FF00FF",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:dripstone_caves",
       "image": "biome/caves",
       "fallback_name": "Dripstone Caves",
       "color_html": "#836644",
-      "scent_id": "terra_silva"
+      "scent_id": "terra_silva",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:lush_caves",
       "image": "biome/lush_caves",
       "fallback_name": "Lush Caves",
       "color_html": "#7BA331",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:deep_dark",
       "image": "biome/deep_dark",
       "fallback_name": "Deep Dark",
       "color_html": "#0A0A14",
-      "scent_id": "machina"
+      "scent_id": "machina",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:nether_wastes",
       "image": "biome/nether_wastes",
       "fallback_name": "Nether Wastes",
       "color_html": "#BF3B3B",
-      "scent_id": "smoky"
+      "scent_id": "smoky",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:warped_forest",
       "image": "biome/warped_forest",
       "fallback_name": "Warped Forest",
       "color_html": "#14B485",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:crimson_forest",
       "image": "biome/crimson_forest",
       "fallback_name": "Crimson Forest",
       "color_html": "#DD0808",
-      "scent_id": "smoky"
+      "scent_id": "smoky",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:soul_sand_valley",
       "image": "biome/soul_sand_valley",
       "fallback_name": "Soul Sand Valley",
       "color_html": "#5E3830",
-      "scent_id": "smoky"
+      "scent_id": "smoky",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:basalt_deltas",
       "image": "biome/basalt_deltas",
       "fallback_name": "Basalt Deltas",
       "color_html": "#403636",
-      "scent_id": "smoky"
+      "scent_id": "smoky",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:the_end",
       "image": "biome/the_end",
       "fallback_name": "The End",
       "color_html": "#8080A0",
-      "scent_id": "machina"
+      "scent_id": "machina",
+      "track_cost": 25
     },
     {
       "biome_id": "minecraft:end_highlands",
       "image": "biome/end_highlands",
       "fallback_name": "End Highlands",
       "color_html": "#8080A0",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 50
     },
     {
       "biome_id": "minecraft:end_midlands",
       "image": "biome/end_midlands",
       "fallback_name": "End Midlands",
       "color_html": "#8080A0",
-      "scent_id": "floral"
+      "scent_id": "floral",
+      "track_cost": 50
     },
     {
       "biome_id": "minecraft:small_end_islands",
       "image": "biome/small_end_islands",
       "fallback_name": "Small End Islands",
       "color_html": "#8080A0",
-      "scent_id": "machina"
+      "scent_id": "machina",
+      "track_cost": 50
     },
     {
       "biome_id": "minecraft:end_barrens",
       "image": "biome/end_barrens",
       "fallback_name": "End Barrens",
       "color_html": "#8080A0",
-      "scent_id": "machina"
+      "scent_id": "machina",
+      "track_cost": 50
     },
     {
       "biome_id": "minecraft:the_void",
       "image": "biome/the_void",
       "fallback_name": "The Void",
       "color_html": "#000000",
-      "scent_id": "machina"
+      "scent_id": "machina",
+      "track_cost": 25
     }
   ]
 }
-

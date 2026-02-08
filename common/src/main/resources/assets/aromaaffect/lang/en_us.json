@@ -3,6 +3,9 @@
   
   "entity.aromaaffect.nose_smith": "Nose Smith",
   "item.aromaaffect.nose_smith_spawn_egg": "Nose Smith Spawn Egg",
+  "item.aromaaffect.special_rose": "Special Rose",
+  "item.aromaaffect.special_rose.lore": "For my favorite warrior",
+  "item.aromaaffect.iron_nose": "Iron Nose",
   
   "item.aromaaffect.basic_nose": "Forager's Nose",
   "item.aromaaffect.gold_nose": "Prospector's Nose",
@@ -313,10 +316,20 @@
   "guide.aromaaffect.sniffer.tour.craft_hint": "Once you have all three scents, you can craft the Enhanced Sniffer Nose \u2014 the key to the endgame.",
   "guide.aromaaffect.sniffer.tour.link_enhanced": "Enhanced Sniffer Nose",
 
+  "guide.aromaaffect.sniffer.iron_nose.title": "Iron Nose",
+  "guide.aromaaffect.sniffer.iron_nose.header": "Iron Nose",
+  "guide.aromaaffect.sniffer.iron_nose.item_desc": "A rare collectible nose made of iron",
+  "guide.aromaaffect.sniffer.iron_nose.desc": "The Iron Nose is a unique item obtained from Iron Golems. It serves as the key crafting ingredient for the Enhanced Sniffer Nose.",
+  "guide.aromaaffect.sniffer.iron_nose.how_header": "How to Obtain",
+  "guide.aromaaffect.sniffer.iron_nose.how_desc": "Drop a Special Rose near an Iron Golem. The golem will pick it up, give you its nose as an Iron Nose item, and permanently lose its nose.",
+  "guide.aromaaffect.sniffer.iron_nose.rose_desc": "Special Rose \u2014 purchase from the Nose Smith's shop",
+  "guide.aromaaffect.sniffer.iron_nose.tip": "Each Iron Golem can only give its nose once. Once taken, the golem's nose is gone forever!",
+  "guide.aromaaffect.sniffer.iron_nose.link_enhanced": "Enhanced Sniffer Nose",
+
   "guide.aromaaffect.sniffer.enhanced.title": "Enhanced Sniffer Nose",
   "guide.aromaaffect.sniffer.enhanced.header": "Enhanced Sniffer Nose",
   "guide.aromaaffect.sniffer.enhanced.stats": "100 Durability  \u2022  Repair: Diamond",
-  "guide.aromaaffect.sniffer.enhanced.desc": "The culmination of the Dimensional Tour. Crafted from all three dimension scents and a Dragon's Nose, this powerful nose transforms your Sniffer into an endgame resource machine.",
+  "guide.aromaaffect.sniffer.enhanced.desc": "The culmination of the Dimensional Tour. Crafted from all three dimension scents and an Iron Nose, this powerful nose transforms your Sniffer into an endgame resource machine.",
   "guide.aromaaffect.sniffer.enhanced.abilities_header": "Abilities",
   "guide.aromaaffect.sniffer.enhanced.ability_base": "Scent Base Production \u2014 the Sniffer produces Scent Base, the endgame crafting material",
   "guide.aromaaffect.sniffer.enhanced.ability_sniffing": "Enhanced Sniffing \u2014 the Sniffer sniffs more frequently (0.5% chance per tick when idle)",
@@ -326,8 +339,8 @@
   "guide.aromaaffect.sniffer.enhanced.equip_desc": "Open the Sniffer's inventory (Shift + Right Click) and place the Enhanced Sniffer Nose in the second slot (decoration slot). The Sniffer will immediately start using its enhanced abilities.",
   "guide.aromaaffect.sniffer.enhanced.recipe_header": "Recipe",
   "guide.aromaaffect.sniffer.enhanced.recipe_label": "Enhanced Sniffer Nose",
-  "guide.aromaaffect.sniffer.enhanced.tip_dragon": "The Dragon's Nose is the center piece of this recipe. Make sure you've completed the full Nose progression first!",
-  "guide.aromaaffect.sniffer.enhanced.link_dragon": "Dragon's Nose",
+  "guide.aromaaffect.sniffer.enhanced.tip_iron_nose": "The Iron Nose is the center piece of this recipe. You'll need to befriend an Iron Golem first!",
+  "guide.aromaaffect.sniffer.enhanced.link_iron_nose": "Iron Nose",
 
   "guide.aromaaffect.endgame.category_title": "Endgame",
   "guide.aromaaffect.endgame.shared.recipe_header": "Recipe",
@@ -525,6 +538,7 @@
   "shop.aromaaffect.buy_now": "Pre Order",
 
   "block.aromaaffect.omara_device": "Omara Device",
+  "item.aromaaffect.omara_device": "Omara Device",
 
   "gui.aromaaffect.omara_device.no_capsule": "No Capsule",
   "gui.aromaaffect.omara_device.ready": "Ready",
@@ -532,5 +546,16 @@
   "gui.aromaaffect.omara_device.mode.auto": "Auto",
   "gui.aromaaffect.omara_device.mode.redstone": "Redstone",
   "gui.aromaaffect.omara_device.interval.60s": "Every 60s",
-  "gui.aromaaffect.omara_device.interval.5min": "Every 5min"
+  "gui.aromaaffect.omara_device.interval.5min": "Every 5min",
+
+  "subtitles.aromaaffect.omara_puff": "Omara Device puffs",
+
+  "menu.aromaaffect.cost.nose_durability": "Nose durability: -%d",
+  "menu.aromaaffect.cost.required_item": "Required: %dx %s",
+  "menu.aromaaffect.cost.consumed": "(Consumed on use)",
+  "menu.aromaaffect.cost.insufficient_durability": "Not enough nose durability",
+  "menu.aromaaffect.cost.missing_item": "Missing required item",
+  "history.aromaaffect.action.retrack.cost": "Re-track (%d durability)",
+  "menu.aromaaffect.history.retrack_cost": "Re-track cost: %d durability",
+  "history.aromaaffect.wrong_dimension": "Wrong dimension — travel there first"
 }

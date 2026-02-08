@@ -1,16 +1,21 @@
 package com.ovrtechnology.scentitem;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.scent.ScentDefinition;
+import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.config.ItemTriggerDefinition;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
 import lombok.Getter;
+import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -115,16 +120,31 @@ public class ScentItem extends Item {
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Server-side: handle capsule durability deduction
+        // Server-side: handle capsule durability deduction (only if not on cooldown)
         if (!level.isClientSide()) {
             if (definition.isCapsule()) {
+                // Check server-side cooldown to prevent consumption while on cooldown
+                if (player.getCooldowns().isOnCooldown(stack)) {
+                    return InteractionResult.FAIL;
+                }
+
                 EquipmentSlot slot = hand == InteractionHand.MAIN_HAND
                         ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
                 stack.hurtAndBreak(1, player, slot);
 
+                // Apply server-side cooldown (convert ms to ticks: default 5000ms = 100 ticks)
+                String fullId = AromaAffect.MOD_ID + ":" + itemId;
+                int cooldownTicks = getCooldownTicks(fullId);
+                player.getCooldowns().addCooldown(stack, cooldownTicks);
+
                 level.playSound(null, player.blockPosition(), SoundEvents.BOTTLE_EMPTY,
                         SoundSource.PLAYERS, 1.0f,
                         1.0f + (level.random.nextFloat() - 0.5f) * 0.2f);
+
+                // Spawn scent particles around the player
+                if (level instanceof ServerLevel serverLevel) {
+                    spawnScentParticles(serverLevel, player);
+                }
 
                 return InteractionResult.SUCCESS;
             }
@@ -186,6 +206,50 @@ public class ScentItem extends Item {
         }
 
         return InteractionResult.PASS;
+    }
+
+    /**
+     * Get the cooldown duration in ticks for the given item from trigger config.
+     */
+    private static int getCooldownTicks(String fullItemId) {
+        Optional<ItemTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getItemTrigger(fullItemId);
+        long cooldownMs = triggerOpt.map(ItemTriggerDefinition::getCooldownMsOrDefault)
+                .orElse(ItemTriggerDefinition.DEFAULT_COOLDOWN_MS);
+        return Math.max(1, (int) (cooldownMs / 50)); // ms to ticks (50ms per tick)
+    }
+
+    /**
+     * Spawns colored scent particles around the player, similar to the Omara Device puff.
+     */
+    private void spawnScentParticles(ServerLevel serverLevel, Player player) {
+        String scentName = definition.getScent();
+        int[] rgb = {255, 255, 255};
+        if (scentName != null) {
+            Optional<ScentDefinition> scentOpt = ScentRegistry.getScentByName(scentName);
+            if (scentOpt.isPresent()) {
+                rgb = scentOpt.get().getColorRGB();
+            }
+        }
+
+        int argb = (255 << 24) | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+        var particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, argb);
+
+        var random = serverLevel.getRandom();
+        double px = player.getX();
+        double py = player.getEyeY();
+        double pz = player.getZ();
+
+        for (int i = 0; i < 18; i++) {
+            double angle = random.nextDouble() * Math.PI * 2;
+            double radius = 0.15 + random.nextDouble() * 0.25;
+            double ox = Math.cos(angle) * radius;
+            double oz = Math.sin(angle) * radius;
+            double oy = (random.nextDouble() - 0.5) * 0.5;
+
+            serverLevel.sendParticles(particle,
+                    px + ox, py + oy, pz + oz,
+                    1, ox * 0.2, 0.05, oz * 0.2, 0.02);
+        }
     }
     
     /**

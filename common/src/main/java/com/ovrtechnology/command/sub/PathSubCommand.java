@@ -7,8 +7,14 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.biome.BiomeDefinition;
+import com.ovrtechnology.biome.BiomeDefinitionLoader;
+import com.ovrtechnology.block.BlockDefinition;
+import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.command.SubCommand;
 import com.ovrtechnology.command.path.ActivePathManager;
+import com.ovrtechnology.flower.FlowerDefinition;
+import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.lookup.LookupResult;
 import com.ovrtechnology.lookup.LookupTarget;
@@ -17,6 +23,10 @@ import com.ovrtechnology.lookup.StructurePositionRefiner;
 import com.ovrtechnology.network.BlacklistSyncManager;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.NoseItem;
+import com.ovrtechnology.structure.StructureDefinition;
+import com.ovrtechnology.structure.StructureDefinitionLoader;
+import com.ovrtechnology.tracking.RequiredItem;
+import com.ovrtechnology.tracking.TrackingConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -149,6 +159,28 @@ public class PathSubCommand implements SubCommand {
                         )
                 )
 
+                .then(Commands.literal("flower")
+                        .then(Commands.argument("flower_id", ResourceLocationArgument.id())
+                                .suggests(BLOCK_SUGGESTIONS)
+                                .executes(ctx -> executePath(ctx, LookupType.FLOWER, "flower_id", -1))
+                        )
+                )
+
+                .then(Commands.literal("recall")
+                        .then(Commands.argument("target_id", ResourceLocationArgument.id())
+                                .then(Commands.argument("x", IntegerArgumentType.integer())
+                                        .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                        .then(Commands.argument("dimension", ResourceLocationArgument.id())
+                                                                .executes(this::executeRecall)
+                                                        )
+                                                        .executes(this::executeRecall)
+                                                )
+                                        )
+                                )
+                        )
+                )
+
                 .then(Commands.literal("stop")
                         .executes(this::executeStop)
                 )
@@ -224,6 +256,32 @@ public class PathSubCommand implements SubCommand {
 
         ServerLevel level = source.getLevel();
         LookupTarget target = new LookupTarget(type, resourceId);
+
+        // Server-side cost validation before searching
+        if (player != null) {
+            int targetCost = resolveTrackCost(type, resourceId.toString());
+
+            // Check nose durability
+            ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+            if (headStack.getItem() instanceof NoseItem) {
+                if (headStack.isDamageableItem()) {
+                    int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
+                    if (remaining < targetCost) {
+                        PathScentNetworking.sendPathNotFound(player, "Not enough nose durability");
+                        return Command.SINGLE_SUCCESS;
+                    }
+                }
+            }
+
+            // Check required item
+            RequiredItem req = resolveRequiredItem(type, resourceId.toString());
+            if (req != null && req.getItemId() != null) {
+                if (!playerHasItem(player, req)) {
+                    PathScentNetworking.sendPathNotFound(player, "Missing required item");
+                    return Command.SINGLE_SUCCESS;
+                }
+            }
+        }
 
         // Send search message (verbose only)
         if (verbose) {
@@ -327,11 +385,15 @@ public class PathSubCommand implements SubCommand {
 
                 ActivePathManager.getInstance().createPath(player, level, finalDestination, targetType, targetId);
 
-                // Deduct durability from equipped nose
+                // Deduct per-target durability from equipped nose
+                int targetCost = resolveTrackCost(result.target().type(), targetId);
                 ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
-                if (headStack.getItem() instanceof NoseItem noseItem) {
-                    headStack.hurtAndBreak(noseItem.getDefinition().getTrackCost(), player, EquipmentSlot.HEAD);
+                if (headStack.getItem() instanceof NoseItem) {
+                    headStack.hurtAndBreak(targetCost, player, EquipmentSlot.HEAD);
                 }
+
+                // Consume required item (if any)
+                consumeRequiredItem(player, result.target().type(), targetId);
 
                 // Notify client that path was found (use original player origin for distance)
                 int dist = (int) Math.sqrt(
@@ -399,5 +461,166 @@ public class PathSubCommand implements SubCommand {
             case BIOME -> ActivePathManager.TargetType.BIOME;
             case STRUCTURE -> ActivePathManager.TargetType.STRUCTURE;
         };
+    }
+
+    // ── Per-target cost resolution ────────────────────────────────────────
+
+    private int resolveTrackCost(LookupType type, String targetId) {
+        return switch (type) {
+            case BLOCK -> {
+                BlockDefinition block = BlockDefinitionLoader.getBlockById(targetId);
+                yield block != null ? block.getTrackCost() : 10;
+            }
+            case BIOME -> {
+                BiomeDefinition biome = BiomeDefinitionLoader.getBiomeById(targetId);
+                yield biome != null ? biome.getTrackCost() : 10;
+            }
+            case STRUCTURE -> {
+                StructureDefinition structure = StructureDefinitionLoader.getStructureById(targetId);
+                yield structure != null ? structure.getTrackCost() : 10;
+            }
+            case FLOWER -> {
+                FlowerDefinition flower = FlowerDefinitionLoader.getFlowerById(targetId);
+                yield flower != null ? flower.getTrackCost() : 10;
+            }
+        };
+    }
+
+    private RequiredItem resolveRequiredItem(LookupType type, String targetId) {
+        return switch (type) {
+            case BLOCK -> {
+                BlockDefinition block = BlockDefinitionLoader.getBlockById(targetId);
+                yield block != null ? block.getRequiredItem() : null;
+            }
+            case BIOME -> {
+                BiomeDefinition biome = BiomeDefinitionLoader.getBiomeById(targetId);
+                yield biome != null ? biome.getRequiredItem() : null;
+            }
+            case STRUCTURE -> {
+                StructureDefinition structure = StructureDefinitionLoader.getStructureById(targetId);
+                yield structure != null ? structure.getRequiredItem() : null;
+            }
+            case FLOWER -> {
+                FlowerDefinition flower = FlowerDefinitionLoader.getFlowerById(targetId);
+                yield flower != null ? flower.getRequiredItem() : null;
+            }
+        };
+    }
+
+    private boolean playerHasItem(ServerPlayer player, RequiredItem req) {
+        if (req == null || req.getItemId() == null) return true;
+        ResourceLocation itemId = ResourceLocation.parse(req.getItemId());
+        var itemOpt = BuiltInRegistries.ITEM.get(itemId);
+        if (itemOpt.isEmpty()) return false;
+
+        int needed = req.getCount();
+        int found = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(itemOpt.get())) {
+                found += stack.getCount();
+                if (found >= needed) return true;
+            }
+        }
+        return false;
+    }
+
+    private void consumeRequiredItem(ServerPlayer player, LookupType type, String targetId) {
+        RequiredItem req = resolveRequiredItem(type, targetId);
+        if (req == null || req.getItemId() == null) return;
+
+        ResourceLocation itemId = ResourceLocation.parse(req.getItemId());
+        var itemOpt = BuiltInRegistries.ITEM.get(itemId);
+        if (itemOpt.isEmpty()) return;
+
+        int toRemove = req.getCount();
+        for (int i = 0; i < player.getInventory().getContainerSize() && toRemove > 0; i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(itemOpt.get())) {
+                int take = Math.min(stack.getCount(), toRemove);
+                stack.shrink(take);
+                toRemove -= take;
+            }
+        }
+    }
+
+    // ── Recall subcommand (history re-track) ──────────────────────────────
+
+    private int executeRecall(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("§6[Aroma Affect] §cThis command can only be executed by a player"));
+            return 0;
+        }
+
+        ResourceLocation targetId = ResourceLocationArgument.getId(context, "target_id");
+        int x = IntegerArgumentType.getInteger(context, "x");
+        int y = IntegerArgumentType.getInteger(context, "y");
+        int z = IntegerArgumentType.getInteger(context, "z");
+        BlockPos destination = new BlockPos(x, y, z);
+
+        // Validate dimension if provided
+        ResourceLocation expectedDimension = null;
+        try {
+            expectedDimension = ResourceLocationArgument.getId(context, "dimension");
+        } catch (IllegalArgumentException ignored) {
+            // dimension argument not provided (legacy command format)
+        }
+
+        ServerLevel level = source.getLevel();
+
+        if (expectedDimension != null) {
+            String currentDimension = level.dimension().location().toString();
+            if (!currentDimension.equals(expectedDimension.toString())) {
+                PathScentNetworking.sendPathNotFound(player, "Wrong dimension");
+                return Command.SINGLE_SUCCESS;
+            }
+        }
+
+        // Determine target type by checking which registry contains the ID
+        String idStr = targetId.toString();
+        ActivePathManager.TargetType targetType;
+        if (StructureDefinitionLoader.hasStructureId(idStr)) {
+            targetType = ActivePathManager.TargetType.STRUCTURE;
+        } else if (BiomeDefinitionLoader.hasBiomeId(idStr)) {
+            targetType = ActivePathManager.TargetType.BIOME;
+        } else {
+            targetType = ActivePathManager.TargetType.BLOCK;
+        }
+
+        // Deduct reduced history retrack cost
+        int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
+        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (headStack.getItem() instanceof NoseItem) {
+            if (headStack.isDamageableItem()) {
+                int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
+                if (remaining < retrackCost) {
+                    PathScentNetworking.sendPathNotFound(player, "Not enough nose durability");
+                    return Command.SINGLE_SUCCESS;
+                }
+            }
+            headStack.hurtAndBreak(retrackCost, player, EquipmentSlot.HEAD);
+        }
+
+        // Create path directly to known coordinates (no search needed)
+        ActivePathManager.getInstance().createPath(player, level, destination, targetType, idStr);
+
+        // Notify client
+        BlockPos origin = player.blockPosition();
+        int dist = (int) Math.sqrt(
+                Math.pow(origin.getX() - destination.getX(), 2) +
+                Math.pow(origin.getZ() - destination.getZ(), 2)
+        );
+        PathScentNetworking.sendPathFound(player, dist, destination);
+
+        if (verbose) {
+            source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aRecalling path to known location!"), false);
+            source.sendSuccess(() -> Component.literal(
+                    String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d", x, y, z)
+            ), false);
+        }
+
+        return Command.SINGLE_SUCCESS;
     }
 }

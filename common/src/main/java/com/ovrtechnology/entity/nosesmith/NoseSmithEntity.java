@@ -2,6 +2,7 @@ package com.ovrtechnology.entity.nosesmith;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseRegistry;
+import com.ovrtechnology.omara.OmaraDeviceRegistry;
 import com.ovrtechnology.scentitem.ScentItem;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import net.minecraft.core.BlockPos;
@@ -12,6 +13,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -19,6 +21,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -36,6 +39,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.trading.ItemCost;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -74,8 +80,9 @@ public class NoseSmithEntity extends Villager {
 
     private static final double FLOWER_TURN_IN_RADIUS = 1.75D;
     private static final int FLOWER_PLACEMENT_ATTEMPTS = 32;
-    private static final int HOUSE_DECOR_SEARCH_RADIUS_XZ = 12;
-    private static final int HOUSE_DECOR_SEARCH_RADIUS_Y = 8;
+    private static final int HOUSE_DECOR_SEARCH_RADIUS_XZ = 18;
+    private static final int HOUSE_DECOR_SEARCH_RADIUS_Y = 10;
+    private static final int QUEST_FLOWER_PLACEMENT_RADIUS = 12;
 
     private static final int DIALOGUE_KEEPALIVE_TIMEOUT_TICKS = 100;
     private static final double DIALOGUE_MAX_DISTANCE_SQR = 8.0D * 8.0D;
@@ -154,6 +161,29 @@ public class NoseSmithEntity extends Villager {
         this.entityData.set(REQUESTED_FLOWER_ID, requestedFlower != null ? requestedFlower.toString() : "");
 
         houseDecorated = input.getBooleanOr(TAG_HOUSE_DECORATED, false);
+    }
+
+    @Override
+    @Nullable
+    public <T extends Mob> T convertTo(EntityType<T> entityType, ConversionParams params, ConversionParams.AfterConversion<T> afterConversion) {
+        T result = super.convertTo(entityType, params, afterConversion);
+        if (result instanceof NoseSmithZombieMarker marker) {
+            marker.aromaaffect$markAsNoseSmith(
+                    hasNose(),
+                    requestedFlower != null ? requestedFlower.toString() : "",
+                    houseDecorated
+            );
+        }
+        return result;
+    }
+
+    public void restoreNoseSmithData(boolean hadNose, String requestedFlowerStr, boolean wasHouseDecorated) {
+        setHasNose(hadNose);
+        if (requestedFlowerStr != null && !requestedFlowerStr.isEmpty()) {
+            this.requestedFlower = ResourceLocation.tryParse(requestedFlowerStr);
+            this.entityData.set(REQUESTED_FLOWER_ID, requestedFlowerStr);
+        }
+        this.houseDecorated = wasHouseDecorated;
     }
 
     @Override
@@ -352,23 +382,35 @@ public class NoseSmithEntity extends Villager {
         BlockPos max = origin.offset(HOUSE_DECOR_SEARCH_RADIUS_XZ, HOUSE_DECOR_SEARCH_RADIUS_Y, HOUSE_DECOR_SEARCH_RADIUS_XZ);
 
         int potsFilled = 0;
+        int groundFlowersReplaced = 0;
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-            if (!(serverLevel.getBlockState(pos).getBlock() instanceof FlowerPotBlock)) {
+            BlockState state = serverLevel.getBlockState(pos);
+
+            if (state.getBlock() instanceof FlowerPotBlock) {
+                FlowerVariant variant = fillVariants.get(random.nextInt(fillVariants.size()));
+                serverLevel.setBlock(pos, variant.pottedFlowerPot().defaultBlockState(), Block.UPDATE_ALL);
+                potsFilled++;
                 continue;
             }
 
-            FlowerVariant variant = fillVariants.get(random.nextInt(fillVariants.size()));
-            serverLevel.setBlock(pos, variant.pottedFlowerPot().defaultBlockState(), Block.UPDATE_ALL);
-            potsFilled++;
+            if (state.is(BlockTags.SMALL_FLOWERS)) {
+                FlowerVariant variant = fillVariants.get(random.nextInt(fillVariants.size()));
+                serverLevel.setBlock(pos, variant.flower().defaultBlockState(), Block.UPDATE_ALL);
+                groundFlowersReplaced++;
+            }
         }
 
         int flowersToPlace = 1 + random.nextInt(2);
         int flowersPlaced = 0;
         BlockState flowerState = requested.defaultBlockState();
         for (int attempt = 0; attempt < FLOWER_PLACEMENT_ATTEMPTS && flowersPlaced < flowersToPlace; attempt++) {
-            int dx = random.nextIntBetweenInclusive(-6, 6);
-            int dz = random.nextIntBetweenInclusive(-6, 6);
+            int dx = random.nextIntBetweenInclusive(-QUEST_FLOWER_PLACEMENT_RADIUS, QUEST_FLOWER_PLACEMENT_RADIUS);
+            int dz = random.nextIntBetweenInclusive(-QUEST_FLOWER_PLACEMENT_RADIUS, QUEST_FLOWER_PLACEMENT_RADIUS);
             if (dx == 0 && dz == 0) {
+                continue;
+            }
+
+            if (Math.abs(dx) < 8 && Math.abs(dz) < 8) {
                 continue;
             }
 
@@ -385,7 +427,7 @@ public class NoseSmithEntity extends Villager {
         }
 
         if (flowersPlaced == 0) {
-            BlockPos fallback = origin.above();
+            BlockPos fallback = serverLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, origin);
             clearReplaceable(serverLevel, fallback);
             if (!flowerState.canSurvive(serverLevel, fallback)) {
                 serverLevel.setBlock(fallback.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
@@ -397,7 +439,7 @@ public class NoseSmithEntity extends Villager {
         fillChestsWithScents(serverLevel, origin, min, max, random);
 
         houseDecorated = true;
-        AromaAffect.LOGGER.debug("Decorated Nose Smith house: filled {} pots, placed {} quest flowers", potsFilled, flowersPlaced);
+        AromaAffect.LOGGER.debug("Decorated Nose Smith house: filled {} pots, replaced {} ground flowers, placed {} quest flowers", potsFilled, groundFlowersReplaced, flowersPlaced);
     }
 
     private void tryConsumeRequestedFlowerAndReward(ServerLevel serverLevel) {
@@ -681,6 +723,56 @@ public class NoseSmithEntity extends Villager {
         return true;
     }
     
-    // TODO: Add custom trading logic for nose items and scent masks
-    // This will be implemented when the trading system is designed
+    public void openShop(ServerPlayer serverPlayer) {
+        endDialogue(serverPlayer);
+
+        this.offers = buildTradeOffers();
+        this.setTradingPlayer(serverPlayer);
+        this.openTradingScreen(serverPlayer, this.getDisplayName(), 5);
+    }
+
+    private MerchantOffers buildTradeOffers() {
+        MerchantOffers offers = new MerchantOffers();
+
+        // Omara Device: 10 emeralds -> 1 Omara Device
+        if (OmaraDeviceRegistry.OMARA_DEVICE_ITEM.isPresent()) {
+            offers.add(new MerchantOffer(
+                    new ItemCost(Items.EMERALD, 10),
+                    new ItemStack(OmaraDeviceRegistry.OMARA_DEVICE_ITEM.get()),
+                    Integer.MAX_VALUE, 0, 0.0F
+            ));
+        }
+
+        // Special Rose: 1 iron block -> 1 Special Rose
+        if (NoseSmithRegistry.SPECIAL_ROSE.isPresent()) {
+            offers.add(new MerchantOffer(
+                    new ItemCost(Items.IRON_BLOCK, 1),
+                    new ItemStack(NoseSmithRegistry.SPECIAL_ROSE.get()),
+                    Integer.MAX_VALUE, 0, 0.0F
+            ));
+        }
+
+        // Flowers: 1 emerald -> 1 of each flower (excluding quest flower)
+        ResourceLocation questFlower = getRequestedFlowerId();
+        List<FlowerVariant> flowers = getPottableSmallFlowers();
+        for (FlowerVariant variant : flowers) {
+            ResourceLocation flowerId = BuiltInRegistries.BLOCK.getKey(variant.flower());
+            if (flowerId.equals(questFlower)) {
+                continue;
+            }
+
+            Item flowerItem = variant.flower().asItem();
+            if (flowerItem == Items.AIR) {
+                continue;
+            }
+
+            offers.add(new MerchantOffer(
+                    new ItemCost(Items.EMERALD, 1),
+                    new ItemStack(flowerItem),
+                    Integer.MAX_VALUE, 0, 0.0F
+            ));
+        }
+
+        return offers;
+    }
 }

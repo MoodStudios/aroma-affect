@@ -13,11 +13,11 @@ import java.util.List;
 
 /**
  * Singleton persistence manager for tracking history, saved entries, and blacklist.
- * Data is stored in {@code aromaaffect_history.json} in the config folder.
+ * Data is stored per-world in {@code config/aromaaffect/history_<worldId>.json}.
  */
 public final class TrackingHistoryData {
 
-    private static final String CONFIG_FILE_NAME = "aromaaffect_history.json";
+    private static final String LEGACY_CONFIG_FILE_NAME = "aromaaffect_history.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final int MAX_HISTORY_SIZE = 100;
 
@@ -34,6 +34,18 @@ public final class TrackingHistoryData {
             instance = load();
         }
         return instance;
+    }
+
+    /**
+     * Saves current data and clears the singleton so the next {@link #getInstance()}
+     * call loads the file for the (potentially different) current world.
+     * Call this when the player disconnects from a world/server.
+     */
+    public static void invalidate() {
+        if (instance != null) {
+            instance.save();
+        }
+        instance = null;
     }
 
     // ── History ──────────────────────────────────────────────────────────
@@ -69,6 +81,7 @@ public final class TrackingHistoryData {
                 customName,
                 source.categoryId,
                 source.x, source.y, source.z,
+                source.dimension,
                 System.currentTimeMillis()
         );
         saved.addFirst(entry);
@@ -108,6 +121,7 @@ public final class TrackingHistoryData {
                 source.displayName,
                 source.categoryId,
                 source.x, source.y, source.z,
+                source.dimension,
                 System.currentTimeMillis()
         );
         blacklist.addFirst(entry);
@@ -126,6 +140,7 @@ public final class TrackingHistoryData {
                 source.customName,
                 source.categoryId,
                 source.x, source.y, source.z,
+                source.dimension,
                 System.currentTimeMillis()
         );
         blacklist.addFirst(entry);
@@ -162,23 +177,21 @@ public final class TrackingHistoryData {
     // ── Persistence ──────────────────────────────────────────────────────
 
     private static TrackingHistoryData load() {
-        Path configPath = getConfigPath();
+        Path worldPath = getConfigPath();
 
-        if (Files.exists(configPath)) {
-            try {
-                String json = Files.readString(configPath);
-                TrackingHistoryData data = GSON.fromJson(json, TrackingHistoryData.class);
-                if (data != null) {
-                    // Ensure lists are never null after deserialization
-                    if (data.history == null) data.history = new ArrayList<>();
-                    if (data.saved == null) data.saved = new ArrayList<>();
-                    if (data.blacklist == null) data.blacklist = new ArrayList<>();
-                    AromaAffect.LOGGER.info("Loaded tracking history ({} history, {} saved, {} blacklisted)",
-                            data.history.size(), data.saved.size(), data.blacklist.size());
-                    return data;
-                }
-            } catch (Exception e) {
-                AromaAffect.LOGGER.warn("Failed to load tracking history, using defaults: {}", e.getMessage());
+        if (Files.exists(worldPath)) {
+            TrackingHistoryData data = loadFrom(worldPath);
+            if (data != null) return data;
+        }
+
+        // Migrate legacy global file if per-world file doesn't exist yet
+        Path legacyPath = Platform.getConfigFolder().resolve(LEGACY_CONFIG_FILE_NAME);
+        if (Files.exists(legacyPath)) {
+            TrackingHistoryData data = loadFrom(legacyPath);
+            if (data != null) {
+                AromaAffect.LOGGER.info("Migrated legacy tracking history to per-world file");
+                data.save(); // persist into the new per-world path
+                return data;
             }
         }
 
@@ -186,6 +199,24 @@ public final class TrackingHistoryData {
         TrackingHistoryData data = new TrackingHistoryData();
         data.save();
         return data;
+    }
+
+    private static TrackingHistoryData loadFrom(Path path) {
+        try {
+            String json = Files.readString(path);
+            TrackingHistoryData data = GSON.fromJson(json, TrackingHistoryData.class);
+            if (data != null) {
+                if (data.history == null) data.history = new ArrayList<>();
+                if (data.saved == null) data.saved = new ArrayList<>();
+                if (data.blacklist == null) data.blacklist = new ArrayList<>();
+                AromaAffect.LOGGER.info("Loaded tracking history from {} ({} history, {} saved, {} blacklisted)",
+                        path.getFileName(), data.history.size(), data.saved.size(), data.blacklist.size());
+                return data;
+            }
+        } catch (Exception e) {
+            AromaAffect.LOGGER.warn("Failed to load tracking history from {}: {}", path, e.getMessage());
+        }
+        return null;
     }
 
     public void save() {
@@ -200,6 +231,9 @@ public final class TrackingHistoryData {
     }
 
     private static Path getConfigPath() {
-        return Platform.getConfigFolder().resolve(CONFIG_FILE_NAME);
+        String worldId = WorldIdentifier.getCurrentWorldId();
+        return Platform.getConfigFolder()
+                .resolve("aromaaffect")
+                .resolve("history_" + worldId + ".json");
     }
 }

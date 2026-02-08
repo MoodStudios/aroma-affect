@@ -1,11 +1,15 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.biome.BiomeDefinition;
+import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
+import com.ovrtechnology.tracking.RequiredItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -178,7 +182,24 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         Component description = Component.translatable("menu.aromaaffect.biomes.card.description", displayName);
 
         ResourceLocation thumbnail = BiomeThumbnailResolver.resolve(biomeId);
-        cards.add(new SelectionCard(biomeId, displayName, icon, isUnlocked, description, thumbnail));
+        SelectionCard card = new SelectionCard(biomeId, displayName, icon, isUnlocked, description, thumbnail);
+
+        // Populate cost data from BiomeDefinitionLoader
+        BiomeDefinition biomeDef = BiomeDefinitionLoader.getBiomeById(biomeId.toString());
+        if (biomeDef != null) {
+            card.trackCost = biomeDef.getTrackCost();
+            RequiredItem req = biomeDef.getRequiredItem();
+            if (req != null && req.getItemId() != null) {
+                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                var itemOpt = BuiltInRegistries.ITEM.get(reqId);
+                if (itemOpt.isPresent()) {
+                    card.requiredItem = new ItemStack(itemOpt.get().value());
+                    card.requiredItemCount = req.getCount();
+                }
+            }
+        }
+
+        cards.add(card);
     }
 
     @Override
@@ -255,13 +276,15 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         int idColor = (int) (180 * animationProgress) << 24 | 0x888888;
         graphics.drawString(font, card.id.toString(), textX, y + rowHeight / 2 + 2, idColor);
 
-        // Tracking indicator
+        // Tracking indicator or cost section
         if (isTracking) {
             int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
             Component trackingLabel = Component.translatable("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
             graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - pad,
                     y + (rowHeight - 8) / 2, indicatorColor);
+        } else {
+            renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);
         }
     }
 }

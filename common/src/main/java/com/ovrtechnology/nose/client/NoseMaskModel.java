@@ -19,11 +19,23 @@ public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
     private static final int TEXTURE_WIDTH = 32;
     private static final int TEXTURE_HEIGHT = 32;
 
+    private final ModelPart noseMask;
     private final ModelPart strap;
 
     public NoseMaskModel(ModelPart root) {
         super(root, RenderType::armorCutoutNoCull);
-        this.strap = this.head.getChild("nose_mask").getChild("strap");
+        this.noseMask = this.head.getChild("nose_mask");
+        this.strap = this.noseMask.getChild("strap");
+    }
+
+    /**
+     * Controls visibility of the entire nose (mask + strap + extras).
+     * This is the key toggle — the equipment layer only resets standard
+     * HumanoidModel parts (head, hat, body, arms, legs) but never touches
+     * custom children like nose_mask, so this survives the pipeline reset.
+     */
+    public void setNoseMaskVisible(boolean visible) {
+        noseMask.visible = visible;
     }
 
     public void setStrapVisible(boolean visible) {

@@ -73,6 +73,27 @@
       ]
     },
     {
+      "id": "iron_nose_info",
+      "title": { "translate": "guide.aromaaffect.sniffer.iron_nose.title" },
+      "icon": { "type": "item", "item": "aromaaffect:iron_nose" },
+      "elements": [
+        { "type": "header", "translate": "guide.aromaaffect.sniffer.iron_nose.header" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:iron_nose", "translate": "guide.aromaaffect.sniffer.iron_nose.item_desc" },
+        { "type": "spacer", "height": 6 },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.iron_nose.desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "subheader", "translate": "guide.aromaaffect.sniffer.iron_nose.how_header" },
+        { "type": "text", "translate": "guide.aromaaffect.sniffer.iron_nose.how_desc" },
+        { "type": "spacer", "height": 4 },
+        { "type": "item_showcase", "item": "aromaaffect:special_rose", "translate": "guide.aromaaffect.sniffer.iron_nose.rose_desc" },
+        { "type": "spacer", "height": 8 },
+        { "type": "tip", "translate": "guide.aromaaffect.sniffer.iron_nose.tip" },
+        { "type": "spacer", "height": 6 },
+        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.iron_nose.link_enhanced", "target_page": "enhanced_sniffer_nose" }
+      ]
+    },
+    {
       "id": "enhanced_sniffer_nose",
       "title": { "translate": "guide.aromaaffect.sniffer.enhanced.title" },
       "icon": { "type": "item", "item": "aromaaffect:enhanced_sniffer_nose" },
@@ -98,15 +119,15 @@
         { "type": "crafting_grid",
           "grid": [
             "", "aromaaffect:overworld_scent", "",
-            "aromaaffect:nether_scent", "aromaaffect:ultimate_nose", "aromaaffect:end_scent",
+            "aromaaffect:nether_scent", "aromaaffect:iron_nose", "aromaaffect:end_scent",
             "", "minecraft:diamond", ""
           ],
           "result": "aromaaffect:enhanced_sniffer_nose",
           "translate": "guide.aromaaffect.sniffer.enhanced.recipe_label"
         },
         { "type": "spacer", "height": 6 },
-        { "type": "tip", "translate": "guide.aromaaffect.sniffer.enhanced.tip_dragon" },
-        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.enhanced.link_dragon", "target_page": "ultimate_nose" }
+        { "type": "tip", "translate": "guide.aromaaffect.sniffer.enhanced.tip_iron_nose" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.enhanced.link_iron_nose", "target_page": "iron_nose_info" }
       ]
     }
   ]

@@ -23,6 +23,10 @@ public final class ModSounds {
             () -> SoundEvent.createVariableRangeEvent(
                     ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniff")));
 
+    public static final RegistrySupplier<SoundEvent> OMARA_PUFF = SOUNDS.register("omara_puff",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff")));
+
     public static void init() {
         SOUNDS.register();
         AromaAffect.LOGGER.debug("Registered custom sound events");

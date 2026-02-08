@@ -2,9 +2,11 @@ package com.ovrtechnology.entity.nosesmith.client.dialogue;
 
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
+import com.ovrtechnology.network.NoseSmithTradeNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.KeyEvent;
@@ -59,6 +61,12 @@ public final class NoseSmithDialogueScreen extends Screen {
 
     private int keepAliveTicks = 0;
 
+    @Nullable
+    private Button closeButton;
+    @Nullable
+    private Button shopButton;
+    private boolean buttonsVisible = false;
+
     public NoseSmithDialogueScreen(NoseSmithEntity noseSmith) {
         super(noseSmith.getName());
         this.noseSmith = noseSmith;
@@ -70,6 +78,31 @@ public final class NoseSmithDialogueScreen extends Screen {
     protected void init() {
         rebuildDialogue(true);
         sendTalkingState(true);
+
+        int bottom = this.height - BOX_MARGIN;
+        int right = this.width - BOX_MARGIN;
+        int buttonWidth = 60;
+        int buttonHeight = 20;
+        int buttonY = bottom - PADDING - buttonHeight;
+        int gap = 6;
+
+        shopButton = Button.builder(Component.literal("Shop"), btn -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.level != null) {
+                NoseSmithTradeNetworking.sendOpenShop(minecraft.level.registryAccess(), noseSmith.getId());
+            }
+            onClose();
+        }).bounds(right - PADDING - buttonWidth, buttonY, buttonWidth, buttonHeight).build();
+
+        closeButton = Button.builder(Component.literal("Close"), btn -> onClose())
+                .bounds(right - PADDING - buttonWidth * 2 - gap, buttonY, buttonWidth, buttonHeight).build();
+
+        shopButton.visible = false;
+        closeButton.visible = false;
+        buttonsVisible = false;
+
+        addRenderableWidget(closeButton);
+        addRenderableWidget(shopButton);
     }
 
     @Override
@@ -96,6 +129,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
         if (typedCodepoints >= totalCodepoints) {
             finished = true;
+            showButtons();
             return;
         }
 
@@ -109,6 +143,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
         if (typedCodepoints >= totalCodepoints) {
             finished = true;
+            showButtons();
         }
     }
 
@@ -203,12 +238,7 @@ public final class NoseSmithDialogueScreen extends Screen {
             }
         }
 
-        if (finished) {
-            Component hint = Component.literal("Click to close").withStyle(ChatFormatting.DARK_GRAY);
-            int hintX = x + width - this.font.width(hint);
-            int hintY = y + (4 * (this.font.lineHeight + 2));
-            guiGraphics.drawString(this.font, hint, hintX, hintY, 0xFFAAAAAA, false);
-        }
+        // Buttons handle close/shop actions when typing is finished
     }
 
     @Override
@@ -216,6 +246,10 @@ public final class NoseSmithDialogueScreen extends Screen {
         if (!finished) {
             finishTyping();
             return true;
+        }
+
+        if (buttonsVisible) {
+            return super.mouseClicked(event, doubleClick);
         }
 
         onClose();
@@ -233,10 +267,12 @@ public final class NoseSmithDialogueScreen extends Screen {
         if (keyCode == GLFW.GLFW_KEY_SPACE || keyCode == GLFW.GLFW_KEY_ENTER) {
             if (!finished) {
                 finishTyping();
-            } else {
-                onClose();
+                return true;
             }
-            return true;
+            if (!buttonsVisible) {
+                onClose();
+                return true;
+            }
         }
 
         return super.keyPressed(event);
@@ -250,6 +286,20 @@ public final class NoseSmithDialogueScreen extends Screen {
     private void finishTyping() {
         typedCodepoints = totalCodepoints;
         finished = true;
+        showButtons();
+    }
+
+    private void showButtons() {
+        if (buttonsVisible) {
+            return;
+        }
+        buttonsVisible = true;
+        if (closeButton != null) {
+            closeButton.visible = true;
+        }
+        if (shopButton != null) {
+            shopButton.visible = true;
+        }
     }
 
     private void rebuildDialogue(boolean resetTypewriter) {
@@ -329,7 +379,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         int semitone = HARMONY_SEMITONES[random.nextInt(HARMONY_SEMITONES.length)] + octaveShift;
         float pitch = (float) Math.pow(2.0D, semitone / 12.0D);
 
-        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.35F, pitch));
+        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
     }
 
     private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {

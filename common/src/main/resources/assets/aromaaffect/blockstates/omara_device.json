@@ -1,27 +1,136 @@
 {
   "variants": {
-    "facing=down": {
-      "model": "aromaaffect:block/omara_device",
-      "x": 90
-    },
-    "facing=east": {
-      "model": "aromaaffect:block/omara_device",
-      "y": 90
-    },
-    "facing=north": {
+    "facing=north,mount=0,wall=false": {
       "model": "aromaaffect:block/omara_device"
     },
-    "facing=south": {
+    "facing=south,mount=0,wall=false": {
       "model": "aromaaffect:block/omara_device",
       "y": 180
     },
-    "facing=up": {
+    "facing=east,mount=0,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 90
+    },
+    "facing=west,mount=0,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 270
+    },
+    "facing=north,mount=1,wall=false": {
+      "model": "aromaaffect:block/omara_device"
+    },
+    "facing=south,mount=1,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 180
+    },
+    "facing=east,mount=1,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 90
+    },
+    "facing=west,mount=1,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 270
+    },
+    "facing=north,mount=2,wall=false": {
+      "model": "aromaaffect:block/omara_device"
+    },
+    "facing=south,mount=2,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 180
+    },
+    "facing=east,mount=2,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 90
+    },
+    "facing=west,mount=2,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 270
+    },
+    "facing=north,mount=3,wall=false": {
+      "model": "aromaaffect:block/omara_device"
+    },
+    "facing=south,mount=3,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 180
+    },
+    "facing=east,mount=3,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 90
+    },
+    "facing=west,mount=3,wall=false": {
+      "model": "aromaaffect:block/omara_device",
+      "y": 270
+    },
+    "facing=north,mount=0,wall=true": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,mount=0,wall=true": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 90
+    },
+    "facing=east,mount=0,wall=true": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,mount=0,wall=true": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north,mount=1,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side"
+    },
+    "facing=south,mount=1,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side",
+      "y": 180
+    },
+    "facing=east,mount=1,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side",
+      "y": 90
+    },
+    "facing=west,mount=1,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side",
+      "y": 270
+    },
+    "facing=north,mount=2,wall=true": {
       "model": "aromaaffect:block/omara_device",
       "x": 270
     },
-    "facing=west": {
+    "facing=south,mount=2,wall=true": {
       "model": "aromaaffect:block/omara_device",
+      "x": 270,
+      "y": 180
+    },
+    "facing=east,mount=2,wall=true": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 270,
+      "y": 90
+    },
+    "facing=west,mount=2,wall=true": {
+      "model": "aromaaffect:block/omara_device",
+      "x": 270,
       "y": 270
+    },
+    "facing=north,mount=3,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side",
+      "x": 180,
+      "y": 180
+    },
+    "facing=south,mount=3,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side",
+      "x": 180
+    },
+    "facing=east,mount=3,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side",
+      "x": 180,
+      "y": 270
+    },
+    "facing=west,mount=3,wall=true": {
+      "model": "aromaaffect:block/omara_device_wall_side",
+      "x": 180,
+      "y": 90
     }
   }
 }

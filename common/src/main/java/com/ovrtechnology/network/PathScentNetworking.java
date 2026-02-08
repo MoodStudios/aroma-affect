@@ -117,12 +117,16 @@ public final class PathScentNetworking {
 
                 // Capture to tracking history
                 if (ActiveTrackingState.getTargetId() != null && ActiveTrackingState.getCategory() != null) {
+                    String dimension = Minecraft.getInstance().level != null
+                            ? Minecraft.getInstance().level.dimension().location().toString()
+                            : "minecraft:overworld";
                     TrackingHistoryData.getInstance().addHistoryEntry(new HistoryEntry(
                             ActiveTrackingState.getTargetId().toString(),
                             ActiveTrackingState.getDisplayName() != null
                                     ? ActiveTrackingState.getDisplayName().getString() : "",
                             ActiveTrackingState.getCategory().getId(),
                             destination.getX(), destination.getY(), destination.getZ(),
+                            dimension,
                             System.currentTimeMillis()
                     ));
                 }

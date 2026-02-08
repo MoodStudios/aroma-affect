@@ -1,8 +1,11 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.flower.FlowerDefinition;
+import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
+import com.ovrtechnology.tracking.RequiredItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -153,7 +156,24 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         Component displayName = Component.literal(flowerName);
         Component description = Component.translatable("menu.aromaaffect.flowers.card.description", displayName);
 
-        cards.add(new SelectionCard(flowerId, displayName, icon, isUnlocked, description));
+        SelectionCard card = new SelectionCard(flowerId, displayName, icon, isUnlocked, description);
+
+        // Populate cost data from FlowerDefinitionLoader
+        FlowerDefinition flowerDef = FlowerDefinitionLoader.getFlowerById(flowerId.toString());
+        if (flowerDef != null) {
+            card.trackCost = flowerDef.getTrackCost();
+            RequiredItem req = flowerDef.getRequiredItem();
+            if (req != null && req.getItemId() != null) {
+                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                var itemOpt = BuiltInRegistries.ITEM.get(reqId);
+                if (itemOpt.isPresent()) {
+                    card.requiredItem = new ItemStack(itemOpt.get().value());
+                    card.requiredItemCount = req.getCount();
+                }
+            }
+        }
+
+        cards.add(card);
     }
 
     @Override
@@ -279,6 +299,8 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             int labelWidth = font.width(trackingLabel);
             graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - ROW_PADDING,
                     y + (rowHeight - 8) / 2, indicatorColor);
+        } else {
+            renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);
         }
     }
 

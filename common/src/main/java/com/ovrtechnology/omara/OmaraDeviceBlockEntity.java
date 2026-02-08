@@ -1,6 +1,7 @@
 package com.ovrtechnology.omara;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItem;
@@ -104,6 +105,11 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
     }
 
     @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return stack.getItem() instanceof ScentItem si && si.getDefinition().isCapsule();
+    }
+
+    @Override
     public void setItem(int slot, ItemStack stack) {
         ItemStack oldStack = getItem(slot);
         boolean wasEmpty = oldStack.isEmpty();
@@ -161,19 +167,25 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
                 be.cooldownTicks = 0;
                 be.setChanged();
             }
+            // Keep wasPowered in sync so inserting a capsule while powered doesn't trigger an immediate puff
+            be.wasPowered = level.hasNeighborSignal(pos);
             return;
         }
 
         ScentItem si = (ScentItem) capsule.getItem();
 
         if (be.mode == MODE_AUTO) {
-            // Automatic mode: decrement cooldown, puff when it reaches 0
-            if (be.cooldownTicks > 0) {
-                be.cooldownTicks--;
+            // Automatic mode: when cooldownTicks is 0, start a new countdown (no immediate puff)
+            if (be.cooldownTicks <= 0) {
+                be.cooldownTicks = be.getMaxCooldownForCurrentMode();
                 be.setChanged();
                 return;
             }
-            be.puff(level, pos, state, capsule, si);
+            be.cooldownTicks--;
+            be.setChanged();
+            if (be.cooldownTicks <= 0) {
+                be.puff(level, pos, state, capsule, si);
+            }
         } else {
             // Redstone mode: puff on rising edge when cooldown is 0
             boolean powered = level.hasNeighborSignal(pos);
@@ -210,6 +222,9 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         // Reset cooldown based on current mode
         cooldownTicks = getMaxCooldownForCurrentMode();
 
+        // Play puff sound (3D spatial, audible nearby)
+        serverLevel.playSound(null, pos, ModSounds.OMARA_PUFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+
         // Spawn particles
         spawnPuffParticles(serverLevel, pos, state, scentName);
 
@@ -226,8 +241,8 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         int argb = (255 << 24) | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
         var particle = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, argb);
 
-        Direction facing = state.getValue(OmaraDeviceBlock.FACING);
-        Vec3 dir = directionToVec3(facing);
+        Direction mouthDir = getMouthDirection(state);
+        Vec3 dir = directionToVec3(mouthDir);
         Vec3 center = Vec3.atCenterOf(pos).add(dir.scale(0.6));
 
         var random = serverLevel.getRandom();
@@ -251,6 +266,24 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
             serverLevel.sendParticles(particle, px, py, pz, 1,
                     dir.x * 0.05, dir.y * 0.05, dir.z * 0.05, 0.02);
         }
+    }
+
+    private static Direction getMouthDirection(BlockState state) {
+        Direction facing = state.getValue(OmaraDeviceBlock.FACING);
+        boolean wall = state.getValue(OmaraDeviceBlock.WALL);
+
+        if (!wall) {
+            return facing.getOpposite();
+        }
+
+        int mount = state.getValue(OmaraDeviceBlock.MOUNT);
+        return switch (mount) {
+            case 0 -> Direction.UP;
+            case 2 -> Direction.DOWN;
+            case 1 -> facing.getClockWise();
+            case 3 -> facing.getCounterClockWise();
+            default -> facing.getOpposite();
+        };
     }
 
     private static Vec3 directionToVec3(Direction direction) {
