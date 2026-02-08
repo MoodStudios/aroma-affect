@@ -1,5 +1,7 @@
 package com.ovrtechnology.nose.client;
 
+import com.ovrtechnology.AromaAffect;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +38,13 @@ public final class NoseRenderPreferencesManager {
     }
 
     public static void setClientPrefs(UUID playerUuid, boolean noseEnabled, boolean strapEnabled) {
-        clientCache.put(playerUuid, new NosePrefs(noseEnabled, strapEnabled));
+        NosePrefs oldPrefs = clientCache.get(playerUuid);
+        NosePrefs newPrefs = new NosePrefs(noseEnabled, strapEnabled);
+        clientCache.put(playerUuid, newPrefs);
+        if (oldPrefs == null || !oldPrefs.equals(newPrefs)) {
+            AromaAffect.LOGGER.debug("[NOSE-CACHE] CLIENT set uuid={} nose={} strap={}",
+                    shortUuid(playerUuid), noseEnabled, strapEnabled);
+        }
     }
 
     public static void clearClientCache() {
@@ -59,5 +67,11 @@ public final class NoseRenderPreferencesManager {
 
     public static Iterable<Map.Entry<UUID, NosePrefs>> getAllServerPrefs() {
         return serverStore.entrySet();
+    }
+
+    private static String shortUuid(UUID uuid) {
+        if (uuid == null) return "null";
+        String s = uuid.toString();
+        return s.substring(0, 8) + "...";
     }
 }

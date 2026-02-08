@@ -49,16 +49,16 @@ public final class NoseRenderNetworking {
             boolean strapEnabled = buf.readBoolean();
 
             context.queue(() -> {
+                UUID localUuid = net.minecraft.client.Minecraft.getInstance().player != null
+                        ? net.minecraft.client.Minecraft.getInstance().player.getUUID() : null;
+                boolean isSelf = localUuid != null && playerUuid.equals(localUuid);
+
                 // Local player preferences are authoritative on this client.
-                // Ignore echoed server packets for self to avoid out-of-order flicker/desync
-                // when toggling rapidly.
-                if (net.minecraft.client.Minecraft.getInstance().player != null
-                        && playerUuid.equals(net.minecraft.client.Minecraft.getInstance().player.getUUID())) {
+                // Ignore echoed server packets for self to avoid desync when toggling rapidly.
+                if (isSelf) {
                     return;
                 }
                 NoseRenderPreferencesManager.setClientPrefs(playerUuid, noseEnabled, strapEnabled);
-                AromaAffect.LOGGER.debug("Received nose prefs for {}: nose={}, strap={}",
-                        playerUuid, noseEnabled, strapEnabled);
             });
         });
 
@@ -77,16 +77,12 @@ public final class NoseRenderNetworking {
                     if (server != null) {
                         broadcastPrefs(server, uuid, noseEnabled, strapEnabled);
                     }
-
-                    AromaAffect.LOGGER.debug("Received nose prefs from {}: nose={}, strap={}",
-                            serverPlayer.getName().getString(), noseEnabled, strapEnabled);
                 }
             });
         });
 
         // When a player joins, send them all existing player preferences
         PlayerEvent.PLAYER_JOIN.register(serverPlayer -> {
-            // Send all stored preferences to the new player
             for (Map.Entry<UUID, NoseRenderPreferencesManager.NosePrefs> entry
                     : NoseRenderPreferencesManager.getAllServerPrefs()) {
                 sendPrefsToPlayer(serverPlayer, entry.getKey(),

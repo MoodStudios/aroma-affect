@@ -15,54 +15,75 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
+/**
+ * NeoForge-specific armor model provider for the Nose item.
+ *
+ * <p>Uses three pre-configured immutable model instances to avoid shared
+ * mutable state corruption in deferred renders.</p>
+ *
+ * <p>Entity identification relies on {@link NoseRenderContext}, which is set
+ * by {@code LivingEntityRendererMixin} at the HEAD of
+ * {@code LivingEntityRenderer.submit()}, BEFORE equipment layers run.</p>
+ */
 public final class NoseItemClientExtensions implements IClientItemExtensions {
-    private static volatile NoseMaskModel model;
-    private static int debugCounter = 0;
-    private static final int DEBUG_INTERVAL = 200;
+    private static volatile NoseMaskModel hiddenModel;
+    private static volatile NoseMaskModel visibleNoStrapModel;
+    private static volatile NoseMaskModel visibleWithStrapModel;
 
-    private static NoseRenderPreferencesManager.NosePrefs getCurrentEntityPrefs() {
+    private static void ensureModels() {
+        if (hiddenModel != null) return;
+
+        var entityModels = Minecraft.getInstance().getEntityModels();
+
+        hiddenModel = new NoseMaskModel(entityModels.bakeLayer(NoseModelLayers.NOSE_MASK));
+        hiddenModel.setAllVisible(false);
+        hiddenModel.head.visible = true;
+        hiddenModel.hat.visible = true;
+        hiddenModel.setNoseMaskVisible(false);
+
+        visibleNoStrapModel = new NoseMaskModel(entityModels.bakeLayer(NoseModelLayers.NOSE_MASK));
+        visibleNoStrapModel.setAllVisible(false);
+        visibleNoStrapModel.head.visible = true;
+        visibleNoStrapModel.hat.visible = true;
+        visibleNoStrapModel.setNoseMaskVisible(true);
+        visibleNoStrapModel.setStrapVisible(false);
+
+        visibleWithStrapModel = new NoseMaskModel(entityModels.bakeLayer(NoseModelLayers.NOSE_MASK));
+        visibleWithStrapModel.setAllVisible(false);
+        visibleWithStrapModel.head.visible = true;
+        visibleWithStrapModel.hat.visible = true;
+        visibleWithStrapModel.setNoseMaskVisible(true);
+        visibleWithStrapModel.setStrapVisible(true);
+    }
+
+    /**
+     * Resolves nose render preferences for the entity currently being rendered.
+     * The UUID comes from {@link NoseRenderContext}, set by our mixin at the
+     * HEAD of {@code LivingEntityRenderer.submit()}.
+     */
+    private static NoseRenderPreferencesManager.NosePrefs resolvePrefs() {
+        Minecraft mc = Minecraft.getInstance();
         UUID entityUuid = NoseRenderContext.getCurrentEntityUuid();
-        String branch;
-        NoseRenderPreferencesManager.NosePrefs result;
+        UUID localUuid = mc.player != null ? mc.player.getUUID() : null;
 
-        // Check if this UUID belongs to a known REMOTE player (in the prefs cache).
-        // Skip the local player UUID — for ourselves we always use the direct toggles.
-        UUID localUuid = Minecraft.getInstance().player != null
-                ? Minecraft.getInstance().player.getUUID() : null;
+        // Local player — use direct toggle state
+        if (entityUuid != null && entityUuid.equals(localUuid)) {
+            boolean noseEnabled = NoseRenderToggles.isNoseEnabled();
+            boolean strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
+            return new NoseRenderPreferencesManager.NosePrefs(noseEnabled, strapEnabled);
+        }
 
-        if (entityUuid != null && localUuid != null
-                && !entityUuid.equals(localUuid)) {
-            // Not the local player — check if it's a known remote player
+        // Remote player — use server-synced preferences cache
+        if (entityUuid != null) {
             NoseRenderPreferencesManager.NosePrefs remotePrefs =
                     NoseRenderPreferencesManager.getClientPrefsIfPresent(entityUuid);
             if (remotePrefs != null) {
-                result = remotePrefs;
-                branch = "REMOTE_PLAYER";
-            } else {
-                // Unknown UUID (mob/villager/etc with extractRenderState desync) —
-                // treat as local player since only NoseItem wearers reach this code
-                boolean noseEnabled = NoseRenderToggles.isNoseEnabled();
-                boolean strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
-                result = new NoseRenderPreferencesManager.NosePrefs(noseEnabled, strapEnabled);
-                branch = "UNKNOWN_UUID_FALLBACK";
+                return remotePrefs;
             }
-        } else {
-            // Local player UUID match, or no UUID, or no local player yet
-            boolean noseEnabled = NoseRenderToggles.isNoseEnabled();
-            boolean strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
-            result = new NoseRenderPreferencesManager.NosePrefs(noseEnabled, strapEnabled);
-            branch = (entityUuid != null && entityUuid.equals(localUuid))
-                    ? "LOCAL_PLAYER" : "NO_UUID";
         }
 
-        if (++debugCounter >= DEBUG_INTERVAL) {
-            debugCounter = 0;
-            AromaAffect.LOGGER.info("[NeoForgeNoseRenderer] branch={}, entityUuid={}, localUuid={}, noseEnabled={}, strapEnabled={}, toggleNose={}, toggleStrap={}",
-                    branch, entityUuid, localUuid, result.noseEnabled(), result.strapEnabled(),
-                    NoseRenderToggles.isNoseEnabled(), NoseRenderToggles.isStrapEnabled());
-        }
-
-        return result;
+        // Fallback — default to visible (only nose-equipped entities reach here)
+        return new NoseRenderPreferencesManager.NosePrefs(true, false);
     }
 
     @Override
@@ -71,30 +92,14 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
             return original;
         }
 
-        NoseMaskModel baked = model;
-        if (baked == null) {
-            baked = new NoseMaskModel(
-                    Minecraft.getInstance().getEntityModels().bakeLayer(NoseModelLayers.NOSE_MASK)
-            );
-            model = baked;
-            AromaAffect.LOGGER.info("[NeoForgeNoseRenderer] NoseMaskModel baked for first time");
-        }
+        ensureModels();
 
-        NoseRenderPreferencesManager.NosePrefs prefs = getCurrentEntityPrefs();
+        NoseRenderPreferencesManager.NosePrefs prefs = resolvePrefs();
+
         if (!prefs.noseEnabled()) {
-            // Hide the nose_mask child directly. The equipment layer resets
-            // standard HumanoidModel parts (head=true for HEAD slot) but never
-            // touches custom children, so this survives the pipeline reset.
-            baked.setNoseMaskVisible(false);
-            return baked;
+            return hiddenModel;
         }
-
-        baked.setAllVisible(false);
-        baked.head.visible = true;
-        baked.hat.visible = true;
-        baked.setNoseMaskVisible(true);
-        baked.setStrapVisible(prefs.strapEnabled());
-        return baked;
+        return prefs.strapEnabled() ? visibleWithStrapModel : visibleNoStrapModel;
     }
 
     @Override
@@ -104,15 +109,11 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
             EquipmentClientInfo.Layer layer,
             ResourceLocation defaultTexture
     ) {
-        // Always return the nose texture so that, even when the model is
-        // invisible, the equipment layer never falls back to a vanilla
-        // helmet texture.
         return NoseClient.getArmorTexture(stack);
     }
 
     @Override
     public int getArmorLayerTintColor(ItemStack stack, EquipmentClientInfo.Layer layer, int layerIdx, int defaultColor) {
-        // Render only the base layer, with no tinting.
         return layerIdx == 0 ? 0xFFFFFFFF : 0;
     }
 }

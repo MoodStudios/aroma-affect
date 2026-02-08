@@ -2,10 +2,10 @@ package com.ovrtechnology.fabric.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.nose.client.EntityRenderStateAccess;
 import com.ovrtechnology.nose.client.NoseClient;
 import com.ovrtechnology.nose.client.NoseMaskModel;
 import com.ovrtechnology.nose.client.NoseModelLayers;
-import com.ovrtechnology.nose.client.NoseRenderContext;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
 import java.util.UUID;
@@ -22,14 +22,39 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
+/**
+ * Fabric-specific armor renderer for the Nose item.
+ *
+ * <p>Uses three pre-configured immutable model instances to avoid shared
+ * mutable state that corrupts deferred renders in multiplayer.</p>
+ */
 public final class NoseArmorRenderer implements ArmorRenderer {
-    private final NoseMaskModel model;
-    private static int debugCounter = 0;
-    private static final int DEBUG_INTERVAL = 200; // Log every ~200 frames (~3s at 60fps)
+    private final NoseMaskModel hiddenModel;
+    private final NoseMaskModel visibleNoStrapModel;
+    private final NoseMaskModel visibleWithStrapModel;
 
     public NoseArmorRenderer(EntityRendererProvider.Context context) {
-        this.model = new NoseMaskModel(context.bakeLayer(NoseModelLayers.NOSE_MASK));
-        AromaAffect.LOGGER.info("[FabricNoseRenderer] Constructor called — custom ArmorRenderer created");
+        hiddenModel = new NoseMaskModel(context.bakeLayer(NoseModelLayers.NOSE_MASK));
+        hiddenModel.setAllVisible(false);
+        hiddenModel.head.visible = true;
+        hiddenModel.hat.visible = true;
+        hiddenModel.setNoseMaskVisible(false);
+
+        visibleNoStrapModel = new NoseMaskModel(context.bakeLayer(NoseModelLayers.NOSE_MASK));
+        visibleNoStrapModel.setAllVisible(false);
+        visibleNoStrapModel.head.visible = true;
+        visibleNoStrapModel.hat.visible = true;
+        visibleNoStrapModel.setNoseMaskVisible(true);
+        visibleNoStrapModel.setStrapVisible(false);
+
+        visibleWithStrapModel = new NoseMaskModel(context.bakeLayer(NoseModelLayers.NOSE_MASK));
+        visibleWithStrapModel.setAllVisible(false);
+        visibleWithStrapModel.head.visible = true;
+        visibleWithStrapModel.hat.visible = true;
+        visibleWithStrapModel.setNoseMaskVisible(true);
+        visibleWithStrapModel.setStrapVisible(true);
+
+        AromaAffect.LOGGER.info("[FabricNoseRenderer] Created 3 immutable NoseMaskModel instances");
     }
 
     @Override
@@ -46,59 +71,53 @@ public final class NoseArmorRenderer implements ArmorRenderer {
             return;
         }
 
-        // Determine nose preferences.
-        // In 1.21, extractRenderState runs for all entities before rendering,
-        // so NoseRenderContext UUID may belong to a different entity (mob/villager).
-        // Only use remote player prefs for UUIDs that are KNOWN remote players.
-        UUID entityUuid = NoseRenderContext.getCurrentEntityUuid();
+        // Read UUID from the render state (set by EntityRendererMixin during submit).
+        // This is more reliable than the global NoseRenderContext because it survives
+        // MC 1.21's batched extractRenderState pipeline.
+        UUID entityUuid = null;
+        if (bipedEntityRenderState instanceof EntityRenderStateAccess access) {
+            entityUuid = access.aromaaffect$getEntityUuid();
+        }
+
         UUID localUuid = Minecraft.getInstance().player != null
                 ? Minecraft.getInstance().player.getUUID() : null;
+
         boolean noseEnabled;
         boolean strapEnabled;
-        String branch;
 
-        if (entityUuid != null && localUuid != null
-                && !entityUuid.equals(localUuid)) {
-            // Not the local player — check if it's a known remote player
+        if (entityUuid != null && entityUuid.equals(localUuid)) {
+            // Local player — use direct toggle state
+            noseEnabled = NoseRenderToggles.isNoseEnabled();
+            strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
+        } else if (entityUuid != null) {
+            // Remote player — use server-synced preferences cache
             NoseRenderPreferencesManager.NosePrefs remotePrefs =
                     NoseRenderPreferencesManager.getClientPrefsIfPresent(entityUuid);
             if (remotePrefs != null) {
                 noseEnabled = remotePrefs.noseEnabled();
                 strapEnabled = remotePrefs.strapEnabled();
-                branch = "REMOTE_PLAYER";
             } else {
-                // Unknown UUID (mob/villager with extractRenderState desync)
-                noseEnabled = NoseRenderToggles.isNoseEnabled();
-                strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
-                branch = "UNKNOWN_UUID_FALLBACK";
+                // Unknown entity — default to visible
+                noseEnabled = true;
+                strapEnabled = false;
             }
         } else {
-            // Local player or no UUID
-            noseEnabled = NoseRenderToggles.isNoseEnabled();
-            strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
-            branch = (entityUuid != null && entityUuid.equals(localUuid))
-                    ? "LOCAL_PLAYER" : "NO_UUID";
+            // No UUID available — default to visible
+            noseEnabled = true;
+            strapEnabled = false;
         }
 
-        if (++debugCounter >= DEBUG_INTERVAL) {
-            debugCounter = 0;
-            AromaAffect.LOGGER.info("[FabricNoseRenderer] branch={}, entityUuid={}, localUuid={}, noseEnabled={}, strapEnabled={}, toggleNose={}, toggleStrap={}",
-                    branch, entityUuid, localUuid, noseEnabled, strapEnabled,
-                    NoseRenderToggles.isNoseEnabled(), NoseRenderToggles.isStrapEnabled());
+        // Select the appropriate pre-configured immutable model
+        NoseMaskModel model;
+        if (!noseEnabled) {
+            model = hiddenModel;
+        } else {
+            model = strapEnabled ? visibleWithStrapModel : visibleNoStrapModel;
         }
 
         if (!noseEnabled) {
-            // Hide nose_mask directly in case the Fabric ArmorRenderer API
-            // still allows some vanilla rendering to leak through.
-            model.setNoseMaskVisible(false);
             return;
         }
-
-        model.setAllVisible(false);
-        model.head.visible = true;
-        model.hat.visible = true;
-        model.setNoseMaskVisible(true);
-        model.setStrapVisible(strapEnabled);
 
         ResourceLocation texture = NoseClient.getArmorTexture(stack);
         RenderType renderType = RenderType.armorCutoutNoCull(texture);
