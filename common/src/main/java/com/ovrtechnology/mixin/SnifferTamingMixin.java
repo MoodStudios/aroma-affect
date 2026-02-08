@@ -29,6 +29,8 @@ import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -65,8 +67,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Unique
     private static final int SCENT_DROP_DELAY_TICKS = 25; // ~1.25 segundos de delay para sincronizar con animación
 
-    @Unique
-    private static final int ENHANCED_SEARCH_INTERVAL = 200; // 10 segundos (200 ticks)
 
     // Probabilidades de drop con Enhanced Nose (usando un solo roll):
     // 0-25%: Mineral, 25-43.75%: Scent Base, 43.75-100%: Solo semilla
@@ -75,15 +75,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Unique
     private static final double SCENT_BASE_DROP_THRESHOLD = 43.75; // 25 + (75 * 0.25)
 
-    // Contador para búsqueda con nariz mejorada
-    @Unique
-    private int aromaaffect$enhancedSearchTimer = 0;
-
-    // Contador para forzar estado SEARCHING (evita que la IA vanilla lo cancele)
-    @Unique
-    private int aromaaffect$forceSearchingTicks = 0;
-    @Unique
-    private static final int FORCE_SEARCHING_DURATION = 100; // 5 segundos forzando búsqueda
 
     // Campos para el drop con delay
     @Unique
@@ -199,43 +190,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             }
         }
 
-        // Búsqueda forzada cada 10 segundos cuando tiene la nariz mejorada equipada
-        // El timer siempre corre si está domado y no montado (no se resetea al quitar nariz para evitar exploits)
-        if (!self.level().isClientSide() && data.ownerUUID != null && !self.isVehicle()) {
-            aromaaffect$enhancedSearchTimer++;
-
-            // Manejar búsqueda forzada activa
-            if (aromaaffect$forceSearchingTicks > 0) {
-                Sniffer.State currentState = getState();
-
-                // Si empezó a excavar, dejar de forzar (encontró algo)
-                if (currentState == Sniffer.State.DIGGING || currentState == Sniffer.State.RISING) {
-                    aromaaffect$forceSearchingTicks = 0;
-                } else {
-                    // Mantener en SEARCHING
-                    aromaaffect$forceSearchingTicks--;
-                    if (currentState != Sniffer.State.SEARCHING && currentState != Sniffer.State.SCENTING) {
-                        self.transitionTo(Sniffer.State.SEARCHING);
-                    }
-                }
-            }
-
-            // Activar nueva búsqueda cada 10 segundos
-            if (aromaaffect$enhancedSearchTimer >= ENHANCED_SEARCH_INTERVAL) {
-                aromaaffect$enhancedSearchTimer = 0;
-
-                // Solo forzar búsqueda si tiene nariz y no está excavando
-                SnifferContainer noseContainer = new SnifferContainer(self);
-                if (noseContainer.hasSnifferNose()) {
-                    Sniffer.State currentState = getState();
-                    if (currentState != Sniffer.State.DIGGING && currentState != Sniffer.State.RISING) {
-                        aromaaffect$forceSearchingTicks = FORCE_SEARCHING_DURATION;
-                        self.transitionTo(Sniffer.State.SEARCHING);
-                    }
-                }
-            }
-        }
-
         // Manejar el drop de esencia con delay
         if (!self.level().isClientSide() && aromaaffect$pendingScentDrop != null) {
             aromaaffect$scentDropCountdown--;
@@ -245,6 +199,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 aromaaffect$executeDelayedScentDrop(self, data);
             }
         }
+
     }
 
     @Override
@@ -308,6 +263,17 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Inject(method = "canDig(Lnet/minecraft/core/BlockPos;)Z", at = @At("HEAD"), cancellable = true)
     private void aromaaffect$canDigEnhanced(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         Sniffer self = (Sniffer) (Object) this;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+        SnifferContainer container = new SnifferContainer(self);
+
+        // Si tiene nariz equipada, puede excavar en cualquier bloque sólido
+        if (data.ownerUUID != null && container.hasSnifferNose()) {
+            BlockState blockState = self.level().getBlockState(pos.below());
+            if (blockState.isSolid()) {
+                cir.setReturnValue(true);
+                return;
+            }
+        }
 
         // Cualquier sniffer puede excavar en bloques del Nether/End (para obtener esencias)
         BlockState blockState = self.level().getBlockState(pos.below());
@@ -516,6 +482,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         );
     }
 
+
     @Inject(method = "onDiggingComplete", at = @At("TAIL"))
     private void aromaaffect$onFinishDigging(boolean found, CallbackInfoReturnable<Sniffer> cir) {
         Sniffer self = (Sniffer) (Object) this;
@@ -537,6 +504,13 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             return;
         }
 
+        // Resetear el cooldown de búsqueda para que vuelva a buscar rápido
+        // Borrar la memoria de que ya olfateó para que pueda hacerlo de nuevo
+        self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
+        self.getBrain().eraseMemory(MemoryModuleType.SNIFF_COOLDOWN);
+
+        // Activar la actividad de búsqueda después de un delay corto (10 segundos = 200 ticks)
+        self.getBrain().setMemoryWithExpiry(MemoryModuleType.SNIFF_COOLDOWN, Unit.INSTANCE, 200L);
     }
 
     @Unique
