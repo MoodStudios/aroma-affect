@@ -1,6 +1,7 @@
 package com.ovrtechnology.history;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.storage.LevelResource;
 
 /**
  * Resolves a unique identifier for the current world/server,
@@ -8,13 +9,15 @@ import net.minecraft.client.Minecraft;
  */
 public final class WorldIdentifier {
 
+    private static final LevelResource ROOT = new LevelResource("");
+
     private WorldIdentifier() {}
 
     /**
      * Returns a sanitized ID for the current world:
      * <ul>
      *   <li>Multiplayer: {@code mp_<server_ip>}</li>
-     *   <li>Singleplayer: {@code sp_<level_name>}</li>
+     *   <li>Singleplayer: {@code sp_<save_folder_name>} (unique per world)</li>
      *   <li>Unknown: {@code unknown}</li>
      * </ul>
      */
@@ -24,7 +27,13 @@ public final class WorldIdentifier {
             return sanitize("mp_" + mc.getCurrentServer().ip);
         }
         if (mc.getSingleplayerServer() != null) {
-            return sanitize("sp_" + mc.getSingleplayerServer().getWorldData().getLevelName());
+            // Use the save folder name (unique) instead of the display name (not unique).
+            // e.g. "New World" folder vs "New World (2)" folder for two worlds named "New World".
+            String folderName = mc.getSingleplayerServer()
+                    .getWorldPath(ROOT)
+                    .getFileName()
+                    .toString();
+            return sanitize("sp_" + folderName);
         }
         return "unknown";
     }
