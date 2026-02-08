@@ -260,10 +260,18 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     // 3. Sin necesidad de estar domado ni con nariz
     // 4. Con 100% de probabilidad si no la ha sacado
 
+    // ==========================================
+    // SISTEMA DE BONANZA CON ENHANCED NOSE
+    // ==========================================
+    // Cuando tiene la nariz equipada, en UNA excavación saca TODO junto:
+    // - 5-15 de CADA mineral (cobre, hierro, oro, esmeralda, diamante, netherite)
+    // - 1-5 scent_base
+    // - 1-2 semillas (torchflower/pitcher)
+
     /**
-     * Intercepta el drop del Sniffer para agregar la scent dimensional si corresponde.
-     * Se inyecta al inicio de dropSeed() para verificar si debemos dropear una scent
-     * en lugar del loot normal.
+     * Intercepta el drop del Sniffer para manejar:
+     * 1. Scents dimensionales (100% si no la tiene)
+     * 2. Bonanza de minerales cuando tiene nariz equipada
      */
     @Inject(method = "dropSeed", at = @At("HEAD"), cancellable = true)
     private void aromaaffect$onDropSeed(CallbackInfo ci) {
@@ -273,34 +281,23 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             return;
         }
 
+        // Verificar que estamos en el tick correcto para el drop
+        int dropSeedAtTick = self.getEntityData().get(DATA_DROP_SEED_AT_TICK);
+        if (dropSeedAtTick != self.tickCount) {
+            return; // No es el tick del drop, dejar que vanilla maneje
+        }
+
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
         ResourceKey<Level> dimension = serverLevel.dimension();
 
-        // Verificar si el sniffer necesita una scent de esta dimensión
+        // ========================================
+        // PASO 1: Verificar scents dimensionales
+        // ========================================
         ItemStack scentToDrop = aromaaffect$getScentForDimension(dimension, data);
 
         if (!scentToDrop.isEmpty()) {
-            // Verificar que estamos en el tick correcto para el drop
-            // (replicamos la lógica de vanilla para el timing)
-            int dropSeedAtTick = self.getEntityData().get(DATA_DROP_SEED_AT_TICK);
-            if (dropSeedAtTick != self.tickCount) {
-                return; // No es el tick del drop, dejar que vanilla maneje
-            }
-
-            // Dropear la scent en la posición de la cabeza del sniffer (igual que vanilla)
-            BlockPos headPos = aromaaffect$getHeadBlock(self);
-            ItemEntity itemEntity = new ItemEntity(
-                    self.level(),
-                    headPos.getX(),
-                    headPos.getY(),
-                    headPos.getZ(),
-                    scentToDrop
-            );
-            itemEntity.setDefaultPickUpDelay();
-            serverLevel.addFreshEntity(itemEntity);
-
-            // Reproducir sonido (igual que vanilla)
-            self.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
+            // Dropear la scent en la posición de la cabeza del sniffer
+            aromaaffect$dropItemAtHead(self, serverLevel, scentToDrop);
 
             // Marcar que ya tiene esta scent
             aromaaffect$markScentObtained(dimension, data);
@@ -313,9 +310,118 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 aromaaffect$grantSnifferJourneyAdvancement(self, data);
             }
 
-            // Cancelar el método vanilla para que no dropee nada más
+            // Cancelar el método vanilla
             ci.cancel();
+            return;
         }
+
+        // ========================================
+        // PASO 2: Bonanza con Enhanced Nose
+        // ========================================
+        SnifferContainer container = new SnifferContainer(self);
+
+        // Solo si está domado Y tiene la Enhanced Sniffer Nose equipada
+        if (data.ownerUUID != null && container.hasSnifferNose()) {
+            // ¡BONANZA! Dropear todos los items juntos
+            aromaaffect$dropBonanza(self, serverLevel);
+            ci.cancel();
+            return;
+        }
+        // Si no tiene nariz, vanilla dropea semilla normal
+    }
+
+    /**
+     * Dropea la bonanza completa de items cuando tiene la nariz equipada.
+     * - 5-15 de CADA mineral
+     * - 1-5 scent_base
+     * - 1-2 semillas
+     */
+    @Unique
+    private void aromaaffect$dropBonanza(Sniffer sniffer, ServerLevel serverLevel) {
+        BlockPos headPos = aromaaffect$getHeadBlock(sniffer);
+        var random = sniffer.getRandom();
+
+        // ========== MINERALES (5-15 de cada uno) ==========
+        // Cobre
+        int copperCount = 5 + random.nextInt(11); // 5-15
+        aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(Items.RAW_COPPER, copperCount));
+
+        // Hierro
+        int ironCount = 5 + random.nextInt(11);
+        aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(Items.RAW_IRON, ironCount));
+
+        // Oro
+        int goldCount = 5 + random.nextInt(11);
+        aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(Items.RAW_GOLD, goldCount));
+
+        // Esmeralda
+        int emeraldCount = 5 + random.nextInt(11);
+        aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(Items.EMERALD, emeraldCount));
+
+        // Diamante
+        int diamondCount = 5 + random.nextInt(11);
+        aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(Items.DIAMOND, diamondCount));
+
+        // Netherite Scrap
+        int netheriteCount = 5 + random.nextInt(11);
+        aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(Items.NETHERITE_SCRAP, netheriteCount));
+
+        // ========== SCENT BASE (1-5) ==========
+        int scentBaseCount = 1 + random.nextInt(5); // 1-5
+        ScentItemRegistry.getScentItem("scent_base").ifPresent(scentBase -> {
+            aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(scentBase, scentBaseCount));
+        });
+
+        // ========== SEMILLAS (1-2) ==========
+        int seedCount = 1 + random.nextInt(2); // 1-2
+        // Aleatoriamente torchflower o pitcher
+        ItemStack seeds = random.nextBoolean()
+                ? new ItemStack(Items.TORCHFLOWER_SEEDS, seedCount)
+                : new ItemStack(Items.PITCHER_POD, seedCount);
+        aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, seeds);
+
+        // Sonido normal de drop
+        sniffer.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
+    }
+
+    /**
+     * Dropea un ItemStack en la posición de la cabeza del sniffer.
+     */
+    @Unique
+    private void aromaaffect$dropItemStackAtHead(Sniffer sniffer, ServerLevel serverLevel, BlockPos headPos, ItemStack itemStack) {
+        // Añadir un poco de dispersión para que no todos caigan exactamente en el mismo punto
+        double offsetX = (sniffer.getRandom().nextDouble() - 0.5) * 0.5;
+        double offsetZ = (sniffer.getRandom().nextDouble() - 0.5) * 0.5;
+
+        ItemEntity itemEntity = new ItemEntity(
+                sniffer.level(),
+                headPos.getX() + offsetX,
+                headPos.getY(),
+                headPos.getZ() + offsetZ,
+                itemStack
+        );
+        itemEntity.setDefaultPickUpDelay();
+        serverLevel.addFreshEntity(itemEntity);
+    }
+
+    /**
+     * Dropea un item en la posición de la cabeza del sniffer con sonido.
+     */
+    @Unique
+    private void aromaaffect$dropItemAtHead(Sniffer sniffer, ServerLevel serverLevel, ItemStack itemStack) {
+        BlockPos headPos = aromaaffect$getHeadBlock(sniffer);
+        ItemEntity itemEntity = new ItemEntity(
+                sniffer.level(),
+                headPos.getX(),
+                headPos.getY(),
+                headPos.getZ(),
+                itemStack
+        );
+        itemEntity.setDefaultPickUpDelay();
+        serverLevel.addFreshEntity(itemEntity);
+
+        // Reproducir sonido (igual que vanilla)
+        sniffer.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
     }
 
     /**
