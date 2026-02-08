@@ -1,7 +1,6 @@
 package com.ovrtechnology.mixin;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferContainer;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
@@ -12,13 +11,13 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,7 +25,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -56,39 +54,11 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     private static final int TORCH_FLOWERS_NEEDED = 4;
 
     @Unique
-    private static final double DIMENSION_SCENT_CHANCE = 0.85; // 85% de probabilidad
-
-    @Unique
     private static final TagKey<Block> ENHANCED_SNIFFER_DIGGABLE = TagKey.create(
             Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "enhanced_sniffer_diggable")
     );
 
-    @Unique
-    private static final int SCENT_DROP_DELAY_TICKS = 25; // ~1.25 segundos de delay para sincronizar con animación
-
-
-    // Probabilidades de drop con Enhanced Nose (usando un solo roll):
-    // 0-25%: Mineral, 25-43.75%: Scent Base, 43.75-100%: Solo semilla
-    @Unique
-    private static final double MINERAL_DROP_THRESHOLD = 25.0;
-    @Unique
-    private static final double SCENT_BASE_DROP_THRESHOLD = 43.75; // 25 + (75 * 0.25)
-
-
-    // Campos para el drop con delay
-    @Unique
-    private ItemStack aromaaffect$pendingScentDrop = null;
-    @Unique
-    private int aromaaffect$scentDropCountdown = 0;
-    @Unique
-    private double aromaaffect$pendingDropX = 0;
-    @Unique
-    private double aromaaffect$pendingDropY = 0;
-    @Unique
-    private double aromaaffect$pendingDropZ = 0;
-    @Unique
-    private ResourceKey<Level> aromaaffect$pendingDimension = null;
 
     @Shadow
     public abstract Sniffer.State getState();
@@ -189,17 +159,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 self.transitionTo(Sniffer.State.IDLING);
             }
         }
-
-        // Manejar el drop de esencia con delay
-        if (!self.level().isClientSide() && aromaaffect$pendingScentDrop != null) {
-            aromaaffect$scentDropCountdown--;
-
-            if (aromaaffect$scentDropCountdown <= 0) {
-                // Ejecutar el drop
-                aromaaffect$executeDelayedScentDrop(self, data);
-            }
-        }
-
+        // YA NO NECESITAMOS MANEJAR EL DROP CON DELAY
     }
 
     @Override
@@ -282,206 +242,8 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
     }
 
-    @Inject(method = "dropSeed", at = @At("HEAD"), cancellable = true)
-    private void aromaaffect$onDropSeed(CallbackInfo ci) {
-        Sniffer self = (Sniffer) (Object) this;
-
-        // Solo procesar en el servidor
-        if (self.level().isClientSide()) {
-            return;
-        }
-
-        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
-        SnifferContainer container = new SnifferContainer(self);
-
-        // Si está domado Y tiene Enhanced Sniffer Nose: drops mutuamente excluyentes
-        if (data.ownerUUID != null && container.hasSnifferNose()) {
-            // Usar un solo roll para determinar qué sale (mutuamente excluyente)
-            double roll = self.getRandom().nextDouble() * 100;
-
-            if (roll < MINERAL_DROP_THRESHOLD) {
-                // 25% - Solo mineral (sin semilla)
-                aromaaffect$doDropMineral(self);
-                ci.cancel();
-                return;
-            } else if (roll < SCENT_BASE_DROP_THRESHOLD) {
-                // 18.75% - Solo scent base (sin semilla)
-                aromaaffect$doDropScentBase(self);
-                ci.cancel();
-                return;
-            }
-            // 56.25% - Solo semilla normal (no cancelamos, deja que vanilla la dropee)
-            return;
-        }
-
-        // Cualquier sniffer (domado o no) puede obtener esencias si NO tiene la Enhanced Sniffer Nose
-        if (!container.hasSnifferNose() && aromaaffect$tryReplaceSeedWithScent(self)) {
-            ci.cancel(); // Cancelar el drop normal, dropeamos la esencia en su lugar
-        }
-    }
-
-    @Unique
-    private boolean aromaaffect$tryReplaceSeedWithScent(Sniffer sniffer) {
-        SnifferTamingData data = SnifferTamingData.get(sniffer.getUUID());
-
-        // Cualquier sniffer puede obtener esencias (no requiere estar domado)
-
-        // Determinar la dimensión actual
-        ResourceKey<Level> dimension = sniffer.level().dimension();
-        String scentId = null;
-        boolean alreadyHasScent = false;
-
-        if (dimension == Level.OVERWORLD) {
-            alreadyHasScent = data.hasOverworldScent;
-            if (!alreadyHasScent) {
-                scentId = "overworld_scent";
-            }
-        } else if (dimension == Level.NETHER) {
-            alreadyHasScent = data.hasNetherScent;
-            if (!alreadyHasScent) {
-                scentId = "nether_scent";
-            }
-        } else if (dimension == Level.END) {
-            alreadyHasScent = data.hasEndScent;
-            if (!alreadyHasScent) {
-                scentId = "end_scent";
-            }
-        }
-
-        // Si ya tiene la esencia de esta dimensión, no reemplazar
-        if (scentId == null || alreadyHasScent) {
-            return false;
-        }
-
-        // Probabilidad de obtener esencia (85%)
-        if (sniffer.getRandom().nextDouble() > DIMENSION_SCENT_CHANCE) {
-            return false;
-        }
-
-        // Obtener el item de esencia y dropearlo
-        if (!(sniffer.level() instanceof ServerLevel serverLevel)) {
-            return false;
-        }
-
-        final ResourceKey<Level> finalDimension = dimension;
-        var scentItemOpt = ScentItemRegistry.getScentItem(scentId);
-
-        if (scentItemOpt.isEmpty()) {
-            return false;
-        }
-
-        ItemStack scentStack = new ItemStack(scentItemOpt.get());
-
-        // Calcular posición 2 bloques adelante del Sniffer (donde mete la nariz)
-        double yawRad = Math.toRadians(sniffer.getYRot());
-        double offsetX = -Math.sin(yawRad) * 2.0;
-        double offsetZ = Math.cos(yawRad) * 2.0;
-
-        // Programar el drop con delay para sincronizar con la animación
-        aromaaffect$pendingScentDrop = scentStack;
-        aromaaffect$scentDropCountdown = SCENT_DROP_DELAY_TICKS;
-        aromaaffect$pendingDropX = sniffer.getX() + offsetX;
-        aromaaffect$pendingDropY = sniffer.getY() + 0.5;
-        aromaaffect$pendingDropZ = sniffer.getZ() + offsetZ;
-        aromaaffect$pendingDimension = finalDimension;
-
-        return true; // Indicar que reemplazamos el drop (el item saldrá después del delay)
-    }
-
-    @Unique
-    private void aromaaffect$doDropMineral(Sniffer sniffer) {
-        if (!(sniffer.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        // Seleccionar mineral aleatorio con pesos
-        ItemStack mineralStack = aromaaffect$selectRandomMineral(sniffer);
-        if (mineralStack.isEmpty()) {
-            return;
-        }
-
-        // Calcular posición 2 bloques adelante del Sniffer (donde mete la nariz)
-        double yawRad = Math.toRadians(sniffer.getYRot());
-        double offsetX = -Math.sin(yawRad) * 2.0;
-        double offsetZ = Math.cos(yawRad) * 2.0;
-
-        // Crear y spawnear el mineral
-        ItemEntity itemEntity = new ItemEntity(
-                serverLevel,
-                sniffer.getX() + offsetX,
-                sniffer.getY() + 0.5,
-                sniffer.getZ() + offsetZ,
-                mineralStack
-        );
-        itemEntity.setDefaultPickUpDelay();
-        serverLevel.addFreshEntity(itemEntity);
-
-        // Efectos visuales
-        serverLevel.sendParticles(
-                ParticleTypes.WAX_ON,
-                sniffer.getX() + offsetX, sniffer.getY() + 0.8, sniffer.getZ() + offsetZ,
-                10, 0.3, 0.3, 0.3, 0.05
-        );
-    }
-
-    @Unique
-    private ItemStack aromaaffect$selectRandomMineral(Sniffer sniffer) {
-        // Pesos: cobre(30), hierro(25), oro(18), esmeralda(15), diamante(8), netherite(4) = 100 total
-        double roll = sniffer.getRandom().nextDouble() * 100;
-
-        if (roll < 30) {
-            return new ItemStack(Items.RAW_COPPER);
-        } else if (roll < 55) {
-            return new ItemStack(Items.RAW_IRON);
-        } else if (roll < 73) {
-            return new ItemStack(Items.RAW_GOLD);
-        } else if (roll < 88) {
-            return new ItemStack(Items.EMERALD);
-        } else if (roll < 96) {
-            return new ItemStack(Items.DIAMOND);
-        } else {
-            return new ItemStack(Items.NETHERITE_SCRAP);
-        }
-    }
-
-    @Unique
-    private void aromaaffect$doDropScentBase(Sniffer sniffer) {
-        if (!(sniffer.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        // Obtener el item scent_base del registro
-        var scentBaseOpt = ScentItemRegistry.getScentItem("scent_base");
-        if (scentBaseOpt.isEmpty()) {
-            return;
-        }
-
-        ItemStack scentBaseStack = new ItemStack(scentBaseOpt.get());
-
-        // Calcular posición 2 bloques adelante del Sniffer (donde mete la nariz)
-        double yawRad = Math.toRadians(sniffer.getYRot());
-        double offsetX = -Math.sin(yawRad) * 2.0;
-        double offsetZ = Math.cos(yawRad) * 2.0;
-
-        // Crear y spawnear el scent base
-        ItemEntity itemEntity = new ItemEntity(
-                serverLevel,
-                sniffer.getX() + offsetX,
-                sniffer.getY() + 0.5,
-                sniffer.getZ() + offsetZ,
-                scentBaseStack
-        );
-        itemEntity.setDefaultPickUpDelay();
-        serverLevel.addFreshEntity(itemEntity);
-
-        // Efectos visuales (partículas diferentes para distinguirlo de minerales)
-        serverLevel.sendParticles(
-                ParticleTypes.HAPPY_VILLAGER,
-                sniffer.getX() + offsetX, sniffer.getY() + 0.8, sniffer.getZ() + offsetZ,
-                8, 0.3, 0.3, 0.3, 0.05
-        );
-    }
-
+    // Los drops del sniffer ahora se manejan con loot table en:
+    // data/minecraft/loot_table/gameplay/sniffer_digging.json
 
     @Inject(method = "onDiggingComplete", at = @At("TAIL"))
     private void aromaaffect$onFinishDigging(boolean found, CallbackInfoReturnable<Sniffer> cir) {
@@ -505,57 +267,9 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
 
         // Resetear el cooldown de búsqueda para que vuelva a buscar rápido
-        // Borrar la memoria de que ya olfateó para que pueda hacerlo de nuevo
         self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
         self.getBrain().eraseMemory(MemoryModuleType.SNIFF_COOLDOWN);
-
-        // Activar la actividad de búsqueda después de un delay corto (10 segundos = 200 ticks)
         self.getBrain().setMemoryWithExpiry(MemoryModuleType.SNIFF_COOLDOWN, Unit.INSTANCE, 200L);
-    }
-
-    @Unique
-    private void aromaaffect$executeDelayedScentDrop(Sniffer sniffer, SnifferTamingData data) {
-        if (aromaaffect$pendingScentDrop == null || !(sniffer.level() instanceof ServerLevel serverLevel)) {
-            aromaaffect$pendingScentDrop = null;
-            return;
-        }
-
-        // Crear y spawnear el item en la posición guardada
-        ItemEntity itemEntity = new ItemEntity(
-                serverLevel,
-                aromaaffect$pendingDropX,
-                aromaaffect$pendingDropY,
-                aromaaffect$pendingDropZ,
-                aromaaffect$pendingScentDrop
-        );
-        itemEntity.setDefaultPickUpDelay();
-        serverLevel.addFreshEntity(itemEntity);
-
-        // Marcar como obtenida
-        if (aromaaffect$pendingDimension == Level.OVERWORLD) {
-            data.hasOverworldScent = true;
-        } else if (aromaaffect$pendingDimension == Level.NETHER) {
-            data.hasNetherScent = true;
-        } else if (aromaaffect$pendingDimension == Level.END) {
-            data.hasEndScent = true;
-        }
-
-        // Efectos especiales en la posición donde salió el item
-        serverLevel.sendParticles(
-                ParticleTypes.HAPPY_VILLAGER,
-                aromaaffect$pendingDropX, aromaaffect$pendingDropY + 0.5, aromaaffect$pendingDropZ,
-                15, 0.3, 0.3, 0.3, 0.1
-        );
-        sniffer.playSound(SoundEvents.PLAYER_LEVELUP, 1.0F, 1.2F);
-
-        // Verificar si completó las 3 esencias para el advancement
-        if (data.hasAllScents()) {
-            aromaaffect$grantSnifferJourneyAdvancement(sniffer, data);
-        }
-
-        // Limpiar el drop pendiente
-        aromaaffect$pendingScentDrop = null;
-        aromaaffect$pendingDimension = null;
     }
 
     @Unique
@@ -590,6 +304,26 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 );
                 sniffer.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
             }
+        }
+    }
+
+    @Override
+    protected void dropCustomDeathLoot(ServerLevel level, DamageSource damageSource, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, damageSource, recentlyHit);
+
+        Sniffer self = (Sniffer) (Object) this;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+
+        // Soltar la saddle si tiene
+        if (!data.saddleItem.isEmpty()) {
+            self.spawnAtLocation(level, data.saddleItem.copy());
+            data.saddleItem = ItemStack.EMPTY;
+        }
+
+        // Soltar la nariz si tiene
+        if (!data.decorationItem.isEmpty()) {
+            self.spawnAtLocation(level, data.decorationItem.copy());
+            data.decorationItem = ItemStack.EMPTY;
         }
     }
 
