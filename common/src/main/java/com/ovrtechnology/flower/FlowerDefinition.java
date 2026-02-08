@@ -1,7 +1,9 @@
 package com.ovrtechnology.flower;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.tracking.RequiredItem;
 import com.ovrtechnology.trigger.ScentPriority;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -49,7 +51,23 @@ public class FlowerDefinition {
     @SerializedName("intensity")
     private Double intensity;
 
+    @Getter(AccessLevel.NONE)
+    @SerializedName("track_cost")
+    private Integer trackCost;
+
+    @Getter(AccessLevel.NONE)
+    @SerializedName("required_item")
+    private RequiredItem requiredItem;
+
     public FlowerDefinition() {
+    }
+
+    public int getTrackCost() {
+        return trackCost != null && trackCost > 0 ? trackCost : 10;
+    }
+
+    public RequiredItem getRequiredItem() {
+        return requiredItem;
     }
 
     public String getColorHtml() {

@@ -1,8 +1,11 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.block.BlockDefinition;
+import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
+import com.ovrtechnology.tracking.RequiredItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -129,7 +132,24 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         Component displayName = block.getName();
         Component description = Component.translatable("menu.aromaaffect.blocks.card.description", displayName);
 
-        cards.add(new SelectionCard(blockId, displayName, icon, isUnlocked, description));
+        SelectionCard card = new SelectionCard(blockId, displayName, icon, isUnlocked, description);
+
+        // Populate cost data from BlockDefinitionLoader
+        BlockDefinition blockDef = BlockDefinitionLoader.getBlockById(blockId.toString());
+        if (blockDef != null) {
+            card.trackCost = blockDef.getTrackCost();
+            RequiredItem req = blockDef.getRequiredItem();
+            if (req != null && req.getItemId() != null) {
+                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                var itemOpt = BuiltInRegistries.ITEM.get(reqId);
+                if (itemOpt.isPresent()) {
+                    card.requiredItem = new ItemStack(itemOpt.get().value());
+                    card.requiredItemCount = req.getCount();
+                }
+            }
+        }
+
+        cards.add(card);
     }
 
     @Override
@@ -255,6 +275,8 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             int labelWidth = font.width(trackingLabel);
             graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - ROW_PADDING,
                     y + (rowHeight - 8) / 2, indicatorColor);
+        } else {
+            renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);
         }
     }
 

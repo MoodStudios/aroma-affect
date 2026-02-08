@@ -36,6 +36,7 @@ public final class OmaraDeviceRegistry {
             () -> new OmaraDeviceBlock(BlockBehaviour.Properties.of()
                     .strength(3.5F)
                     .requiresCorrectToolForDrops()
+                    .noOcclusion()
                     .setId(ResourceKey.create(
                             Registries.BLOCK,
                             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)

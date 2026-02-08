@@ -27,6 +27,14 @@ public final class NoseRenderPreferencesManager {
         return clientCache.getOrDefault(playerUuid, NosePrefs.DEFAULT);
     }
 
+    /**
+     * Returns client prefs only if they exist in the cache (i.e., a known remote player).
+     * Returns null if the UUID is not in the cache.
+     */
+    public static NosePrefs getClientPrefsIfPresent(UUID playerUuid) {
+        return clientCache.get(playerUuid);
+    }
+
     public static void setClientPrefs(UUID playerUuid, boolean noseEnabled, boolean strapEnabled) {
         clientCache.put(playerUuid, new NosePrefs(noseEnabled, strapEnabled));
     }

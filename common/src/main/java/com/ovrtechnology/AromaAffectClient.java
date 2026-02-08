@@ -11,6 +11,7 @@ import com.ovrtechnology.trigger.client.PassiveModeHud;
 import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
 import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
+import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
@@ -57,8 +58,9 @@ public final class AromaAffectClient {
         // Initialize search keybindings (for activating search with Nose equipped)
         SearchKeyBindings.init();
 
-        // Sync strap state from persisted config
+        // Sync nose render state from persisted config
         com.ovrtechnology.trigger.config.ClientConfig clientCfg = com.ovrtechnology.trigger.config.ClientConfig.getInstance();
+        com.ovrtechnology.nose.client.NoseRenderToggles.setNoseEnabled(clientCfg.isNoseRenderEnabled());
         com.ovrtechnology.nose.client.NoseRenderToggles.setStrapEnabled(clientCfg.isNoseRenderEnabled() && clientCfg.isStrapEnabled());
 
         // Send nose render preferences to server when joining a world,
@@ -147,6 +149,9 @@ public final class AromaAffectClient {
                 sentInitialPrefs = false;
                 lastPlayerUuid = null;
                 NoseRenderPreferencesManager.clearClientCache();
+                // Flush and invalidate per-world tracking history so the next
+                // world/server loads its own file.
+                TrackingHistoryData.invalidate();
             }
         });
     }

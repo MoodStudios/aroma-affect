@@ -6,8 +6,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -357,9 +360,114 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         return false;
     }
 
+    // ── Cost rendering helper ─────────────────────────────────────────────
+
+    protected void renderCostSection(GuiGraphics graphics, SelectionCard card,
+                                      int rowRight, int rowCenterY, float animationProgress) {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return;
+
+        int alpha = (int) (255 * animationProgress);
+        int costX = rowRight - ROW_PADDING;
+
+        // Nose durability cost
+        String costText = String.valueOf(card.trackCost);
+        int costTextWidth = font.width(costText);
+
+        // Check if player can afford
+        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        boolean canAffordDurability = true;
+        if (!headStack.isEmpty() && headStack.isDamageableItem()) {
+            int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
+            canAffordDurability = remaining >= card.trackCost;
+        }
+
+        int costColor = canAffordDurability
+                ? (alpha << 24 | 0xFFAA00)
+                : (alpha << 24 | 0xFF4444);
+
+        costX -= costTextWidth;
+        graphics.drawString(font, costText, costX, rowCenterY - 4, costColor);
+
+        // Nose icon (14x14, rendered from head item)
+        int noseIconSize = 14;
+        costX -= noseIconSize + 2;
+        if (!headStack.isEmpty() && animationProgress > 0.2f) {
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(costX, rowCenterY - noseIconSize / 2);
+            graphics.pose().scale(noseIconSize / 16.0f, noseIconSize / 16.0f);
+            graphics.renderItem(headStack, 0, 0);
+            graphics.pose().popMatrix();
+        }
+
+        // Required item (if any)
+        if (card.requiredItem != null && !card.requiredItem.isEmpty()) {
+            costX -= 6; // gap
+
+            String reqText = "x" + card.requiredItemCount;
+            int reqTextWidth = font.width(reqText);
+
+            boolean hasRequiredItem = playerHasItem(player, card.requiredItem, card.requiredItemCount);
+            int reqColor = hasRequiredItem
+                    ? (alpha << 24 | 0xFFAA00)
+                    : (alpha << 24 | 0xFF4444);
+
+            costX -= reqTextWidth;
+            graphics.drawString(font, reqText, costX, rowCenterY - 4, reqColor);
+
+            int reqIconSize = 14;
+            costX -= reqIconSize + 2;
+            if (animationProgress > 0.2f) {
+                graphics.pose().pushMatrix();
+                graphics.pose().translate(costX, rowCenterY - reqIconSize / 2);
+                graphics.pose().scale(reqIconSize / 16.0f, reqIconSize / 16.0f);
+                graphics.renderItem(card.requiredItem, 0, 0);
+                graphics.pose().popMatrix();
+            }
+        }
+    }
+
+    private boolean playerHasItem(Player player, ItemStack required, int count) {
+        if (required == null || required.isEmpty() || count <= 0) return true;
+        int found = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (ItemStack.isSameItem(stack, required)) {
+                found += stack.getCount();
+                if (found >= count) return true;
+            }
+        }
+        return false;
+    }
+
     // ── Card selection / path commands ────────────────────────────────────
 
     protected void onCardSelected(SelectionCard card, int index) {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return;
+
+        // Pre-validate durability
+        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (!headStack.isEmpty() && headStack.isDamageableItem()) {
+            int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
+            if (remaining < card.trackCost) {
+                player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
+                AromaAffect.LOGGER.info("Not enough nose durability for {}: need {}, have {}",
+                        card.id, card.trackCost, remaining);
+                return;
+            }
+        }
+
+        // Pre-validate required item
+        if (card.requiredItem != null && !card.requiredItem.isEmpty() && card.requiredItemCount > 0) {
+            if (!playerHasItem(player, card.requiredItem, card.requiredItemCount)) {
+                player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
+                AromaAffect.LOGGER.info("Missing required item for {}: need {}x {}",
+                        card.id, card.requiredItemCount, card.requiredItem.getDisplayName().getString());
+                return;
+            }
+        }
+
         selectedCardIndex = index;
         ActiveTrackingState.set(card.id, card.displayName, card.icon, category);
         AromaAffect.LOGGER.info("Selected {} for tracking: {}", category.getId(), card.id);
@@ -402,6 +510,9 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         public boolean isUnlocked;
         public final Component description;
         public final ResourceLocation thumbnail;
+        public int trackCost = 10;
+        public ItemStack requiredItem;
+        public int requiredItemCount = 0;
 
         public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon,
                             boolean isUnlocked, Component description, ResourceLocation thumbnail) {

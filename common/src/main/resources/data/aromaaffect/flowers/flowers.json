@@ -7,7 +7,8 @@
       "color_html": "#FFEC4F",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:poppy",
@@ -16,7 +17,8 @@
       "color_html": "#ED1C24",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:blue_orchid",
@@ -25,7 +27,8 @@
       "color_html": "#2ABFFF",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:allium",
@@ -34,7 +37,8 @@
       "color_html": "#B878ED",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:azure_bluet",
@@ -43,7 +47,8 @@
       "color_html": "#F7F7F7",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:red_tulip",
@@ -52,7 +57,8 @@
       "color_html": "#ED1C24",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:orange_tulip",
@@ -61,7 +67,8 @@
       "color_html": "#ED7F10",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:white_tulip",
@@ -70,7 +77,8 @@
       "color_html": "#D6E8D6",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:pink_tulip",
@@ -79,7 +87,8 @@
       "color_html": "#EBC0DB",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:oxeye_daisy",
@@ -88,7 +97,8 @@
       "color_html": "#D6E8D6",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:cornflower",
@@ -97,7 +107,8 @@
       "color_html": "#466AEB",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:lily_of_the_valley",
@@ -106,7 +117,8 @@
       "color_html": "#FFFFFF",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:sunflower",
@@ -115,7 +127,8 @@
       "color_html": "#FFEC4F",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:lilac",
@@ -124,7 +137,8 @@
       "color_html": "#B878ED",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:rose_bush",
@@ -133,7 +147,8 @@
       "color_html": "#ED1C24",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:peony",
@@ -142,7 +157,8 @@
       "color_html": "#EBC0DB",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:wither_rose",
@@ -151,7 +167,8 @@
       "color_html": "#2C2C2C",
       "trigger_on": "PROXIMITY",
       "range": 4,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 25
     },
     {
       "block_id": "minecraft:torchflower",
@@ -160,7 +177,8 @@
       "color_html": "#FF6B1A",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 10
     },
     {
       "block_id": "minecraft:pitcher_plant",
@@ -169,7 +187,8 @@
       "color_html": "#5B8A3C",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 10
     },
     {
       "block_id": "minecraft:pink_petals",
@@ -178,7 +197,8 @@
       "color_html": "#FFB7C5",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 5
     },
     {
       "block_id": "minecraft:spore_blossom",
@@ -187,7 +207,8 @@
       "color_html": "#DF73AC",
       "trigger_on": "PROXIMITY",
       "range": 4,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 10
     },
     {
       "block_id": "minecraft:crimson_fungus",
@@ -196,7 +217,8 @@
       "color_html": "#941818",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 10
     },
     {
       "block_id": "minecraft:warped_fungus",
@@ -205,7 +227,8 @@
       "color_html": "#14B485",
       "trigger_on": "PROXIMITY",
       "range": 3,
-      "priority": "MEDIUM"
+      "priority": "MEDIUM",
+      "track_cost": 10
     }
   ]
 }

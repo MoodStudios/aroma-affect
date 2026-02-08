@@ -1,7 +1,9 @@
 package com.ovrtechnology.biome;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.tracking.RequiredItem;
 import com.ovrtechnology.trigger.ScentPriority;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -114,6 +116,14 @@ public class BiomeDefinition {
     @SerializedName("intensity")
     private Double intensity;
 
+    @Getter(AccessLevel.NONE)
+    @SerializedName("track_cost")
+    private Integer trackCost;
+
+    @Getter(AccessLevel.NONE)
+    @SerializedName("required_item")
+    private RequiredItem requiredItem;
+
     /**
      * Default constructor for GSON deserialization.
      */
@@ -135,9 +145,17 @@ public class BiomeDefinition {
         this.scentId = scentId;
     }
     
+    public int getTrackCost() {
+        return trackCost != null && trackCost > 0 ? trackCost : 10;
+    }
+
+    public RequiredItem getRequiredItem() {
+        return requiredItem;
+    }
+
     /**
      * Get the color with validation and fallback.
-     * 
+     *
      * @return Valid HTML color, or default green if invalid
      */
     public String getColorHtml() {

@@ -80,6 +80,16 @@ public final class ModCreativeTab {
                         output.accept(new ItemStack(OmaraDeviceRegistry.OMARA_DEVICE_ITEM.get()));
                     }
 
+                    // Add Special Rose
+                    if (NoseSmithRegistry.getSPECIAL_ROSE().isPresent()) {
+                        output.accept(new ItemStack(NoseSmithRegistry.getSPECIAL_ROSE().get()));
+                    }
+
+                    // Add Iron Nose
+                    if (NoseSmithRegistry.getIRON_NOSE().isPresent()) {
+                        output.accept(new ItemStack(NoseSmithRegistry.getIRON_NOSE().get()));
+                    }
+
                     // Add spawn eggs
                     if (NoseSmithRegistry.getNOSE_SMITH_SPAWN_EGG().isPresent()) {
                         output.accept(new ItemStack(NoseSmithRegistry.getNOSE_SMITH_SPAWN_EGG().get()));

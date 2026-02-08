@@ -17,8 +17,10 @@ import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
+import com.ovrtechnology.network.NoseSmithTradeNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.AromaGuideNetworking;
+import com.ovrtechnology.network.IronGolemNoseNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -50,8 +52,10 @@ public final class AromaAffect {
 
         // Common networking (C2S/S2C packets)
         NoseSmithDialogueNetworking.init();
+        NoseSmithTradeNetworking.init();
         PathScentNetworking.init();
         SnifferEquipmentNetworking.init();
+        IronGolemNoseNetworking.init();
         NoseRenderNetworking.init();
         AromaGuideNetworking.init();
 

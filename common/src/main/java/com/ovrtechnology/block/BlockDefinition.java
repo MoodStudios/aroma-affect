@@ -1,7 +1,9 @@
 package com.ovrtechnology.block;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.tracking.RequiredItem;
 import com.ovrtechnology.trigger.ScentPriority;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -95,6 +97,22 @@ public class BlockDefinition {
     private Double intensity;
 
     /**
+     * Durability cost for tracking this specific block.
+     * If null or <= 0, defaults to 10.
+     */
+    @Getter(AccessLevel.NONE)
+    @SerializedName("track_cost")
+    private Integer trackCost;
+
+    /**
+     * Optional item required from the player's inventory to track this block.
+     * If null, no item is required.
+     */
+    @Getter(AccessLevel.NONE)
+    @SerializedName("required_item")
+    private RequiredItem requiredItem;
+
+    /**
      * Default constructor for GSON deserialization.
      */
     public BlockDefinition() {
@@ -113,6 +131,14 @@ public class BlockDefinition {
         this.scentId = scentId;
     }
     
+    public int getTrackCost() {
+        return trackCost != null && trackCost > 0 ? trackCost : 10;
+    }
+
+    public RequiredItem getRequiredItem() {
+        return requiredItem;
+    }
+
     /**
      * Get the color with validation and fallback.
      * 
