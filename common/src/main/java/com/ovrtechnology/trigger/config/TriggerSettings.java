@@ -42,7 +42,7 @@ public class TriggerSettings {
      * Default cooldown for block triggers (ms).
      * Set to 8 seconds for re-trigger while near block.
      */
-    public static final long DEFAULT_BLOCK_COOLDOWN_MS = 8000;
+    public static final long DEFAULT_BLOCK_COOLDOWN_MS = 5000;
 
     /**
      * Default cooldown for mob proximity triggers (ms).
@@ -60,7 +60,7 @@ public class TriggerSettings {
      * Default cooldown for passive (non-hostile) mob triggers (ms).
      * Longer cooldown since passive mobs don't represent danger.
      */
-    public static final long DEFAULT_PASSIVE_MOB_COOLDOWN_MS = 15000;
+    public static final long DEFAULT_PASSIVE_MOB_COOLDOWN_MS = 8000;
 
     /**
      * Default cooldown per scent in passive mode (ms).

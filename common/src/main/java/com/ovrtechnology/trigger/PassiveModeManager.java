@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -85,10 +86,15 @@ public final class PassiveModeManager {
     private static final double STRUCTURE_ACTIVATION_RANGE = 0.0;
 
     /**
-     * Distance threshold for immediate proximity bypass (in blocks).
-     * When player is within this range, global cooldown is skipped.
+     * Angle threshold for look-at detection (degrees).
+     * Blocks and non-hostile mobs only trigger if the player is looking within this cone.
      */
-    private static final double IMMEDIATE_PROXIMITY_RANGE = 2.0;
+    private static final double LOOK_AT_ANGLE_DEGREES = 30.0;
+
+    /**
+     * Pre-computed cosine of the look-at angle for efficient dot product comparison.
+     */
+    private static final double LOOK_AT_COS_THRESHOLD = Math.cos(Math.toRadians(LOOK_AT_ANGLE_DEGREES));
 
     /**
      * Number of ticks to wait after first tick before starting scans.
@@ -115,21 +121,6 @@ public final class PassiveModeManager {
         "minecraft:wither_skeleton", "minecraft:ender_dragon", "minecraft:wither",
         "minecraft:warden", "minecraft:elder_guardian"
     );
-
-    /**
-     * Time window for adaptive density detection (ms).
-     */
-    private static final long DENSITY_WINDOW_MS = 60_000;
-
-    /**
-     * Number of triggers in the density window that indicates a high-density area.
-     */
-    private static final int HIGH_DENSITY_THRESHOLD = 5;
-
-    /**
-     * Cooldown multiplier applied in high-density areas.
-     */
-    private static final double DENSITY_COOLDOWN_MULTIPLIER = 2.0;
 
     /**
      * Currently active passive trigger (for change detection).
@@ -162,16 +153,6 @@ public final class PassiveModeManager {
      * Structures only trigger once on entry, like biomes.
      */
     private static String lastStructureId = null;
-
-    /**
-     * Counter of recent trigger activations (for adaptive density cooldown).
-     */
-    private static int recentTriggerCount = 0;
-
-    /**
-     * Start of the current density tracking window.
-     */
-    private static long recentTriggerWindowStart = 0;
 
     private static int tickCounter = 0;
     private static int startupTicksElapsed = 0;
@@ -253,7 +234,7 @@ public final class PassiveModeManager {
 
         // Evaluate ALL triggers to maintain tracking state (e.g., biome transitions)
         TriggerCandidate mobCandidate = evaluateMobTriggers(level, player);
-        TriggerCandidate blockCandidate = evaluateBlockTriggers(level, playerPos);
+        TriggerCandidate blockCandidate = evaluateBlockTriggers(level, playerPos, player);
         TriggerCandidate structureCandidate = evaluateStructureTriggers(level, playerPos);
         TriggerCandidate biomeCandidate = evaluateBiomeTriggers(level, playerPos);
 
@@ -341,16 +322,6 @@ public final class PassiveModeManager {
 
         // Source hasn't been triggered recently - check if it's a valid trigger scenario
 
-        // IMMEDIATE TRIGGER: Close proximity (≤2 blocks) to a new/cooled-down source
-        // Structures are excluded: distance 0 means "inside bounding box", not actual proximity
-        if (candidate.type != TriggerType.STRUCTURE && candidate.distance <= IMMEDIATE_PROXIMITY_RANGE) {
-            if (DEV_MODE) {
-                AromaAffect.LOGGER.info("[PassiveMode] IMMEDIATE TRIGGER (dist<=2): {} at distance {}",
-                    scentName, candidate.distance);
-            }
-            return true;
-        }
-
         // MOB INTERRUPT: Only HOSTILE mobs can interrupt other triggers immediately
         // Passive mobs (villagers, sheep, cows) follow normal cooldown rules
         if (candidate.type == TriggerType.MOB && isHostileMob(candidate.source)) {
@@ -391,27 +362,14 @@ public final class PassiveModeManager {
 
     /**
      * Gets the effective cooldown for a candidate, considering:
-     * - Passive mobs use a longer cooldown than hostile mobs
-     * - High-density areas multiply cooldowns to reduce spam
+     * - Passive mobs use a separate cooldown from hostile mobs
      */
     private static long getEffectiveCooldown(TriggerCandidate candidate, TriggerSettings settings) {
-        long cooldownMs;
-
-        // Passive mobs (villagers, sheep, cows) use longer cooldown
+        // Passive mobs (villagers, sheep, cows) use their own cooldown
         if (candidate.type == TriggerType.MOB && !isHostileMob(candidate.source)) {
-            cooldownMs = settings.getPassiveMobCooldownMs();
-        } else {
-            cooldownMs = getCooldownForType(candidate.type, settings);
+            return settings.getPassiveMobCooldownMs();
         }
-
-        // Adaptive density: multiply cooldowns in high-density areas
-        // Auto-reset: if the density window has expired, the count is stale → ignore it
-        if (recentTriggerCount > HIGH_DENSITY_THRESHOLD
-                && (System.currentTimeMillis() - recentTriggerWindowStart) <= DENSITY_WINDOW_MS) {
-            cooldownMs = (long) (cooldownMs * DENSITY_COOLDOWN_MULTIPLIER);
-        }
-
-        return cooldownMs;
+        return getCooldownForType(candidate.type, settings);
     }
 
     /**
@@ -459,7 +417,7 @@ public final class PassiveModeManager {
      * Evaluates block triggers and returns the first match.
      * Uses fixed activation range of 2 blocks for immediate proximity detection.
      */
-    private static TriggerCandidate evaluateBlockTriggers(Level level, BlockPos playerPos) {
+    private static TriggerCandidate evaluateBlockTriggers(Level level, BlockPos playerPos, Player player) {
         int searchRange = (int) Math.ceil(BLOCK_ACTIVATION_RANGE);
 
         for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
@@ -474,8 +432,9 @@ public final class PassiveModeManager {
             if (foundPos.isPresent()) {
                 double distance = Math.sqrt(playerPos.distSqr(foundPos.get()));
 
-                // Only activate if within activation range
-                if (distance <= BLOCK_ACTIVATION_RANGE) {
+                // Only activate if within activation range AND player is looking at the block
+                if (distance <= BLOCK_ACTIVATION_RANGE
+                        && isPlayerLookingAt(player, Vec3.atCenterOf(foundPos.get()))) {
                     double intensity = calculateIntensityByDistance(distance, BLOCK_ACTIVATION_RANGE);
 
                     ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
@@ -517,7 +476,10 @@ public final class PassiveModeManager {
                 double distance = player.distanceTo(foundEntity.get());
 
                 // Only activate if within activation range
-                if (distance <= MOB_ACTIVATION_RANGE) {
+                // Non-hostile mobs also require the player to be looking at them
+                if (distance <= MOB_ACTIVATION_RANGE
+                        && (HOSTILE_MOBS.contains(entityTypeId)
+                            || isPlayerLookingAt(player, foundEntity.get().getEyePosition(1.0f)))) {
                     double intensity = calculateIntensityByDistance(distance, MOB_ACTIVATION_RANGE);
 
                     // Mobs use HIGH priority for player safety
@@ -730,16 +692,7 @@ public final class PassiveModeManager {
         currentTriggerType = candidate.type;
 
         // Record this source's trigger time to prevent rapid re-triggering
-        long now = System.currentTimeMillis();
-        sourceTriggerTimes.put(candidate.source, now);
-
-        // Update density tracking for adaptive cooldowns
-        if (now - recentTriggerWindowStart > DENSITY_WINDOW_MS) {
-            recentTriggerCount = 1;
-            recentTriggerWindowStart = now;
-        } else {
-            recentTriggerCount++;
-        }
+        sourceTriggerTimes.put(candidate.source, System.currentTimeMillis());
 
         // Send trigger to hardware (cooldown already verified)
         boolean triggered = manager.trigger(candidate.trigger);
@@ -980,6 +933,22 @@ public final class PassiveModeManager {
         if (source == null || !source.startsWith("mob:")) return false;
         String entityType = source.substring(4); // Remove "mob:" prefix
         return HOSTILE_MOBS.contains(entityType);
+    }
+
+    /**
+     * Checks if the player is looking at a target position within the configured cone of vision.
+     * Uses dot product between the player's view direction and the direction to the target.
+     *
+     * @param player the player whose view direction to check
+     * @param targetPos the world position to check against
+     * @return true if the target is within the look-at cone (30 degrees)
+     */
+    private static boolean isPlayerLookingAt(Player player, Vec3 targetPos) {
+        Vec3 eyePos = player.getEyePosition(1.0f);
+        Vec3 viewDir = player.getViewVector(1.0f).normalize();
+        Vec3 toTarget = targetPos.subtract(eyePos).normalize();
+        double dot = viewDir.dot(toTarget);
+        return dot >= LOOK_AT_COS_THRESHOLD;
     }
 
     /**
