@@ -94,6 +94,15 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
         // If already tamed
         if (data.ownerUUID != null) {
+            // Shift+click opens inventory
+            if (player.isShiftKeyDown()) {
+                if (!self.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
+                    SnifferMenuRegistry.openSnifferMenu(serverPlayer, self);
+                }
+                cir.setReturnValue(InteractionResult.SUCCESS);
+                return;
+            }
+
             // Mount with empty hand
             if (itemStack.isEmpty() && !self.isVehicle()) {
                 if (!self.level().isClientSide()) {
@@ -316,7 +325,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         Sniffer self = (Sniffer) (Object) this;
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
 
-        // Only open if tamed and the player is mounted
+        // Only open if tamed
         if (data.ownerUUID != null && !self.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
             SnifferMenuRegistry.openSnifferMenu(serverPlayer, self);
         }
