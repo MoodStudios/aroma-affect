@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Manages the passive-mode scent system with priority-based trigger selection.
@@ -84,10 +86,15 @@ public final class PassiveModeManager {
     private static final double STRUCTURE_ACTIVATION_RANGE = 0.0;
 
     /**
-     * Distance threshold for immediate proximity bypass (in blocks).
-     * When player is within this range, global cooldown is skipped.
+     * Angle threshold for look-at detection (degrees).
+     * Blocks and non-hostile mobs only trigger if the player is looking within this cone.
      */
-    private static final double IMMEDIATE_PROXIMITY_RANGE = 2.0;
+    private static final double LOOK_AT_ANGLE_DEGREES = 30.0;
+
+    /**
+     * Pre-computed cosine of the look-at angle for efficient dot product comparison.
+     */
+    private static final double LOOK_AT_COS_THRESHOLD = Math.cos(Math.toRadians(LOOK_AT_ANGLE_DEGREES));
 
     /**
      * Number of ticks to wait after first tick before starting scans.
@@ -100,6 +107,20 @@ public final class PassiveModeManager {
      * Entries older than this are purged to prevent unbounded map growth.
      */
     private static final long SOURCE_TRIGGER_MAX_AGE_MS = 30_000;
+
+    /**
+     * Hostile mob entity types that can use MOB INTERRUPT.
+     * Only these mobs can interrupt other triggers immediately (player safety).
+     * Passive mobs (villagers, sheep, cows, etc.) follow normal cooldown rules.
+     */
+    private static final Set<String> HOSTILE_MOBS = Set.of(
+        "minecraft:zombie", "minecraft:skeleton", "minecraft:creeper",
+        "minecraft:spider", "minecraft:cave_spider", "minecraft:enderman",
+        "minecraft:blaze", "minecraft:ghast", "minecraft:magma_cube",
+        "minecraft:piglin", "minecraft:hoglin", "minecraft:strider",
+        "minecraft:wither_skeleton", "minecraft:ender_dragon", "minecraft:wither",
+        "minecraft:warden", "minecraft:elder_guardian"
+    );
 
     /**
      * Currently active passive trigger (for change detection).
@@ -126,6 +147,12 @@ public final class PassiveModeManager {
      * Used to prevent ping-pong between multiple nearby triggers.
      */
     private static final Map<String, Long> sourceTriggerTimes = new HashMap<>();
+
+    /**
+     * Last structure the player was inside (for one-time structure triggers).
+     * Structures only trigger once on entry, like biomes.
+     */
+    private static String lastStructureId = null;
 
     private static int tickCounter = 0;
     private static int startupTicksElapsed = 0;
@@ -207,7 +234,7 @@ public final class PassiveModeManager {
 
         // Evaluate ALL triggers to maintain tracking state (e.g., biome transitions)
         TriggerCandidate mobCandidate = evaluateMobTriggers(level, player);
-        TriggerCandidate blockCandidate = evaluateBlockTriggers(level, playerPos);
+        TriggerCandidate blockCandidate = evaluateBlockTriggers(level, playerPos, player);
         TriggerCandidate structureCandidate = evaluateStructureTriggers(level, playerPos);
         TriggerCandidate biomeCandidate = evaluateBiomeTriggers(level, playerPos);
 
@@ -220,10 +247,15 @@ public final class PassiveModeManager {
         if (bestCandidate == null) bestCandidate = biomeCandidate;
 
         if (bestCandidate != null) {
-            if (canActivateScent(bestCandidate)) {
-                activateTrigger(player, bestCandidate);
+            // Same-scent dedup: if the same scent name is already active from passive mode,
+            // don't re-trigger. Prevents ping-pong between poppy/dandelion (both Floral),
+            // village/villager (both Kindred), etc.
+            if (!isSameScentAlreadyActive(bestCandidate)) {
+                if (canActivateScent(bestCandidate)) {
+                    activateTrigger(player, bestCandidate);
+                }
             }
-            // Even if on cooldown, don't fall through to lower priorities
+            // Even if on cooldown or same-scent, don't fall through to lower priorities
             return;
         }
 
@@ -272,7 +304,7 @@ public final class PassiveModeManager {
     private static boolean canActivateScent(TriggerCandidate candidate) {
         String scentName = candidate.trigger.scentName();
         TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
-        long cooldownMs = getCooldownForType(candidate.type, settings);
+        long cooldownMs = getEffectiveCooldown(candidate, settings);
         long now = System.currentTimeMillis();
 
         // Check if THIS SOURCE was recently triggered (not just if it's the current one)
@@ -282,34 +314,23 @@ public final class PassiveModeManager {
 
         // If this source was recently triggered, it must wait for its cooldown
         if (sourceRecentlyTriggered) {
-            if (DEV_MODE) {
-                long remaining = cooldownMs - (now - lastTriggerTime);
-                AromaAffect.LOGGER.info("[PassiveMode] Blocked by source cooldown: {} ({}ms remaining)",
-                    candidate.source, remaining);
-            }
+            // Log at debug level to avoid spam (was logging every tick at INFO)
+            AromaAffect.LOGGER.debug("[PassiveMode] Blocked by source cooldown: {} ({}ms remaining)",
+                candidate.source, cooldownMs - (now - lastTriggerTime));
             return false;
         }
 
         // Source hasn't been triggered recently - check if it's a valid trigger scenario
 
-        // IMMEDIATE TRIGGER: Close proximity (≤2 blocks) to a new/cooled-down source
-        if (candidate.distance <= IMMEDIATE_PROXIMITY_RANGE) {
-            if (DEV_MODE) {
-                AromaAffect.LOGGER.info("[PassiveMode] IMMEDIATE TRIGGER (dist<=2): {} at distance {}",
-                    scentName, candidate.distance);
-            }
-            return true;
-        }
-
-        // MOB INTERRUPT: Mobs can trigger immediately when entering range
-        // (only if they haven't been triggered recently - already checked above)
-        if (candidate.type == TriggerType.MOB) {
+        // MOB INTERRUPT: Only HOSTILE mobs can interrupt other triggers immediately
+        // Passive mobs (villagers, sheep, cows) follow normal cooldown rules
+        if (candidate.type == TriggerType.MOB && isHostileMob(candidate.source)) {
             ScentTrigger activeScent = ScentTriggerManager.getInstance().getActiveScent();
             // Only interrupt if there's a non-mob trigger active
             if (activeScent != null && activeScent.source() == ScentTriggerSource.PASSIVE_MODE
                 && currentTriggerType != TriggerType.MOB) {
                 if (DEV_MODE) {
-                    AromaAffect.LOGGER.info("[PassiveMode] MOB INTERRUPT: {} at distance {}",
+                    AromaAffect.LOGGER.info("[PassiveMode] HOSTILE MOB INTERRUPT: {} at distance {}",
                         scentName, candidate.distance);
                 }
                 return true;
@@ -320,7 +341,7 @@ public final class PassiveModeManager {
         boolean canTrigger = ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs);
 
         if (DEV_MODE && !canTrigger) {
-            AromaAffect.LOGGER.info("[PassiveMode] Blocked by global cooldown: {} (type={})",
+            AromaAffect.LOGGER.debug("[PassiveMode] Blocked by global cooldown: {} (type={})",
                 scentName, candidate.type);
         }
 
@@ -337,6 +358,18 @@ public final class PassiveModeManager {
             case STRUCTURE -> settings.getStructureCooldownMs();
             case BIOME -> settings.getBiomeCooldownMs();
         };
+    }
+
+    /**
+     * Gets the effective cooldown for a candidate, considering:
+     * - Passive mobs use a separate cooldown from hostile mobs
+     */
+    private static long getEffectiveCooldown(TriggerCandidate candidate, TriggerSettings settings) {
+        // Passive mobs (villagers, sheep, cows) use their own cooldown
+        if (candidate.type == TriggerType.MOB && !isHostileMob(candidate.source)) {
+            return settings.getPassiveMobCooldownMs();
+        }
+        return getCooldownForType(candidate.type, settings);
     }
 
     /**
@@ -384,7 +417,7 @@ public final class PassiveModeManager {
      * Evaluates block triggers and returns the first match.
      * Uses fixed activation range of 2 blocks for immediate proximity detection.
      */
-    private static TriggerCandidate evaluateBlockTriggers(Level level, BlockPos playerPos) {
+    private static TriggerCandidate evaluateBlockTriggers(Level level, BlockPos playerPos, Player player) {
         int searchRange = (int) Math.ceil(BLOCK_ACTIVATION_RANGE);
 
         for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
@@ -399,8 +432,9 @@ public final class PassiveModeManager {
             if (foundPos.isPresent()) {
                 double distance = Math.sqrt(playerPos.distSqr(foundPos.get()));
 
-                // Only activate if within activation range
-                if (distance <= BLOCK_ACTIVATION_RANGE) {
+                // Only activate if within activation range AND player is looking at the block
+                if (distance <= BLOCK_ACTIVATION_RANGE
+                        && isPlayerLookingAt(player, Vec3.atCenterOf(foundPos.get()))) {
                     double intensity = calculateIntensityByDistance(distance, BLOCK_ACTIVATION_RANGE);
 
                     ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
@@ -442,7 +476,10 @@ public final class PassiveModeManager {
                 double distance = player.distanceTo(foundEntity.get());
 
                 // Only activate if within activation range
-                if (distance <= MOB_ACTIVATION_RANGE) {
+                // Non-hostile mobs also require the player to be looking at them
+                if (distance <= MOB_ACTIVATION_RANGE
+                        && (HOSTILE_MOBS.contains(entityTypeId)
+                            || isPlayerLookingAt(player, foundEntity.get().getEyePosition(1.0f)))) {
                     double intensity = calculateIntensityByDistance(distance, MOB_ACTIVATION_RANGE);
 
                     // Mobs use HIGH priority for player safety
@@ -516,8 +553,9 @@ public final class PassiveModeManager {
     }
 
     /**
-     * Evaluates structure triggers and returns the first match.
-     * Only activates when player is INSIDE the structure (distance 0 from bounding box).
+     * Evaluates structure triggers with one-time trigger behavior (like biomes).
+     * Only fires once when the player enters a structure. Must leave and re-enter to trigger again.
+     * This prevents the village_plains structure from re-triggering every cooldown cycle.
      */
     private static TriggerCandidate evaluateStructureTriggers(Level level, BlockPos playerPos) {
         ServerLevel serverLevel = getServerLevel(level);
@@ -540,7 +578,21 @@ public final class PassiveModeManager {
 
                 // Only activate if player is INSIDE the structure (distance ≤ 0)
                 if (distance <= STRUCTURE_ACTIVATION_RANGE) {
-                    // Player is inside structure, use full intensity
+                    // One-time trigger: only fire when entering a NEW structure
+                    if (structureId.equals(lastStructureId)) {
+                        // Already inside this structure and already triggered, skip
+                        return null;
+                    }
+
+                    // New structure entered
+                    String previousStructure = lastStructureId;
+                    lastStructureId = structureId;
+
+                    if (DEV_MODE) {
+                        AromaAffect.LOGGER.info("[PassiveMode] Entered structure: {} (previous: {})",
+                            structureId, previousStructure);
+                    }
+
                     double intensity = 1.0;
 
                     ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
@@ -557,6 +609,14 @@ public final class PassiveModeManager {
                         TriggerType.STRUCTURE, 0, distance);
                 }
             }
+        }
+
+        // Player not inside any tracked structure - reset tracking
+        if (lastStructureId != null) {
+            if (DEV_MODE) {
+                AromaAffect.LOGGER.info("[PassiveMode] Left structure: {}", lastStructureId);
+            }
+            lastStructureId = null;
         }
         return null;
     }
@@ -863,6 +923,54 @@ public final class PassiveModeManager {
     }
 
     /**
+     * Checks if a mob source represents a hostile mob.
+     * Only hostile mobs can use MOB INTERRUPT to override other triggers.
+     *
+     * @param source the trigger source (e.g., "mob:minecraft:zombie")
+     * @return true if the mob is hostile
+     */
+    private static boolean isHostileMob(String source) {
+        if (source == null || !source.startsWith("mob:")) return false;
+        String entityType = source.substring(4); // Remove "mob:" prefix
+        return HOSTILE_MOBS.contains(entityType);
+    }
+
+    /**
+     * Checks if the player is looking at a target position within the configured cone of vision.
+     * Uses dot product between the player's view direction and the direction to the target.
+     *
+     * @param player the player whose view direction to check
+     * @param targetPos the world position to check against
+     * @return true if the target is within the look-at cone (30 degrees)
+     */
+    private static boolean isPlayerLookingAt(Player player, Vec3 targetPos) {
+        Vec3 eyePos = player.getEyePosition(1.0f);
+        Vec3 viewDir = player.getViewVector(1.0f).normalize();
+        Vec3 toTarget = targetPos.subtract(eyePos).normalize();
+        double dot = viewDir.dot(toTarget);
+        return dot >= LOOK_AT_COS_THRESHOLD;
+    }
+
+    /**
+     * Checks if the same scent name is already actively playing from passive mode.
+     * Prevents unnecessary WebSocket messages when switching between sources that emit
+     * the same scent (e.g., poppy and dandelion both emit Floral).
+     *
+     * @param candidate the new trigger candidate
+     * @return true if the same scent is already active
+     */
+    private static boolean isSameScentAlreadyActive(TriggerCandidate candidate) {
+        if (currentPassiveTrigger == null) return false;
+
+        // Check if our passive trigger is still the active one in the manager
+        ScentTrigger activeScent = ScentTriggerManager.getInstance().getActiveScent();
+        if (activeScent == null || activeScent.source() != ScentTriggerSource.PASSIVE_MODE) return false;
+
+        // Same scent name = already playing, no need to switch sources
+        return candidate.trigger().scentName().equals(currentPassiveTrigger.scentName());
+    }
+
+    /**
      * Removes source trigger entries older than SOURCE_TRIGGER_MAX_AGE_MS.
      * Only runs when the map has more than 5 entries to avoid unnecessary iteration.
      */
@@ -891,6 +999,7 @@ public final class PassiveModeManager {
             currentPassiveTrigger = null;
             currentTriggerSource = null;
             currentTriggerType = null;
+            lastStructureId = null;
         }
     }
 
@@ -904,6 +1013,7 @@ public final class PassiveModeManager {
             currentPassiveTrigger = null;
             currentTriggerSource = null;
             currentTriggerType = null;
+            lastStructureId = null;
         }
     }
 

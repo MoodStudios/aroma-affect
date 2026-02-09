@@ -469,7 +469,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         Sniffer self = (Sniffer) (Object) this;
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
 
-        // Only open if tamed and the player is mounted
+        // Only open if tamed
         if (data.ownerUUID != null && !self.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
             SnifferMenuRegistry.openSnifferMenu(serverPlayer, self);
         }
