@@ -40,7 +40,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
-import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfig;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
@@ -48,6 +47,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.world.entity.AnimationState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -92,6 +92,9 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Shadow
     @Final
     private static EntityDataAccessor<Integer> DATA_DROP_SEED_AT_TICK;
+
+    @Shadow
+    public final AnimationState diggingAnimationState = new AnimationState();
 
     protected SnifferTamingMixin(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
@@ -238,39 +241,40 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
                 if (self.isInWater()) {
                     aromaaffect$waterTicks++;
-                    var swimConfig = aromaaffect$getConfig().swimming;
 
-                    // Transition to swimming mode after delay
-                    if (!aromaaffect$isSwimming && aromaaffect$waterTicks >= swimConfig.transitionTicks) {
+                    // Enter swimming mode immediately
+                    if (!aromaaffect$isSwimming) {
                         aromaaffect$isSwimming = true;
                     }
 
-                    // Set visual DIGGING pose directly every tick without triggering brain behaviors
-                    if (aromaaffect$isSwimming) {
-                        self.getEntityData().set(DATA_STATE, Sniffer.State.DIGGING);
+                    // Keep DIGGING visual state and block brain every tick
+                    self.getEntityData().set(DATA_STATE, Sniffer.State.DIGGING);
+                    self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
 
-                        // Swimming effects: bubbles and sounds
-                        if (self.level() instanceof ServerLevel serverLevel) {
-                            // Bubble particles every 3 ticks
-                            if (self.tickCount % 3 == 0) {
-                                serverLevel.sendParticles(
-                                        ParticleTypes.BUBBLE,
-                                        self.getX(), self.getY() + 0.3, self.getZ(),
-                                        3, 0.6, 0.1, 0.6, 0.02
-                                );
-                            }
-                            // Splash particles every 5 ticks
-                            if (self.tickCount % 5 == 0) {
-                                serverLevel.sendParticles(
-                                        ParticleTypes.SPLASH,
-                                        self.getX(), self.getY() + 0.5, self.getZ(),
-                                        2, 0.5, 0.0, 0.5, 0.1
-                                );
-                            }
-                            // Swimming sound every 15 ticks
-                            if (self.tickCount % 15 == 0) {
-                                self.playSound(SoundEvents.GENERIC_SWIM, 0.6F, 0.8F + self.getRandom().nextFloat() * 0.4F);
-                            }
+                    // Swimming effects only when the player is actually moving
+                    Entity rider = self.getFirstPassenger();
+                    boolean isMoving = rider instanceof Player p && (p.zza != 0 || p.xxa != 0);
+
+                    if (isMoving && self.level() instanceof ServerLevel serverLevel) {
+                        // Bubble particles every 3 ticks
+                        if (self.tickCount % 3 == 0) {
+                            serverLevel.sendParticles(
+                                    ParticleTypes.BUBBLE,
+                                    self.getX(), self.getY() + 0.3, self.getZ(),
+                                    3, 0.6, 0.1, 0.6, 0.02
+                            );
+                        }
+                        // Splash particles every 5 ticks
+                        if (self.tickCount % 5 == 0) {
+                            serverLevel.sendParticles(
+                                    ParticleTypes.SPLASH,
+                                    self.getX(), self.getY() + 0.5, self.getZ(),
+                                    2, 0.5, 0.0, 0.5, 0.1
+                            );
+                        }
+                        // Swimming sound every 15 ticks
+                        if (self.tickCount % 15 == 0) {
+                            self.playSound(SoundEvents.GENERIC_SWIM, 0.6F, 0.8F + self.getRandom().nextFloat() * 0.4F);
                         }
                     }
 
@@ -279,7 +283,8 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                     // Exiting water: restore state
                     if (aromaaffect$isSwimming) {
                         aromaaffect$isSwimming = false;
-                        self.transitionTo(Sniffer.State.IDLING);
+                        this.diggingAnimationState.stop();
+                        self.getEntityData().set(DATA_STATE, Sniffer.State.IDLING);
                     }
                     aromaaffect$waterTicks = 0;
                 }
@@ -305,7 +310,8 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             }
             if (aromaaffect$isSwimming) {
                 aromaaffect$isSwimming = false;
-                self2.transitionTo(Sniffer.State.IDLING);
+                this.diggingAnimationState.stop();
+                self2.getEntityData().set(DATA_STATE, Sniffer.State.IDLING);
                 aromaaffect$waterTicks = 0;
             }
         }
@@ -333,9 +339,27 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 double verticalMotion = (targetY - currentY) * waterConfig.buoyancyStrength;
                 verticalMotion = Math.max(-waterConfig.maxDownwardSpeed, Math.min(waterConfig.maxUpwardSpeed, verticalMotion));
 
-                // Less horizontal drag when swimming to maintain speed
-                double drag = aromaaffect$isSwimming ? 1.0 : waterConfig.horizontalDrag;
-                sniffer.setDeltaMovement(currentMotion.x * drag, verticalMotion, currentMotion.z * drag);
+                if (aromaaffect$isSwimming) {
+                    // Override horizontal movement directly to counteract vanilla water drag
+                    float yawRad = sniffer.getYRot() * ((float) Math.PI / 180F);
+                    Entity rider = sniffer.getFirstPassenger();
+                    if (rider instanceof Player player) {
+                        float forward = player.zza;
+                        float strafe = player.xxa;
+                        if (forward != 0 || strafe != 0) {
+                            var swimConfig = aromaaffect$getConfig().swimming;
+                            double speed = swimConfig.swimSpeed;
+                            double motionX = (-Math.sin(yawRad) * forward + Math.cos(yawRad) * strafe) * speed;
+                            double motionZ = (Math.cos(yawRad) * forward + Math.sin(yawRad) * strafe) * speed;
+                            sniffer.setDeltaMovement(motionX, verticalMotion, motionZ);
+                        } else {
+                            sniffer.setDeltaMovement(currentMotion.x * 0.9, verticalMotion, currentMotion.z * 0.9);
+                        }
+                    }
+                } else {
+                    double drag = waterConfig.horizontalDrag;
+                    sniffer.setDeltaMovement(currentMotion.x * drag, verticalMotion, currentMotion.z * drag);
+                }
             }
 
             // Prevent drowning
@@ -382,11 +406,8 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
         Vec3 base = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
-        if (aromaaffect$waterTicks > 0) {
-            var swimConfig = aromaaffect$getConfig().swimming;
-            // Smoothly interpolate player position as sniffer transitions into swimming pose
-            float progress = Math.min(1.0F, (float) aromaaffect$waterTicks / swimConfig.transitionTicks);
-            return base.add(0.0, 0.55 * progress, 0.0);
+        if (aromaaffect$isSwimming) {
+            return base.add(0.0, 0.55, 0.0);
         }
         return base;
     }

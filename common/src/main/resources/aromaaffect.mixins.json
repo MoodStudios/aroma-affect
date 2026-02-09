@@ -9,6 +9,7 @@
     "EntityRendererMixin",
     "LivingEntityRendererMixin",
     "SnifferRendererMixin",
+    "SnifferModelMixin",
     "IronGolemModelMixin",
     "IronGolemRendererMixin"
   ],

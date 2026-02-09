@@ -31,7 +31,7 @@ public class SnifferConfig {
     public static class SwimmingConfig {
         public int transitionTicks = 30;
         public float slowSpeed = 0.03f;
-        public float swimSpeed = 0.5f;
+        public float swimSpeed = 0.28f;
     }
 
     public static class WaterFloatingConfig {
