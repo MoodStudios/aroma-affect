@@ -42,7 +42,7 @@ public class TriggerSettings {
      * Default cooldown for block triggers (ms).
      * Set to 8 seconds for re-trigger while near block.
      */
-    public static final long DEFAULT_BLOCK_COOLDOWN_MS = 8000;
+    public static final long DEFAULT_BLOCK_COOLDOWN_MS = 5000;
 
     /**
      * Default cooldown for mob proximity triggers (ms).
@@ -52,9 +52,15 @@ public class TriggerSettings {
 
     /**
      * Default cooldown for structure proximity triggers (ms).
-     * Set to 10 seconds for re-trigger while inside structure.
+     * Set to 30 seconds since structures fire once on entry.
      */
-    public static final long DEFAULT_STRUCTURE_COOLDOWN_MS = 10000;
+    public static final long DEFAULT_STRUCTURE_COOLDOWN_MS = 30000;
+
+    /**
+     * Default cooldown for passive (non-hostile) mob triggers (ms).
+     * Longer cooldown since passive mobs don't represent danger.
+     */
+    public static final long DEFAULT_PASSIVE_MOB_COOLDOWN_MS = 8000;
 
     /**
      * Default cooldown per scent in passive mode (ms).
@@ -139,6 +145,13 @@ public class TriggerSettings {
      */
     @SerializedName("mob_cooldown_ms")
     private long mobCooldownMs = DEFAULT_MOB_COOLDOWN_MS;
+
+    /**
+     * Cooldown for passive (non-hostile) mob triggers (ms).
+     * Longer than hostile mob cooldown since passive mobs don't represent danger.
+     */
+    @SerializedName("passive_mob_cooldown_ms")
+    private long passiveMobCooldownMs = DEFAULT_PASSIVE_MOB_COOLDOWN_MS;
     
     /**
      * Cooldown between structure proximity triggers (ms).
@@ -211,6 +224,7 @@ public class TriggerSettings {
         if (biomeCooldownMs < 0) biomeCooldownMs = DEFAULT_BIOME_COOLDOWN_MS;
         if (blockCooldownMs < 0) blockCooldownMs = DEFAULT_BLOCK_COOLDOWN_MS;
         if (mobCooldownMs < 0) mobCooldownMs = DEFAULT_MOB_COOLDOWN_MS;
+        if (passiveMobCooldownMs < 0) passiveMobCooldownMs = DEFAULT_PASSIVE_MOB_COOLDOWN_MS;
         if (structureCooldownMs < 0) structureCooldownMs = DEFAULT_STRUCTURE_COOLDOWN_MS;
         if (passiveScentCooldownMs < 0) passiveScentCooldownMs = DEFAULT_PASSIVE_SCENT_COOLDOWN_MS;
         if (pathTrackingCooldownMs < 0) pathTrackingCooldownMs = DEFAULT_PATH_TRACKING_COOLDOWN_MS;
