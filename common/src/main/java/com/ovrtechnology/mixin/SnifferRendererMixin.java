@@ -43,6 +43,14 @@ public class SnifferRendererMixin {
             SnifferTamingData data = SnifferTamingData.get(sniffer.getUUID());
             tamedState.hasSaddle = !data.saddleItem.isEmpty() && data.saddleItem.is(Items.SADDLE);
             tamedState.hasNose = !data.decorationItem.isEmpty() && data.decorationItem.getItem() instanceof SnifferNoseItem;
+            // Detect swimming mode: tamed, mounted, and in water
+            tamedState.isSwimmingMode = sniffer.isInWater() && sniffer.isVehicle() && data.ownerUUID != null;
+            if (tamedState.isSwimmingMode) {
+                // Force digging animation to final frame (fully crouched) instantly
+                state.diggingAnimationState.start(0);
+                // Speed up walk animation (leg movement) when swimming
+                state.walkAnimationSpeed = Math.max(state.walkAnimationSpeed, 1.0F);
+            }
         }
     }
 
