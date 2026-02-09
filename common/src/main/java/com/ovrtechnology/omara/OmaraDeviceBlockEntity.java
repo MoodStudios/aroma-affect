@@ -42,11 +42,15 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
     /** Minimum cooldown between puffs in redstone mode (2 seconds) */
     public static final int REDSTONE_COOLDOWN = 40;
 
+    /** Duration of status indicator in ticks (3 seconds) */
+    public static final int STATUS_DURATION = 60;
+
     private NonNullList<ItemStack> items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     private int cooldownTicks = 0;
     private int mode = MODE_AUTO;
     private int intervalIndex = 0; // 0 = 60s, 1 = 5min
     private boolean wasPowered = false;
+    private int statusTicks = 0;
 
     private final ContainerData dataAccess = new ContainerData() {
         @Override
@@ -138,6 +142,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         output.putInt("CooldownTicks", cooldownTicks);
         output.putInt("Mode", mode);
         output.putInt("IntervalIndex", intervalIndex);
+        output.putInt("StatusTicks", statusTicks);
     }
 
     @Override
@@ -148,14 +153,35 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         this.cooldownTicks = input.getIntOr("CooldownTicks", 0);
         this.mode = input.getIntOr("Mode", MODE_AUTO);
         this.intervalIndex = input.getIntOr("IntervalIndex", 0);
+        this.statusTicks = input.getIntOr("StatusTicks", 0);
     }
 
     // ========================================
     // Server Tick
     // ========================================
 
+    private void setStatus(Level level, BlockPos pos, BlockState state, int status, int ticks) {
+        statusTicks = ticks;
+        BlockState newState = state.setValue(OmaraDeviceBlock.STATUS, status);
+        level.setBlock(pos, newState, 3);
+        setChanged();
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, OmaraDeviceBlockEntity be) {
         if (level.isClientSide()) return;
+
+        // Status indicator timer
+        if (be.statusTicks > 0) {
+            be.statusTicks--;
+            if (be.statusTicks <= 0) {
+                be.setStatus(level, pos, state, 0, 0);
+                state = level.getBlockState(pos); // refresh after state change
+            }
+        } else if (state.getValue(OmaraDeviceBlock.STATUS) != 0) {
+            // Crash recovery: status is non-zero but timer expired
+            be.setStatus(level, pos, state, 0, 0);
+            state = level.getBlockState(pos);
+        }
 
         ItemStack capsule = be.getItem(0);
         boolean hasCapsule = !capsule.isEmpty()
@@ -167,8 +193,14 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
                 be.cooldownTicks = 0;
                 be.setChanged();
             }
+            // Flash red on redstone rising edge with no capsule loaded
+            boolean powered = level.hasNeighborSignal(pos);
+            if (be.mode == MODE_REDSTONE && powered && !be.wasPowered) {
+                be.setStatus(level, pos, state, 2, STATUS_DURATION);
+                state = level.getBlockState(pos);
+            }
             // Keep wasPowered in sync so inserting a capsule while powered doesn't trigger an immediate puff
-            be.wasPowered = level.hasNeighborSignal(pos);
+            be.wasPowered = powered;
             return;
         }
 
@@ -221,6 +253,10 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
 
         // Reset cooldown based on current mode
         cooldownTicks = getMaxCooldownForCurrentMode();
+
+        // Flash green status indicator
+        setStatus(level, pos, state, 1, STATUS_DURATION);
+        state = level.getBlockState(pos);
 
         // Play puff sound (3D spatial, audible nearby)
         serverLevel.playSound(null, pos, ModSounds.OMARA_PUFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);

@@ -1,0 +1,7 @@
+{
+  "parent": "aromaaffect:block/omara_device",
+  "textures": {
+    "1": "aromaaffect:block/omara_device_red",
+    "particle": "aromaaffect:block/omara_device_red"
+  }
+}

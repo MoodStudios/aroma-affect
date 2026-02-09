@@ -33,6 +33,8 @@ public class OmaraDeviceBlock extends BaseEntityBlock {
     public static final BooleanProperty WALL = BooleanProperty.create("wall");
     /** Mount orientation on wall: 0=up, 1=right, 2=down, 3=left */
     public static final IntegerProperty MOUNT = IntegerProperty.create("mount", 0, 3);
+    /** Status indicator: 0=off, 1=green (puff success), 2=red (no capsule) */
+    public static final IntegerProperty STATUS = IntegerProperty.create("status", 0, 2);
 
     // Floor shapes
     private static final VoxelShape FLOOR_NS = Block.box(1.5, 0, 3.5, 14.5, 5, 12.5);
@@ -55,7 +57,8 @@ public class OmaraDeviceBlock extends BaseEntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(WALL, false)
-                .setValue(MOUNT, 0));
+                .setValue(MOUNT, 0)
+                .setValue(STATUS, 0));
     }
 
     @Override
@@ -65,7 +68,7 @@ public class OmaraDeviceBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, WALL, MOUNT);
+        builder.add(FACING, WALL, MOUNT, STATUS);
     }
 
     @Override
