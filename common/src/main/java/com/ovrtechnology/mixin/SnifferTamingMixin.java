@@ -22,6 +22,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
@@ -60,6 +61,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class SnifferTamingMixin extends Animal implements HasCustomInventoryScreen {
 
     @Unique
+    private int aromaaffect$waterTicks = 0;
+
+    @Unique
+    private boolean aromaaffect$isSwimming = false;
+
+    @Unique
     private static final TagKey<Block> ENHANCED_SNIFFER_DIGGABLE = TagKey.create(
             Registries.BLOCK,
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "enhanced_sniffer_diggable")
@@ -80,6 +87,10 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
     @Shadow
     @Final
+    private static EntityDataAccessor<Sniffer.State> DATA_STATE;
+
+    @Shadow
+    @Final
     private static EntityDataAccessor<Integer> DATA_DROP_SEED_AT_TICK;
 
     protected SnifferTamingMixin(EntityType<? extends Animal> entityType, Level level) {
@@ -94,7 +105,50 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
         // If already tamed
         if (data.ownerUUID != null) {
-            // Mount with empty hand
+            if (player.isShiftKeyDown()) {
+                // Shift + right-click with saddle: equip saddle directly
+                if (itemStack.is(Items.SADDLE) && data.saddleItem.isEmpty()) {
+                    if (!self.level().isClientSide()) {
+                        data.saddleItem = itemStack.copy();
+                        data.saddleItem.setCount(1);
+                        if (!player.getAbilities().instabuild) {
+                            itemStack.shrink(1);
+                        }
+                        self.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, 1.0F);
+                        SnifferContainer container = new SnifferContainer(self);
+                        container.setChanged();
+                    }
+                    cir.setReturnValue(InteractionResult.SUCCESS);
+                    return;
+                }
+
+                // Shift + right-click with sniffer nose: equip nose directly
+                if (itemStack.getItem() instanceof SnifferNoseItem && data.decorationItem.isEmpty()) {
+                    if (!self.level().isClientSide()) {
+                        data.decorationItem = itemStack.copy();
+                        data.decorationItem.setCount(1);
+                        if (!player.getAbilities().instabuild) {
+                            itemStack.shrink(1);
+                        }
+                        self.playSound(SoundEvents.HORSE_ARMOR.value(), 1.0F, 1.0F);
+                        SnifferContainer container = new SnifferContainer(self);
+                        container.setChanged();
+                    }
+                    cir.setReturnValue(InteractionResult.SUCCESS);
+                    return;
+                }
+
+                // Shift + right-click with empty hand: open inventory
+                if (itemStack.isEmpty()) {
+                    if (!self.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
+                        SnifferMenuRegistry.openSnifferMenu(serverPlayer, self);
+                    }
+                    cir.setReturnValue(InteractionResult.SUCCESS);
+                    return;
+                }
+            }
+
+            // Right-click: mount with empty hand
             if (itemStack.isEmpty() && !self.isVehicle()) {
                 if (!self.level().isClientSide()) {
                     player.startRiding(self);
@@ -182,23 +236,77 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 // Stop AI navigation
                 self.getNavigation().stop();
 
-                // Allow climbing blocks when mounted (like a horse)
-                var stepAttr = self.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
-                if (stepAttr != null) {
-                    stepAttr.setBaseValue(aromaaffect$getConfig().riding.mountedStepHeight);
+                if (self.isInWater()) {
+                    aromaaffect$waterTicks++;
+                    var swimConfig = aromaaffect$getConfig().swimming;
+
+                    // Transition to swimming mode after delay
+                    if (!aromaaffect$isSwimming && aromaaffect$waterTicks >= swimConfig.transitionTicks) {
+                        aromaaffect$isSwimming = true;
+                    }
+
+                    // Set visual DIGGING pose directly every tick without triggering brain behaviors
+                    if (aromaaffect$isSwimming) {
+                        self.getEntityData().set(DATA_STATE, Sniffer.State.DIGGING);
+
+                        // Swimming effects: bubbles and sounds
+                        if (self.level() instanceof ServerLevel serverLevel) {
+                            // Bubble particles every 3 ticks
+                            if (self.tickCount % 3 == 0) {
+                                serverLevel.sendParticles(
+                                        ParticleTypes.BUBBLE,
+                                        self.getX(), self.getY() + 0.3, self.getZ(),
+                                        3, 0.6, 0.1, 0.6, 0.02
+                                );
+                            }
+                            // Splash particles every 5 ticks
+                            if (self.tickCount % 5 == 0) {
+                                serverLevel.sendParticles(
+                                        ParticleTypes.SPLASH,
+                                        self.getX(), self.getY() + 0.5, self.getZ(),
+                                        2, 0.5, 0.0, 0.5, 0.1
+                                );
+                            }
+                            // Swimming sound every 15 ticks
+                            if (self.tickCount % 15 == 0) {
+                                self.playSound(SoundEvents.GENERIC_SWIM, 0.6F, 0.8F + self.getRandom().nextFloat() * 0.4F);
+                            }
+                        }
+                    }
+
+                    aromaaffect$handleWaterFloating(self);
+                } else {
+                    // Exiting water: restore state
+                    if (aromaaffect$isSwimming) {
+                        aromaaffect$isSwimming = false;
+                        self.transitionTo(Sniffer.State.IDLING);
+                    }
+                    aromaaffect$waterTicks = 0;
                 }
 
-                // If in water, simply float
-                if (self.isInWater()) {
-                    aromaaffect$handleWaterFloating(self);
+                // Adjust step height based on context
+                var stepAttr = self.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+                if (stepAttr != null) {
+                    var ridingConfig = aromaaffect$getConfig().riding;
+                    if (self.isInWater() || aromaaffect$waterTicks > 0) {
+                        // Higher step to climb out of water onto shore
+                        stepAttr.setBaseValue(ridingConfig.waterExitStepHeight);
+                    } else {
+                        stepAttr.setBaseValue(ridingConfig.mountedStepHeight);
+                    }
                 }
             }
         } else {
-            // Restore normal step height when not mounted
+            // Restore normal step height and swimming state when not mounted
             Sniffer self2 = (Sniffer) (Object) this;
             var stepAttr = self2.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
             if (stepAttr != null) {
                 stepAttr.setBaseValue(aromaaffect$getConfig().riding.normalStepHeight);
+            }
+            if (aromaaffect$isSwimming) {
+                aromaaffect$isSwimming = false;
+                self2.transitionTo(Sniffer.State.IDLING);
+                aromaaffect$waterTicks = 0;
             }
         }
     }
@@ -212,16 +320,23 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         var waterConfig = aromaaffect$getConfig().waterFloating;
 
         if (waterLevel > 0) {
-            double targetY = waterLevel - waterConfig.floatOffset;
-            double currentY = sniffer.getY();
             Vec3 currentMotion = sniffer.getDeltaMovement();
 
-            // Simple buoyancy towards the surface
-            double verticalMotion = (targetY - currentY) * waterConfig.buoyancyStrength;
-            verticalMotion = Math.max(-waterConfig.maxDownwardSpeed, Math.min(waterConfig.maxUpwardSpeed, verticalMotion));
+            // Hitting a shore edge while moving forward: boost up to climb out
+            if (sniffer.horizontalCollision && (currentMotion.x != 0 || currentMotion.z != 0)) {
+                sniffer.setDeltaMovement(currentMotion.x, 0.35, currentMotion.z);
+            } else {
+                double targetY = waterLevel - waterConfig.floatOffset;
+                double currentY = sniffer.getY();
 
-            // Less horizontal drag to maintain boat speed
-            sniffer.setDeltaMovement(currentMotion.x * waterConfig.horizontalDrag, verticalMotion, currentMotion.z * waterConfig.horizontalDrag);
+                // Simple buoyancy towards the surface
+                double verticalMotion = (targetY - currentY) * waterConfig.buoyancyStrength;
+                verticalMotion = Math.max(-waterConfig.maxDownwardSpeed, Math.min(waterConfig.maxUpwardSpeed, verticalMotion));
+
+                // Less horizontal drag when swimming to maintain speed
+                double drag = aromaaffect$isSwimming ? 1.0 : waterConfig.horizontalDrag;
+                sniffer.setDeltaMovement(currentMotion.x * drag, verticalMotion, currentMotion.z * drag);
+            }
 
             // Prevent drowning
             sniffer.setAirSupply(sniffer.getMaxAirSupply());
@@ -265,6 +380,18 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     }
 
     @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+        Vec3 base = super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        if (aromaaffect$waterTicks > 0) {
+            var swimConfig = aromaaffect$getConfig().swimming;
+            // Smoothly interpolate player position as sniffer transitions into swimming pose
+            float progress = Math.min(1.0F, (float) aromaaffect$waterTicks / swimConfig.transitionTicks);
+            return base.add(0.0, 0.55 * progress, 0.0);
+        }
+        return base;
+    }
+
+    @Override
     protected Vec3 getRiddenInput(Player player, Vec3 travelVector) {
         float forward = player.zza;
         float strafe = player.xxa * 0.5F;
@@ -284,9 +411,14 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                 net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED
         ) * ridingConfig.landSpeedMultiplier;
 
-        // Faster in water (boat speed)
         if (this.isInWater()) {
-            return ridingConfig.waterSpeed;
+            var swimConfig = aromaaffect$getConfig().swimming;
+            // Slow phase before swimming animation kicks in
+            if (!aromaaffect$isSwimming) {
+                return swimConfig.slowSpeed;
+            }
+            // Fast swimming once in DIGGING state
+            return swimConfig.swimSpeed;
         }
 
         return baseSpeed;
@@ -369,6 +501,12 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Inject(method = "dropSeed", at = @At("HEAD"), cancellable = true)
     private void aromaaffect$onDropSeed(CallbackInfo ci) {
         Sniffer self = (Sniffer) (Object) this;
+
+        // Don't drop items when DIGGING state is used for swimming animation
+        if (aromaaffect$isSwimming) {
+            ci.cancel();
+            return;
+        }
 
         if (!(self.level() instanceof ServerLevel serverLevel)) {
             return;
@@ -566,6 +704,11 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Inject(method = "onDiggingComplete", at = @At("TAIL"))
     private void aromaaffect$onFinishDigging(boolean found, CallbackInfoReturnable<Sniffer> cir) {
         Sniffer self = (Sniffer) (Object) this;
+
+        // Don't process digging logic when swimming
+        if (aromaaffect$isSwimming) {
+            return;
+        }
 
         // Only process on server
         if (self.level().isClientSide()) {

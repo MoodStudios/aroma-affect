@@ -43,6 +43,12 @@ public class SnifferRendererMixin {
             SnifferTamingData data = SnifferTamingData.get(sniffer.getUUID());
             tamedState.hasSaddle = !data.saddleItem.isEmpty() && data.saddleItem.is(Items.SADDLE);
             tamedState.hasNose = !data.decorationItem.isEmpty() && data.decorationItem.getItem() instanceof SnifferNoseItem;
+            // Detect swimming mode: tamed, mounted, and in water
+            tamedState.isSwimmingMode = sniffer.isInWater() && sniffer.isVehicle() && data.ownerUUID != null;
+            // Speed up walk animation (leg movement) when swimming
+            if (tamedState.isSwimmingMode) {
+                state.walkAnimationSpeed = Math.max(state.walkAnimationSpeed, 1.0F);
+            }
         }
     }
 

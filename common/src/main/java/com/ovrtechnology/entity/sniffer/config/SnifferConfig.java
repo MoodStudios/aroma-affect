@@ -10,6 +10,7 @@ public class SnifferConfig {
 
     public TamingConfig taming = new TamingConfig();
     public RidingConfig riding = new RidingConfig();
+    public SwimmingConfig swimming = new SwimmingConfig();
     public WaterFloatingConfig waterFloating = new WaterFloatingConfig();
     public DiggingConfig digging = new DiggingConfig();
     public BonanzaConfig bonanza = new BonanzaConfig();
@@ -24,6 +25,13 @@ public class SnifferConfig {
         public float waterSpeed = 0.12f;
         public double mountedStepHeight = 1.0;
         public double normalStepHeight = 0.6;
+        public double waterExitStepHeight = 1.5;
+    }
+
+    public static class SwimmingConfig {
+        public int transitionTicks = 30;
+        public float slowSpeed = 0.03f;
+        public float swimSpeed = 0.5f;
     }
 
     public static class WaterFloatingConfig {
