@@ -395,45 +395,71 @@ public final class PassiveModeManager {
     }
 
     /**
-     * Evaluates block triggers and returns the first match.
-     * Uses fixed activation range of 2 blocks for immediate proximity detection.
+     * Evaluates block triggers and returns the one the player is looking at most directly.
+     * Scans every block position once and picks the individual block (not block type) with
+     * the highest dot product to the player's view direction.
      */
     private static TriggerCandidate evaluateBlockTriggers(Level level, BlockPos playerPos, Player player) {
         int searchRange = (int) Math.ceil(getBlockActivationRange());
+        Vec3 eyePos = player.getEyePosition(1.0f);
+        Vec3 viewDir = player.getViewVector(1.0f).normalize();
+        double activationRange = getBlockActivationRange();
 
+        // Build lookup: Block instance → trigger definition (one-time per evaluation)
+        Map<Block, BlockTriggerDefinition> triggersByBlock = new HashMap<>();
         for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
-            if (!trigger.isProximityTrigger() || !trigger.isValid()) {
-                continue;
+            if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
+            try {
+                ResourceLocation loc = ResourceLocation.parse(trigger.getBlockId());
+                level.registryAccess().lookupOrThrow(Registries.BLOCK)
+                    .getOptional(loc)
+                    .ifPresent(block -> triggersByBlock.put(block, trigger));
+            } catch (Exception e) {
+                // skip invalid block IDs
             }
+        }
+        if (triggersByBlock.isEmpty()) return null;
 
-            String blockId = trigger.getBlockId();
+        // Single scan: check every position, pick the block most directly looked at
+        TriggerCandidate bestCandidate = null;
+        double bestDot = -1;
 
-            Optional<BlockPos> foundPos = findNearbyBlock(level, playerPos, blockId, searchRange);
+        for (int x = -searchRange; x <= searchRange; x++) {
+            for (int y = -searchRange; y <= searchRange; y++) {
+                for (int z = -searchRange; z <= searchRange; z++) {
+                    BlockPos checkPos = playerPos.offset(x, y, z);
+                    Block block = level.getBlockState(checkPos).getBlock();
 
-            if (foundPos.isPresent()) {
-                double distance = Math.sqrt(playerPos.distSqr(foundPos.get()));
+                    BlockTriggerDefinition trigger = triggersByBlock.get(block);
+                    if (trigger == null) continue;
 
-                // Only activate if within activation range AND player is looking at the block
-                if (distance <= getBlockActivationRange()
-                        && isPlayerLookingAt(player, Vec3.atCenterOf(foundPos.get()))) {
-                    double intensity = calculateIntensityByDistance(distance, getBlockActivationRange());
+                    double distance = Math.sqrt(playerPos.distSqr(checkPos));
+                    if (distance > activationRange) continue;
 
-                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                        trigger.getScentName(),
-                        ScentPriority.MEDIUM,
-                        -1,
-                        intensity
-                    );
+                    Vec3 toBlock = Vec3.atCenterOf(checkPos).subtract(eyePos).normalize();
+                    double dot = viewDir.dot(toBlock);
 
-                    String source = "block:" + blockId;
-                    String displayName = getBlockDisplayName(level, blockId);
+                    if (dot >= LOOK_AT_COS_THRESHOLD && dot > bestDot) {
+                        bestDot = dot;
+                        double intensity = calculateIntensityByDistance(distance, activationRange);
 
-                    return new TriggerCandidate(scentTrigger, source, displayName,
-                        TriggerType.BLOCK, (int) getBlockActivationRange(), distance);
+                        ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
+                            trigger.getScentName(),
+                            ScentPriority.MEDIUM,
+                            -1,
+                            intensity
+                        );
+
+                        String source = "block:" + trigger.getBlockId();
+                        String displayName = getBlockDisplayName(level, trigger.getBlockId());
+
+                        bestCandidate = new TriggerCandidate(scentTrigger, source, displayName,
+                            TriggerType.BLOCK, (int) activationRange, distance);
+                    }
                 }
             }
         }
-        return null;
+        return bestCandidate;
     }
 
     /**
@@ -723,7 +749,7 @@ public final class PassiveModeManager {
     }
 
     /**
-     * Finds a nearby block of the specified type within range.
+     * Finds the closest nearby block of the specified type within range.
      */
     private static Optional<BlockPos> findNearbyBlock(Level level, BlockPos center,
                                                       String blockId, int range) {
@@ -738,8 +764,10 @@ public final class PassiveModeManager {
             }
 
             Block targetBlock = blockOpt.get();
+            BlockPos closest = null;
+            double closestDistSq = Double.MAX_VALUE;
 
-            // Search in a cubic area around the player
+            // Search in a cubic area around the player, keep the closest match
             for (int x = -range; x <= range; x++) {
                 for (int y = -range; y <= range; y++) {
                     for (int z = -range; z <= range; z++) {
@@ -747,11 +775,16 @@ public final class PassiveModeManager {
                         BlockState state = level.getBlockState(checkPos);
 
                         if (state.is(targetBlock)) {
-                            return Optional.of(checkPos);
+                            double distSq = center.distSqr(checkPos);
+                            if (distSq < closestDistSq) {
+                                closestDistSq = distSq;
+                                closest = checkPos;
+                            }
                         }
                     }
                 }
             }
+            return Optional.ofNullable(closest);
         } catch (Exception e) {
             AromaAffect.LOGGER.warn("Error searching for block {}: {}", blockId, e.getMessage());
         }
