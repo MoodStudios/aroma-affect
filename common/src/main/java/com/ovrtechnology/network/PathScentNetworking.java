@@ -152,6 +152,9 @@ public final class PathScentNetworking {
         });
 
         // Register server-side receiver for blacklist sync (C2S)
+        // Processed immediately (not deferred via context.queue) so the blacklist
+        // is guaranteed to be updated before the path command that follows.
+        // BlacklistSyncManager uses ConcurrentHashMap — safe from any thread.
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, PATH_BLACKLIST_SYNC_PACKET_ID, (buf, context) -> {
             int count = buf.readVarInt();
             List<BlacklistSyncManager.ExcludedPosition> positions = new ArrayList<>();
@@ -163,13 +166,11 @@ public final class PathScentNetworking {
                 positions.add(new BlacklistSyncManager.ExcludedPosition(targetId, x, y, z));
             }
 
-            context.queue(() -> {
-                if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
-                    BlacklistSyncManager.getInstance().setExclusions(serverPlayer.getUUID(), positions);
-                    AromaAffect.LOGGER.debug("Received blacklist sync from {}: {} entries",
-                            serverPlayer.getName().getString(), positions.size());
-                }
-            });
+            if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+                BlacklistSyncManager.getInstance().setExclusions(serverPlayer.getUUID(), positions);
+                AromaAffect.LOGGER.debug("Received blacklist sync from {}: {} entries",
+                        serverPlayer.getName().getString(), positions.size());
+            }
         });
 
         AromaAffect.LOGGER.info("PathScentNetworking initialized");
