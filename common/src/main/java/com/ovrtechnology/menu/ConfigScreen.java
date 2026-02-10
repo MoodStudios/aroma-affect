@@ -42,9 +42,10 @@ public class ConfigScreen extends BaseMenuScreen {
     private Section activeSection = Section.GENERAL;
     private ScentSubFilter activeScentFilter = ScentSubFilter.BLOCKS;
 
-    // Scroll state for scent values list
+    // Scroll state for scrollable sections
     private double scentScrollOffset = 0;
     private double wsScrollOffset = 0;
+    private double passiveScrollOffset = 0;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
@@ -77,7 +78,11 @@ public class ConfigScreen extends BaseMenuScreen {
     private boolean hoveringBack = false;
 
     // Slider drag tracking
-    private enum DragTarget { NONE, INTENSITY, COOLDOWN, PASSIVE_COOLDOWN }
+    private enum DragTarget {
+        NONE, INTENSITY, COOLDOWN,
+        PASSIVE_BLOCK_CD, PASSIVE_MOB_CD, PASSIVE_PASSIVE_MOB_CD,
+        PASSIVE_BLOCK_RANGE, PASSIVE_MOB_RANGE
+    }
     private DragTarget activeDrag = DragTarget.NONE;
 
     public ConfigScreen() {
@@ -173,7 +178,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
         switch (activeSection) {
             case GENERAL -> renderGeneralSection(graphics, contentLeft, contentTop, contentW, mouseX, mouseY, a);
-            case PASSIVE -> renderPassiveSection(graphics, contentLeft, contentTop, contentW, mouseX, mouseY, a);
+            case PASSIVE -> renderPassiveSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case SCENT_VALUES -> renderScentValuesSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case WEBSOCKET -> renderWebSocketSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
         }
@@ -269,28 +274,94 @@ public class ConfigScreen extends BaseMenuScreen {
         graphics.drawString(font, trackingToastLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
     }
 
-    private void renderPassiveSection(GuiGraphics graphics, int x, int y, int w, int mx, int my, float a) {
-        int rowY = y;
+    private void renderPassiveSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+        ClientConfig config = ClientConfig.getInstance();
+        int sliderX = x + w - SLIDER_W - 40;
+        int toggleX = x + w - TOGGLE_W - 30;
+
+        // Calculate total content height to determine if scrolling is needed
+        // Toggle(28+8) + header(16) + 3 sliders(28*3) + gap(8) + header(16) + 2 sliders(28*2) + gap(8) + button(20) = 188
+        int totalContentH = (ROW_HEIGHT + 8) + 16 + (ROW_HEIGHT * 3) + 8 + 16 + (ROW_HEIGHT * 2) + 8 + 20;
+        int maxScroll = Math.max(0, totalContentH - h);
+        passiveScrollOffset = Mth.clamp(passiveScrollOffset, 0, maxScroll);
+
+        // Scissor clip the content area
+        graphics.enableScissor(x, y, x + w, y + h);
+
+        int rowY = y - (int) passiveScrollOffset;
 
         // Passive Enabled toggle
         graphics.drawString(font, Component.translatable("config.aromaaffect.passive_enabled"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        int toggleX = x + w - TOGGLE_W - 30;
         boolean passiveEnabled = PassiveModeManager.isPassiveModeEnabled();
         renderTogglePill(graphics, toggleX, rowY + 1, passiveEnabled, a);
         Component toggleLabel = passiveEnabled
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.drawString(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 4;
+        rowY += ROW_HEIGHT + 8;
 
-        // Passive Cooldown slider (5s - 120s)
-        graphics.drawString(font, Component.translatable("config.aromaaffect.passive_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        int sliderX = x + w - SLIDER_W - 40;
-        // Use the global cooldown as passive cooldown for now (could be separate config)
-        float passiveCooldown = ClientConfig.getInstance().getGlobalCooldownMs() / 1000f;
-        float clampedCooldown = Mth.clamp(passiveCooldown, 5f, 120f);
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, clampedCooldown, 5f, 120f, a);
-        graphics.drawString(font, String.format("%.0fs", clampedCooldown), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        // Cooldowns
+        graphics.drawString(font, "Cooldowns", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        rowY += 16;
+
+        // Block Cooldown (1s - 30s)
+        graphics.drawString(font, "Block Cooldown", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        float blockCd = config.getPassiveBlockCooldownMs() / 1000f;
+        renderSlider(graphics, sliderX, rowY, SLIDER_W, blockCd, 1f, 30f, a);
+        graphics.drawString(font, String.format("%.0fs", blockCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += ROW_HEIGHT;
+
+        // Hostile Mob CD (1s - 30s)
+        graphics.drawString(font, "Hostile Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        float mobCd = config.getPassiveMobCooldownMs() / 1000f;
+        renderSlider(graphics, sliderX, rowY, SLIDER_W, mobCd, 1f, 30f, a);
+        graphics.drawString(font, String.format("%.0fs", mobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += ROW_HEIGHT;
+
+        // Passive Mob CD (1s - 30s)
+        graphics.drawString(font, "Passive Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        float passiveMobCd = config.getPassivePassiveMobCooldownMs() / 1000f;
+        renderSlider(graphics, sliderX, rowY, SLIDER_W, passiveMobCd, 1f, 30f, a);
+        graphics.drawString(font, String.format("%.0fs", passiveMobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += ROW_HEIGHT + 8;
+
+        // Ranges
+        graphics.drawString(font, "Ranges", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        rowY += 16;
+
+        // Block Range (1 - 5 blocks)
+        graphics.drawString(font, "Block Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        float blockRange = (float) config.getPassiveBlockRange();
+        renderSlider(graphics, sliderX, rowY, SLIDER_W, blockRange, 1f, 5f, a);
+        graphics.drawString(font, String.format("%.1f", blockRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += ROW_HEIGHT;
+
+        // Mob Range (1 - 15 blocks)
+        graphics.drawString(font, "Mob Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        float mobRange = (float) config.getPassiveMobRange();
+        renderSlider(graphics, sliderX, rowY, SLIDER_W, mobRange, 1f, 15f, a);
+        graphics.drawString(font, String.format("%.1f", mobRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += ROW_HEIGHT + 8;
+
+        // Reset Defaults button
+        int resetBtnW = 100;
+        int resetBtnH = 20;
+        int resetBtnX = x + (w - resetBtnW) / 2;
+        boolean hoverReset = mx >= resetBtnX && mx < resetBtnX + resetBtnW && my >= rowY && my < rowY + resetBtnH;
+        int resetBg = hoverReset ? MenuRenderUtils.withAlpha(0xFF444444, a) : MenuRenderUtils.withAlpha(0xFF333333, a);
+        graphics.fill(resetBtnX, rowY, resetBtnX + resetBtnW, rowY + resetBtnH, resetBg);
+        MenuRenderUtils.renderOutline(graphics, resetBtnX, rowY, resetBtnW, resetBtnH, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
+        graphics.drawCenteredString(font, "Reset Defaults", resetBtnX + resetBtnW / 2, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
+
+        graphics.disableScissor();
+
+        // Scrollbar (only if content overflows)
+        if (totalContentH > h && h > 0) {
+            int scrollBarX = x + w - 4;
+            int scrollBarH = Math.max(10, (int) ((float) h / totalContentH * h));
+            int scrollBarY = y + (int) ((float) passiveScrollOffset / maxScroll * (h - scrollBarH));
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 3, scrollBarY + scrollBarH, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
+        }
     }
 
     private void renderScentValuesSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
@@ -609,9 +680,24 @@ public class ConfigScreen extends BaseMenuScreen {
                 config.setGlobalCooldownMs(ms);
                 config.save();
             }
-            case PASSIVE_COOLDOWN -> {
-                long ms = (long) (5000 + ratio * 115000);
-                config.setGlobalCooldownMs(ms);
+            case PASSIVE_BLOCK_CD -> {
+                config.setPassiveBlockCooldownMs((long) (1000 + ratio * 29000));
+                config.save();
+            }
+            case PASSIVE_MOB_CD -> {
+                config.setPassiveMobCooldownMs((long) (1000 + ratio * 29000));
+                config.save();
+            }
+            case PASSIVE_PASSIVE_MOB_CD -> {
+                config.setPassivePassiveMobCooldownMs((long) (1000 + ratio * 29000));
+                config.save();
+            }
+            case PASSIVE_BLOCK_RANGE -> {
+                config.setPassiveBlockRange(Math.round((1.0 + ratio * 4.0) * 10.0) / 10.0);
+                config.save();
+            }
+            case PASSIVE_MOB_RANGE -> {
+                config.setPassiveMobRange(Math.round((1.0 + ratio * 14.0) * 10.0) / 10.0);
                 config.save();
             }
         }
@@ -647,6 +733,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 MenuRenderUtils.playClickSound();
                 activeSection = section;
                 scentScrollOffset = 0;
+                passiveScrollOffset = 0;
                 capturingKey = false;
                 return true;
             }
@@ -780,26 +867,89 @@ public class ConfigScreen extends BaseMenuScreen {
     }
 
     private boolean handlePassiveClick(int mx, int my, int x, int y, int w) {
+        ClientConfig config = ClientConfig.getInstance();
+        // Adjust mouse Y for scroll offset so clicks match rendered positions
+        int adjustedMy = my + (int) passiveScrollOffset;
         int rowY = y;
+        int sliderX = x + w - SLIDER_W - 40;
+        int toggleX = x + w - TOGGLE_W - 30;
 
         // Passive toggle
-        int toggleX = x + w - TOGGLE_W - 30;
-        if (mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
             PassiveModeManager.togglePassiveMode();
             MenuRenderUtils.playToggleSound(PassiveModeManager.isPassiveModeEnabled());
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += ROW_HEIGHT + 8;
 
-        // Passive cooldown slider
-        int sliderX = x + w - SLIDER_W - 40;
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && my >= rowY && my < rowY + SLIDER_H + 8) {
+        // "Cooldowns" header
+        rowY += 16;
+
+        // Block Cooldown slider (1s - 30s)
+        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
             float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
-            long ms = (long) (5000 + ratio * 115000); // 5s to 120s
-            ClientConfig.getInstance().setGlobalCooldownMs(ms);
-            ClientConfig.getInstance().save();
-            activeDrag = DragTarget.PASSIVE_COOLDOWN;
+            config.setPassiveBlockCooldownMs((long) (1000 + ratio * 29000));
+            config.save();
+            activeDrag = DragTarget.PASSIVE_BLOCK_CD;
+            return true;
+        }
+        rowY += ROW_HEIGHT;
+
+        // Hostile Mob CD slider (1s - 30s)
+        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+            MenuRenderUtils.playSliderSound();
+            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            config.setPassiveMobCooldownMs((long) (1000 + ratio * 29000));
+            config.save();
+            activeDrag = DragTarget.PASSIVE_MOB_CD;
+            return true;
+        }
+        rowY += ROW_HEIGHT;
+
+        // Passive Mob CD slider (1s - 30s)
+        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+            MenuRenderUtils.playSliderSound();
+            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            config.setPassivePassiveMobCooldownMs((long) (1000 + ratio * 29000));
+            config.save();
+            activeDrag = DragTarget.PASSIVE_PASSIVE_MOB_CD;
+            return true;
+        }
+        rowY += ROW_HEIGHT + 8;
+
+        // "Ranges" header
+        rowY += 16;
+
+        // Block Range slider (1 - 5)
+        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+            MenuRenderUtils.playSliderSound();
+            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            config.setPassiveBlockRange(Math.round((1.0 + ratio * 4.0) * 10.0) / 10.0);
+            config.save();
+            activeDrag = DragTarget.PASSIVE_BLOCK_RANGE;
+            return true;
+        }
+        rowY += ROW_HEIGHT;
+
+        // Mob Range slider (1 - 15)
+        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+            MenuRenderUtils.playSliderSound();
+            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            config.setPassiveMobRange(Math.round((1.0 + ratio * 14.0) * 10.0) / 10.0);
+            config.save();
+            activeDrag = DragTarget.PASSIVE_MOB_RANGE;
+            return true;
+        }
+        rowY += ROW_HEIGHT + 8;
+
+        // Reset Defaults button
+        int resetBtnW = 100;
+        int resetBtnH = 20;
+        int resetBtnX = x + (w - resetBtnW) / 2;
+        if (mx >= resetBtnX && mx < resetBtnX + resetBtnW && adjustedMy >= rowY && adjustedMy < rowY + resetBtnH) {
+            MenuRenderUtils.playClickSound();
+            config.resetPassiveDefaults();
             return true;
         }
 
@@ -832,6 +982,10 @@ public class ConfigScreen extends BaseMenuScreen {
 
     @Override
     protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (activeSection == Section.PASSIVE) {
+            passiveScrollOffset -= scrollY * 14;
+            return true;
+        }
         if (activeSection == Section.SCENT_VALUES) {
             scentScrollOffset -= scrollY * 14;
             return true;

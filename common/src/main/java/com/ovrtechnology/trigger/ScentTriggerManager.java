@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
@@ -121,10 +122,11 @@ public final class ScentTriggerManager {
      */
     public boolean canTrigger(String scentName) {
         TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+        long globalCooldownMs = ClientConfig.getInstance().getGlobalCooldownMs();
         long now = System.currentTimeMillis();
 
-        // Check global cooldown
-        if (now - lastGlobalTriggerTime < settings.getGlobalCooldownMs()) {
+        // Check global cooldown (reads from user-editable ClientConfig)
+        if (now - lastGlobalTriggerTime < globalCooldownMs) {
             AromaAffect.LOGGER.debug("Scent '{}' blocked by global cooldown", scentName);
             return false;
         }
@@ -151,11 +153,11 @@ public final class ScentTriggerManager {
      * @return true if can trigger
      */
     public boolean canTrigger(String scentName, long cooldownMs) {
-        TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+        long globalCooldownMs = ClientConfig.getInstance().getGlobalCooldownMs();
         long now = System.currentTimeMillis();
 
-        // Check global cooldown
-        if (now - lastGlobalTriggerTime < settings.getGlobalCooldownMs()) {
+        // Check global cooldown (reads from user-editable ClientConfig)
+        if (now - lastGlobalTriggerTime < globalCooldownMs) {
             return false;
         }
 
@@ -200,10 +202,11 @@ public final class ScentTriggerManager {
      */
     public long getRemainingCooldown(String scentName) {
         TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+        long globalCooldownMs = ClientConfig.getInstance().getGlobalCooldownMs();
         long now = System.currentTimeMillis();
 
-        // Check global cooldown first
-        long globalRemaining = settings.getGlobalCooldownMs() - (now - lastGlobalTriggerTime);
+        // Check global cooldown first (reads from user-editable ClientConfig)
+        long globalRemaining = globalCooldownMs - (now - lastGlobalTriggerTime);
         if (globalRemaining > 0) {
             return globalRemaining;
         }

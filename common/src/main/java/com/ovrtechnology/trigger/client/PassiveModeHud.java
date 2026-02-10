@@ -5,6 +5,7 @@ import com.ovrtechnology.trigger.PassiveModeManager;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.ScentTriggerSource;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
 import dev.architectury.event.events.client.ClientGuiEvent;
@@ -117,8 +118,7 @@ public final class PassiveModeHud {
      * Global cooldown applies to ALL scents.
      */
     private static float calculateGlobalCooldownProgress(ScentTrigger activeScent) {
-        TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
-        long cooldownMs = settings.getGlobalCooldownMs();
+        long cooldownMs = ClientConfig.getInstance().getGlobalCooldownMs();
         if (cooldownMs <= 0) {
             cooldownMs = TriggerSettings.DEFAULT_GLOBAL_COOLDOWN_MS;
         }
@@ -154,7 +154,7 @@ public final class PassiveModeHud {
             cooldownMs = settings.getItemUseCooldownMs();
         } else {
             // Default fallback
-            cooldownMs = settings.getPassiveScentCooldownMs();
+            cooldownMs = settings.getScentCooldownMs();
         }
 
         if (cooldownMs <= 0) {
