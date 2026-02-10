@@ -63,13 +63,6 @@ public class TriggerSettings {
     public static final long DEFAULT_PASSIVE_MOB_COOLDOWN_MS = 8000;
 
     /**
-     * Default cooldown per scent in passive mode (ms).
-     * Prevents the same scent from triggering again too soon.
-     * Matches the PassiveModeManager check interval of 300 ticks (15 seconds).
-     */
-    public static final long DEFAULT_PASSIVE_SCENT_COOLDOWN_MS = 15000;
-
-    /**
      * Default cooldown for path tracking scent triggers (ms).
      * Controls how often scents are emitted while following a path.
      */
@@ -160,13 +153,6 @@ public class TriggerSettings {
     private long structureCooldownMs = DEFAULT_STRUCTURE_COOLDOWN_MS;
 
     /**
-     * Cooldown per scent in passive mode (ms).
-     * Prevents the same scent from triggering again too soon.
-     */
-    @SerializedName("passive_scent_cooldown_ms")
-    private long passiveScentCooldownMs = DEFAULT_PASSIVE_SCENT_COOLDOWN_MS;
-
-    /**
      * Cooldown for path tracking scent triggers (ms).
      * Controls how often scents are emitted while following a path.
      */
@@ -226,7 +212,6 @@ public class TriggerSettings {
         if (mobCooldownMs < 0) mobCooldownMs = DEFAULT_MOB_COOLDOWN_MS;
         if (passiveMobCooldownMs < 0) passiveMobCooldownMs = DEFAULT_PASSIVE_MOB_COOLDOWN_MS;
         if (structureCooldownMs < 0) structureCooldownMs = DEFAULT_STRUCTURE_COOLDOWN_MS;
-        if (passiveScentCooldownMs < 0) passiveScentCooldownMs = DEFAULT_PASSIVE_SCENT_COOLDOWN_MS;
         if (pathTrackingCooldownMs < 0) pathTrackingCooldownMs = DEFAULT_PATH_TRACKING_COOLDOWN_MS;
 
         // Validate intensities (clamp to 0.0 - 1.0)

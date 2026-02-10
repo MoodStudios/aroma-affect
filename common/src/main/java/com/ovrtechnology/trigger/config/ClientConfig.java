@@ -50,6 +50,30 @@ public final class ClientConfig {
     @Getter @Setter
     private boolean trackingToastPersistent = false;
 
+    // ========================================
+    // Passive mode settings
+    // ========================================
+
+    /** Cooldown for block triggers in passive mode (ms) */
+    @Getter @Setter
+    private long passiveBlockCooldownMs = 5000;
+
+    /** Cooldown for hostile mob triggers in passive mode (ms) */
+    @Getter @Setter
+    private long passiveMobCooldownMs = 8000;
+
+    /** Cooldown for non-hostile mob triggers in passive mode (ms) */
+    @Getter @Setter
+    private long passivePassiveMobCooldownMs = 8000;
+
+    /** Activation range for block triggers in passive mode (blocks) */
+    @Getter @Setter
+    private double passiveBlockRange = 2.5;
+
+    /** Activation range for mob triggers in passive mode (blocks) */
+    @Getter @Setter
+    private double passiveMobRange = 5.0;
+
     private ClientConfig() {
     }
 
@@ -101,6 +125,15 @@ public final class ClientConfig {
         noseRenderEnabled = true;
         strapEnabled = false;
         trackingToastPersistent = false;
+        resetPassiveDefaults();
+    }
+
+    public void resetPassiveDefaults() {
+        passiveBlockCooldownMs = 5000;
+        passiveMobCooldownMs = 8000;
+        passivePassiveMobCooldownMs = 8000;
+        passiveBlockRange = 2.5;
+        passiveMobRange = 5.0;
         save();
     }
 
