@@ -33,6 +33,7 @@ import com.ovrtechnology.entity.sniffer.SnifferSyncHandler;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
 import lombok.experimental.UtilityClass;
@@ -123,6 +124,9 @@ public final class AromaAffect {
         // Initialize scent trigger system
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
+
+        // Initialize server-side structure sync for multiplayer passive-mode
+        StructureSyncHandler.init();
 
         // Initialize commands
         AromaTestCommand.init();
