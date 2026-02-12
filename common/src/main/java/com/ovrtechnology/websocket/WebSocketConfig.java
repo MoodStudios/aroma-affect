@@ -36,7 +36,7 @@ public class WebSocketConfig {
      * The WebSocket server host.
      */
     @Builder.Default
-    private final String host = "localhost";
+    private final String host = "127.0.0.1";
     
     /**
      * The WebSocket server port.

@@ -167,7 +167,7 @@ public final class AromaAffectClient {
         // TODO: Load config from file when configuration system is set up
         // For now, use default config (localhost:8080)
         WebSocketConfig config = WebSocketConfig.builder()
-                .host("localhost")
+                .host("127.0.0.1")
                 .port(8080)
                 .autoConnect(true)       // Try to connect on startup
                 .autoReconnect(true)     // Keep trying if connection fails

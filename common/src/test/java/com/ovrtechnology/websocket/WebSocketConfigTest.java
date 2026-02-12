@@ -21,7 +21,7 @@ class WebSocketConfigTest {
         void shouldHaveSensibleDefaults() {
             WebSocketConfig config = WebSocketConfig.DEFAULT;
             
-            assertThat(config.getHost()).isEqualTo("localhost");
+            assertThat(config.getHost()).isEqualTo("127.0.0.1");
             assertThat(config.getPort()).isEqualTo(8080);
             assertThat(config.isSecure()).isFalse();
             assertThat(config.getPath()).isEmpty();
@@ -38,7 +38,7 @@ class WebSocketConfigTest {
         @Test
         @DisplayName("should generate correct default URI")
         void shouldGenerateCorrectDefaultUri() {
-            assertThat(WebSocketConfig.DEFAULT.getUri()).isEqualTo("ws://localhost:8080");
+            assertThat(WebSocketConfig.DEFAULT.getUri()).isEqualTo("ws://127.0.0.1:8080");
         }
     }
     
@@ -220,7 +220,7 @@ class WebSocketConfigTest {
             WebSocketConfig original = WebSocketConfig.DEFAULT;
             WebSocketConfig modified = original.withHost("newhost");
             
-            assertThat(original.getHost()).isEqualTo("localhost");
+            assertThat(original.getHost()).isEqualTo("127.0.0.1");
             assertThat(modified.getHost()).isEqualTo("newhost");
             assertThat(modified.getPort()).isEqualTo(original.getPort());
         }
@@ -242,7 +242,7 @@ class WebSocketConfigTest {
     void toStringShouldBeInformative() {
         String str = WebSocketConfig.DEFAULT.toString();
         
-        assertThat(str).contains("ws://localhost:8080");
+        assertThat(str).contains("ws://127.0.0.1:8080");
         assertThat(str).contains("autoConnect=true");
         assertThat(str).contains("autoReconnect=true");
     }
