@@ -316,6 +316,10 @@ public final class PathScentNetworking {
      * @param structureId the structure ID the player is inside, or null if none
      */
     public static void sendStructureSync(ServerPlayer player, String structureId) {
+        if (!NetworkManager.canPlayerReceive(player, STRUCTURE_SYNC_PACKET_ID)) {
+            return;
+        }
+
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
                 Unpooled.buffer(),
                 player.registryAccess()
