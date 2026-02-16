@@ -557,5 +557,7 @@
   "menu.aromaaffect.cost.missing_item": "Missing required item",
   "history.aromaaffect.action.retrack.cost": "Re-track (%d durability)",
   "menu.aromaaffect.history.retrack_cost": "Re-track cost: %d durability",
-  "history.aromaaffect.wrong_dimension": "Wrong dimension — travel there first"
+  "history.aromaaffect.wrong_dimension": "Wrong dimension — travel there first",
+
+  "config.aromaaffect.passive_puff_overlay": "Passive Puff Overlay"
 }

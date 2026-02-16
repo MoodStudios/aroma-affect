@@ -9,6 +9,7 @@ import com.ovrtechnology.trigger.ScentTriggerHandler;
 import com.ovrtechnology.menu.TrackingHud;
 import com.ovrtechnology.trigger.client.PassiveModeHud;
 import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
+import com.ovrtechnology.trigger.client.ScentPuffOverlay;
 import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.history.TrackingHistoryData;
@@ -81,6 +82,9 @@ public final class AromaAffectClient {
 
         // Initialize active-tracking scent mask overlay (fullscreen pulse on each path puff)
         PathTrackingMaskOverlay.init();
+
+        // Initialize general scent puff overlay (Omara Device, etc.)
+        ScentPuffOverlay.init();
 
         // Initialize OVR WebSocket client for scent hardware integration
         // The connection is optional - the mod works without it

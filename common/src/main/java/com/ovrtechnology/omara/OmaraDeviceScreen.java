@@ -5,8 +5,6 @@ import com.ovrtechnology.menu.MenuRenderUtils;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItem;
-import com.ovrtechnology.trigger.ScentTrigger;
-import com.ovrtechnology.trigger.ScentTriggerManager;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -36,8 +34,6 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     private static final int BTN_H = 12;
     private static final int BTN_INTERVAL_Y = 44;
     private static final int BTN_MODE_Y = 58;
-
-    private int previousCooldown = -1;
 
     public OmaraDeviceScreen(OmaraDeviceMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -69,15 +65,8 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     @Override
     protected void containerTick() {
         super.containerTick();
-
-        int currentCooldown = this.menu.getCooldownTicks();
-        int maxCooldown = this.menu.getMaxCooldownTicks();
-
-        if (previousCooldown >= 0 && previousCooldown <= 1 && currentCooldown == maxCooldown) {
-            triggerOvrScent();
-        }
-
-        previousCooldown = currentCooldown;
+        // Scent triggering is now handled server-side via OmaraDeviceNetworking.
+        // The server broadcasts to all nearby players when the device puffs.
     }
 
     @Override
@@ -108,18 +97,6 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         }
 
         return super.mouseClicked(event, isValidClickButton);
-    }
-
-    private void triggerOvrScent() {
-        ItemStack capsule = this.menu.getSlot(0).getItem();
-        if (capsule.isEmpty() || !(capsule.getItem() instanceof ScentItem si) || !si.getDefinition().isCapsule()) {
-            return;
-        }
-        String scentName = si.getDefinition().getScent();
-        if (scentName == null || scentName.isEmpty()) return;
-
-        ScentTrigger trigger = ScentTrigger.fromItemUse(scentName, 100, 0.5);
-        ScentTriggerManager.getInstance().trigger(trigger);
     }
 
     // ========================================
