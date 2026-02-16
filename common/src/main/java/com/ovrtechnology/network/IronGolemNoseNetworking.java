@@ -51,6 +51,11 @@ public final class IronGolemNoseNetworking {
         buf.writeUUID(golemUUID);
         buf.writeBoolean(hasNose);
 
+        if (!NetworkManager.canPlayerReceive(player, IRON_GOLEM_NOSE_SYNC_ID)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(player, IRON_GOLEM_NOSE_SYNC_ID, buf);
     }
 

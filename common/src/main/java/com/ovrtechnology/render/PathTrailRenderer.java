@@ -12,8 +12,15 @@ import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.menu.MenuCategory;
 import com.ovrtechnology.scent.ScentRegistry;
+import com.ovrtechnology.trigger.ScentPriority;
+import com.ovrtechnology.trigger.ScentTrigger;
+import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.trigger.ScentTriggerSource;
+import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.trigger.config.TriggerSettings;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -39,6 +46,9 @@ import java.util.OptionalDouble;
  * the path behind it. Every Nth pulse is a "power pulse" with enhanced visuals.
  */
 public final class PathTrailRenderer {
+
+    /** Development mode flag — shows debug messages in chat when a scent is triggered. */
+    private static final boolean DEV_MODE = true;
 
     // ── Trail shape parameters ──────────────────────────────────────────
 
@@ -176,8 +186,8 @@ public final class PathTrailRenderer {
             prevPulseDurationMs = PULSE_DURATION_FAR_MS;
             lastPulseStart = now;
             currentPulseDurationMs = resolvePulseDurationMs(totalLength(stablePath));
-            pulseCount = 1;
-            currentPulseIsPower = false;
+            pulseCount = POWER_PULSE_INTERVAL;
+            currentPulseIsPower = true;
             prevPulseIsPower = false;
         }
 
@@ -187,6 +197,9 @@ public final class PathTrailRenderer {
 
         // Pulse just completed → adopt incoming as stable
         if (!pulseActive && incomingPath != null) {
+            if (currentPulseIsPower) {
+                firePowerPulsePuff();
+            }
             stablePath = incomingPath;
             stablePathOrigin = incomingPathOrigin;
             incomingPath = null;
@@ -572,6 +585,96 @@ public final class PathTrailRenderer {
             return intensity * intensity * maxWhiten;
         }
         return 0;
+    }
+
+    // ── Power pulse puff (client-side scent + overlay) ────────────────
+
+    /**
+     * Fires the scent trigger and overlay exactly when a power pulse
+     * completes its sweep toward the player — zero network latency.
+     */
+    private static void firePowerPulsePuff() {
+        String scentName = resolveScentName();
+        if (scentName == null) return;
+
+        double intensity = resolveScentIntensity();
+
+        ScentTrigger trigger = ScentTrigger.create(
+                scentName,
+                ScentTriggerSource.PATH_TRACKING,
+                ScentPriority.MEDIUM,
+                100,
+                intensity
+        );
+
+        boolean triggered = ScentTriggerManager.getInstance().trigger(trigger);
+        if (triggered) {
+            PathTrackingMaskOverlay.onPathScentPuff(scentName, intensity);
+
+            if (DEV_MODE) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player != null) {
+                    int intensityPercent = (int) Math.round(intensity * 100);
+                    String message = String.format(
+                            "§d[Aroma Affect] §7Scent: §e%s §7(§dpath tracking§7) §8[%d%%]",
+                            scentName, intensityPercent);
+                    mc.player.displayClientMessage(Component.literal(message), false);
+                }
+            }
+        }
+    }
+
+    /**
+     * Resolves the scent name for the current tracking target.
+     * Uses the same lookup chain as {@link #resolveColor()}.
+     */
+    private static String resolveScentName() {
+        String targetId = ActiveTrackingState.getTargetId() != null
+                ? ActiveTrackingState.getTargetId().toString() : null;
+        MenuCategory cat = ActiveTrackingState.getCategory();
+        if (targetId == null) return null;
+
+        if (cat == MenuCategory.BLOCKS || cat == MenuCategory.FLOWERS) {
+            var blockTrigger = ScentTriggerConfigLoader.getBlockTrigger(targetId);
+            if (blockTrigger.isPresent()) return blockTrigger.get().getScentName();
+        } else if (cat == MenuCategory.BIOMES) {
+            var biomeTrigger = ScentTriggerConfigLoader.getBiomeTrigger(targetId);
+            if (biomeTrigger.isPresent()) return biomeTrigger.get().getScentName();
+        } else if (cat == MenuCategory.STRUCTURES) {
+            var structureTrigger = ScentTriggerConfigLoader.getStructureTrigger(targetId);
+            if (structureTrigger.isPresent()) return structureTrigger.get().getScentName();
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves the scent intensity for the current tracking target.
+     * Falls back to category-specific defaults from {@link TriggerSettings}.
+     */
+    private static double resolveScentIntensity() {
+        String targetId = ActiveTrackingState.getTargetId() != null
+                ? ActiveTrackingState.getTargetId().toString() : null;
+        MenuCategory cat = ActiveTrackingState.getCategory();
+        TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+
+        if (targetId != null) {
+            if (cat == MenuCategory.BLOCKS || cat == MenuCategory.FLOWERS) {
+                var blockTrigger = ScentTriggerConfigLoader.getBlockTrigger(targetId);
+                if (blockTrigger.isPresent()) return blockTrigger.get().getIntensityOrDefault(settings.getBlockIntensity());
+            } else if (cat == MenuCategory.BIOMES) {
+                var biomeTrigger = ScentTriggerConfigLoader.getBiomeTrigger(targetId);
+                if (biomeTrigger.isPresent()) return biomeTrigger.get().getIntensityOrDefault(settings.getBiomeIntensity());
+            } else if (cat == MenuCategory.STRUCTURES) {
+                var structureTrigger = ScentTriggerConfigLoader.getStructureTrigger(targetId);
+                if (structureTrigger.isPresent()) return structureTrigger.get().getIntensityOrDefault(settings.getStructureIntensity());
+            }
+        }
+
+        // Fallback to category defaults
+        if (cat == MenuCategory.BIOMES) return settings.getBiomeIntensity();
+        if (cat == MenuCategory.STRUCTURES) return settings.getStructureIntensity();
+        return settings.getBlockIntensity();
     }
 
     // ── Color resolution ────────────────────────────────────────────────

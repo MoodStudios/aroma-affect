@@ -78,6 +78,11 @@ public final class SnifferEquipmentNetworking {
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, data.saddleItem);
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, data.decorationItem);
 
+        if (!NetworkManager.canPlayerReceive(player, SNIFFER_EQUIPMENT_SYNC_ID)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(player, SNIFFER_EQUIPMENT_SYNC_ID, buf);
     }
 

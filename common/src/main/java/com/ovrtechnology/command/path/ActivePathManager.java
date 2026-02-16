@@ -4,12 +4,6 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
-import com.ovrtechnology.trigger.ScentPriority;
-import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
-import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
-import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
-import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
-import com.ovrtechnology.trigger.config.TriggerSettings;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -18,7 +12,6 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,24 +44,6 @@ public final class ActivePathManager {
      * How often to process paths (in ticks). Every 5 ticks = 4 times per second.
      */
     private static final int TICK_INTERVAL = 5;
-
-    /**
-     * Default duration for path tracking scent triggers (in ticks).
-     * 5 seconds = 100 ticks.
-     */
-    private static final int PATH_SCENT_DURATION_TICKS = 100;
-
-    /**
-     * Keeps recurring path puffs aligned with the moment the visual pulse
-     * reaches the player on the client (instead of firing at pulse start).
-     */
-    private static final long TRAIL_PLAYER_REACH_OFFSET_MS = 2500L;
-
-    /**
-     * Map of player UUIDs to their last scent trigger time.
-     * Used to enforce cooldowns between scent triggers during path tracking.
-     */
-    private final Map<UUID, Long> lastScentTriggerTime = new ConcurrentHashMap<>();
 
     private final Map<UUID, ActivePath> activePaths = new ConcurrentHashMap<>();
     private int tickCounter = 0;
@@ -122,7 +97,6 @@ public final class ActivePathManager {
 
         // Remove any existing path for this player
         activePaths.remove(playerId);
-        lastScentTriggerTime.remove(playerId);
 
         // Create new active path
         ActivePath path = new ActivePath(playerId, level.dimension().location(), destination, targetType, targetId);
@@ -132,16 +106,6 @@ public final class ActivePathManager {
                 player.getName().getString(), destination,
                 targetType != null ? targetType : "none",
                 targetId != null ? targetId : "");
-
-        // Trigger initial scent immediately
-        if (targetType != null && targetId != null) {
-            triggerPathScent(player, targetType, targetId);
-            long now = System.currentTimeMillis();
-            long cooldownMs = ScentTriggerConfigLoader.getSettings().getPathTrackingCooldownMs();
-            long offset = Math.max(0L, cooldownMs - TRAIL_PLAYER_REACH_OFFSET_MS);
-            // Prime cooldown so the next recurring puff lines up with player-reach time.
-            lastScentTriggerTime.put(playerId, now - offset);
-        }
     }
 
     /**
@@ -151,7 +115,6 @@ public final class ActivePathManager {
      */
     public void removePath(UUID playerId) {
         activePaths.remove(playerId);
-        lastScentTriggerTime.remove(playerId);
     }
 
     /**
@@ -190,7 +153,6 @@ public final class ActivePathManager {
             if (!EquippedNoseHelper.hasNoseEquipped(player)) {
                 PathScentNetworking.sendPathNotFound(player, "Nose unequipped");
                 iterator.remove();
-                lastScentTriggerTime.remove(playerId);
                 continue;
             }
 
@@ -236,87 +198,7 @@ public final class ActivePathManager {
                 continue;
             }
 
-            // Check if we should trigger a scent (based on cooldown)
-            if (path.targetType() != null && path.targetId() != null) {
-                checkAndTriggerScent(player, path);
-            }
         }
-    }
-
-    /**
-     * Checks if the cooldown has passed and triggers a scent for the path.
-     */
-    private void checkAndTriggerScent(ServerPlayer player, ActivePath path) {
-        UUID playerId = player.getUUID();
-        long now = System.currentTimeMillis();
-
-        Long lastTrigger = lastScentTriggerTime.get(playerId);
-        long cooldownMs = ScentTriggerConfigLoader.getSettings().getPathTrackingCooldownMs();
-
-        if (lastTrigger == null || (now - lastTrigger) >= cooldownMs) {
-            triggerPathScent(player, path.targetType(), path.targetId());
-            lastScentTriggerTime.put(playerId, now);
-        }
-    }
-
-    /**
-     * Triggers a scent based on the target type and ID.
-     * Uses networking to send the trigger from server to client.
-     *
-     * @param player     the player to trigger the scent for
-     * @param targetType the type of target being tracked
-     * @param targetId   the ID of the target
-     */
-    private void triggerPathScent(ServerPlayer player, TargetType targetType, String targetId) {
-        Optional<String> scentName = getScentForTarget(targetType, targetId);
-
-        if (scentName.isEmpty()) {
-            AromaAffect.LOGGER.debug("No scent mapping found for {} {}", targetType, targetId);
-            return;
-        }
-
-        String scent = scentName.get();
-        double intensity = getIntensityForTarget(targetType, targetId);
-        ScentPriority priority = ScentPriority.MEDIUM;
-
-        // Send scent trigger to client via networking
-        PathScentNetworking.sendScentTrigger(player, scent, intensity, priority);
-
-        AromaAffect.LOGGER.debug("Sent path tracking scent '{}' to player {} (tracking {} {})",
-                scent, player.getName().getString(), targetType, targetId);
-    }
-
-    /**
-     * Gets the scent name for a target based on its type and ID.
-     */
-    private Optional<String> getScentForTarget(TargetType targetType, String targetId) {
-        return switch (targetType) {
-            case BLOCK -> ScentTriggerConfigLoader.getBlockTrigger(targetId)
-                    .map(BlockTriggerDefinition::getScentName);
-            case BIOME -> ScentTriggerConfigLoader.getBiomeTrigger(targetId)
-                    .map(BiomeTriggerDefinition::getScentName);
-            case STRUCTURE -> ScentTriggerConfigLoader.getStructureTrigger(targetId)
-                    .map(StructureTriggerDefinition::getScentName);
-        };
-    }
-
-    /**
-     * Gets the intensity for a target based on its type and ID.
-     */
-    private double getIntensityForTarget(TargetType targetType, String targetId) {
-        TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
-
-        return switch (targetType) {
-            case BLOCK -> ScentTriggerConfigLoader.getBlockTrigger(targetId)
-                    .map(def -> def.getIntensityOrDefault(settings.getBlockIntensity()))
-                    .orElse(settings.getBlockIntensity());
-            case BIOME -> ScentTriggerConfigLoader.getBiomeTrigger(targetId)
-                    .map(def -> def.getIntensityOrDefault(settings.getBiomeIntensity()))
-                    .orElse(settings.getBiomeIntensity());
-            case STRUCTURE -> ScentTriggerConfigLoader.getStructureTrigger(targetId)
-                    .map(def -> def.getIntensityOrDefault(settings.getStructureIntensity()))
-                    .orElse(settings.getStructureIntensity());
-        };
     }
 
     /**
@@ -334,7 +216,6 @@ public final class ActivePathManager {
      */
     public void clearAll() {
         activePaths.clear();
-        lastScentTriggerTime.clear();
     }
 
     /**

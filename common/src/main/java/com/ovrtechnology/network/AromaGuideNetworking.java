@@ -86,6 +86,11 @@ public final class AromaGuideNetworking {
             buf.writeBlockPos(target.compassTargetPos);
         }
 
+        if (!NetworkManager.canPlayerReceive(player, GUIDE_TARGET_S2C)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(player, GUIDE_TARGET_S2C, buf);
     }
 

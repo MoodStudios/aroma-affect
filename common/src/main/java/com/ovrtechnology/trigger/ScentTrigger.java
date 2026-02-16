@@ -96,6 +96,18 @@ public record ScentTrigger(
     }
     
     /**
+     * Creates a high-priority trigger from the Omara Device.
+     *
+     * @param scentName     The exact OVR scent name
+     * @param durationTicks Duration in ticks
+     * @param intensity     Scent intensity (0.0 to 1.0)
+     * @return a new ScentTrigger for Omara Device
+     */
+    public static ScentTrigger fromOmaraDevice(String scentName, int durationTicks, double intensity) {
+        return create(scentName, ScentTriggerSource.OMARA_DEVICE, ScentPriority.HIGH, durationTicks, intensity);
+    }
+
+    /**
      * Creates a trigger from passive mode detection.
      * 
      * @param scentName     The exact OVR scent name

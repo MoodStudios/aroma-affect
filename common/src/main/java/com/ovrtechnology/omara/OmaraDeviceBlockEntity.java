@@ -1,6 +1,7 @@
 package com.ovrtechnology.omara;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.network.OmaraDeviceNetworking;
 import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -263,6 +264,9 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
 
         // Spawn particles
         spawnPuffParticles(serverLevel, pos, state, scentName);
+
+        // Broadcast scent trigger to all players within a 3x3 block area
+        OmaraDeviceNetworking.broadcastPuff(serverLevel, pos, scentName);
 
         AromaAffect.LOGGER.debug("Omara Device puffed scent '{}' at {} (mode={})", scentName, pos, mode == MODE_AUTO ? "auto" : "redstone");
     }

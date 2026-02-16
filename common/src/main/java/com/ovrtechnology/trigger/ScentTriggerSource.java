@@ -73,5 +73,11 @@ public enum ScentTriggerSource {
      * Path tracking mode - scent emission while following a path to a target.
      * Triggered periodically while the player has an active path to a block/biome/structure.
      */
-    PATH_TRACKING
+    PATH_TRACKING,
+
+    /**
+     * Omara Device - area-of-effect scent emission from a placed device block.
+     * Affects all players within a 3x3 block radius of the device.
+     */
+    OMARA_DEVICE
 }

@@ -125,6 +125,12 @@ public final class NoseRenderNetworking {
         buf.writeUUID(playerUuid);
         buf.writeBoolean(noseEnabled);
         buf.writeBoolean(strapEnabled);
+
+        if (!NetworkManager.canPlayerReceive(target, NOSE_PREFS_S2C)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(target, NOSE_PREFS_S2C, buf);
     }
 }

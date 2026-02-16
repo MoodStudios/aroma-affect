@@ -50,6 +50,10 @@ public final class ClientConfig {
     @Getter @Setter
     private boolean trackingToastPersistent = false;
 
+    /** Whether to show the scent border overlay when passive mode triggers a puff */
+    @Getter @Setter
+    private boolean passivePuffOverlay = true;
+
     // ========================================
     // Passive mode settings
     // ========================================
@@ -125,6 +129,7 @@ public final class ClientConfig {
         noseRenderEnabled = true;
         strapEnabled = false;
         trackingToastPersistent = false;
+        passivePuffOverlay = true;
         resetPassiveDefaults();
     }
 

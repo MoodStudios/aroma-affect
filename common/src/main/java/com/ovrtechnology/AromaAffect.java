@@ -21,6 +21,7 @@ import com.ovrtechnology.network.NoseSmithTradeNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.AromaGuideNetworking;
 import com.ovrtechnology.network.IronGolemNoseNetworking;
+import com.ovrtechnology.network.OmaraDeviceNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -60,6 +61,7 @@ public final class AromaAffect {
         IronGolemNoseNetworking.init();
         NoseRenderNetworking.init();
         AromaGuideNetworking.init();
+        OmaraDeviceNetworking.init();
 
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();

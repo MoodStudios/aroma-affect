@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.MobTriggerDefinition;
+import com.ovrtechnology.trigger.client.ScentPuffOverlay;
 import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.PassiveModeConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -703,6 +704,11 @@ public final class PassiveModeManager {
 
         // Send trigger to hardware (cooldown already verified)
         boolean triggered = manager.trigger(candidate.trigger);
+
+        // Show border overlay if setting is enabled
+        if (triggered && ClientConfig.getInstance().isPassivePuffOverlay()) {
+            ScentPuffOverlay.onScentPuff(candidate.trigger.scentName(), candidate.trigger.intensity());
+        }
 
         if (DEV_MODE) {
             AromaAffect.LOGGER.info("[PassiveMode] activateTrigger: {} -> triggered={}", candidate.source, triggered);

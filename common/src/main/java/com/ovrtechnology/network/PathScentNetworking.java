@@ -195,6 +195,11 @@ public final class PathScentNetworking {
         buf.writeVarInt(priority.ordinal());
         buf.writeVarInt(PATH_SCENT_DURATION_TICKS);
 
+        if (!NetworkManager.canPlayerReceive(player, PATH_SCENT_TRIGGER_PACKET_ID)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(player, PATH_SCENT_TRIGGER_PACKET_ID, buf);
 
         AromaAffect.LOGGER.debug("Sent path scent trigger to {}: {} (intensity: {}, priority: {})",
@@ -215,6 +220,11 @@ public final class PathScentNetworking {
 
         buf.writeVarInt(distance);
 
+        if (!NetworkManager.canPlayerReceive(player, PATH_DISTANCE_PACKET_ID)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(player, PATH_DISTANCE_PACKET_ID, buf);
     }
 
@@ -233,6 +243,11 @@ public final class PathScentNetworking {
         buf.writeVarInt(distance);
         buf.writeBlockPos(destination);
 
+        if (!NetworkManager.canPlayerReceive(player, PATH_STATUS_FOUND_PACKET_ID)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(player, PATH_STATUS_FOUND_PACKET_ID, buf);
     }
 
@@ -250,6 +265,11 @@ public final class PathScentNetworking {
 
         buf.writeUtf(reason);
 
+        if (!NetworkManager.canPlayerReceive(player, PATH_STATUS_NOT_FOUND_PACKET_ID)) {
+            buf.release();
+            return;
+        }
+
         NetworkManager.sendToPlayer(player, PATH_STATUS_NOT_FOUND_PACKET_ID, buf);
     }
 
@@ -263,6 +283,11 @@ public final class PathScentNetworking {
                 Unpooled.buffer(),
                 player.registryAccess()
         );
+
+        if (!NetworkManager.canPlayerReceive(player, PATH_STATUS_ARRIVED_PACKET_ID)) {
+            buf.release();
+            return;
+        }
 
         NetworkManager.sendToPlayer(player, PATH_STATUS_ARRIVED_PACKET_ID, buf);
     }

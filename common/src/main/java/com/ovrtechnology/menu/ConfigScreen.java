@@ -272,6 +272,15 @@ public class ConfigScreen extends BaseMenuScreen {
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.drawString(font, trackingToastLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        rowY += ROW_HEIGHT + 4;
+
+        // Passive Puff Overlay toggle
+        graphics.drawString(font, Component.translatable("config.aromaaffect.passive_puff_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        renderTogglePill(graphics, toggleX, rowY + 1, config.isPassivePuffOverlay(), a);
+        Component puffOverlayLabel = config.isPassivePuffOverlay()
+                ? Component.translatable("config.aromaaffect.on")
+                : Component.translatable("config.aromaaffect.off");
+        graphics.drawString(font, puffOverlayLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
     }
 
     private void renderPassiveSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
@@ -847,6 +856,15 @@ public class ConfigScreen extends BaseMenuScreen {
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
             config.setTrackingToastPersistent(!config.isTrackingToastPersistent());
             MenuRenderUtils.playToggleSound(config.isTrackingToastPersistent());
+            config.save();
+            return true;
+        }
+        rowY += ROW_HEIGHT + 4;
+
+        // Passive puff overlay toggle
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
+            config.setPassivePuffOverlay(!config.isPassivePuffOverlay());
+            MenuRenderUtils.playToggleSound(config.isPassivePuffOverlay());
             config.save();
             return true;
         }
