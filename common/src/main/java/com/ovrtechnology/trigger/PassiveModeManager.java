@@ -12,11 +12,9 @@ import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
 
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -25,9 +23,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -82,12 +77,6 @@ public final class PassiveModeManager {
     private static double getBlockActivationRange() {
         return ClientConfig.getInstance().getPassiveBlockRange();
     }
-
-    /**
-     * Activation range for structure triggers (in blocks).
-     * Player must be inside the structure (distance 0 from bounding box).
-     */
-    private static final double STRUCTURE_ACTIVATION_RANGE = 0.0;
 
     /**
      * Angle threshold for look-at detection (degrees).
@@ -152,6 +141,12 @@ public final class PassiveModeManager {
      * Structures only trigger once on entry, like biomes.
      */
     private static String lastStructureId = null;
+
+    /**
+     * Structure ID synced from the server via {@link StructureSyncHandler}.
+     * {@code null} when the player is not inside any tracked structure.
+     */
+    private static volatile String serverStructureId = null;
 
     private static int tickCounter = 0;
     private static int startupTicksElapsed = 0;
@@ -563,69 +558,57 @@ public final class PassiveModeManager {
     /**
      * Evaluates structure triggers with one-time trigger behavior (like biomes).
      * Only fires once when the player enters a structure. Must leave and re-enter to trigger again.
-     * This prevents the village_plains structure from re-triggering every cooldown cycle.
+     *
+     * <p>Structure presence is synced from the server via {@link StructureSyncHandler},
+     * so this works correctly on both singleplayer and dedicated multiplayer servers.</p>
      */
     private static TriggerCandidate evaluateStructureTriggers(Level level, BlockPos playerPos) {
-        ServerLevel serverLevel = getServerLevel(level);
-        if (serverLevel == null) {
+        String currentStructureId = serverStructureId;
+
+        if (currentStructureId == null) {
+            // Not inside any tracked structure - reset tracking
+            if (lastStructureId != null) {
+                if (DEV_MODE) {
+                    AromaAffect.LOGGER.info("[PassiveMode] Left structure: {}", lastStructureId);
+                }
+                lastStructureId = null;
+            }
             return null;
         }
 
+        // One-time trigger: only fire when entering a NEW structure
+        if (currentStructureId.equals(lastStructureId)) {
+            return null;
+        }
+
+        // New structure entered
+        String previousStructure = lastStructureId;
+        lastStructureId = currentStructureId;
+
+        if (DEV_MODE) {
+            AromaAffect.LOGGER.info("[PassiveMode] Entered structure: {} (previous: {})",
+                currentStructureId, previousStructure);
+        }
+
+        // Find the matching trigger definition for scent name and priority
         for (StructureTriggerDefinition trigger : ScentTriggerConfigLoader.getAllStructureTriggers()) {
-            if (!trigger.isProximityTrigger() || !trigger.isValid()) {
-                continue;
-            }
+            if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
+            if (!trigger.getStructureId().equals(currentStructureId)) continue;
 
-            String structureId = trigger.getStructureId();
+            ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
+                trigger.getScentName(),
+                ScentPriority.MEDLOW,
+                -1,
+                1.0
+            );
 
-            // Search nearby chunks only — player must be inside to activate (range 0)
-            var distanceOpt = getDistanceToStructure(serverLevel, playerPos, structureId, 16);
+            String source = "structure:" + currentStructureId;
+            String displayName = formatResourceId(currentStructureId);
 
-            if (distanceOpt.isPresent()) {
-                double distance = distanceOpt.getAsDouble();
-
-                // Only activate if player is INSIDE the structure (distance ≤ 0)
-                if (distance <= STRUCTURE_ACTIVATION_RANGE) {
-                    // One-time trigger: only fire when entering a NEW structure
-                    if (structureId.equals(lastStructureId)) {
-                        // Already inside this structure and already triggered, skip
-                        return null;
-                    }
-
-                    // New structure entered
-                    String previousStructure = lastStructureId;
-                    lastStructureId = structureId;
-
-                    if (DEV_MODE) {
-                        AromaAffect.LOGGER.info("[PassiveMode] Entered structure: {} (previous: {})",
-                            structureId, previousStructure);
-                    }
-
-                    double intensity = 1.0;
-
-                    ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                        trigger.getScentName(),
-                        ScentPriority.MEDLOW,
-                        -1,
-                        intensity
-                    );
-
-                    String source = "structure:" + structureId;
-                    String displayName = formatResourceId(structureId);
-
-                    return new TriggerCandidate(scentTrigger, source, displayName,
-                        TriggerType.STRUCTURE, 0, distance);
-                }
-            }
+            return new TriggerCandidate(scentTrigger, source, displayName,
+                TriggerType.STRUCTURE, 0, 0);
         }
 
-        // Player not inside any tracked structure - reset tracking
-        if (lastStructureId != null) {
-            if (DEV_MODE) {
-                AromaAffect.LOGGER.info("[PassiveMode] Left structure: {}", lastStructureId);
-            }
-            lastStructureId = null;
-        }
         return null;
     }
 
@@ -799,80 +782,13 @@ public final class PassiveModeManager {
     }
 
     /**
-     * Gets the ServerLevel from a Level (works for integrated server).
-     */
-    private static ServerLevel getServerLevel(Level level) {
-        if (level instanceof ServerLevel serverLevel) {
-            return serverLevel;
-        }
-
-        var minecraft = net.minecraft.client.Minecraft.getInstance();
-        if (minecraft.getSingleplayerServer() != null) {
-            return minecraft.getSingleplayerServer().getLevel(level.dimension());
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the distance to a specific structure type, if within range.
+     * Called from the client-side S2C packet receiver when the server sends
+     * an updated structure presence for this player.
      *
-     * @return OptionalDouble with distance if structure is in range, empty otherwise
+     * @param structureId the structure the player is inside, or {@code null} if none
      */
-    private static java.util.OptionalDouble getDistanceToStructure(ServerLevel level, BlockPos playerPos, String structureId, int range) {
-        try {
-            ResourceLocation structureLocation = ResourceLocation.parse(structureId);
-
-            var structureRegistry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-            var structureOpt = structureRegistry.getOptional(structureLocation);
-
-            if (structureOpt.isEmpty()) {
-                return java.util.OptionalDouble.empty();
-            }
-
-            Structure structure = structureOpt.get();
-
-            int chunkRange = (range / 16) + 1;
-            SectionPos playerSection = SectionPos.of(playerPos);
-
-            double closestDistance = Double.MAX_VALUE;
-
-            for (int cx = -chunkRange; cx <= chunkRange; cx++) {
-                for (int cz = -chunkRange; cz <= chunkRange; cz++) {
-                    int chunkX = playerSection.x() + cx;
-                    int chunkZ = playerSection.z() + cz;
-
-                    StructureStart structureStart = level.structureManager()
-                        .getStartForStructure(
-                            SectionPos.of(chunkX, 0, chunkZ),
-                            structure,
-                            level.getChunk(chunkX, chunkZ)
-                        );
-
-                    if (structureStart != null && structureStart.isValid()) {
-                        var boundingBox = structureStart.getBoundingBox();
-
-                        int distX = Math.max(0, Math.max(boundingBox.minX() - playerPos.getX(), playerPos.getX() - boundingBox.maxX()));
-                        int distY = Math.max(0, Math.max(boundingBox.minY() - playerPos.getY(), playerPos.getY() - boundingBox.maxY()));
-                        int distZ = Math.max(0, Math.max(boundingBox.minZ() - playerPos.getZ(), playerPos.getZ() - boundingBox.maxZ()));
-
-                        double distance = Math.sqrt(distX * distX + distY * distY + distZ * distZ);
-
-                        if (distance <= range && distance < closestDistance) {
-                            closestDistance = distance;
-                        }
-                    }
-                }
-            }
-
-            if (closestDistance < Double.MAX_VALUE) {
-                return java.util.OptionalDouble.of(closestDistance);
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.debug("Error checking structure {}: {}", structureId, e.getMessage());
-        }
-
-        return java.util.OptionalDouble.empty();
+    public static void setServerStructureId(String structureId) {
+        serverStructureId = structureId;
     }
 
     /**

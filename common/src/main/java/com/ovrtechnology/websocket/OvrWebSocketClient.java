@@ -649,17 +649,14 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     private void handleConnectionFailure(Exception e) {
         setState(ConnectionState.CONNECTION_FAILED);
 
-        // Only log once on first failure to avoid spam
+        // Log details on first failure to aid diagnosis, then go quiet
         if (reconnectAttempts.get() == 0) {
-            AromaAffect.LOGGER.info("OVR WebSocket server is offline, will keep trying to reconnect...");
-        }
-
-        if (config.isDebugLogging()) {
             String errorMsg = e.getMessage();
             if (e.getCause() != null) {
                 errorMsg = e.getCause().getMessage();
             }
-            AromaAffect.LOGGER.debug("Connection failure details: {}", errorMsg);
+            AromaAffect.LOGGER.info("OVR WebSocket connection failed ({}): {}", config.getUri(), errorMsg);
+            AromaAffect.LOGGER.info("Will keep trying to reconnect in background...");
         }
 
         executeOnMainThread(() -> {

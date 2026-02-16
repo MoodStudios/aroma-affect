@@ -39,10 +39,10 @@ The mod is fully playable both **with** and **without** OVR scent hardware. With
 Biome transitions, environmental hazards, and nearby resources all emit scents automatically.
 
 ### 🎭 The Nose System
-Craft and upgrade Scent Masks through a tiered progression system. Each tier unlocks new abilities, filter scents, track blocks/biomes/structures, and navigate toward targets with visual guidance.
+Craft and upgrade Scent Masks through a tiered progression system. Each tier unlocks new abilities, track blocks/biomes/structures/flowers, and navigate toward targets with visual guidance.
 
 ### 🐕 Sniffer Integration
-Endgame companion that enhances your scent abilities and unlocks new gameplay possibilities.
+Endgame companion that unlocks new gameplay possibilities.
 
 ### 🎡 Radial Menu
 Access your scent abilities through an intuitive radial menu system.

@@ -6,6 +6,7 @@ import com.ovrtechnology.history.HistoryEntry;
 import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
+import com.ovrtechnology.trigger.PassiveModeManager;
 import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
@@ -47,6 +48,9 @@ public final class PathScentNetworking {
 
     private static final ResourceLocation PATH_BLACKLIST_SYNC_PACKET_ID =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_blacklist_sync");
+
+    private static final ResourceLocation STRUCTURE_SYNC_PACKET_ID =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "structure_sync");
 
     /**
      * Default duration for path tracking scent triggers (in ticks).
@@ -148,6 +152,17 @@ public final class PathScentNetworking {
             context.queue(() -> {
                 ActiveTrackingState.setArrived();
                 AromaAffect.LOGGER.debug("Path status: arrived");
+            });
+        });
+
+        // Register client-side receiver for structure sync packets (S2C)
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, STRUCTURE_SYNC_PACKET_ID, (buf, context) -> {
+            boolean hasStructure = buf.readBoolean();
+            String structureId = hasStructure ? buf.readUtf() : null;
+
+            context.queue(() -> {
+                PassiveModeManager.setServerStructureId(structureId);
+                AromaAffect.LOGGER.debug("Received structure sync from server: {}", structureId);
             });
         });
 
@@ -290,6 +305,28 @@ public final class PathScentNetworking {
         }
 
         NetworkManager.sendToPlayer(player, PATH_STATUS_ARRIVED_PACKET_ID, buf);
+    }
+
+    /**
+     * Sends the current structure the player is inside (or null) from the server to the client.
+     * Used by {@link com.ovrtechnology.trigger.StructureSyncHandler} to keep passive-mode
+     * structure triggers working in multiplayer.
+     *
+     * @param player      the player to send the sync to
+     * @param structureId the structure ID the player is inside, or null if none
+     */
+    public static void sendStructureSync(ServerPlayer player, String structureId) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
+                Unpooled.buffer(),
+                player.registryAccess()
+        );
+
+        buf.writeBoolean(structureId != null);
+        if (structureId != null) {
+            buf.writeUtf(structureId);
+        }
+
+        NetworkManager.sendToPlayer(player, STRUCTURE_SYNC_PACKET_ID, buf);
     }
 
     /**
