@@ -459,14 +459,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             }
         }
 
-        // Check if passive mode is active - cannot use active tracking while passive mode is enabled
-        if (PassiveModeManager.isPassiveModeEnabled()) {
-            showErrorNotification(Component.translatable("message.aromaaffect.tracking.passive_mode_active"));
-            player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
-            AromaAffect.LOGGER.info("Cannot start tracking while passive mode is active");
-            return;
-        }
-
         // Pre-validate required item
         if (card.requiredItem != null && !card.requiredItem.isEmpty() && card.requiredItemCount > 0) {
             if (!playerHasItem(player, card.requiredItem, card.requiredItemCount)) {
