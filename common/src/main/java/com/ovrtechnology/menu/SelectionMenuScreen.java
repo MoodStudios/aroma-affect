@@ -2,6 +2,7 @@ package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -456,6 +457,14 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
                         card.id, card.trackCost, remaining);
                 return;
             }
+        }
+
+        // Check if passive mode is active - cannot use active tracking while passive mode is enabled
+        if (PassiveModeManager.isPassiveModeEnabled()) {
+            showErrorNotification(Component.translatable("message.aromaaffect.tracking.passive_mode_active"));
+            player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
+            AromaAffect.LOGGER.info("Cannot start tracking while passive mode is active");
+            return;
         }
 
         // Pre-validate required item

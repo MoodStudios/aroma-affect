@@ -471,6 +471,15 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Check corner buttons first
         if (isHoveringPassiveToggle) {
             AromaAffect.LOGGER.debug("Passive mode toggle clicked");
+
+            // Check if trying to enable passive mode while tracking is active
+            if (!PassiveModeManager.isPassiveModeEnabled() && ActiveTrackingState.isTracking()) {
+                showErrorNotification(Component.translatable("message.aromaaffect.passive.tracking_active"));
+                MenuRenderUtils.playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.0f);
+                AromaAffect.LOGGER.info("Cannot enable passive mode while tracking is active");
+                return true;
+            }
+
             PassiveModeManager.togglePassiveMode();
             MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.5f, PassiveModeManager.isPassiveModeEnabled() ? 1.3f : 0.9f);
             return true;

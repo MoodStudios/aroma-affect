@@ -210,6 +210,8 @@
   "scent.aromaaffect.scent_base.description": "A base for storing scents",
   "message.aromaaffect.scent_cooldown": "Scent on cooldown (%s seconds remaining)",
   "message.aromaaffect.scent_triggered": "Scent triggered!",
+  "message.aromaaffect.tracking.passive_mode_active": "Cannot start tracking while Passive Mode is active. Disable Passive Mode first.",
+  "message.aromaaffect.passive.tracking_active": "Cannot enable Passive Mode while tracking is active. Stop tracking first.",
   "websocket.aromaaffect.status.disconnected": "OVR Hardware: Disconnected",
   "websocket.aromaaffect.status.connecting": "OVR Hardware: Connecting...",
   "websocket.aromaaffect.status.connected": "OVR Hardware: Connected",

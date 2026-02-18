@@ -13,41 +13,63 @@ import net.minecraft.resources.ResourceLocation;
  * Provides common functionality and styling for menu screens.
  */
 public abstract class BaseMenuScreen extends Screen {
-    
+
     /**
      * Standard animation duration in ticks (1 second = 20 ticks).
      */
     protected static final int ANIMATION_DURATION_TICKS = 6;
-    
+
     /**
      * Standard padding for menu elements.
      */
     protected static final int PADDING = 8;
-    
+
     /**
      * The current animation progress (0.0 to 1.0).
      */
     protected float animationProgress = 0.0f;
-    
+
     /**
      * Whether the menu is currently animating in.
      */
     protected boolean isAnimatingIn = true;
-    
+
     /**
      * Whether the menu is currently animating out (closing).
      */
     protected boolean isAnimatingOut = false;
-    
+
     /**
      * Tick counter for animations.
      */
     protected int animationTicks = 0;
-    
+
     /**
      * The background overlay color (ARGB format).
      */
     protected int backgroundColor = 0x80000000;
+
+    // ── Notification System ──────────────────────────────────────────────
+
+    /**
+     * Duration in milliseconds before notifications auto-hide.
+     */
+    private static final long NOTIFICATION_DURATION_MS = 3000;
+
+    /**
+     * Current notification message (null if none).
+     */
+    private Component notificationMessage = null;
+
+    /**
+     * Timestamp when the notification was shown.
+     */
+    private long notificationTimestamp = 0;
+
+    /**
+     * Whether this is an error notification (red) or info (blue).
+     */
+    private boolean notificationIsError = false;
     
     protected BaseMenuScreen(Component title) {
         super(title);
@@ -88,13 +110,16 @@ public abstract class BaseMenuScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         // Calculate interpolated animation progress
         float smoothProgress = getSmoothAnimationProgress(partialTick);
-        
+
         // Render darkened background
         renderMenuBackground(graphics, smoothProgress);
-        
+
         // Let subclasses render their content
         renderContent(graphics, mouseX, mouseY, partialTick, smoothProgress);
-        
+
+        // Render notification on top of everything
+        renderNotification(graphics);
+
         // Render widgets on top
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -165,9 +190,97 @@ public abstract class BaseMenuScreen extends Screen {
      * @param partialTick the partial tick for smooth rendering
      * @param animationProgress the current animation progress (0.0 to 1.0)
      */
-    protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY, 
+    protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
                                           float partialTick, float animationProgress);
-    
+
+    // ── Notification Methods ─────────────────────────────────────────────
+
+    /**
+     * Shows an error notification at the top of the screen.
+     *
+     * @param message the message to display
+     */
+    protected void showErrorNotification(Component message) {
+        this.notificationMessage = message;
+        this.notificationTimestamp = System.currentTimeMillis();
+        this.notificationIsError = true;
+    }
+
+    /**
+     * Shows an info notification at the top of the screen.
+     *
+     * @param message the message to display
+     */
+    protected void showInfoNotification(Component message) {
+        this.notificationMessage = message;
+        this.notificationTimestamp = System.currentTimeMillis();
+        this.notificationIsError = false;
+    }
+
+    /**
+     * Renders the notification banner if one is active.
+     */
+    private void renderNotification(GuiGraphics graphics) {
+        if (notificationMessage == null) {
+            return;
+        }
+
+        long elapsed = System.currentTimeMillis() - notificationTimestamp;
+        if (elapsed > NOTIFICATION_DURATION_MS) {
+            notificationMessage = null;
+            return;
+        }
+
+        // Calculate fade animation
+        float fadeIn = Math.min(1.0f, elapsed / 200.0f);
+        float fadeOut = elapsed > (NOTIFICATION_DURATION_MS - 500)
+                ? 1.0f - (elapsed - (NOTIFICATION_DURATION_MS - 500)) / 500.0f
+                : 1.0f;
+        float alpha = fadeIn * fadeOut;
+
+        if (alpha <= 0) {
+            return;
+        }
+
+        // Calculate dimensions
+        int textWidth = font.width(notificationMessage);
+        int padding = 12;
+        int bannerWidth = textWidth + padding * 2;
+        int bannerHeight = 24;
+        int bannerX = (width - bannerWidth) / 2;
+        int bannerY = 20;
+
+        // Slide in from top
+        float slideProgress = easeOutCubic(Math.min(1.0f, elapsed / 150.0f));
+        bannerY = (int) (bannerY * slideProgress - bannerHeight * (1 - slideProgress));
+
+        // Colors based on error/info
+        int bgColor = notificationIsError
+                ? MenuRenderUtils.withAlpha(0xDD442222, alpha)
+                : MenuRenderUtils.withAlpha(0xDD224444, alpha);
+        int borderColor = notificationIsError
+                ? MenuRenderUtils.withAlpha(0xFFFF6B6B, alpha)
+                : MenuRenderUtils.withAlpha(0xFF6B9FFF, alpha);
+        int textColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, alpha);
+
+        // Draw background
+        graphics.fill(bannerX, bannerY, bannerX + bannerWidth, bannerY + bannerHeight, bgColor);
+
+        // Draw border
+        MenuRenderUtils.renderOutline(graphics, bannerX, bannerY, bannerWidth, bannerHeight, borderColor);
+
+        // Draw left accent bar
+        int accentColor = notificationIsError
+                ? MenuRenderUtils.withAlpha(0xFFFF4444, alpha)
+                : MenuRenderUtils.withAlpha(0xFF4488FF, alpha);
+        graphics.fill(bannerX, bannerY, bannerX + 3, bannerY + bannerHeight, accentColor);
+
+        // Draw text centered
+        int textX = bannerX + padding;
+        int textY = bannerY + (bannerHeight - 8) / 2;
+        graphics.drawString(font, notificationMessage, textX, textY, textColor, false);
+    }
+
     /**
      * Called when the opening animation completes.
      */
