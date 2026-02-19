@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.MobTriggerDefinition;
@@ -169,6 +170,12 @@ public final class PassiveModeManager {
 
         // Check if passive mode is enabled by user
         if (!isPassiveModeEnabled()) {
+            clearPassiveScent(player);
+            return;
+        }
+
+        // Pause passive mode while active tracking is in use
+        if (ActiveTrackingState.isTracking()) {
             clearPassiveScent(player);
             return;
         }

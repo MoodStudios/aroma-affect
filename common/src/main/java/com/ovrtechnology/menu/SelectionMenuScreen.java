@@ -2,6 +2,7 @@ package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;

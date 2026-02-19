@@ -8,6 +8,7 @@ import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.tracking.TrackingConfig;
+import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -1089,8 +1090,19 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         MenuCategory cat = MenuCategory.fromId(categoryId);
         if (cat == null) return;
 
-        // Block re-tracking from wrong dimension
         var player = Minecraft.getInstance().player;
+
+        // Check if passive mode is active - cannot use active tracking while passive mode is enabled
+        if (PassiveModeManager.isPassiveModeEnabled()) {
+            showErrorNotification(Component.translatable("message.aromaaffect.tracking.passive_mode_active"));
+            if (player != null) {
+                player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
+            }
+            AromaAffect.LOGGER.info("Cannot start tracking while passive mode is active");
+            return;
+        }
+
+        // Block re-tracking from wrong dimension
         if (player != null && dimension != null && !dimension.equals(getCurrentDimension())) {
             player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
             AromaAffect.LOGGER.info("Cannot re-track from wrong dimension: entry is in {}, player is in {}",
