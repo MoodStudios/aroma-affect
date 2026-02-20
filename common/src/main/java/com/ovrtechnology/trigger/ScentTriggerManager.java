@@ -51,6 +51,12 @@ public final class ScentTriggerManager {
     private ScentTrigger activeScent = null;
 
     /**
+     * The last triggered scent (kept for HUD cooldown display after scent ends).
+     */
+    @Getter
+    private ScentTrigger lastTriggeredScent = null;
+
+    /**
      * Remaining ticks for the active scent.
      */
     private int remainingTicks = 0;
@@ -256,6 +262,7 @@ public final class ScentTriggerManager {
 
         // Activate the new scent
         activeScent = trigger;
+        lastTriggeredScent = trigger;
         remainingTicks = trigger.durationTicks();
 
         // Update cooldowns
@@ -414,5 +421,77 @@ public final class ScentTriggerManager {
      */
     public long getLastTriggerTime(String scentName) {
         return lastTriggerTime.getOrDefault(scentName, 0L);
+    }
+
+    /**
+     * Resets all cooldowns immediately.
+     * Used by the reset cooldown hotkey.
+     */
+    public void resetCooldowns() {
+        lastGlobalTriggerTime = 0;
+        lastTriggerTime.clear();
+        lastTriggeredScent = null;
+        AromaAffect.LOGGER.info("All cooldowns reset");
+    }
+
+    /**
+     * Checks if there is any active cooldown (global or per-scent).
+     * Used by HUD to determine visibility.
+     *
+     * @return true if any cooldown is active
+     */
+    public boolean hasActiveCooldown() {
+        long globalCooldownMs = ClientConfig.getInstance().getGlobalCooldownMs();
+        long now = System.currentTimeMillis();
+
+        // Check global cooldown
+        if (now - lastGlobalTriggerTime < globalCooldownMs) {
+            return true;
+        }
+
+        // Check if last triggered scent has per-scent cooldown
+        if (lastTriggeredScent != null) {
+            long cooldownMs = getEffectiveScentCooldownMs(lastTriggeredScent);
+            Long lastTime = lastTriggerTime.get(lastTriggeredScent.scentName());
+            if (lastTime != null && now - lastTime < cooldownMs) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets the effective cooldown duration for a scent based on its source type.
+     * This matches the logic used by PassiveModeHud for consistency.
+     *
+     * @param trigger the scent trigger
+     * @return cooldown duration in milliseconds
+     */
+    public long getEffectiveScentCooldownMs(ScentTrigger trigger) {
+        if (trigger == null) {
+            return 5000; // Default fallback
+        }
+
+        TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+        long cooldownMs;
+
+        // Determine cooldown based on source type (same logic as HUD)
+        if (trigger.source() == ScentTriggerSource.PASSIVE_MODE) {
+            cooldownMs = PassiveModeManager.getCurrentCooldownMs();
+            if (cooldownMs <= 0) {
+                cooldownMs = settings.getBiomeCooldownMs();
+            }
+        } else if (trigger.source() == ScentTriggerSource.ITEM_USE) {
+            cooldownMs = settings.getItemUseCooldownMs();
+        } else {
+            cooldownMs = settings.getScentCooldownMs();
+        }
+
+        if (cooldownMs <= 0) {
+            cooldownMs = 5000; // Fallback default
+        }
+
+        return cooldownMs;
     }
 }

@@ -88,12 +88,13 @@ public final class PassiveModeHud {
             return;
         }
 
-        // Get active scent
+        // Get active scent or last triggered scent (for cooldown display)
         ScentTriggerManager manager = ScentTriggerManager.getInstance();
         ScentTrigger activeScent = manager.getActiveScent();
+        ScentTrigger displayScent = activeScent != null ? activeScent : manager.getLastTriggeredScent();
 
-        // Show HUD for any active scent (not just passive mode)
-        if (activeScent == null) {
+        // Show HUD if there's an active scent OR if there's an active cooldown
+        if (displayScent == null || (!manager.hasActiveScent() && !manager.hasActiveCooldown())) {
             return;
         }
 
@@ -104,12 +105,12 @@ public final class PassiveModeHud {
 
         // Left circle: Global cooldown
         int globalCenterX = MARGIN + CIRCLE_RADIUS;
-        float globalProgress = calculateGlobalCooldownProgress(activeScent);
+        float globalProgress = calculateGlobalCooldownProgress(displayScent);
         renderCircularIndicator(graphics, globalCenterX, centerY, globalProgress, COLOR_GLOBAL_COOLDOWN);
 
         // Right circle: Per-scent type cooldown
         int scentCenterX = globalCenterX + (CIRCLE_RADIUS * 2) + CIRCLE_SPACING;
-        float scentProgress = calculateScentCooldownProgress(activeScent);
+        float scentProgress = calculateScentCooldownProgress(displayScent);
         renderCircularIndicator(graphics, scentCenterX, centerY, scentProgress, COLOR_COOLDOWN);
     }
 

@@ -2,6 +2,7 @@ package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.keybind.AromaAffectKeyCategory;
+import com.ovrtechnology.trigger.ScentTriggerManager;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import net.minecraft.client.KeyMapping;
@@ -44,6 +45,16 @@ public final class MenuKeyBindings {
             GLFW.GLFW_KEY_C,
             AromaAffectKeyCategory.CATEGORY
     );
+
+    /**
+     * Keybinding for resetting all cooldowns.
+     */
+    public static final KeyMapping RESET_COOLDOWNS = new KeyMapping(
+            "key.aromaaffect.reset_cooldowns",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_X,
+            AromaAffectKeyCategory.CATEGORY
+    );
     
     /**
      * Whether the key bindings have been initialized.
@@ -69,6 +80,7 @@ public final class MenuKeyBindings {
         // Register keybindings using Architectury API
         KeyMappingRegistry.register(OPEN_RADIAL_MENU);
         KeyMappingRegistry.register(OPEN_CONFIG_MENU);
+        KeyMappingRegistry.register(RESET_COOLDOWNS);
         
         // Register tick handler to check for key presses
         ClientTickEvent.CLIENT_POST.register(instance -> {
@@ -106,6 +118,13 @@ public final class MenuKeyBindings {
         while (OPEN_CONFIG_MENU.consumeClick()) {
             if (minecraft.screen == null && isShiftDown()) {
                 MenuManager.openConfigMenu();
+            }
+        }
+
+        // Check for reset cooldowns key
+        while (RESET_COOLDOWNS.consumeClick()) {
+            if (minecraft.screen == null) {
+                ScentTriggerManager.getInstance().resetCooldowns();
             }
         }
     }
