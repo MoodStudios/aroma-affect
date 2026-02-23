@@ -53,6 +53,7 @@
   "key.aromaaffect.open_radial_menu": "Open Scent Menu",
   "key.aromaaffect.open_config_menu": "Open Configuration",
   "key.aromaaffect.toggle_search": "Toggle Search Mode",
+  "key.aromaaffect.reset_cooldowns": "Reset Cooldowns",
 
   "gui.aromaaffect.nose_strap.on": "Strap: ON",
   "gui.aromaaffect.nose_strap.off": "Strap: OFF",
