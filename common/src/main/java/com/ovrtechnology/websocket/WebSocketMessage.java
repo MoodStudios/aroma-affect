@@ -3,6 +3,7 @@ package com.ovrtechnology.websocket;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -115,7 +116,8 @@ public class WebSocketMessage {
      */
     public static WebSocketMessage scent(String scentId, double intensity) {
         // Simple JSON format - in production, use a proper JSON library
-        String payload = String.format("{\"scentId\":\"%s\",\"intensity\":%.2f}", 
+        // Use Locale.ROOT to ensure consistent decimal formatting (period, not comma)
+        String payload = String.format(Locale.ROOT, "{\"scentId\":\"%s\",\"intensity\":%.2f}",
                 scentId, Math.max(0.0, Math.min(1.0, intensity)));
         return new WebSocketMessage("scent", payload);
     }

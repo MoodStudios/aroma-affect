@@ -11,6 +11,7 @@ import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.guide.AromaGuideFirstJoinHandler;
 import com.ovrtechnology.guide.AromaGuideRegistry;
+import com.ovrtechnology.tutorial.TutorialModule;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
@@ -138,6 +139,9 @@ public final class AromaAffect {
 
         // Inject custom pieces into vanilla worldgen (villages, etc.)
         VillagePoolInjector.init();
+
+        // Initialize tutorial module (ghost layer - only active when GameRule is set)
+        TutorialModule.init();
 
         LOGGER.info("Aroma Affect initialized successfully!");
     }
