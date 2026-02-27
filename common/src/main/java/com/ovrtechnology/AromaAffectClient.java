@@ -2,6 +2,9 @@ package com.ovrtechnology;
 
 import com.ovrtechnology.entity.nosesmith.client.NoseSmithClientRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
+import com.ovrtechnology.tutorial.chest.client.TutorialChestRenderer;
+import com.ovrtechnology.tutorial.oliver.client.TutorialOliverClientRegistry;
+import com.ovrtechnology.tutorial.waypoint.client.TutorialWaypointRenderer;
 import com.ovrtechnology.menu.MenuKeyBindings;
 import com.ovrtechnology.search.SearchKeyBindings;
 import com.ovrtechnology.guide.AromaGuideTracker;
@@ -49,6 +52,13 @@ public final class AromaAffectClient {
         
         // Initialize entity renderers
         NoseSmithClientRegistry.init();
+        TutorialOliverClientRegistry.init();
+
+        // Initialize tutorial waypoint path renderer
+        TutorialWaypointRenderer.init();
+
+        // Initialize tutorial chest particle renderer
+        TutorialChestRenderer.init();
 
         // Initialize Sniffer menu screen
         SnifferMenuRegistry.initClient();
