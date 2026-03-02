@@ -18,7 +18,8 @@
     "JigsawPriorityMixin",
     "AnvilRepairMixin",
     "ZombieVillagerConversionMixin",
-    "IronGolemNoseMixin"
+    "IronGolemNoseMixin",
+    "TutorialPortalBlockerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

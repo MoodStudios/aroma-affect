@@ -85,6 +85,15 @@ public final class TutorialAnimationHandler {
     }
 
     /**
+     * Checks if any animation is currently active in any level.
+     *
+     * @return true if at least one animation is playing
+     */
+    public static boolean isAnyAnimationActive() {
+        return !activeAnimations.isEmpty();
+    }
+
+    /**
      * Stops all active animations for a level without completing them.
      * Called during tutorial reset to prevent in-progress animations from
      * continuing to destroy blocks after reset restores them.

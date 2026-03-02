@@ -7,7 +7,10 @@ import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.network.TutorialIntroNetworking;
 import com.ovrtechnology.network.TutorialOliverDialogueNetworking;
 import com.ovrtechnology.network.TutorialOliverTradeNetworking;
+import com.ovrtechnology.network.TutorialBossCinematicNetworking;
+import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
+import com.ovrtechnology.tutorial.boss.TutorialBossModule;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationHandler;
 import com.ovrtechnology.tutorial.chest.TutorialChestHandler;
 import com.ovrtechnology.tutorial.cinematic.TutorialCinematicHandler;
@@ -15,6 +18,7 @@ import com.ovrtechnology.tutorial.command.TutorialCommand;
 import com.ovrtechnology.tutorial.command.sub.AnimationSubCommand;
 import com.ovrtechnology.tutorial.command.sub.ChestSubCommand;
 import com.ovrtechnology.tutorial.command.sub.CinematicSubCommand;
+import com.ovrtechnology.tutorial.command.sub.DebugSubCommand;
 import com.ovrtechnology.tutorial.command.sub.DialogueSubCommand;
 import com.ovrtechnology.tutorial.command.sub.IntroSubCommand;
 import com.ovrtechnology.tutorial.command.sub.NoseEquipSubCommand;
@@ -22,6 +26,7 @@ import com.ovrtechnology.tutorial.command.sub.OliverControlSubCommand;
 import com.ovrtechnology.tutorial.command.sub.OliverKillSubCommand;
 import com.ovrtechnology.tutorial.command.sub.OliverSpawnSubCommand;
 import com.ovrtechnology.tutorial.command.sub.PortalSubCommand;
+import com.ovrtechnology.tutorial.command.sub.RegenAreaSubCommand;
 import com.ovrtechnology.tutorial.command.sub.ResetSubCommand;
 import com.ovrtechnology.tutorial.command.sub.SetSpawnSubCommand;
 import com.ovrtechnology.tutorial.command.sub.TradeSubCommand;
@@ -30,8 +35,11 @@ import com.ovrtechnology.tutorial.oliver.TutorialOliverRegistry;
 import com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler;
 import com.ovrtechnology.tutorial.portal.TutorialNetherPortalBlocker;
 import com.ovrtechnology.tutorial.portal.TutorialPortalHandler;
+import com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler;
+import com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaManager;
 import com.ovrtechnology.tutorial.spawn.TutorialJoinHandler;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointAreaHandler;
+import dev.architectury.event.events.common.LifecycleEvent;
 import lombok.experimental.UtilityClass;
 import net.minecraft.server.level.ServerLevel;
 
@@ -82,6 +90,8 @@ public final class TutorialModule {
         TutorialDialogueContentNetworking.init();
         TutorialOliverTradeNetworking.init();
         TutorialIntroNetworking.init();
+        TutorialPortalOverlayNetworking.init();
+        TutorialBossCinematicNetworking.init();
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());
@@ -98,6 +108,8 @@ public final class TutorialModule {
         TutorialCommand.register(new TradeSubCommand());
         TutorialCommand.register(new IntroSubCommand());
         TutorialCommand.register(new NoseEquipSubCommand());
+        TutorialCommand.register(new RegenAreaSubCommand());
+        TutorialCommand.register(new DebugSubCommand());
 
         // Register tutorial commands (only visible when GameRule is active)
         TutorialCommand.init();
@@ -125,6 +137,24 @@ public final class TutorialModule {
 
         // Initialize nose equip trigger handler
         TutorialNoseEquipHandler.init();
+
+        // Initialize block regeneration area handler
+        TutorialRegenAreaHandler.init();
+
+        // Initialize boss module (custom blaze/dragon encounters)
+        TutorialBossModule.init();
+
+        // Register server started event to auto-restore regen areas
+        LifecycleEvent.SERVER_STARTED.register(server -> {
+            for (ServerLevel level : server.getAllLevels()) {
+                if (isActive(level)) {
+                    int restored = TutorialRegenAreaManager.restoreAllAreas(level);
+                    if (restored > 0) {
+                        AromaAffect.LOGGER.info("Tutorial: auto-restored {} blocks on server start", restored);
+                    }
+                }
+            }
+        });
 
         initialized = true;
         AromaAffect.LOGGER.info("Tutorial Module initialized successfully");

@@ -26,8 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class TutorialNetherPortalBlocker {
 
     private static boolean initialized = false;
-    private static int tickCounter = 0;
-    private static final int CHECK_INTERVAL = 5; // Check every 5 ticks
 
     // Track when we last warned each player to avoid spam
     private static final Map<UUID, Long> lastWarningTime = new ConcurrentHashMap<>();
@@ -45,14 +43,9 @@ public final class TutorialNetherPortalBlocker {
         }
         initialized = true;
 
+        // Check EVERY tick for maximum responsiveness
         TickEvent.SERVER_POST.register(server -> {
-            tickCounter++;
-            if (tickCounter < CHECK_INTERVAL) {
-                return;
-            }
-            tickCounter = 0;
-
-            // Check all players
+            // Check all players every tick
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 checkAndBlockPortal(player);
             }

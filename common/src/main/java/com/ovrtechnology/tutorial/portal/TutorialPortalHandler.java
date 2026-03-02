@@ -1,7 +1,9 @@
 package com.ovrtechnology.tutorial.portal;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
+import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -12,6 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.phys.AABB;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Server-side handler for portal teleportation.
  * <p>
  * Checks if players are inside portal source areas and teleports them
- * to the destination when they enter.
+ * to the destination after a buildup period with visual overlay.
  */
 public final class TutorialPortalHandler {
 
@@ -30,11 +33,26 @@ public final class TutorialPortalHandler {
      */
     private static final Map<UUID, Long> teleportCooldowns = new ConcurrentHashMap<>();
 
-    private static final int COOLDOWN_TICKS = 40; // 2 seconds cooldown
-    private static final int CHECK_INTERVAL = 5;  // Check every 5 ticks
+    /**
+     * Tracks how long each player has been inside a portal.
+     * Key: Player UUID, Value: Ticks spent in portal
+     */
+    private static final Map<UUID, Integer> portalProgress = new ConcurrentHashMap<>();
+
+    /**
+     * Tracks which portal each player is currently in.
+     * Key: Player UUID, Value: Portal ID
+     */
+    private static final Map<UUID, String> playerInPortal = new ConcurrentHashMap<>();
+
+    private static final int COOLDOWN_TICKS = 20;       // 1 second cooldown after teleport
+    private static final int PORTAL_TIME_TICKS = 30;    // 1.5 seconds to teleport
+    private static final int CHECK_INTERVAL = 2;        // Check every 2 ticks for smooth overlay
+    private static final int OVERLAY_UPDATE_INTERVAL = 4; // Update overlay every 4 ticks
 
     private static boolean initialized = false;
     private static int tickCounter = 0;
+    private static int overlayTickCounter = 0;
     private static long currentTick = 0;
 
     // Purple particle for portal effect
@@ -58,6 +76,8 @@ public final class TutorialPortalHandler {
         TickEvent.SERVER_POST.register(server -> {
             currentTick++;
             tickCounter++;
+            overlayTickCounter++;
+
             if (tickCounter < CHECK_INTERVAL) {
                 return;
             }
@@ -67,13 +87,21 @@ public final class TutorialPortalHandler {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 checkPlayerPortals(player);
             }
+
+            // Send overlay updates less frequently
+            if (overlayTickCounter >= OVERLAY_UPDATE_INTERVAL) {
+                overlayTickCounter = 0;
+                for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                    sendOverlayUpdate(player);
+                }
+            }
         });
 
         AromaAffect.LOGGER.debug("Tutorial portal handler initialized");
     }
 
     /**
-     * Checks if a player is inside any portal and teleports them.
+     * Checks if a player is inside any portal and handles buildup/teleportation.
      */
     private static void checkPlayerPortals(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) {
@@ -96,11 +124,71 @@ public final class TutorialPortalHandler {
         BlockPos playerPos = player.blockPosition();
 
         // Check all complete portals
+        TutorialPortal currentPortal = null;
         for (TutorialPortal portal : TutorialPortalManager.getCompletePortals(level)) {
             if (portal.isInsideSourceArea(playerPos)) {
-                teleportPlayer(player, portal, level);
-                return; // Only teleport to one portal per tick
+                currentPortal = portal;
+                break;
             }
+        }
+
+        String previousPortalId = playerInPortal.get(playerId);
+
+        if (currentPortal != null) {
+            String currentPortalId = currentPortal.getId();
+
+            // Check if player switched portals
+            if (previousPortalId != null && !previousPortalId.equals(currentPortalId)) {
+                // Reset progress for new portal
+                portalProgress.put(playerId, 0);
+            }
+
+            // Track that player is in this portal
+            playerInPortal.put(playerId, currentPortalId);
+
+            // Increment portal progress
+            int progress = portalProgress.getOrDefault(playerId, 0) + CHECK_INTERVAL;
+            portalProgress.put(playerId, progress);
+
+            // Play portal ambient sound periodically
+            if (progress % 20 == 0) {
+                level.playSound(
+                        null,
+                        player.getX(), player.getY(), player.getZ(),
+                        SoundEvents.PORTAL_AMBIENT,
+                        SoundSource.BLOCKS,
+                        0.5f, 1.0f
+                );
+            }
+
+            // Check if ready to teleport
+            if (progress >= PORTAL_TIME_TICKS) {
+                teleportPlayer(player, currentPortal, level);
+                // Reset progress after teleport
+                portalProgress.remove(playerId);
+                playerInPortal.remove(playerId);
+            }
+        } else {
+            // Player left the portal
+            if (previousPortalId != null) {
+                portalProgress.remove(playerId);
+                playerInPortal.remove(playerId);
+                // Clear overlay on client
+                TutorialPortalOverlayNetworking.sendClearOverlay(player);
+            }
+        }
+    }
+
+    /**
+     * Sends overlay progress update to a player.
+     */
+    private static void sendOverlayUpdate(ServerPlayer player) {
+        UUID playerId = player.getUUID();
+        Integer progress = portalProgress.get(playerId);
+
+        if (progress != null && progress > 0) {
+            float overlayProgress = Math.min(1.0f, (float) progress / PORTAL_TIME_TICKS);
+            TutorialPortalOverlayNetworking.sendOverlayProgress(player, overlayProgress);
         }
     }
 
@@ -112,6 +200,12 @@ public final class TutorialPortalHandler {
         if (dest == null) {
             return;
         }
+
+        // Find Oliver near the player BEFORE teleporting
+        TutorialOliverEntity oliver = findNearestOliver(level, player.getX(), player.getY(), player.getZ());
+
+        // Clear overlay before teleport
+        TutorialPortalOverlayNetworking.sendClearOverlay(player);
 
         // Set cooldown
         teleportCooldowns.put(player.getUUID(), currentTick + COOLDOWN_TICKS);
@@ -140,6 +234,27 @@ public final class TutorialPortalHandler {
                 false
         );
 
+        // Teleport Oliver along with the player (offset slightly so they don't overlap)
+        if (oliver != null) {
+            // Spawn particles at Oliver's source location
+            spawnTeleportParticles(level, oliver.getX(), oliver.getY(), oliver.getZ());
+
+            // Teleport Oliver near the destination (2 blocks offset)
+            double oliverDestX = dest.getX() + 2.5;
+            double oliverDestY = dest.getY();
+            double oliverDestZ = dest.getZ() + 0.5;
+            oliver.teleportTo(oliverDestX, oliverDestY, oliverDestZ);
+
+            // Make Oliver face the player
+            oliver.setYRot(portal.getDestYaw() + 180);
+            oliver.setYHeadRot(portal.getDestYaw() + 180);
+
+            // Spawn particles at Oliver's destination
+            spawnTeleportParticles(level, oliverDestX, oliverDestY + 1, oliverDestZ);
+
+            AromaAffect.LOGGER.debug("Oliver teleported with player via portal {}", portal.getId());
+        }
+
         // Spawn particles at destination
         spawnTeleportParticles(level, dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5);
 
@@ -164,6 +279,36 @@ public final class TutorialPortalHandler {
 
         AromaAffect.LOGGER.debug("Player {} teleported via portal {}",
                 player.getName().getString(), portal.getId());
+    }
+
+    /**
+     * Finds the nearest Oliver entity within search range of a position.
+     */
+    private static TutorialOliverEntity findNearestOliver(ServerLevel level, double x, double y, double z) {
+        AABB searchArea = new AABB(
+                x - 50, y - 25, z - 50,
+                x + 50, y + 25, z + 50
+        );
+
+        List<TutorialOliverEntity> olivers = level.getEntitiesOfClass(
+                TutorialOliverEntity.class, searchArea
+        );
+
+        if (olivers.isEmpty()) {
+            return null;
+        }
+
+        TutorialOliverEntity nearest = null;
+        double nearestDist = Double.MAX_VALUE;
+        for (TutorialOliverEntity oliver : olivers) {
+            double dist = oliver.distanceToSqr(x, y, z);
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearest = oliver;
+            }
+        }
+
+        return nearest;
     }
 
     /**
@@ -219,16 +364,29 @@ public final class TutorialPortalHandler {
     }
 
     /**
-     * Clears cooldown for a player.
+     * Clears cooldown and portal progress for a player.
      */
     public static void clearCooldown(UUID playerId) {
         teleportCooldowns.remove(playerId);
+        portalProgress.remove(playerId);
+        playerInPortal.remove(playerId);
     }
 
     /**
-     * Clears all cooldowns.
+     * Clears all cooldowns and portal progress.
      */
     public static void clearAllCooldowns() {
         teleportCooldowns.clear();
+        portalProgress.clear();
+        playerInPortal.clear();
+    }
+
+    /**
+     * Called when a player leaves the server.
+     */
+    public static void onPlayerLeave(UUID playerId) {
+        teleportCooldowns.remove(playerId);
+        portalProgress.remove(playerId);
+        playerInPortal.remove(playerId);
     }
 }
