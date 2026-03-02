@@ -204,33 +204,53 @@ public final class TutorialNoseEquipHandler {
             return;
         }
 
-        String actionLower = action.toLowerCase();
-        if (actionLower.equals("follow")) {
-            oliver.setFollowing(player);
-        } else if (actionLower.equals("stop")) {
-            oliver.setStationary();
-        } else if (actionLower.startsWith("walkto:")) {
-            String coordsStr = action.substring(7);
-            String[] parts = coordsStr.split(",");
-            if (parts.length == 3) {
-                try {
-                    int x = Integer.parseInt(parts[0].trim());
-                    int y = Integer.parseInt(parts[1].trim());
-                    int z = Integer.parseInt(parts[2].trim());
-                    oliver.setWalkingTo(new BlockPos(x, y, z));
-                } catch (NumberFormatException e) {
-                    AromaAffect.LOGGER.warn("Invalid walkto coordinates: {}", coordsStr);
+        // Support multiple actions separated by semicolon
+        String[] actions = action.split(";");
+        String pendingDialogueId = null;
+
+        for (String singleAction : actions) {
+            singleAction = singleAction.trim();
+            if (singleAction.isEmpty()) continue;
+
+            String actionLower = singleAction.toLowerCase();
+
+            if (actionLower.equals("follow")) {
+                oliver.setFollowing(player);
+            } else if (actionLower.equals("stop")) {
+                oliver.setStationary();
+            } else if (actionLower.startsWith("walkto:")) {
+                String coordsStr = singleAction.substring(7);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        oliver.setWalkingTo(new BlockPos(x, y, z));
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid walkto coordinates: {}", coordsStr);
+                    }
                 }
+            } else if (actionLower.startsWith("dialogue:")) {
+                // Defer dialogue opening until after all other actions (especially trade:)
+                pendingDialogueId = singleAction.substring(9).trim();
+                oliver.setDialogueId(pendingDialogueId);
+            } else if (actionLower.startsWith("trade:")) {
+                oliver.setTradeId(singleAction.substring(6).trim());
+                AromaAffect.LOGGER.debug("[NoseEquip] Oliver trade set to {}", singleAction.substring(6).trim());
+            } else if (actionLower.equals("cleartrade")) {
+                oliver.setTradeId("");
             }
-        } else if (actionLower.startsWith("dialogue:")) {
-            String dialogueId = action.substring(9).trim();
-            oliver.setDialogueId(dialogueId);
+        }
+
+        // Open dialogue AFTER processing all actions (so trade is set first)
+        if (pendingDialogueId != null) {
+            AromaAffect.LOGGER.info("[NoseEquip] Opening dialogue '{}' (hasTrade: {}, tradeId: '{}')",
+                    pendingDialogueId, oliver.hasTrade(), oliver.getTradeId());
             TutorialDialogueContentNetworking.sendOpenDialogue(
-                    player, oliver.getId(), dialogueId,
+                    player, oliver.getId(), pendingDialogueId,
                     oliver.hasTrade(), oliver.getTradeId()
             );
-        } else if (actionLower.startsWith("trade:")) {
-            oliver.setTradeId(action.substring(6).trim());
         }
     }
 }

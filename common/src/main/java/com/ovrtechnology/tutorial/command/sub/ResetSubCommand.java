@@ -14,6 +14,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.tutorial.cinematic.TutorialCinematicHandler;
 import com.ovrtechnology.tutorial.command.TutorialSubCommand;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
+import com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaManager;
 import com.ovrtechnology.tutorial.spawn.TutorialJoinHandler;
 import com.ovrtechnology.tutorial.spawn.TutorialSpawnManager;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypoint;
@@ -87,10 +88,11 @@ public class ResetSubCommand implements TutorialSubCommand {
             return 0;
         }
 
-        // Reset all chests and animations
+        // Reset all chests, animations, and regen areas
         ServerLevel level = source.getLevel();
         int chestsReset = TutorialChestManager.resetAllChests(level);
         int animationsReset = TutorialAnimationManager.resetAllAnimations(level);
+        int blocksRestored = TutorialRegenAreaManager.restoreAllAreas(level);
 
         resetPlayer(player);
 
@@ -189,6 +191,10 @@ public class ResetSubCommand implements TutorialSubCommand {
     private void resetPlayer(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
 
+        // 0. Clear player inventory
+        player.getInventory().clearContent();
+        AromaAffect.LOGGER.debug("Reset: cleared inventory for player {}", player.getName().getString());
+
         // 1. Stop any active cinematic (restores position and game mode)
         TutorialCinematicHandler.stopCinematic(player);
 
@@ -207,6 +213,10 @@ public class ResetSubCommand implements TutorialSubCommand {
 
         // 4b. Reset nose equip triggers (allows them to fire again)
         com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.resetPlayer(player.getUUID());
+
+        // 4c. Reset boss area triggers (allows boss to spawn again)
+        com.ovrtechnology.tutorial.boss.TutorialBossAreaManager.get(level).resetPlayerTriggers(player.getUUID());
+        com.ovrtechnology.tutorial.boss.TutorialBossAreaHandler.clearAllBosses();
 
         // 5. Clear any active waypoint visuals on the client
         TutorialWaypointNetworking.sendClearToPlayer(player);

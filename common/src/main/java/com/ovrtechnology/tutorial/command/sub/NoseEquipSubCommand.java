@@ -43,14 +43,14 @@ public class NoseEquipSubCommand implements TutorialSubCommand {
         return builder
                 // /tutorial noseequip add <noseId>
                 .then(Commands.literal("add")
-                        .then(Commands.argument("noseId", StringArgumentType.word())
+                        .then(Commands.argument("noseId", StringArgumentType.string())
                                 .executes(this::executeAdd)
                         )
                 )
 
                 // /tutorial noseequip remove <noseId>
                 .then(Commands.literal("remove")
-                        .then(Commands.argument("noseId", StringArgumentType.word())
+                        .then(Commands.argument("noseId", StringArgumentType.string())
                                 .suggests(TRIGGER_SUGGESTIONS)
                                 .executes(this::executeRemove)
                         )
@@ -58,7 +58,7 @@ public class NoseEquipSubCommand implements TutorialSubCommand {
 
                 // /tutorial noseequip set <noseId> waypoint|cinematic|animation|oliver <value>
                 .then(Commands.literal("set")
-                        .then(Commands.argument("noseId", StringArgumentType.word())
+                        .then(Commands.argument("noseId", StringArgumentType.string())
                                 .suggests(TRIGGER_SUGGESTIONS)
                                 .then(Commands.literal("waypoint")
                                         .then(Commands.argument("value", StringArgumentType.word())
@@ -85,7 +85,7 @@ public class NoseEquipSubCommand implements TutorialSubCommand {
 
                 // /tutorial noseequip info <noseId>
                 .then(Commands.literal("info")
-                        .then(Commands.argument("noseId", StringArgumentType.word())
+                        .then(Commands.argument("noseId", StringArgumentType.string())
                                 .suggests(TRIGGER_SUGGESTIONS)
                                 .executes(this::executeInfo)
                         )
@@ -98,7 +98,7 @@ public class NoseEquipSubCommand implements TutorialSubCommand {
 
                 // /tutorial noseequip trigger <noseId> - manually fire a trigger (for testing)
                 .then(Commands.literal("trigger")
-                        .then(Commands.argument("noseId", StringArgumentType.word())
+                        .then(Commands.argument("noseId", StringArgumentType.string())
                                 .suggests(TRIGGER_SUGGESTIONS)
                                 .executes(this::executeTrigger)
                         )
