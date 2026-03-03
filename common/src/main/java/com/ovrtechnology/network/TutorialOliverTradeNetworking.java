@@ -84,13 +84,14 @@ public final class TutorialOliverTradeNetworking {
                         }
 
                         // Execute the trade and get detailed result
+                        // Note: executeTradeWithResult already calls executeOnCompleteActions internally
                         TutorialTradeHandler.TradeResult result =
                                 TutorialTradeHandler.executeTradeWithResult(serverPlayer, level, tradeId);
                         sendTradeResult(serverPlayer, result.success(), result.message());
 
+                        // Clear Oliver's trade after successful execution (trade was consumed)
                         if (result.success()) {
-                            // Execute on-complete hooks
-                            executeTradeOnComplete(serverPlayer, level, tradeId);
+                            oliver.setTradeId("");
                         }
                     });
                 }
@@ -218,6 +219,20 @@ public final class TutorialOliverTradeNetworking {
             } else if (actionLower.equals("cleartrade")) {
                 oliver.setTradeId("");
                 AromaAffect.LOGGER.debug("Oliver action: trade cleared");
+            } else if (actionLower.startsWith("teleportplayer:")) {
+                String coordsStr = singleAction.substring(15);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        player.teleportTo(level, x + 0.5, y, z + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
+                        AromaAffect.LOGGER.debug("Teleported player to {}, {}, {}", x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
+                    }
+                }
             } else if (actionLower.startsWith("lookup:")) {
                 String blockId = singleAction.substring(7).trim();
                 // Lookup would need to be implemented here if needed

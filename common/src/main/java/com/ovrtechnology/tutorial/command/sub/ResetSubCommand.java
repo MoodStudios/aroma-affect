@@ -269,6 +269,7 @@ public class ResetSubCommand implements TutorialSubCommand {
 
     /**
      * Finds all Oliver entities in the level and resets them to home position.
+     * Also resets all Nose Smith entities to initial quest state.
      */
     private void resetAllOlivers(ServerLevel level) {
         Iterable<Entity> allEntities = level.getAllEntities();
@@ -276,6 +277,18 @@ public class ResetSubCommand implements TutorialSubCommand {
             if (entity instanceof TutorialOliverEntity oliver) {
                 oliver.resetToHome();
                 AromaAffect.LOGGER.debug("Reset: Oliver teleported home to {}", oliver.getHomePos());
+            }
+            if (entity instanceof com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith) {
+                noseSmith.resetQuest();
+                // Teleport to configured spawn if available
+                com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnPos(level).ifPresent(pos -> {
+                    float yaw = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnYaw(level);
+                    noseSmith.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+                    noseSmith.setYRot(yaw);
+                    noseSmith.setYHeadRot(yaw);
+                    noseSmith.setYBodyRot(yaw);
+                });
+                AromaAffect.LOGGER.debug("Reset: Nose Smith quest reset at {}", noseSmith.blockPosition());
             }
         }
     }

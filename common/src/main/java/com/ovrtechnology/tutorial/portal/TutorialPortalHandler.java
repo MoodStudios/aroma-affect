@@ -204,23 +204,37 @@ public final class TutorialPortalHandler {
         // Find Oliver near the player BEFORE teleporting
         TutorialOliverEntity oliver = findNearestOliver(level, player.getX(), player.getY(), player.getZ());
 
-        // Clear overlay before teleport
-        TutorialPortalOverlayNetworking.sendClearOverlay(player);
+        // Flash overlay to full before clearing (dimensional flash)
+        TutorialPortalOverlayNetworking.sendOverlayProgress(player, 1.0f);
 
         // Set cooldown
         teleportCooldowns.put(player.getUUID(), currentTick + COOLDOWN_TICKS);
 
-        // Spawn particles at source location
-        spawnTeleportParticles(level, player.position().x, player.position().y, player.position().z);
+        // === SOURCE DIMENSIONAL EFFECT ===
+        double srcX = player.position().x;
+        double srcY = player.position().y;
+        double srcZ = player.position().z;
 
-        // Play teleport sound at source
-        level.playSound(
-                null,
-                player.getX(), player.getY(), player.getZ(),
-                SoundEvents.ENDERMAN_TELEPORT,
-                SoundSource.PLAYERS,
-                0.8f, 1.2f
-        );
+        // Purple spiral
+        spawnTeleportParticles(level, srcX, srcY, srcZ);
+
+        // Dimensional vortex: portal particles swirling inward
+        level.sendParticles(ParticleTypes.PORTAL, srcX, srcY + 1, srcZ,
+                60, 1.5, 1.5, 1.5, 1.0);
+
+        // Reverse portal burst (pulling in)
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, srcX, srcY + 1, srcZ,
+                40, 0.5, 1.0, 0.5, 0.3);
+
+        // Witch magic sparkles
+        level.sendParticles(ParticleTypes.WITCH, srcX, srcY + 0.5, srcZ,
+                25, 0.8, 1.0, 0.8, 0.1);
+
+        // Dimensional rift sound (end portal + enderman teleport)
+        level.playSound(null, srcX, srcY, srcZ,
+                SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.6f, 1.5f);
+        level.playSound(null, srcX, srcY, srcZ,
+                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 0.7f);
 
         // Teleport player
         player.teleportTo(
@@ -255,29 +269,52 @@ public final class TutorialPortalHandler {
             AromaAffect.LOGGER.debug("Oliver teleported with player via portal {}", portal.getId());
         }
 
-        // Spawn particles at destination
-        spawnTeleportParticles(level, dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5);
+        // === DESTINATION DIMENSIONAL EFFECT ===
+        double dstX = dest.getX() + 0.5;
+        double dstY = dest.getY();
+        double dstZ = dest.getZ() + 0.5;
 
-        // Play teleport sound at destination
-        level.playSound(
-                null,
-                dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5,
-                SoundEvents.ENDERMAN_TELEPORT,
-                SoundSource.PLAYERS,
-                0.8f, 1.0f
-        );
+        // Purple spiral at destination
+        spawnTeleportParticles(level, dstX, dstY + 1, dstZ);
 
-        // Apply short blindness effect for smooth transition
+        // Materialization burst: end rod + enchant expanding outward
+        level.sendParticles(ParticleTypes.END_ROD, dstX, dstY + 1.5, dstZ,
+                35, 0.2, 0.5, 0.2, 0.15);
+        level.sendParticles(ParticleTypes.ENCHANT, dstX, dstY + 0.5, dstZ,
+                40, 0.8, 0.3, 0.8, 0.5);
+
+        // Reverse portal (expanding outward from arrival point)
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, dstX, dstY + 1, dstZ,
+                50, 0.3, 0.8, 0.3, 0.5);
+
+        // Smoke burst for dramatic arrival
+        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, dstX, dstY + 0.5, dstZ,
+                10, 0.5, 0.1, 0.5, 0.02);
+
+        // Arrival sounds
+        level.playSound(null, dstX, dstY, dstZ,
+                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+        level.playSound(null, dstX, dstY, dstZ,
+                SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.4f);
+
+        // Clear overlay after a brief flash
+        TutorialPortalOverlayNetworking.sendClearOverlay(player);
+
+        // Apply darkness + blindness for dramatic dimensional transition
+        player.addEffect(new MobEffectInstance(
+                MobEffects.DARKNESS,
+                25,  // 1.25 seconds
+                0,
+                false, false, false
+        ));
         player.addEffect(new MobEffectInstance(
                 MobEffects.BLINDNESS,
-                15,  // 0.75 seconds (15 ticks)
-                0,   // Amplifier 0
-                false, // Not ambient
-                false, // No particles
-                false  // No icon
+                15,  // 0.75 seconds
+                0,
+                false, false, false
         ));
 
-        AromaAffect.LOGGER.debug("Player {} teleported via portal {}",
+        AromaAffect.LOGGER.debug("Player {} teleported via portal {} (dimensional effect)",
                 player.getName().getString(), portal.getId());
     }
 

@@ -8,6 +8,7 @@ import com.ovrtechnology.network.TutorialIntroNetworking;
 import com.ovrtechnology.network.TutorialOliverDialogueNetworking;
 import com.ovrtechnology.network.TutorialOliverTradeNetworking;
 import com.ovrtechnology.network.TutorialBossCinematicNetworking;
+import com.ovrtechnology.network.TutorialDreamOverlayNetworking;
 import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.tutorial.boss.TutorialBossModule;
@@ -20,8 +21,11 @@ import com.ovrtechnology.tutorial.command.sub.ChestSubCommand;
 import com.ovrtechnology.tutorial.command.sub.CinematicSubCommand;
 import com.ovrtechnology.tutorial.command.sub.DebugSubCommand;
 import com.ovrtechnology.tutorial.command.sub.DialogueSubCommand;
+import com.ovrtechnology.tutorial.dream.TutorialDreamEndHandler;
+import com.ovrtechnology.tutorial.dream.command.DreamEndSubCommand;
 import com.ovrtechnology.tutorial.command.sub.IntroSubCommand;
 import com.ovrtechnology.tutorial.command.sub.NoseEquipSubCommand;
+import com.ovrtechnology.tutorial.command.sub.NoseSmithSubCommand;
 import com.ovrtechnology.tutorial.command.sub.OliverControlSubCommand;
 import com.ovrtechnology.tutorial.command.sub.OliverKillSubCommand;
 import com.ovrtechnology.tutorial.command.sub.OliverSpawnSubCommand;
@@ -92,6 +96,7 @@ public final class TutorialModule {
         TutorialIntroNetworking.init();
         TutorialPortalOverlayNetworking.init();
         TutorialBossCinematicNetworking.init();
+        TutorialDreamOverlayNetworking.init();
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());
@@ -110,6 +115,8 @@ public final class TutorialModule {
         TutorialCommand.register(new NoseEquipSubCommand());
         TutorialCommand.register(new RegenAreaSubCommand());
         TutorialCommand.register(new DebugSubCommand());
+        TutorialCommand.register(new DreamEndSubCommand());
+        TutorialCommand.register(new NoseSmithSubCommand());
 
         // Register tutorial commands (only visible when GameRule is active)
         TutorialCommand.init();
@@ -141,8 +148,14 @@ public final class TutorialModule {
         // Initialize block regeneration area handler
         TutorialRegenAreaHandler.init();
 
+        // Initialize ore drop handler (ores drop ingots in tutorial)
+        TutorialOreDropHandler.init();
+
         // Initialize boss module (custom blaze/dragon encounters)
         TutorialBossModule.init();
+
+        // Initialize dream ending handler
+        TutorialDreamEndHandler.init();
 
         // Register server started event to auto-restore regen areas
         LifecycleEvent.SERVER_STARTED.register(server -> {

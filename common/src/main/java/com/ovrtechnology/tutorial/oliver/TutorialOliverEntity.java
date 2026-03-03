@@ -275,6 +275,12 @@ public class TutorialOliverEntity extends Villager {
     public void resetToHome() {
         setStationary();
         this.getNavigation().stop();
+        // Clear trade and dialogue so Oliver starts fresh
+        setTradeId("");
+        setDialogueId("oliver_greeting");
+        // Make visible again (in case he was vanished)
+        this.setInvisible(false);
+        this.setCustomNameVisible(true);
         if (homePos != null) {
             this.teleportTo(homePos.getX() + 0.5, homePos.getY(), homePos.getZ() + 0.5);
             this.setYRot(homeYaw);
