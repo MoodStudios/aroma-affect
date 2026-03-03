@@ -9,27 +9,28 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 
 public class TutorialIntroScreen extends Screen {
 
-    private static final ResourceLocation OVR_LOGO =
+    private static final ResourceLocation MAIN_LOGO =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/ovr_logo_map.png");
+
+    private static final ResourceLocation PARTNER_LOGO =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/guide/ovr_logo.png");
 
     private static final int LOGO_WIDTH = 180;
-    private static final int LOGO_HEIGHT = 80;
+    private static final int LOGO_HEIGHT = 97;  // 735:396 aspect ratio
+
+    // Partner logo: 881x396 -> display 70x31
+    private static final int PARTNER_WIDTH = 70;
+    private static final int PARTNER_HEIGHT = 31;
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
     private static final int GAP = 12;
-    private static final int SUBTITLE_GAP = 6;
 
     // Fade-in animation: 1.5 seconds = 30 ticks
     private static final int FADE_IN_TICKS = 30;
-
-    // OVR purple branding color
-    private static final int OVR_PURPLE = 0xA890F0;
 
     // Animation state
     private int ticksOpen = 0;
@@ -43,12 +44,12 @@ public class TutorialIntroScreen extends Screen {
     protected void init() {
         super.init();
 
-        int totalHeight = LOGO_HEIGHT + SUBTITLE_GAP + 10 + GAP + BUTTON_HEIGHT;
+        int totalHeight = LOGO_HEIGHT + GAP + BUTTON_HEIGHT;
         int topY = (this.height - totalHeight) / 2;
-        int buttonY = topY + LOGO_HEIGHT + SUBTITLE_GAP + 10 + GAP;
+        int buttonY = topY + LOGO_HEIGHT + GAP;
 
         startButton = Button.builder(
-                Component.literal("\u00a7l START TUTORIAL"),
+                Component.literal("\u00a7l START EXPERIENCE"),
                 btn -> onStartClicked()
         ).bounds((this.width - BUTTON_WIDTH) / 2, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
 
@@ -91,31 +92,19 @@ public class TutorialIntroScreen extends Screen {
         // Don't render content until fade has started enough
         if (alpha < 0.05f) return;
 
-        int totalHeight = LOGO_HEIGHT + SUBTITLE_GAP + 10 + GAP + BUTTON_HEIGHT;
+        int totalHeight = LOGO_HEIGHT + GAP + BUTTON_HEIGHT;
         int logoY = (this.height - totalHeight) / 2;
         int logoX = (this.width - LOGO_WIDTH) / 2;
 
         // Logo (rendered behind overlay — becomes visible as overlay fades from black to semi-transparent)
-        graphics.blit(RenderPipelines.GUI_TEXTURED, OVR_LOGO,
+        graphics.blit(RenderPipelines.GUI_TEXTURED, MAIN_LOGO,
                 logoX, logoY, 0.0f, 0.0f,
                 LOGO_WIDTH, LOGO_HEIGHT, LOGO_WIDTH, LOGO_HEIGHT);
 
-        // Cover blit quad edge artifacts
-        graphics.fill(logoX - 1, logoY - 1, logoX + LOGO_WIDTH + 1, logoY, overlayColor);
-        graphics.fill(logoX - 1, logoY + LOGO_HEIGHT, logoX + LOGO_WIDTH + 1, logoY + LOGO_HEIGHT + 1, overlayColor);
-        graphics.fill(logoX - 1, logoY, logoX, logoY + LOGO_HEIGHT, overlayColor);
-        graphics.fill(logoX + LOGO_WIDTH, logoY, logoX + LOGO_WIDTH + 1, logoY + LOGO_HEIGHT, overlayColor);
-
-        // Subtitle: "Scent Experience" in OVR purple, italic, centered below logo
-        int subtitleY = logoY + LOGO_HEIGHT + SUBTITLE_GAP;
-        int textAlpha = (int) (255 * alpha) & 0xFF;
-        int subtitleColor = (textAlpha << 24) | OVR_PURPLE;
-        graphics.drawCenteredString(this.font,
-                Component.literal("Scent Experience")
-                        .setStyle(Style.EMPTY
-                                .withColor(TextColor.fromRgb(OVR_PURPLE))
-                                .withItalic(true)),
-                this.width / 2, subtitleY, subtitleColor);
+        // Partner logo (top-left corner)
+        graphics.blit(RenderPipelines.GUI_TEXTURED, PARTNER_LOGO,
+                10, 10, 0.0f, 0.0f,
+                PARTNER_WIDTH, PARTNER_HEIGHT, PARTNER_WIDTH, PARTNER_HEIGHT);
     }
 
     @Override

@@ -74,6 +74,16 @@ public class OliverControlSubCommand implements TutorialSubCommand {
                         )
                 )
 
+                // /tutorial oliver trade <id> | clear
+                .then(Commands.literal("trade")
+                        .then(Commands.literal("clear")
+                                .executes(this::executeClearTrade)
+                        )
+                        .then(Commands.argument("id", StringArgumentType.word())
+                                .executes(this::executeSetTrade)
+                        )
+                )
+
                 // /tutorial oliver info
                 .then(Commands.literal("info")
                         .executes(this::executeInfo)
@@ -95,6 +105,8 @@ public class OliverControlSubCommand implements TutorialSubCommand {
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial oliver follow [player]"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial oliver walkto <x> <y> <z>"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial oliver dialogue <id>"), false);
+        source.sendSuccess(() -> Component.literal("\u00a77  /tutorial oliver trade <id>"), false);
+        source.sendSuccess(() -> Component.literal("\u00a77  /tutorial oliver trade clear"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial oliver tp"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial oliver info"), false);
         return Command.SINGLE_SUCCESS;
@@ -235,6 +247,43 @@ public class OliverControlSubCommand implements TutorialSubCommand {
         return Command.SINGLE_SUCCESS;
     }
 
+    private int executeSetTrade(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        TutorialOliverEntity oliver = findNearestOliver(source);
+
+        if (oliver == null) {
+            source.sendFailure(Component.literal("\u00a7c[OVR Tutorial] No Oliver found nearby"));
+            return 0;
+        }
+
+        String tradeId = StringArgumentType.getString(context, "id");
+        oliver.setTradeId(tradeId);
+
+        source.sendSuccess(
+                () -> Component.literal("\u00a7d[OVR Tutorial] \u00a7fOliver trade set to \u00a7e" + tradeId),
+                true
+        );
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int executeClearTrade(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        TutorialOliverEntity oliver = findNearestOliver(source);
+
+        if (oliver == null) {
+            source.sendFailure(Component.literal("\u00a7c[OVR Tutorial] No Oliver found nearby"));
+            return 0;
+        }
+
+        oliver.setTradeId("");
+
+        source.sendSuccess(
+                () -> Component.literal("\u00a7d[OVR Tutorial] \u00a7fOliver trade cleared"),
+                true
+        );
+        return Command.SINGLE_SUCCESS;
+    }
+
     private int executeTeleport(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -300,6 +349,20 @@ public class OliverControlSubCommand implements TutorialSubCommand {
                 () -> Component.literal("\u00a77  Dialogue: \u00a7e" + oliver.getDialogueId()),
                 false
         );
+
+        // Trade
+        String tradeId = oliver.getTradeId();
+        if (tradeId != null && !tradeId.isEmpty()) {
+            source.sendSuccess(
+                    () -> Component.literal("\u00a77  Trade: \u00a7e" + tradeId),
+                    false
+            );
+        } else {
+            source.sendSuccess(
+                    () -> Component.literal("\u00a77  Trade: \u00a77(none)"),
+                    false
+            );
+        }
 
         // In dialogue?
         if (oliver.isInDialogue()) {

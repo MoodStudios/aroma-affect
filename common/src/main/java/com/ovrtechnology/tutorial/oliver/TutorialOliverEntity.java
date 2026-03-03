@@ -2,6 +2,8 @@ package com.ovrtechnology.tutorial.oliver;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
+import com.ovrtechnology.tutorial.animation.TutorialAnimationHandler;
+import com.ovrtechnology.tutorial.cinematic.TutorialCinematicHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -10,6 +12,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -99,6 +102,8 @@ public class TutorialOliverEntity extends Villager {
     private static final double FOLLOW_DISTANCE = 3.0;
     private static final double FOLLOW_START_DISTANCE = 5.0;
     private static final double WALK_ARRIVAL_DISTANCE = 1.5;
+    private static final double FOLLOW_TELEPORT_DISTANCE = 15.0; // Teleport if further than this
+    private static final double FOLLOW_TELEPORT_OFFSET = 2.0; // Offset behind player after teleport
 
     // Synced entity data
     private static final EntityDataAccessor<String> DATA_DIALOGUE_ID =
@@ -270,6 +275,12 @@ public class TutorialOliverEntity extends Villager {
     public void resetToHome() {
         setStationary();
         this.getNavigation().stop();
+        // Clear trade and dialogue so Oliver starts fresh
+        setTradeId("");
+        setDialogueId("oliver_greeting");
+        // Make visible again (in case he was vanished)
+        this.setInvisible(false);
+        this.setCustomNameVisible(true);
         if (homePos != null) {
             this.teleportTo(homePos.getX() + 0.5, homePos.getY(), homePos.getZ() + 0.5);
             this.setYRot(homeYaw);
@@ -431,6 +442,22 @@ public class TutorialOliverEntity extends Villager {
         }
 
         double distSqr = this.distanceToSqr(target);
+        double dist = Math.sqrt(distSqr);
+
+        // If too far, teleport to player with particles
+        // But NOT during animations or cinematics (looks bad)
+        if (dist > FOLLOW_TELEPORT_DISTANCE) {
+            // Check if any animation is playing
+            if (TutorialAnimationHandler.isAnyAnimationActive()) {
+                return; // Don't teleport during animations
+            }
+            // Check if player is in a cinematic
+            if (target instanceof ServerPlayer sp && TutorialCinematicHandler.isInCinematic(sp)) {
+                return; // Don't teleport during cinematics
+            }
+            teleportToPlayer(level, target);
+            return;
+        }
 
         // Only pathfind if player is far enough and cooldown is ready
         if (distSqr > FOLLOW_START_DISTANCE * FOLLOW_START_DISTANCE && pathfindCooldown <= 0) {
@@ -443,6 +470,67 @@ public class TutorialOliverEntity extends Villager {
 
         // Always look at the target
         this.getLookControl().setLookAt(target, 30.0F, 30.0F);
+    }
+
+    /**
+     * Teleports Oliver to the player with particle effects.
+     * Places Oliver 2 blocks behind/offset from the player based on their look direction.
+     */
+    private void teleportToPlayer(ServerLevel level, Player target) {
+        // Spawn particles at current position (disappear effect)
+        level.sendParticles(
+                ParticleTypes.PORTAL,
+                this.getX(), this.getY() + 1.0, this.getZ(),
+                20, 0.3, 0.5, 0.3, 0.1
+        );
+        level.sendParticles(
+                ParticleTypes.WITCH,
+                this.getX(), this.getY() + 1.0, this.getZ(),
+                10, 0.2, 0.4, 0.2, 0.0
+        );
+
+        // Calculate position behind/beside the player
+        float yaw = target.getYRot();
+        double offsetX = -Math.sin(Math.toRadians(yaw)) * FOLLOW_TELEPORT_OFFSET;
+        double offsetZ = Math.cos(Math.toRadians(yaw)) * FOLLOW_TELEPORT_OFFSET;
+
+        double newX = target.getX() + offsetX;
+        double newY = target.getY();
+        double newZ = target.getZ() + offsetZ;
+
+        // Teleport
+        this.teleportTo(newX, newY, newZ);
+        this.getNavigation().stop();
+
+        // Make Oliver face the player
+        this.setYRot(yaw + 180);
+        this.setYHeadRot(yaw + 180);
+        this.setYBodyRot(yaw + 180);
+
+        // Spawn particles at new position (appear effect)
+        level.sendParticles(
+                ParticleTypes.PORTAL,
+                newX, newY + 1.0, newZ,
+                20, 0.3, 0.5, 0.3, 0.1
+        );
+        level.sendParticles(
+                ParticleTypes.WITCH,
+                newX, newY + 1.0, newZ,
+                10, 0.2, 0.4, 0.2, 0.0
+        );
+
+        // Play teleport sound
+        level.playSound(
+                null,
+                newX, newY, newZ,
+                SoundEvents.ENDERMAN_TELEPORT,
+                SoundSource.NEUTRAL,
+                0.5F,
+                1.2F
+        );
+
+        AromaAffect.LOGGER.debug("Oliver teleported to player {} at {}, {}, {}",
+                target.getName().getString(), newX, newY, newZ);
     }
 
     private void tickWalkingTo(ServerLevel level) {
@@ -498,13 +586,17 @@ public class TutorialOliverEntity extends Villager {
             return InteractionResult.PASS;
         }
 
+        // Client side: just consume the interaction, server will send the dialogue packet
         if (this.level().isClientSide()) {
-            openDialogueUiClient();
             return InteractionResult.SUCCESS;
         }
 
         if (this.level() instanceof ServerLevel && player instanceof ServerPlayer serverPlayer) {
             keepDialogueAlive(player);
+
+            // Debug log to diagnose trade issues
+            com.ovrtechnology.AromaAffect.LOGGER.info("[Oliver Debug] Player {} clicked Oliver. dialogueId='{}', hasTrade={}, tradeId='{}'",
+                    player.getName().getString(), getDialogueId(), hasTrade(), getTradeId());
 
             // Send S2C packet to open dialogue with trade context
             TutorialDialogueContentNetworking.sendOpenDialogue(

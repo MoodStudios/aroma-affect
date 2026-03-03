@@ -177,6 +177,18 @@ public class NoseSmithEntity extends Villager {
         return result;
     }
 
+    /**
+     * Resets the Nose Smith quest to its initial state (for /tutorial reset).
+     */
+    public void resetQuest() {
+        setHasNose(true);
+        this.requestedFlower = null;
+        this.entityData.set(REQUESTED_FLOWER_ID, "");
+        this.houseDecorated = false;
+        this.dialoguePlayerId = null;
+        this.dialogueKeepAliveTicks = 0;
+    }
+
     public void restoreNoseSmithData(boolean hadNose, String requestedFlowerStr, boolean wasHouseDecorated) {
         setHasNose(hadNose);
         if (requestedFlowerStr != null && !requestedFlowerStr.isEmpty()) {
@@ -400,40 +412,57 @@ public class NoseSmithEntity extends Villager {
             }
         }
 
-        int flowersToPlace = 1 + random.nextInt(2);
         int flowersPlaced = 0;
         BlockState flowerState = requested.defaultBlockState();
-        for (int attempt = 0; attempt < FLOWER_PLACEMENT_ATTEMPTS && flowersPlaced < flowersToPlace; attempt++) {
-            int dx = random.nextIntBetweenInclusive(-QUEST_FLOWER_PLACEMENT_RADIUS, QUEST_FLOWER_PLACEMENT_RADIUS);
-            int dz = random.nextIntBetweenInclusive(-QUEST_FLOWER_PLACEMENT_RADIUS, QUEST_FLOWER_PLACEMENT_RADIUS);
-            if (dx == 0 && dz == 0) {
-                continue;
-            }
 
-            if (Math.abs(dx) < 8 && Math.abs(dz) < 8) {
-                continue;
-            }
-
-            BlockPos candidate = origin.offset(dx, 0, dz);
-            BlockPos surface = serverLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate);
-
-            if (clearReplaceable(serverLevel, surface)) {
-                if (!flowerState.canSurvive(serverLevel, surface)) {
-                    serverLevel.setBlock(surface.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-                }
-                serverLevel.setBlock(surface, flowerState, Block.UPDATE_ALL);
-                flowersPlaced++;
-            }
+        // If tutorial mode is active and has a fixed flower position configured, use it
+        java.util.Optional<BlockPos> fixedFlowerPos = java.util.Optional.empty();
+        if (com.ovrtechnology.tutorial.TutorialModule.isActive(serverLevel)) {
+            fixedFlowerPos = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getFlowerPos(serverLevel);
         }
-
-        if (flowersPlaced == 0) {
-            BlockPos fallback = serverLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, origin);
-            clearReplaceable(serverLevel, fallback);
-            if (!flowerState.canSurvive(serverLevel, fallback)) {
-                serverLevel.setBlock(fallback.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        if (fixedFlowerPos.isPresent()) {
+            BlockPos flowerTarget = fixedFlowerPos.get();
+            clearReplaceable(serverLevel, flowerTarget);
+            if (!flowerState.canSurvive(serverLevel, flowerTarget)) {
+                serverLevel.setBlock(flowerTarget.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
             }
-            serverLevel.setBlock(fallback, flowerState, Block.UPDATE_ALL);
+            serverLevel.setBlock(flowerTarget, flowerState, Block.UPDATE_ALL);
             flowersPlaced = 1;
+        } else {
+            // Random placement (original behavior)
+            int flowersToPlace = 1 + random.nextInt(2);
+            for (int attempt = 0; attempt < FLOWER_PLACEMENT_ATTEMPTS && flowersPlaced < flowersToPlace; attempt++) {
+                int dx = random.nextIntBetweenInclusive(-QUEST_FLOWER_PLACEMENT_RADIUS, QUEST_FLOWER_PLACEMENT_RADIUS);
+                int dz = random.nextIntBetweenInclusive(-QUEST_FLOWER_PLACEMENT_RADIUS, QUEST_FLOWER_PLACEMENT_RADIUS);
+                if (dx == 0 && dz == 0) {
+                    continue;
+                }
+
+                if (Math.abs(dx) < 8 && Math.abs(dz) < 8) {
+                    continue;
+                }
+
+                BlockPos candidate = origin.offset(dx, 0, dz);
+                BlockPos surface = serverLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate);
+
+                if (clearReplaceable(serverLevel, surface)) {
+                    if (!flowerState.canSurvive(serverLevel, surface)) {
+                        serverLevel.setBlock(surface.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+                    }
+                    serverLevel.setBlock(surface, flowerState, Block.UPDATE_ALL);
+                    flowersPlaced++;
+                }
+            }
+
+            if (flowersPlaced == 0) {
+                BlockPos fallback = serverLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, origin);
+                clearReplaceable(serverLevel, fallback);
+                if (!flowerState.canSurvive(serverLevel, fallback)) {
+                    serverLevel.setBlock(fallback.below(), Blocks.GRASS_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+                }
+                serverLevel.setBlock(fallback, flowerState, Block.UPDATE_ALL);
+                flowersPlaced = 1;
+            }
         }
 
         fillChestsWithScents(serverLevel, origin, min, max, random);

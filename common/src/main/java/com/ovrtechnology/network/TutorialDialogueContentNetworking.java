@@ -211,6 +211,18 @@ public final class TutorialDialogueContentNetworking {
     private static void onDialogueClosed(ServerPlayer player, ServerLevel level, String dialogueId) {
         AromaAffect.LOGGER.info("Dialogue '{}' closed by player {}", dialogueId, player.getName().getString());
 
+        // Special: dream end dialogue makes Oliver vanish
+        if ("dream_end_wakeup".equals(dialogueId)) {
+            vanishNearestOliver(player, level);
+        }
+
+        // Skip on-complete hooks for boss dialogues that have trade buttons —
+        // the trade flow handles its own on-complete via TutorialTradeHandler
+        if (dialogueId != null && dialogueId.startsWith("boss_") && dialogueId.endsWith("_killed")) {
+            AromaAffect.LOGGER.info("Skipping on-complete hooks for boss trade dialogue '{}'", dialogueId);
+            return;
+        }
+
         Optional<TutorialDialogue> dialogueOpt = TutorialDialogueManager.getDialogue(level, dialogueId);
         if (dialogueOpt.isEmpty()) {
             AromaAffect.LOGGER.warn("Dialogue '{}' not found in manager - on-complete hooks will NOT fire", dialogueId);
@@ -259,39 +271,75 @@ public final class TutorialDialogueContentNetworking {
         }
         AromaAffect.LOGGER.info("Found Oliver at {}, executing action '{}'", oliver.blockPosition(), action);
 
-        String actionLower = action.toLowerCase();
+        // Support multiple actions separated by semicolon
+        String[] actions = action.split(";");
+        String pendingDialogueId = null;
 
-        if (actionLower.equals("follow")) {
-            oliver.setFollowing(player);
-            AromaAffect.LOGGER.info("Oliver is now following player {}", player.getName().getString());
-        } else if (actionLower.equals("stop")) {
-            oliver.setStationary();
-        } else if (actionLower.startsWith("walkto:")) {
-            String coordsStr = action.substring(7);
-            String[] parts = coordsStr.split(",");
-            if (parts.length == 3) {
-                try {
-                    int x = Integer.parseInt(parts[0].trim());
-                    int y = Integer.parseInt(parts[1].trim());
-                    int z = Integer.parseInt(parts[2].trim());
-                    oliver.setWalkingTo(new BlockPos(x, y, z));
-                } catch (NumberFormatException e) {
-                    AromaAffect.LOGGER.warn("Invalid walkto coordinates: {}", coordsStr);
+        for (String singleAction : actions) {
+            singleAction = singleAction.trim();
+            if (singleAction.isEmpty()) continue;
+
+            String actionLower = singleAction.toLowerCase();
+
+            if (actionLower.equals("follow")) {
+                oliver.setFollowing(player);
+                AromaAffect.LOGGER.info("Oliver is now following player {}", player.getName().getString());
+            } else if (actionLower.equals("stop")) {
+                oliver.setStationary();
+            } else if (actionLower.startsWith("walkto:")) {
+                String coordsStr = singleAction.substring(7);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        oliver.setWalkingTo(new BlockPos(x, y, z));
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid walkto coordinates: {}", coordsStr);
+                    }
                 }
+            } else if (actionLower.startsWith("dialogue:")) {
+                // Defer dialogue opening until after all other actions (especially trade:)
+                pendingDialogueId = singleAction.substring(9).trim();
+                oliver.setDialogueId(pendingDialogueId);
+            } else if (actionLower.startsWith("trade:")) {
+                String tradeId = singleAction.substring(6).trim();
+                oliver.setTradeId(tradeId);
+                AromaAffect.LOGGER.debug("Oliver action: trade set to {}", tradeId);
+            } else if (actionLower.equals("cleartrade")) {
+                oliver.setTradeId("");
+                AromaAffect.LOGGER.debug("Oliver action: trade cleared");
+            } else if (actionLower.startsWith("teleportplayer:")) {
+                String coordsStr = singleAction.substring(15);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        player.teleportTo(level, x + 0.5, y, z + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
+                        AromaAffect.LOGGER.debug("Teleported player to {}, {}, {}", x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
+                    }
+                }
+            } else if (actionLower.startsWith("lookup:")) {
+                String blockId = singleAction.substring(7).trim();
+                triggerLookup(player, level, blockId);
+            } else {
+                AromaAffect.LOGGER.warn("Unknown Oliver action: {}", singleAction);
             }
-        } else if (actionLower.startsWith("dialogue:")) {
-            String dialogueId = action.substring(9).trim();
-            oliver.setDialogueId(dialogueId);
+        }
+
+        // Open dialogue AFTER processing all actions (so trade is set first)
+        if (pendingDialogueId != null) {
+            AromaAffect.LOGGER.info("Sending open dialogue packet to player {} for dialogue '{}' (hasTrade: {}, tradeId: '{}')",
+                    player.getName().getString(), pendingDialogueId, oliver.hasTrade(), oliver.getTradeId());
             sendOpenDialogue(
-                    player, oliver.getId(), dialogueId,
+                    player, oliver.getId(), pendingDialogueId,
                     oliver.hasTrade(), oliver.getTradeId()
             );
-        } else if (actionLower.startsWith("trade:")) {
-            String tradeId = action.substring(6).trim();
-            oliver.setTradeId(tradeId);
-        } else if (actionLower.startsWith("lookup:")) {
-            String blockId = action.substring(7).trim();
-            triggerLookup(player, level, blockId);
         }
     }
 
@@ -343,6 +391,41 @@ public final class TutorialDialogueContentNetworking {
         }
 
         return nearest;
+    }
+
+    /**
+     * Makes the nearest Oliver vanish with particles and sound (dream genie effect).
+     */
+    private static void vanishNearestOliver(ServerPlayer player, ServerLevel level) {
+        TutorialOliverEntity oliver = findNearestOliver(player, level);
+        if (oliver == null) {
+            AromaAffect.LOGGER.warn("No Oliver found to vanish");
+            return;
+        }
+
+        double x = oliver.getX();
+        double y = oliver.getY();
+        double z = oliver.getZ();
+
+        // Smoke/magic particles
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,
+                x, y + 1, z, 30, 0.3, 0.5, 0.3, 0.05);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANT,
+                x, y + 1, z, 50, 0.5, 1.0, 0.5, 0.5);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                x, y + 1.5, z, 20, 0.3, 0.5, 0.3, 0.1);
+
+        // Magical vanish sound
+        level.playSound(null, x, y, z,
+                net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT,
+                net.minecraft.sounds.SoundSource.NEUTRAL, 1.0f, 1.2f);
+
+        // Hide Oliver instead of removing (so /tutorial reset can still find him)
+        oliver.setInvisible(true);
+        oliver.setCustomNameVisible(false);
+        oliver.resetToHome();
+
+        AromaAffect.LOGGER.info("Oliver vanished at {}, {}, {}", x, y, z);
     }
 
     /**

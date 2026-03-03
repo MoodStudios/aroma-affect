@@ -100,6 +100,17 @@ public class AnimationSubCommand implements TutorialSubCommand {
                         )
                 )
 
+                // /tutorial animation type <id> <type>
+                .then(Commands.literal("type")
+                        .then(Commands.argument("id", StringArgumentType.word())
+                                .suggests(ANIMATION_SUGGESTIONS)
+                                .then(Commands.argument("type", StringArgumentType.word())
+                                        .suggests(TYPE_SUGGESTIONS)
+                                        .executes(this::executeSetType)
+                                )
+                        )
+                )
+
                 // /tutorial animation play <id>
                 .then(Commands.literal("play")
                         .then(Commands.argument("id", StringArgumentType.word())
@@ -169,6 +180,7 @@ public class AnimationSubCommand implements TutorialSubCommand {
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial animation delete <id>"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial animation corner1 <id> \u00a78- Set to your position"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial animation corner2 <id> \u00a78- Set to your position"), false);
+        source.sendSuccess(() -> Component.literal("\u00a77  /tutorial animation type <id> <type> \u00a78- Change animation type"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial animation play <id>"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial animation reset <id>"), false);
         source.sendSuccess(() -> Component.literal("\u00a77  /tutorial animation oncomplete <id> waypoint <waypointId>"), false);
@@ -282,6 +294,36 @@ public class AnimationSubCommand implements TutorialSubCommand {
             source.sendSuccess(
                     () -> Component.literal("\u00a7d[OVR Tutorial] \u00a7fSet corner2 of \u00a7d" + id +
                             " \u00a7fto \u00a7e" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ()),
+                    true
+            );
+            return Command.SINGLE_SUCCESS;
+        } else {
+            source.sendFailure(Component.literal(
+                    "\u00a7c[OVR Tutorial] Animation '" + id + "' not found"
+            ));
+            return 0;
+        }
+    }
+
+    private int executeSetType(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String id = StringArgumentType.getString(context, "id");
+        String typeName = StringArgumentType.getString(context, "type");
+        ServerLevel level = source.getLevel();
+
+        TutorialAnimationType type = TutorialAnimationType.byName(typeName);
+        if (type == null) {
+            source.sendFailure(Component.literal(
+                    "\u00a7c[OVR Tutorial] Invalid type '" + typeName +
+                    "'. Valid: wall_break, door_open, debris_clear"
+            ));
+            return 0;
+        }
+
+        if (TutorialAnimationManager.setType(level, id, type)) {
+            source.sendSuccess(
+                    () -> Component.literal("\u00a7d[OVR Tutorial] \u00a7fSet animation \u00a7d" + id +
+                            " \u00a7ftype to \u00a7e" + type.name().toLowerCase()),
                     true
             );
             return Command.SINGLE_SUCCESS;

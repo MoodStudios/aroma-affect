@@ -296,14 +296,19 @@ public final class TutorialWaypointAreaHandler {
     }
 
     /**
-     * Executes an Oliver action when a waypoint is completed.
+     * Executes Oliver action(s) when a waypoint is completed.
+     * <p>
+     * Multiple actions can be separated by semicolon (;).
      * <p>
      * Supported actions:
      * <ul>
      *   <li>"follow" - Oliver follows the player</li>
      *   <li>"stop" - Oliver becomes stationary</li>
      *   <li>"walkto:x,y,z" - Oliver walks to position</li>
-     *   <li>"dialogue:id" - Set Oliver's dialogue</li>
+     *   <li>"dialogue:id" - Set Oliver's dialogue and open it</li>
+     *   <li>"trade:id" - Set Oliver's trade</li>
+     *   <li>"cleartrade" - Clear Oliver's trade</li>
+     *   <li>"lookup:blockId" - Trigger block lookup</li>
      * </ul>
      */
     private static void executeOliverAction(ServerPlayer player, ServerLevel level, String action) {
@@ -314,49 +319,79 @@ public final class TutorialWaypointAreaHandler {
         }
         AromaAffect.LOGGER.info("Found Oliver at {}, executing action '{}'", oliver.blockPosition(), action);
 
-        String actionLower = action.toLowerCase();
+        // Support multiple actions separated by semicolon
+        String[] actions = action.split(";");
+        String pendingDialogueId = null;
 
-        if (actionLower.equals("follow")) {
-            oliver.setFollowing(player);
-            AromaAffect.LOGGER.debug("Oliver action: following player {}", player.getName().getString());
-        } else if (actionLower.equals("stop")) {
-            oliver.setStationary();
-            AromaAffect.LOGGER.debug("Oliver action: stopped");
-        } else if (actionLower.startsWith("walkto:")) {
-            String coordsStr = action.substring(7);
-            String[] parts = coordsStr.split(",");
-            if (parts.length == 3) {
-                try {
-                    int x = Integer.parseInt(parts[0].trim());
-                    int y = Integer.parseInt(parts[1].trim());
-                    int z = Integer.parseInt(parts[2].trim());
-                    oliver.setWalkingTo(new BlockPos(x, y, z));
-                    AromaAffect.LOGGER.debug("Oliver action: walking to {}, {}, {}", x, y, z);
-                } catch (NumberFormatException e) {
-                    AromaAffect.LOGGER.warn("Invalid walkto coordinates: {}", coordsStr);
+        for (String singleAction : actions) {
+            singleAction = singleAction.trim();
+            if (singleAction.isEmpty()) continue;
+
+            String actionLower = singleAction.toLowerCase();
+
+            if (actionLower.equals("follow")) {
+                oliver.setFollowing(player);
+                AromaAffect.LOGGER.debug("Oliver action: following player {}", player.getName().getString());
+            } else if (actionLower.equals("stop")) {
+                oliver.setStationary();
+                AromaAffect.LOGGER.debug("Oliver action: stopped");
+            } else if (actionLower.startsWith("walkto:")) {
+                String coordsStr = singleAction.substring(7);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        oliver.setWalkingTo(new BlockPos(x, y, z));
+                        AromaAffect.LOGGER.debug("Oliver action: walking to {}, {}, {}", x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid walkto coordinates: {}", coordsStr);
+                    }
+                } else {
+                    AromaAffect.LOGGER.warn("Invalid walkto format: {}", singleAction);
                 }
+            } else if (actionLower.startsWith("dialogue:")) {
+                // Defer dialogue opening until after all other actions (especially trade:)
+                pendingDialogueId = singleAction.substring(9).trim();
+                oliver.setDialogueId(pendingDialogueId);
+            } else if (actionLower.startsWith("trade:")) {
+                String tradeId = singleAction.substring(6).trim();
+                oliver.setTradeId(tradeId);
+                AromaAffect.LOGGER.debug("Oliver action: trade set to {}", tradeId);
+            } else if (actionLower.equals("cleartrade")) {
+                oliver.setTradeId("");
+                AromaAffect.LOGGER.debug("Oliver action: trade cleared");
+            } else if (actionLower.startsWith("teleportplayer:")) {
+                String coordsStr = singleAction.substring(15);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        player.teleportTo(level, x + 0.5, y, z + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
+                        AromaAffect.LOGGER.debug("Teleported player to {}, {}, {}", x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
+                    }
+                }
+            } else if (actionLower.startsWith("lookup:")) {
+                String blockId = singleAction.substring(7).trim();
+                triggerLookup(player, level, blockId);
             } else {
-                AromaAffect.LOGGER.warn("Invalid walkto format: {}", action);
+                AromaAffect.LOGGER.warn("Unknown Oliver action: {}", singleAction);
             }
-        } else if (actionLower.startsWith("dialogue:")) {
-            String dialogueId = action.substring(9).trim();
-            oliver.setDialogueId(dialogueId);
-            // Abrir el diálogo automáticamente en el cliente
+        }
+
+        // Open dialogue AFTER processing all actions (so trade is set first)
+        if (pendingDialogueId != null) {
             AromaAffect.LOGGER.info("Sending open dialogue packet to player {} for dialogue '{}' (entityId: {}, hasTrade: {}, tradeId: '{}')",
-                    player.getName().getString(), dialogueId, oliver.getId(), oliver.hasTrade(), oliver.getTradeId());
+                    player.getName().getString(), pendingDialogueId, oliver.getId(), oliver.hasTrade(), oliver.getTradeId());
             TutorialDialogueContentNetworking.sendOpenDialogue(
-                    player, oliver.getId(), dialogueId,
+                    player, oliver.getId(), pendingDialogueId,
                     oliver.hasTrade(), oliver.getTradeId()
             );
-        } else if (actionLower.startsWith("trade:")) {
-            String tradeId = action.substring(6).trim();
-            oliver.setTradeId(tradeId);
-            AromaAffect.LOGGER.debug("Oliver action: trade set to {}", tradeId);
-        } else if (actionLower.startsWith("lookup:")) {
-            String blockId = action.substring(7).trim();
-            triggerLookup(player, level, blockId);
-        } else {
-            AromaAffect.LOGGER.warn("Unknown Oliver action: {}", action);
         }
     }
 

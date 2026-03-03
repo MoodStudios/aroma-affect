@@ -108,6 +108,32 @@ public final class TutorialOliverDialogueScreen extends Screen {
         dialogues.put("lost", "Seems like you've wandered off the path! Look for the shimmering trail nearby.");
         dialogues.put("goodbye", "Safe travels, adventurer! Remember: Follow your nose!");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // Boss Dialogues - Area Entry (before boss spawns)
+        // ═══════════════════════════════════════════════════════════════════
+        dialogues.put("boss_blaze_enter",
+                "Watch out, adventurer! A dangerous Blaze lurks ahead! " +
+                "Defeat this fiery creature and collect the materials it drops. " +
+                "I'll need those items to craft your next Nose upgrade. Good luck!");
+
+        dialogues.put("boss_dragon_enter",
+                "By the ancient scents! A Dragon guards this territory! " +
+                "This will be your greatest challenge yet. Slay the beast and gather its essence. " +
+                "With those materials, I can create something truly extraordinary for you!");
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Boss Dialogues - After Kill (with trade)
+        // ═══════════════════════════════════════════════════════════════════
+        dialogues.put("boss_blaze_killed",
+                "Incredible work, adventurer! You've defeated the Blaze! " +
+                "Now bring me those materials you've collected - the Blaze Powder, Flint, and Ender Pearl. " +
+                "With these, I can craft your next Nose upgrade. Trade with me when you're ready!");
+
+        dialogues.put("boss_dragon_killed",
+                "MAGNIFICENT! You have slain the Dragon! Few have accomplished such a feat! " +
+                "Bring me the Dragon's Breath and scales you've collected. " +
+                "I shall forge you a legendary Nose unlike any other. Trade with me!");
+
         return dialogues;
     }
 
@@ -133,6 +159,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     @Nullable
     private Button tradeButton;
     private boolean buttonsVisible = false;
+    private boolean closedByTrade = false;
 
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver) {
         super(Component.literal("Oliver"));
@@ -225,10 +252,13 @@ public final class TutorialOliverDialogueScreen extends Screen {
         sendTalkingState(false);
 
         // Notify server that dialogue was closed (triggers on-complete hooks)
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.getConnection() != null && minecraft.level != null) {
-            TutorialDialogueContentNetworking.sendDialogueClosed(
-                    minecraft.level.registryAccess(), dialogueId);
+        // Skip if closed by trade — trade has its own on-complete flow via TutorialTradeHandler
+        if (!closedByTrade) {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.getConnection() != null && minecraft.level != null) {
+                TutorialDialogueContentNetworking.sendDialogueClosed(
+                        minecraft.level.registryAccess(), dialogueId);
+            }
         }
 
         super.removed();
@@ -392,6 +422,8 @@ public final class TutorialOliverDialogueScreen extends Screen {
                     minecraft.level.registryAccess(), oliver.getId(), tradeId);
         }
 
+        // Don't send dialogueClosed when closing via trade (trade has its own on-complete flow)
+        closedByTrade = true;
         onClose();
     }
 
