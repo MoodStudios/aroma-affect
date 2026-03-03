@@ -54,6 +54,10 @@ public final class ClientConfig {
     @Getter @Setter
     private boolean passivePuffOverlay = true;
 
+    /** Whether to show debug chat messages when scents are triggered */
+    @Getter @Setter
+    private boolean debugScentMessages = false;
+
     // ========================================
     // Passive mode settings
     // ========================================
@@ -130,6 +134,7 @@ public final class ClientConfig {
         strapEnabled = false;
         trackingToastPersistent = false;
         passivePuffOverlay = true;
+        debugScentMessages = false;
         resetPassiveDefaults();
     }
 

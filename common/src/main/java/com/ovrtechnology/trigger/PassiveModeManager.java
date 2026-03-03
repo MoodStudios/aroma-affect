@@ -704,8 +704,8 @@ public final class PassiveModeManager {
             AromaAffect.LOGGER.info("[PassiveMode] activateTrigger: {} -> triggered={}", candidate.source, triggered);
         }
 
-        // Only show chat message in DEV_MODE for testing
-        if (DEV_MODE) {
+        // Show chat message when debug scent messages are enabled in settings
+        if (ClientConfig.getInstance().isDebugScentMessages()) {
             // Get trigger type name for message
             String triggerTypeName = candidate.type.name().toLowerCase();
 

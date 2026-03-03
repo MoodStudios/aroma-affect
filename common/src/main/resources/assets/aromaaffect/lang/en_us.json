@@ -562,5 +562,6 @@
   "menu.aromaaffect.history.retrack_cost": "Re-track cost: %d durability",
   "history.aromaaffect.wrong_dimension": "Wrong dimension — travel there first",
 
-  "config.aromaaffect.passive_puff_overlay": "Passive Puff Overlay"
+  "config.aromaaffect.passive_puff_overlay": "Passive Puff Overlay",
+  "config.aromaaffect.debug_scent_messages": "Debug Scent Messages"
 }

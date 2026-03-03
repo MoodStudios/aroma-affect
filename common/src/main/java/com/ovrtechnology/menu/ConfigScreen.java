@@ -43,6 +43,7 @@ public class ConfigScreen extends BaseMenuScreen {
     private ScentSubFilter activeScentFilter = ScentSubFilter.BLOCKS;
 
     // Scroll state for scrollable sections
+    private double generalScrollOffset = 0;
     private double scentScrollOffset = 0;
     private double wsScrollOffset = 0;
     private double passiveScrollOffset = 0;
@@ -177,21 +178,32 @@ public class ConfigScreen extends BaseMenuScreen {
         int contentW = contentRight - contentLeft;
 
         switch (activeSection) {
-            case GENERAL -> renderGeneralSection(graphics, contentLeft, contentTop, contentW, mouseX, mouseY, a);
+            case GENERAL -> renderGeneralSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case PASSIVE -> renderPassiveSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case SCENT_VALUES -> renderScentValuesSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case WEBSOCKET -> renderWebSocketSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
         }
     }
 
-    private void renderGeneralSection(GuiGraphics graphics, int x, int y, int w, int mx, int my, float a) {
+    private void renderGeneralSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
         ClientConfig config = ClientConfig.getInstance();
-        int rowY = y;
+        boolean isAutomatic = "automatic".equals(config.getPuffMode());
+
+        // Calculate total content height
+        int totalContentH = (ROW_HEIGHT + 4) * 7 + (ROW_HEIGHT + 4); // 8 rows always visible
+        if (!isAutomatic) totalContentH += (ROW_HEIGHT + 4); // manual key row
+
+        int maxScroll = Math.max(0, totalContentH - h);
+        generalScrollOffset = Mth.clamp(generalScrollOffset, 0, maxScroll);
+
+        // Scissor clip the content area
+        graphics.enableScissor(x, y, x + w, y + h);
+
+        int rowY = y - (int) generalScrollOffset;
 
         // Puff Mode selector
         graphics.drawString(font, Component.translatable("config.aromaaffect.puff_mode"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         int selX = x + w - SELECTOR_BTN_W * 2 - 2;
-        boolean isAutomatic = "automatic".equals(config.getPuffMode());
 
         // Automatic button
         int autoBg = isAutomatic ? MenuRenderUtils.withAlpha(COL_ACCENT, a) : MenuRenderUtils.withAlpha(0xFF333333, a);
@@ -281,6 +293,25 @@ public class ConfigScreen extends BaseMenuScreen {
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.drawString(font, puffOverlayLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        rowY += ROW_HEIGHT + 4;
+
+        // Debug Scent Messages toggle
+        graphics.drawString(font, Component.translatable("config.aromaaffect.debug_scent_messages"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        renderTogglePill(graphics, toggleX, rowY + 1, config.isDebugScentMessages(), a);
+        Component debugScentLabel = config.isDebugScentMessages()
+                ? Component.translatable("config.aromaaffect.on")
+                : Component.translatable("config.aromaaffect.off");
+        graphics.drawString(font, debugScentLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+
+        graphics.disableScissor();
+
+        // Scrollbar (only if content overflows)
+        if (totalContentH > h && h > 0) {
+            int scrollBarX = x + w - 4;
+            int scrollBarH = Math.max(10, (int) ((float) h / totalContentH * h));
+            int scrollBarY = y + (int) ((float) generalScrollOffset / maxScroll * (h - scrollBarH));
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 3, scrollBarY + scrollBarH, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
+        }
     }
 
     private void renderPassiveSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
@@ -741,6 +772,7 @@ public class ConfigScreen extends BaseMenuScreen {
             if (mx >= panelLeft && mx < panelLeft + SIDEBAR_WIDTH && my >= tabY && my < tabY + tabH) {
                 MenuRenderUtils.playClickSound();
                 activeSection = section;
+                generalScrollOffset = 0;
                 scentScrollOffset = 0;
                 passiveScrollOffset = 0;
                 capturingKey = false;
@@ -767,11 +799,13 @@ public class ConfigScreen extends BaseMenuScreen {
 
     private boolean handleGeneralClick(int mx, int my, int x, int y, int w) {
         ClientConfig config = ClientConfig.getInstance();
+        // Adjust mouse Y for scroll offset so clicks match rendered positions
+        int adjustedMy = my + (int) generalScrollOffset;
         int rowY = y;
 
         // Puff Mode selector
         int selX = x + w - SELECTOR_BTN_W * 2 - 2;
-        if (my >= rowY && my < rowY + SELECTOR_BTN_H) {
+        if (adjustedMy >= rowY && adjustedMy < rowY + SELECTOR_BTN_H) {
             if (mx >= selX && mx < selX + SELECTOR_BTN_W) {
                 MenuRenderUtils.playClickSound();
                 config.setPuffMode("automatic");
@@ -792,7 +826,7 @@ public class ConfigScreen extends BaseMenuScreen {
         // Manual key (only if manual mode)
         if (!"automatic".equals(config.getPuffMode())) {
             int keyBtnX = x + w - 80;
-            if (mx >= keyBtnX && mx < keyBtnX + 80 && my >= rowY && my < rowY + 20) {
+            if (mx >= keyBtnX && mx < keyBtnX + 80 && adjustedMy >= rowY && adjustedMy < rowY + 20) {
                 MenuRenderUtils.playClickSound();
                 capturingKey = true;
                 return true;
@@ -802,7 +836,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
         // Intensity slider
         int sliderX = x + w - SLIDER_W - 40;
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && my >= rowY && my < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
             float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
             config.setGlobalIntensityMultiplier(Math.round(ratio * 100.0) / 100.0);
@@ -813,7 +847,7 @@ public class ConfigScreen extends BaseMenuScreen {
         rowY += ROW_HEIGHT + 4;
 
         // Cooldown slider
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && my >= rowY && my < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
             float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
             long ms = (long) (1000 + ratio * 59000); // 1s to 60s
@@ -826,7 +860,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
         // Nose render toggle
         int toggleX = x + w - TOGGLE_W - 30;
-        if (mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
             config.setNoseRenderEnabled(!config.isNoseRenderEnabled());
             NoseRenderToggles.setNoseEnabled(config.isNoseRenderEnabled());
             // If nose render is disabled, also disable strap
@@ -842,7 +876,7 @@ public class ConfigScreen extends BaseMenuScreen {
         rowY += ROW_HEIGHT + 4;
 
         // Nose strap toggle (only if nose render is enabled)
-        if (config.isNoseRenderEnabled() && mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
+        if (config.isNoseRenderEnabled() && mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
             config.setStrapEnabled(!config.isStrapEnabled());
             NoseRenderToggles.setStrapEnabled(config.isStrapEnabled());
             MenuRenderUtils.playToggleSound(config.isStrapEnabled());
@@ -853,7 +887,7 @@ public class ConfigScreen extends BaseMenuScreen {
         rowY += ROW_HEIGHT + 4;
 
         // Tracking toast persistent toggle
-        if (mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
             config.setTrackingToastPersistent(!config.isTrackingToastPersistent());
             MenuRenderUtils.playToggleSound(config.isTrackingToastPersistent());
             config.save();
@@ -862,9 +896,18 @@ public class ConfigScreen extends BaseMenuScreen {
         rowY += ROW_HEIGHT + 4;
 
         // Passive puff overlay toggle
-        if (mx >= toggleX && mx < toggleX + TOGGLE_W && my >= rowY && my < rowY + TOGGLE_H + 2) {
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
             config.setPassivePuffOverlay(!config.isPassivePuffOverlay());
             MenuRenderUtils.playToggleSound(config.isPassivePuffOverlay());
+            config.save();
+            return true;
+        }
+        rowY += ROW_HEIGHT + 4;
+
+        // Debug scent messages toggle
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
+            config.setDebugScentMessages(!config.isDebugScentMessages());
+            MenuRenderUtils.playToggleSound(config.isDebugScentMessages());
             config.save();
             return true;
         }
@@ -1000,6 +1043,10 @@ public class ConfigScreen extends BaseMenuScreen {
 
     @Override
     protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (activeSection == Section.GENERAL) {
+            generalScrollOffset -= scrollY * 14;
+            return true;
+        }
         if (activeSection == Section.PASSIVE) {
             passiveScrollOffset -= scrollY * 14;
             return true;

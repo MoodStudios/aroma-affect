@@ -17,6 +17,7 @@ import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.ScentTriggerSource;
 import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
 import net.minecraft.client.Minecraft;
@@ -47,8 +48,6 @@ import java.util.OptionalDouble;
  */
 public final class PathTrailRenderer {
 
-    /** Development mode flag — shows debug messages in chat when a scent is triggered. */
-    private static final boolean DEV_MODE = true;
 
     // ── Trail shape parameters ──────────────────────────────────────────
 
@@ -611,7 +610,7 @@ public final class PathTrailRenderer {
         if (triggered) {
             PathTrackingMaskOverlay.onPathScentPuff(scentName, intensity);
 
-            if (DEV_MODE) {
+            if (ClientConfig.getInstance().isDebugScentMessages()) {
                 Minecraft mc = Minecraft.getInstance();
                 if (mc.player != null) {
                     int intensityPercent = (int) Math.round(intensity * 100);
