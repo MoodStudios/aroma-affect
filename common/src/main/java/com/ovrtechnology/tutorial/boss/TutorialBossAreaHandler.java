@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.phys.AABB;
 
@@ -135,10 +136,23 @@ public final class TutorialBossAreaHandler {
         });
     }
 
-    private static final double DEFAULT_MOVEMENT_RADIUS = 8.0; // Default radius around spawn
-    private static final double DEFAULT_MOVEMENT_HEIGHT = 6.0; // Default height range
+    private static final double DEFAULT_MOVEMENT_RADIUS = 8.0;
+    private static final double DEFAULT_MOVEMENT_HEIGHT = 6.0;
+
+    // Dragon flight pattern constants
+    private static final double DRAGON_CIRCLE_RADIUS = 6.0;
+    private static final double DRAGON_CIRCLE_SPEED = 0.015; // radians per tick (slow circle)
+    private static final double DRAGON_BOB_AMPLITUDE = 2.0;
+    private static final double DRAGON_BOB_SPEED = 0.04;
+    private static final double DRAGON_HOVER_HEIGHT = 5.0;
 
     private static void enforceMovementBounds(Entity boss, TutorialBossArea area) {
+        // Dragon: fully controlled flight path (circle around spawn)
+        if (boss instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
+            enforceDragonFlightPath(boss, area);
+            return;
+        }
+
         BlockPos min;
         BlockPos max;
 
@@ -146,7 +160,6 @@ public final class TutorialBossAreaHandler {
             min = area.getMovementMin();
             max = area.getMovementMax();
         } else if (area.hasSpawnPos()) {
-            // Use default area around spawn point
             BlockPos spawn = area.getSpawnPos();
             int radius = (int) DEFAULT_MOVEMENT_RADIUS;
             int height = (int) DEFAULT_MOVEMENT_HEIGHT;
@@ -160,43 +173,38 @@ public final class TutorialBossAreaHandler {
         double y = boss.getY();
         double z = boss.getZ();
 
-        boolean needsCorrection = false;
-        double newX = x;
-        double newY = y;
-        double newZ = z;
+        boolean outOfBounds = x < min.getX() || x > max.getX() + 1
+                || y < min.getY() || y > max.getY() + 1
+                || z < min.getZ() || z > max.getZ() + 1;
 
-        // Check X bounds
-        if (x < min.getX()) {
-            newX = min.getX() + 0.5;
-            needsCorrection = true;
-        } else if (x > max.getX() + 1) {
-            newX = max.getX() + 0.5;
-            needsCorrection = true;
-        }
-
-        // Check Y bounds
-        if (y < min.getY()) {
-            newY = min.getY();
-            needsCorrection = true;
-        } else if (y > max.getY() + 1) {
-            newY = max.getY();
-            needsCorrection = true;
-        }
-
-        // Check Z bounds
-        if (z < min.getZ()) {
-            newZ = min.getZ() + 0.5;
-            needsCorrection = true;
-        } else if (z > max.getZ() + 1) {
-            newZ = max.getZ() + 0.5;
-            needsCorrection = true;
-        }
-
-        if (needsCorrection) {
+        if (outOfBounds) {
+            double newX = Math.max(min.getX() + 0.5, Math.min(max.getX() + 0.5, x));
+            double newY = Math.max(min.getY(), Math.min(max.getY(), y));
+            double newZ = Math.max(min.getZ() + 0.5, Math.min(max.getZ() + 0.5, z));
             boss.teleportTo(newX, newY, newZ);
-            boss.setDeltaMovement(0, 0, 0); // Stop momentum
-            boss.hurtMarked = true; // Force position sync to client
+            boss.setDeltaMovement(0, 0, 0);
+            boss.hurtMarked = true;
         }
+    }
+
+    /**
+     * Forces the dragon to stay near spawn. Uses teleportTo for proper client sync.
+     * The dragon keeps its AI (so hitboxes work) but gets teleported back every tick.
+     */
+    private static void enforceDragonFlightPath(Entity dragon, TutorialBossArea area) {
+        if (!area.hasSpawnPos()) return;
+
+        BlockPos spawn = area.getSpawnPos();
+        double centerX = spawn.getX() + 0.5;
+        double centerY = spawn.getY() + DRAGON_HOVER_HEIGHT;
+        double centerZ = spawn.getZ() + 0.5;
+
+        // Kill velocity every tick unconditionally
+        dragon.setDeltaMovement(0, 0, 0);
+        dragon.hurtMarked = true;
+
+        // Teleport back to spawn area every tick
+        dragon.teleportTo(centerX, centerY, centerZ);
     }
 
     private static void spawnBossForArea(ServerLevel level, TutorialBossArea area, ServerPlayer triggerPlayer) {
@@ -259,11 +267,11 @@ public final class TutorialBossAreaHandler {
 
         String bossTag = "tutorial_boss_" + area.getBossType().toLowerCase();
 
-        // Check for any entity with the tutorial boss tag
-        List<Blaze> blazes = level.getEntitiesOfClass(Blaze.class, searchArea,
+        // Check for any living entity with the tutorial boss tag (works for Blaze, EnderDragon, etc.)
+        List<LivingEntity> bosses = level.getEntitiesOfClass(LivingEntity.class, searchArea,
                 entity -> entity.getTags().contains(bossTag));
 
-        return !blazes.isEmpty();
+        return !bosses.isEmpty();
     }
 
     /**

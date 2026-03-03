@@ -362,6 +362,20 @@ public final class TutorialWaypointAreaHandler {
             } else if (actionLower.equals("cleartrade")) {
                 oliver.setTradeId("");
                 AromaAffect.LOGGER.debug("Oliver action: trade cleared");
+            } else if (actionLower.startsWith("teleportplayer:")) {
+                String coordsStr = singleAction.substring(15);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        player.teleportTo(level, x + 0.5, y, z + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
+                        AromaAffect.LOGGER.debug("Teleported player to {}, {}, {}", x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
+                    }
+                }
             } else if (actionLower.startsWith("lookup:")) {
                 String blockId = singleAction.substring(7).trim();
                 triggerLookup(player, level, blockId);

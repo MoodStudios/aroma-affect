@@ -159,6 +159,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     @Nullable
     private Button tradeButton;
     private boolean buttonsVisible = false;
+    private boolean closedByTrade = false;
 
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver) {
         super(Component.literal("Oliver"));
@@ -251,10 +252,13 @@ public final class TutorialOliverDialogueScreen extends Screen {
         sendTalkingState(false);
 
         // Notify server that dialogue was closed (triggers on-complete hooks)
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.getConnection() != null && minecraft.level != null) {
-            TutorialDialogueContentNetworking.sendDialogueClosed(
-                    minecraft.level.registryAccess(), dialogueId);
+        // Skip if closed by trade — trade has its own on-complete flow via TutorialTradeHandler
+        if (!closedByTrade) {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.getConnection() != null && minecraft.level != null) {
+                TutorialDialogueContentNetworking.sendDialogueClosed(
+                        minecraft.level.registryAccess(), dialogueId);
+            }
         }
 
         super.removed();
@@ -418,6 +422,8 @@ public final class TutorialOliverDialogueScreen extends Screen {
                     minecraft.level.registryAccess(), oliver.getId(), tradeId);
         }
 
+        // Don't send dialogueClosed when closing via trade (trade has its own on-complete flow)
+        closedByTrade = true;
         onClose();
     }
 

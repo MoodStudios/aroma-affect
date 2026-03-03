@@ -9,10 +9,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.monster.Blaze;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.level.GameRules;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -51,8 +53,7 @@ public final class TutorialBossSpawner {
             case "blaze":
                 return spawnTutorialBlaze(level, pos, area);
             case "dragon":
-                // Dragon is complex, use blaze for now
-                return spawnTutorialBlaze(level, pos, area);
+                return spawnTutorialDragon(level, pos, area);
             default:
                 return null;
         }
@@ -92,6 +93,74 @@ public final class TutorialBossSpawner {
 
         AromaAffect.LOGGER.info("Spawned tutorial blaze at {}", pos);
         return blaze;
+    }
+
+    @Nullable
+    private static EnderDragon spawnTutorialDragon(ServerLevel level, BlockPos pos, @Nullable TutorialBossArea area) {
+        EnderDragon dragon = EntityType.ENDER_DRAGON.create(level, EntitySpawnReason.COMMAND);
+        if (dragon == null) {
+            return null;
+        }
+
+        // Set position
+        dragon.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+
+        // Modify stats - dies in 2 sword hits (2 HP = 1 heart)
+        if (dragon.getAttribute(Attributes.MAX_HEALTH) != null) {
+            dragon.getAttribute(Attributes.MAX_HEALTH).setBaseValue(2.0D);
+            dragon.setHealth(2.0F);
+        }
+
+        // Set purple custom name
+        dragon.setCustomName(Component.literal("Dragon").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
+        dragon.setCustomNameVisible(true);
+
+        // Tag for identification
+        dragon.addTag("tutorial_boss_dragon");
+        if (area != null) {
+            dragon.addTag("tutorial_boss_area:" + area.getId());
+        }
+
+        // Disable mobGriefing while tutorial dragon is alive to prevent block destruction
+        if (level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            level.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).set(false, level.getServer());
+            dragon.addTag("tutorial_dragon_mobgriefing_was_on");
+            AromaAffect.LOGGER.info("Temporarily disabled mobGriefing for tutorial dragon");
+        }
+
+        // Add to world
+        level.addFreshEntity(dragon);
+
+        // Spawn effects
+        spawnDragonEffects(level, pos);
+
+        AromaAffect.LOGGER.info("Spawned tutorial dragon at {}", pos);
+        return dragon;
+    }
+
+    private static void spawnDragonEffects(ServerLevel level, BlockPos pos) {
+        double x = pos.getX() + 0.5;
+        double y = pos.getY();
+        double z = pos.getZ() + 0.5;
+
+        // Dragon particles
+        level.sendParticles(
+                ParticleTypes.PORTAL,
+                x, y + 2, z,
+                80,
+                2.0, 2.0, 2.0,
+                0.1
+        );
+        level.sendParticles(
+                ParticleTypes.END_ROD,
+                x, y + 3, z,
+                40,
+                1.5, 2.0, 1.5,
+                0.05
+        );
+
+        // Sound
+        level.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 2.0F, 0.8F);
     }
 
     private static void spawnBlazeEffects(ServerLevel level, BlockPos pos) {

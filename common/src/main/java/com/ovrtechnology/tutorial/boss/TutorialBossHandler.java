@@ -3,6 +3,7 @@ package com.ovrtechnology.tutorial.boss;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
+import com.ovrtechnology.tutorial.dream.TutorialDreamEndHandler;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.EntityEvent;
@@ -11,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.item.ItemStack;
@@ -45,9 +47,12 @@ public final class TutorialBossHandler {
                 return EventResult.pass();
             }
 
-            // Check if it's a tutorial boss (tagged blaze)
+            // Check if it's a tutorial boss (tagged blaze or dragon)
             if (entity instanceof Blaze && entity.getTags().contains("tutorial_boss_blaze")) {
                 onTutorialBlazeDeath(level, entity, source);
+            }
+            if (entity instanceof EnderDragon && entity.getTags().contains("tutorial_boss_dragon")) {
+                onTutorialDragonDeath(level, entity, source);
             }
 
             return EventResult.pass();
@@ -89,6 +94,27 @@ public final class TutorialBossHandler {
             AromaAffect.LOGGER.info("Triggered boss_blaze_killed dialogue with trade '{}' for player {}",
                     BLAZE_TRADE_ID, player.getName().getString());
         }
+    }
+
+    private static void onTutorialDragonDeath(ServerLevel level, LivingEntity dragon, DamageSource source) {
+        AromaAffect.LOGGER.info("Tutorial Dragon killed!");
+
+        // Restore mobGriefing if it was disabled for this dragon
+        if (dragon.getTags().contains("tutorial_dragon_mobgriefing_was_on")) {
+            level.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(true, level.getServer());
+            AromaAffect.LOGGER.info("Restored mobGriefing after tutorial dragon death");
+        }
+
+        // Find the player who killed it
+        Entity killer = source.getEntity();
+        if (!(killer instanceof ServerPlayer player)) {
+            return;
+        }
+
+        // Start the dream ending sequence (white screen → teleport → wake up)
+        TutorialDreamEndHandler.startDreamSequence(player);
+
+        AromaAffect.LOGGER.info("Triggered dream ending sequence for player {}", player.getName().getString());
     }
 
     private static void dropItem(ServerLevel level, LivingEntity entity, ItemStack stack) {
