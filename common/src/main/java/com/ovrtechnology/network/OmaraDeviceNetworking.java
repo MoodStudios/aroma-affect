@@ -2,6 +2,7 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.trigger.ScentTrigger;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.client.ScentPuffOverlay;
 import dev.architectury.networking.NetworkManager;
@@ -25,8 +26,6 @@ import java.util.List;
  */
 public final class OmaraDeviceNetworking {
 
-    /** Development mode flag — shows debug messages in chat when a scent is triggered. */
-    private static final boolean DEV_MODE = true;
 
     /** Duration for Omara Device scent triggers (in ticks). 5 seconds = 100 ticks. */
     private static final int OMARA_SCENT_DURATION_TICKS = 100;
@@ -66,7 +65,7 @@ public final class OmaraDeviceNetworking {
                     // Show scent overlay (border image) for ~2 seconds
                     ScentPuffOverlay.onScentPuff(scentName, intensity);
 
-                    if (DEV_MODE) {
+                    if (ClientConfig.getInstance().isDebugScentMessages()) {
                         int intensityPercent = (int) Math.round(intensity * 100);
                         String message = String.format("§d[Aroma Affect] §7Scent: §e%s §7(§domara device§7) §8[%d%%]",
                             scentName, intensityPercent);

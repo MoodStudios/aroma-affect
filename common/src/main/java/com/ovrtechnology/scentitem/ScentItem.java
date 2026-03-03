@@ -5,6 +5,7 @@ import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.ItemTriggerDefinition;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
@@ -40,8 +41,6 @@ import java.util.function.Consumer;
  */
 public class ScentItem extends Item {
 
-    /** Development mode flag — shows debug messages in chat when a scent is triggered. */
-    private static final boolean DEV_MODE = true;
 
     /**
      * The definition that was used to create this scent item
@@ -204,7 +203,7 @@ public class ScentItem extends Item {
                     SoundSource.PLAYERS, 1.0f,
                     1.0f + (level.random.nextFloat() - 0.5f) * 0.2f);
 
-            if (DEV_MODE) {
+            if (ClientConfig.getInstance().isDebugScentMessages()) {
                 int intensityPercent = (int) Math.round(intensity * 100);
                 String message = String.format("§d[Aroma Affect] §7Scent: §e%s §7(§ditem use§7) §8[%d%%]",
                     scentName, intensityPercent);
