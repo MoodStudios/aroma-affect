@@ -157,6 +157,10 @@ public final class TutorialDreamEndHandler {
 
         float yaw = TutorialDreamEndManager.getEndYaw(level);
 
+        // Stop all sounds (cuts dragon roar/ambient sounds)
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(
+                null, null));
+
         player.teleportTo(level,
                 endPos.getX() + 0.5, endPos.getY(), endPos.getZ() + 0.5,
                 java.util.Set.of(), yaw, 0.0f, false);
@@ -167,7 +171,7 @@ public final class TutorialDreamEndHandler {
     private static void triggerFinalDialogue(ServerPlayer player) {
         ServerLevel level = ((ServerLevel) player.level());
 
-        // Find nearest Oliver
+        // Hide all Oliver entities near the player (the dream is over, Oliver was part of it)
         AABB searchArea = new AABB(
                 player.getX() - 100, player.getY() - 50, player.getZ() - 100,
                 player.getX() + 100, player.getY() + 50, player.getZ() + 100
@@ -176,19 +180,23 @@ public final class TutorialDreamEndHandler {
         List<TutorialOliverEntity> olivers = level.getEntitiesOfClass(
                 TutorialOliverEntity.class, searchArea);
 
-        if (!olivers.isEmpty()) {
-            TutorialOliverEntity oliver = olivers.getFirst();
-            String dialogueId = "dream_end_wakeup";
-            oliver.setDialogueId(dialogueId);
-            oliver.setTradeId("");
+        for (TutorialOliverEntity oliver : olivers) {
+            // Vanish particles
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,
+                    oliver.getX(), oliver.getY() + 1, oliver.getZ(), 30, 0.3, 0.5, 0.3, 0.05);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                    oliver.getX(), oliver.getY() + 1.5, oliver.getZ(), 20, 0.3, 0.5, 0.3, 0.1);
 
-            TutorialDialogueContentNetworking.sendOpenDialogue(
-                    player, oliver.getId(), dialogueId, false, "");
-
-            AromaAffect.LOGGER.info("Triggered final dream dialogue for player {}", player.getName().getString());
-        } else {
-            AromaAffect.LOGGER.warn("No Oliver found near dream end position for final dialogue");
+            oliver.setInvisible(true);
+            oliver.setCustomNameVisible(false);
+            oliver.resetToHome();
         }
+
+        // Open self-dialogue: the player "talks to themselves" realizing it was a dream
+        String dialogueId = "dream_end_wakeup";
+        TutorialDialogueContentNetworking.sendOpenSelfDialogue(player, dialogueId);
+
+        AromaAffect.LOGGER.info("Triggered self dream dialogue for player {} (Oliver hidden)", player.getName().getString());
     }
 
     /**

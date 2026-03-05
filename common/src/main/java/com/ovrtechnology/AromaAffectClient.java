@@ -7,6 +7,7 @@ import com.ovrtechnology.tutorial.chest.client.TutorialChestRenderer;
 import com.ovrtechnology.tutorial.oliver.client.TutorialOliverClientRegistry;
 import com.ovrtechnology.tutorial.boss.client.TutorialBossCinematicClient;
 import com.ovrtechnology.tutorial.dream.client.TutorialDreamOverlayClient;
+import com.ovrtechnology.tutorial.popupzone.client.TutorialPopupHudOverlay;
 import com.ovrtechnology.tutorial.portal.client.TutorialPortalOverlayClient;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialWaypointRenderer;
 import com.ovrtechnology.menu.MenuKeyBindings;
@@ -75,6 +76,9 @@ public final class AromaAffectClient {
 
         // Initialize tutorial dream overlay renderer
         TutorialDreamOverlayClient.init();
+
+        // Initialize tutorial popup HUD overlay
+        TutorialPopupHudOverlay.init();
 
         // Initialize Sniffer menu screen
         SnifferMenuRegistry.initClient();

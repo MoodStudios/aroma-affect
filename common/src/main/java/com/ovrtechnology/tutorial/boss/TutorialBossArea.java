@@ -33,6 +33,9 @@ public class TutorialBossArea {
     @Nullable
     private BlockPos movementMax;
 
+    // Extra padding added to trigger area (expands in all directions)
+    private int triggerPadding = 0;
+
     public TutorialBossArea(String id, String bossType) {
         this.id = id;
         this.bossType = bossType;
@@ -84,15 +87,23 @@ public class TutorialBossArea {
 
     public boolean isInTriggerArea(BlockPos pos) {
         if (!hasTriggerArea()) return false;
-        int minX = Math.min(triggerMin.getX(), triggerMax.getX());
-        int maxX = Math.max(triggerMin.getX(), triggerMax.getX());
-        int minY = Math.min(triggerMin.getY(), triggerMax.getY());
-        int maxY = Math.max(triggerMin.getY(), triggerMax.getY());
-        int minZ = Math.min(triggerMin.getZ(), triggerMax.getZ());
-        int maxZ = Math.max(triggerMin.getZ(), triggerMax.getZ());
+        int minX = Math.min(triggerMin.getX(), triggerMax.getX()) - triggerPadding;
+        int maxX = Math.max(triggerMin.getX(), triggerMax.getX()) + triggerPadding;
+        int minY = Math.min(triggerMin.getY(), triggerMax.getY()) - triggerPadding;
+        int maxY = Math.max(triggerMin.getY(), triggerMax.getY()) + triggerPadding;
+        int minZ = Math.min(triggerMin.getZ(), triggerMax.getZ()) - triggerPadding;
+        int maxZ = Math.max(triggerMin.getZ(), triggerMax.getZ()) + triggerPadding;
         return pos.getX() >= minX && pos.getX() <= maxX
                 && pos.getY() >= minY && pos.getY() <= maxY
                 && pos.getZ() >= minZ && pos.getZ() <= maxZ;
+    }
+
+    public int getTriggerPadding() {
+        return triggerPadding;
+    }
+
+    public void setTriggerPadding(int padding) {
+        this.triggerPadding = padding;
     }
 
     // Spawn position

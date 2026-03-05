@@ -31,6 +31,9 @@ public class TutorialPortal {
     private float destYaw = 0.0f;
     private float destPitch = 0.0f;
 
+    // Custom delay in ticks before teleportation (0 = use default)
+    private int delayTicks = 0;
+
     public TutorialPortal(String id) {
         this.id = id;
     }
@@ -143,5 +146,27 @@ public class TutorialPortal {
      */
     public boolean isComplete() {
         return hasSourceArea() && hasDestination();
+    }
+
+    /**
+     * Gets the custom delay in ticks. Returns 0 if using the default.
+     */
+    public int getDelayTicks() {
+        return delayTicks;
+    }
+
+    /**
+     * Sets a custom delay in ticks before teleportation.
+     * @param ticks delay in ticks (0 = use default)
+     */
+    public void setDelayTicks(int ticks) {
+        this.delayTicks = ticks;
+    }
+
+    /**
+     * Checks if this portal has a custom delay.
+     */
+    public boolean hasCustomDelay() {
+        return delayTicks > 0;
     }
 }
