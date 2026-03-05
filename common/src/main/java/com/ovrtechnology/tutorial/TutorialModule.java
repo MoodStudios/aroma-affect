@@ -9,6 +9,7 @@ import com.ovrtechnology.network.TutorialOliverDialogueNetworking;
 import com.ovrtechnology.network.TutorialOliverTradeNetworking;
 import com.ovrtechnology.network.TutorialBossCinematicNetworking;
 import com.ovrtechnology.network.TutorialDreamOverlayNetworking;
+import com.ovrtechnology.network.TutorialPopupNetworking;
 import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.tutorial.boss.TutorialBossModule;
@@ -23,6 +24,10 @@ import com.ovrtechnology.tutorial.command.sub.DebugSubCommand;
 import com.ovrtechnology.tutorial.command.sub.DialogueSubCommand;
 import com.ovrtechnology.tutorial.dream.TutorialDreamEndHandler;
 import com.ovrtechnology.tutorial.dream.command.DreamEndSubCommand;
+import com.ovrtechnology.tutorial.musiczone.TutorialMusicZoneHandler;
+import com.ovrtechnology.tutorial.command.sub.MusicZoneSubCommand;
+import com.ovrtechnology.tutorial.command.sub.PopupZoneSubCommand;
+import com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler;
 import com.ovrtechnology.tutorial.command.sub.IntroSubCommand;
 import com.ovrtechnology.tutorial.command.sub.NoseEquipSubCommand;
 import com.ovrtechnology.tutorial.command.sub.NoseSmithSubCommand;
@@ -97,6 +102,7 @@ public final class TutorialModule {
         TutorialPortalOverlayNetworking.init();
         TutorialBossCinematicNetworking.init();
         TutorialDreamOverlayNetworking.init();
+        TutorialPopupNetworking.init();
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());
@@ -117,6 +123,8 @@ public final class TutorialModule {
         TutorialCommand.register(new DebugSubCommand());
         TutorialCommand.register(new DreamEndSubCommand());
         TutorialCommand.register(new NoseSmithSubCommand());
+        TutorialCommand.register(new MusicZoneSubCommand());
+        TutorialCommand.register(new PopupZoneSubCommand());
 
         // Register tutorial commands (only visible when GameRule is active)
         TutorialCommand.init();
@@ -156,6 +164,12 @@ public final class TutorialModule {
 
         // Initialize dream ending handler
         TutorialDreamEndHandler.init();
+
+        // Initialize music zone handler
+        TutorialMusicZoneHandler.init();
+
+        // Initialize popup zone handler
+        TutorialPopupZoneHandler.init();
 
         // Register server started event to auto-restore regen areas
         LifecycleEvent.SERVER_STARTED.register(server -> {

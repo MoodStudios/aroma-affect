@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.boss.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -124,6 +125,12 @@ public class BossSubCommand implements TutorialSubCommand {
                                 .then(Commands.argument("id", StringArgumentType.word())
                                         .suggests(AREA_ID_SUGGESTIONS)
                                         .executes(this::showAreaInfo)))
+                        // Set trigger padding
+                        .then(Commands.literal("triggerpadding")
+                                .then(Commands.argument("id", StringArgumentType.word())
+                                        .suggests(AREA_ID_SUGGESTIONS)
+                                        .then(Commands.argument("blocks", IntegerArgumentType.integer(0, 100))
+                                                .executes(this::setTriggerPadding))))
                         // Reset (clear all active bosses)
                         .then(Commands.literal("reset")
                                 .executes(this::resetBosses)));
@@ -402,6 +409,35 @@ public class BossSubCommand implements TutorialSubCommand {
         }
 
         source.sendSuccess(() -> Component.literal(sb.toString().trim()), false);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int setTriggerPadding(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack source = ctx.getSource();
+
+        if (!(source.getLevel() instanceof ServerLevel level)) {
+            source.sendFailure(Component.literal("Must be run in a world"));
+            return 0;
+        }
+
+        String id = StringArgumentType.getString(ctx, "id");
+        int blocks = IntegerArgumentType.getInteger(ctx, "blocks");
+
+        TutorialBossAreaManager manager = TutorialBossAreaManager.get(level);
+        TutorialBossArea area = manager.getArea(id).orElse(null);
+
+        if (area == null) {
+            source.sendFailure(Component.literal("Area '" + id + "' not found"));
+            return 0;
+        }
+
+        area.setTriggerPadding(blocks);
+        manager.addArea(area); // Mark dirty
+
+        source.sendSuccess(() -> Component.literal(
+                "\u00a7d[Tutorial] \u00a7fSet trigger padding for '" + id + "' to \u00a7d" + blocks + " blocks"
+        ), true);
 
         return Command.SINGLE_SUCCESS;
     }

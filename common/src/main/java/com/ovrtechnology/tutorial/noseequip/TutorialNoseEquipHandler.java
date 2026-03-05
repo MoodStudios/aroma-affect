@@ -16,7 +16,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +39,9 @@ public final class TutorialNoseEquipHandler {
     // Tracks which triggers have already fired for each player (prevents repeat firing)
     private static final Map<UUID, Set<String>> firedTriggers = new ConcurrentHashMap<>();
 
+    // Delayed actions for epic teleport sequences
+    private static final List<DelayedAction> delayedActions = new ArrayList<>();
+
     private static boolean initialized = false;
 
     private TutorialNoseEquipHandler() {
@@ -46,6 +52,7 @@ public final class TutorialNoseEquipHandler {
         initialized = true;
 
         TickEvent.SERVER_LEVEL_POST.register(TutorialNoseEquipHandler::onServerTick);
+        TickEvent.SERVER_POST.register(server -> processDelayedActions());
         AromaAffect.LOGGER.debug("Tutorial nose equip handler initialized");
     }
 
@@ -194,6 +201,103 @@ public final class TutorialNoseEquipHandler {
         }
     }
 
+    /**
+     * Epic dimensional teleport with darkness, sounds, particles and screen flash.
+     * Used for the Nether → End transition.
+     */
+    private static void performEpicTeleport(ServerPlayer player, ServerLevel level, int x, int y, int z) {
+        double fromX = player.getX();
+        double fromY = player.getY();
+        double fromZ = player.getZ();
+
+        // 1. Stop all current sounds
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(null, null));
+
+        // 2. Departure effects — dramatic particles at origin
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL,
+                fromX, fromY + 1.0, fromZ, 80, 0.5, 1.0, 0.5, 0.15);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,
+                fromX, fromY + 0.5, fromZ, 50, 1.0, 0.5, 1.0, 0.05);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL,
+                fromX, fromY + 1.0, fromZ, 100, 0.8, 1.5, 0.8, 1.0);
+
+        // 3. Departure sound — end portal
+        level.playSound(null, fromX, fromY, fromZ,
+                net.minecraft.sounds.SoundEvents.END_PORTAL_SPAWN,
+                net.minecraft.sounds.SoundSource.AMBIENT, 1.0f, 0.8f);
+
+        // 4. Apply Darkness effect (50 ticks = 2.5s) for dimensional transition feel
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                net.minecraft.world.effect.MobEffects.DARKNESS, 50, 0, false, false, false));
+
+        // 5. Send dream overlay flash (white screen)
+        com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.8f);
+
+        // 6. Teleport after a brief moment (10 ticks = 0.5s) for buildup
+        scheduleDelayed(10, () -> {
+            // Teleport
+            player.teleportTo(level, x + 0.5, y, z + 0.5,
+                    java.util.Set.of(), player.getYRot(), player.getXRot(), false);
+
+            // Full white flash on arrival
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 1.0f);
+
+            // Arrival particles — epic end dimension entrance
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
+                    x + 0.5, y + 1.5, z + 0.5, 60, 1.5, 2.0, 1.5, 0.1);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL,
+                    x + 0.5, y + 1.0, z + 0.5, 100, 2.0, 1.0, 2.0, 0.2);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANT,
+                    x + 0.5, y + 0.5, z + 0.5, 40, 2.0, 0.5, 2.0, 0.5);
+
+            // Arrival sound — ender dragon growl + amethyst chime
+            level.playSound(null, x + 0.5, y, z + 0.5,
+                    net.minecraft.sounds.SoundEvents.ENDER_DRAGON_AMBIENT,
+                    net.minecraft.sounds.SoundSource.HOSTILE, 0.6f, 0.5f);
+            level.playSound(null, x + 0.5, y, z + 0.5,
+                    net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME,
+                    net.minecraft.sounds.SoundSource.AMBIENT, 1.0f, 0.5f);
+
+            AromaAffect.LOGGER.debug("Epic teleport: player arrived at {}, {}, {}", x, y, z);
+        });
+
+        // 7. Fade out overlay gradually after arrival
+        scheduleDelayed(25, () ->
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.5f));
+        scheduleDelayed(35, () ->
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.2f));
+        scheduleDelayed(45, () ->
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendClearOverlay(player));
+    }
+
+    private static void scheduleDelayed(int ticks, Runnable action) {
+        synchronized (delayedActions) {
+            delayedActions.add(new DelayedAction(ticks, action));
+        }
+    }
+
+    private static void processDelayedActions() {
+        synchronized (delayedActions) {
+            Iterator<DelayedAction> it = delayedActions.iterator();
+            while (it.hasNext()) {
+                DelayedAction da = it.next();
+                if (--da.ticksRemaining <= 0) {
+                    da.action.run();
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    private static class DelayedAction {
+        int ticksRemaining;
+        final Runnable action;
+        DelayedAction(int ticks, Runnable action) {
+            this.ticksRemaining = ticks;
+            this.action = action;
+        }
+    }
+
     private static void executeOliverAction(ServerPlayer player, ServerLevel level, String action) {
         TutorialOliverEntity oliver = level.getEntitiesOfClass(TutorialOliverEntity.class,
                 player.getBoundingBox().inflate(100.0), e -> true
@@ -248,8 +352,7 @@ public final class TutorialNoseEquipHandler {
                         int x = Integer.parseInt(parts[0].trim());
                         int y = Integer.parseInt(parts[1].trim());
                         int z = Integer.parseInt(parts[2].trim());
-                        player.teleportTo(level, x + 0.5, y, z + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
-                        AromaAffect.LOGGER.debug("Teleported player to {}, {}, {}", x, y, z);
+                        performEpicTeleport(player, level, x, y, z);
                     } catch (NumberFormatException e) {
                         AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
                     }

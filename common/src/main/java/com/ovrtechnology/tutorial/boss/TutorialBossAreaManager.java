@@ -29,12 +29,14 @@ public class TutorialBossAreaManager extends SavedData {
                     BlockPos.CODEC.optionalFieldOf("triggerMax").forGetter(d -> Optional.ofNullable(d.triggerMax)),
                     BlockPos.CODEC.optionalFieldOf("spawnPos").forGetter(d -> Optional.ofNullable(d.spawnPos)),
                     BlockPos.CODEC.optionalFieldOf("movementMin").forGetter(d -> Optional.ofNullable(d.movementMin)),
-                    BlockPos.CODEC.optionalFieldOf("movementMax").forGetter(d -> Optional.ofNullable(d.movementMax))
-            ).apply(instance, (id, bossType, trigMin, trigMax, spawn, moveMin, moveMax) ->
+                    BlockPos.CODEC.optionalFieldOf("movementMax").forGetter(d -> Optional.ofNullable(d.movementMax)),
+                    Codec.INT.optionalFieldOf("triggerPadding", 0).forGetter(AreaData::triggerPadding)
+            ).apply(instance, (id, bossType, trigMin, trigMax, spawn, moveMin, moveMax, padding) ->
                     new AreaData(id, bossType,
                             trigMin.orElse(null), trigMax.orElse(null),
                             spawn.orElse(null),
-                            moveMin.orElse(null), moveMax.orElse(null)))
+                            moveMin.orElse(null), moveMax.orElse(null),
+                            padding))
     );
 
     // Codec for triggered player entry (areaId -> list of UUIDs as strings)
@@ -74,6 +76,7 @@ public class TutorialBossAreaManager extends SavedData {
                     data.movementMin,
                     data.movementMax
             );
+            area.setTriggerPadding(data.triggerPadding);
             areas.put(data.id, area);
         }
 
@@ -103,7 +106,8 @@ public class TutorialBossAreaManager extends SavedData {
                     area.getTriggerMax(),
                     area.getSpawnPos(),
                     area.getMovementMin(),
-                    area.getMovementMax()
+                    area.getMovementMax(),
+                    area.getTriggerPadding()
             ));
         }
         return list;
@@ -209,7 +213,8 @@ public class TutorialBossAreaManager extends SavedData {
             BlockPos triggerMax,
             BlockPos spawnPos,
             BlockPos movementMin,
-            BlockPos movementMax
+            BlockPos movementMax,
+            int triggerPadding
     ) {}
 
     private record TriggeredEntry(String areaId, List<String> playerUuids) {}

@@ -47,4 +47,21 @@ public final class TutorialOliverDialogueClient {
 
         minecraft.setScreen(new TutorialOliverDialogueScreen(oliver, dialogueId, hasTrade, tradeId));
     }
+
+    /**
+     * Opens a self-dialogue screen where the player's own skin is rendered.
+     * Used for the dream ending sequence.
+     *
+     * @param dialogueId the dialogue ID to display
+     */
+    public static void openSelfDialogue(String dialogueId) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            return;
+        }
+
+        String playerName = minecraft.player.getName().getString();
+        minecraft.setScreen(new TutorialOliverDialogueScreen(
+                minecraft.player, playerName, dialogueId));
+    }
 }

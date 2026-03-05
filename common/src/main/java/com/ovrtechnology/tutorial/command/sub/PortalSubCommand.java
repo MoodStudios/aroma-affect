@@ -100,6 +100,16 @@ public class PortalSubCommand implements TutorialSubCommand {
                         )
                 )
 
+                // /tutorial portal delay <id> <ticks>
+                .then(Commands.literal("delay")
+                        .then(Commands.argument("id", StringArgumentType.word())
+                                .suggests(PORTAL_SUGGESTIONS)
+                                .then(Commands.argument("ticks", IntegerArgumentType.integer(0, 600))
+                                        .executes(this::executeSetDelay)
+                                )
+                        )
+                )
+
                 // Default: show usage
                 .executes(this::showUsage);
     }
@@ -292,6 +302,27 @@ public class PortalSubCommand implements TutorialSubCommand {
         return Command.SINGLE_SUCCESS;
     }
 
+    private int executeSetDelay(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String id = StringArgumentType.getString(context, "id");
+        int ticks = IntegerArgumentType.getInteger(context, "ticks");
+        ServerLevel level = source.getLevel();
+
+        if (TutorialPortalManager.setDelay(level, id, ticks)) {
+            float seconds = ticks / 20.0f;
+            source.sendSuccess(
+                    () -> Component.literal("\u00a7d[OVR Tutorial] \u00a7fSet portal \u00a7d" + id
+                            + " \u00a7fdelay to \u00a7d" + ticks + " ticks \u00a77(" + String.format("%.1f", seconds) + "s)"
+                            + (ticks == 0 ? " \u00a77(using default)" : "")),
+                    true
+            );
+            return Command.SINGLE_SUCCESS;
+        } else {
+            source.sendFailure(Component.literal("\u00a7c[OVR Tutorial] Portal '" + id + "' not found"));
+            return 0;
+        }
+    }
+
     private int executeInfo(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         String id = StringArgumentType.getString(context, "id");
@@ -357,6 +388,17 @@ public class PortalSubCommand implements TutorialSubCommand {
             );
         } else {
             source.sendSuccess(() -> Component.literal("\u00a77  Destination: \u00a77Not defined"), false);
+        }
+
+        // Delay
+        if (portal.hasCustomDelay()) {
+            float seconds = portal.getDelayTicks() / 20.0f;
+            source.sendSuccess(
+                    () -> Component.literal("\u00a77  Delay: \u00a7e" + portal.getDelayTicks() + " ticks (" + String.format("%.1f", seconds) + "s)"),
+                    false
+            );
+        } else {
+            source.sendSuccess(() -> Component.literal("\u00a77  Delay: \u00a77Default (1.5s)"), false);
         }
 
         // Status
