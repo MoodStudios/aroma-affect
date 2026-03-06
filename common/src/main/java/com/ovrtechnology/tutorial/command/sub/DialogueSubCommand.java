@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.tutorial.command.TutorialSubCommand;
 import com.ovrtechnology.tutorial.dialogue.TutorialDialogue;
@@ -120,6 +121,11 @@ public class DialogueSubCommand implements TutorialSubCommand {
                 // /tutorial dialogue list
                 .then(Commands.literal("list")
                         .executes(this::executeList)
+                )
+
+                // /tutorial dialogue export - full texts to server console
+                .then(Commands.literal("export")
+                        .executes(this::executeExport)
                 )
 
                 // Default: show usage
@@ -387,6 +393,64 @@ public class DialogueSubCommand implements TutorialSubCommand {
                 );
             }
         }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int executeExport(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        // Search all levels for dialogues (so it works from console too)
+        java.util.Set<String> allIds = new java.util.LinkedHashSet<>();
+        ServerLevel foundLevel = null;
+        for (ServerLevel level : source.getServer().getAllLevels()) {
+            var ids = TutorialDialogueManager.getAllDialogueIds(level);
+            if (!ids.isEmpty()) {
+                allIds.addAll(ids);
+                foundLevel = level;
+            }
+        }
+
+        if (allIds.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("\u00a7c[OVR Tutorial] No dialogues to export"), false);
+            return 0;
+        }
+
+        final ServerLevel exportLevel = foundLevel;
+
+        AromaAffect.LOGGER.info("═══════════════════════════════════════════════════════════");
+        AromaAffect.LOGGER.info("  TUTORIAL DIALOGUE EXPORT ({} dialogues)", allIds.size());
+        AromaAffect.LOGGER.info("═══════════════════════════════════════════════════════════");
+
+        for (String id : allIds) {
+            Optional<TutorialDialogue> dialogueOpt = TutorialDialogueManager.getDialogue(exportLevel, id);
+            if (dialogueOpt.isPresent()) {
+                TutorialDialogue d = dialogueOpt.get();
+                AromaAffect.LOGGER.info("");
+                AromaAffect.LOGGER.info("  [{}]", id);
+                AromaAffect.LOGGER.info("  TEXT: {}", d.getText());
+                if (d.hasOnCompleteOliverAction()) {
+                    AromaAffect.LOGGER.info("  OLIVER: {}", d.getOnCompleteOliverAction());
+                }
+                if (d.hasOnCompleteWaypoint()) {
+                    AromaAffect.LOGGER.info("  WAYPOINT: {}", d.getOnCompleteWaypointId());
+                }
+                if (d.hasOnCompleteCinematic()) {
+                    AromaAffect.LOGGER.info("  CINEMATIC: {}", d.getOnCompleteCinematicId());
+                }
+                if (d.hasOnCompleteAnimation()) {
+                    AromaAffect.LOGGER.info("  ANIMATION: {}", d.getOnCompleteAnimationId());
+                }
+            }
+        }
+
+        AromaAffect.LOGGER.info("");
+        AromaAffect.LOGGER.info("═══════════════════════════════════════════════════════════");
+
+        int count = allIds.size();
+        source.sendSuccess(() -> Component.literal(
+                "\u00a7d[OVR Tutorial] \u00a7fExported " + count + " dialogues to server console/log"
+        ), false);
 
         return Command.SINGLE_SUCCESS;
     }

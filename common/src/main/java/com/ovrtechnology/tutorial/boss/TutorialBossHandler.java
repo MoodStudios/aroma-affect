@@ -7,6 +7,7 @@ import com.ovrtechnology.tutorial.dream.TutorialDreamEndHandler;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.EntityEvent;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -36,6 +37,27 @@ public final class TutorialBossHandler {
             return;
         }
         initialized = true;
+
+        // Prevent tutorial dragon from dealing damage to players
+        EntityEvent.LIVING_HURT.register((entity, source, amount) -> {
+            if (!(entity.level() instanceof ServerLevel level)) {
+                return EventResult.pass();
+            }
+
+            if (!TutorialModule.isActive(level)) {
+                return EventResult.pass();
+            }
+
+            // If the victim is a player and the attacker is a tutorial dragon, cancel damage
+            if (entity instanceof Player) {
+                Entity attacker = source.getEntity();
+                if (attacker instanceof EnderDragon && attacker.getTags().contains("tutorial_boss_dragon")) {
+                    return EventResult.interruptFalse();
+                }
+            }
+
+            return EventResult.pass();
+        });
 
         // Listen for entity death events
         EntityEvent.LIVING_DEATH.register((entity, source) -> {

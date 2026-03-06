@@ -48,6 +48,8 @@ public final class TutorialDialogueContentNetworking {
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_open");
     private static final ResourceLocation DIALOGUE_CLOSED_PACKET =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_closed");
+    private static final ResourceLocation DIALOGUE_SELF_PACKET =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_self");
 
     /** Client-side cache of custom dialogue texts (id → text). */
     private static final Map<String, String> clientDialogueCache = new ConcurrentHashMap<>();
@@ -120,6 +122,19 @@ public final class TutorialDialogueContentNetworking {
                 }
         );
 
+        // S2C: Open self-dialogue (player talks to themselves - dream end)
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.S2C,
+                DIALOGUE_SELF_PACKET,
+                (buf, context) -> {
+                    String dialogueId = buf.readUtf(256);
+
+                    context.queue(() -> {
+                        openSelfDialogueOnClient(dialogueId);
+                    });
+                }
+        );
+
         AromaAffect.LOGGER.debug("Tutorial dialogue content networking initialized");
     }
 
@@ -167,6 +182,21 @@ public final class TutorialDialogueContentNetworking {
         buf.writeBoolean(hasTrade);
         buf.writeUtf(tradeId != null ? tradeId : "", 256);
         NetworkManager.sendToPlayer(player, DIALOGUE_OPEN_PACKET, buf);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // S2C: Open self-dialogue (player talks to themselves)
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Tells a client to open a self-dialogue screen (player's own skin as portrait).
+     * Used for the dream ending sequence.
+     */
+    public static void sendOpenSelfDialogue(ServerPlayer player, String dialogueId) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
+                io.netty.buffer.Unpooled.buffer(), player.registryAccess());
+        buf.writeUtf(dialogueId, 256);
+        NetworkManager.sendToPlayer(player, DIALOGUE_SELF_PACKET, buf);
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -426,6 +456,21 @@ public final class TutorialDialogueContentNetworking {
         oliver.resetToHome();
 
         AromaAffect.LOGGER.info("Oliver vanished at {}, {}, {}", x, y, z);
+    }
+
+    /**
+     * Opens a self-dialogue on the client side via reflection.
+     */
+    private static void openSelfDialogueOnClient(String dialogueId) {
+        try {
+            Class<?> dialogueClass = Class.forName(
+                    "com.ovrtechnology.tutorial.oliver.client.dialogue.TutorialOliverDialogueClient"
+            );
+            dialogueClass.getMethod("openSelfDialogue", String.class)
+                    .invoke(null, dialogueId);
+        } catch (ReflectiveOperationException e) {
+            AromaAffect.LOGGER.debug("Failed to open self dialogue via network packet", e);
+        }
     }
 
     /**

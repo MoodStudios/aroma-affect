@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -134,10 +135,22 @@ public final class TutorialOliverDialogueScreen extends Screen {
                 "Bring me the Dragon's Breath and scales you've collected. " +
                 "I shall forge you a legendary Nose unlike any other. Trade with me!");
 
+        // ═══════════════════════════════════════════════════════════════════
+        // Dream End - Player wakes up (self-dialogue)
+        // ═══════════════════════════════════════════════════════════════════
+        dialogues.put("dream_end_wakeup",
+                "What... what happened? That dragon, the battle... was it all a dream? " +
+                "No... I can still smell the scents. The Nose is real. Everything I learned is real. " +
+                "The aromas, the trails, the world beyond what eyes can see... " +
+                "This is just the beginning of my journey.");
+
         return dialogues;
     }
 
-    private final TutorialOliverEntity oliver;
+    private final LivingEntity portraitEntity;
+    @Nullable
+    private final TutorialOliverEntity oliver; // null in self-dialogue mode
+    private final boolean selfMode;
     private final String dialogueId;
     private final boolean hasTrade;
     private final String tradeId;
@@ -163,7 +176,9 @@ public final class TutorialOliverDialogueScreen extends Screen {
 
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver) {
         super(Component.literal("Oliver"));
+        this.portraitEntity = oliver;
         this.oliver = oliver;
+        this.selfMode = false;
         this.dialogueId = oliver.getDialogueId();
         this.hasTrade = false;
         this.tradeId = "";
@@ -172,10 +187,27 @@ public final class TutorialOliverDialogueScreen extends Screen {
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver, String dialogueId,
                                          boolean hasTrade, String tradeId) {
         super(Component.literal("Oliver"));
+        this.portraitEntity = oliver;
         this.oliver = oliver;
+        this.selfMode = false;
         this.dialogueId = dialogueId;
         this.hasTrade = hasTrade;
         this.tradeId = tradeId != null ? tradeId : "";
+    }
+
+    /**
+     * Self-dialogue mode: renders the player's own skin in the portrait.
+     * Used for the dream ending sequence where the player "talks to themselves".
+     */
+    public TutorialOliverDialogueScreen(LivingEntity playerEntity, String speakerName,
+                                         String dialogueId) {
+        super(Component.literal(speakerName));
+        this.portraitEntity = playerEntity;
+        this.oliver = null;
+        this.selfMode = true;
+        this.dialogueId = dialogueId;
+        this.hasTrade = false;
+        this.tradeId = "";
     }
 
     @Override
@@ -300,7 +332,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
                 PORTRAIT_Y_OFFSET,
                 (float) mouseX,
                 (float) mouseY,
-                oliver
+                portraitEntity
         );
 
         // Draw typewriter text
@@ -312,6 +344,10 @@ public final class TutorialOliverDialogueScreen extends Screen {
     }
 
     private void sendTalkingState(boolean talking) {
+        if (selfMode || oliver == null) {
+            return; // No Oliver entity to notify in self-dialogue mode
+        }
+
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.getConnection() == null || minecraft.level == null) {
             return;
@@ -412,7 +448,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     }
 
     private void onTrade() {
-        if (tradeId.isEmpty()) {
+        if (tradeId.isEmpty() || selfMode || oliver == null) {
             return;
         }
 
@@ -472,24 +508,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     }
 
     private void playTypeSoundFor(int codePoint) {
-        if (Character.isWhitespace(codePoint)) {
-            return;
-        }
-
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.getSoundManager() == null) {
-            return;
-        }
-
-        RandomSource random = minecraft.player != null ? minecraft.player.getRandom() : RandomSource.create();
-
-        // Musical typing sound with harmony
-        int octaveRoll = random.nextInt(10);
-        int octaveShift = octaveRoll == 0 ? -12 : (octaveRoll <= 2 ? 12 : 0);
-        int semitone = HARMONY_SEMITONES[random.nextInt(HARMONY_SEMITONES.length)] + octaveShift;
-        float pitch = (float) Math.pow(2.0D, semitone / 12.0D);
-
-        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
+        // Typing sound disabled for tutorial dialogues - voice files will be used instead
     }
 
     private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {

@@ -195,6 +195,11 @@ public class ResetSubCommand implements TutorialSubCommand {
         player.getInventory().clearContent();
         AromaAffect.LOGGER.debug("Reset: cleared inventory for player {}", player.getName().getString());
 
+        // 0b. Restore full health and food
+        player.setHealth(player.getMaxHealth());
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().setSaturation(5.0f);
+
         // 1. Stop any active cinematic (restores position and game mode)
         TutorialCinematicHandler.stopCinematic(player);
 
@@ -217,6 +222,9 @@ public class ResetSubCommand implements TutorialSubCommand {
         // 4c. Reset boss area triggers (allows boss to spawn again)
         com.ovrtechnology.tutorial.boss.TutorialBossAreaManager.get(level).resetPlayerTriggers(player.getUUID());
         com.ovrtechnology.tutorial.boss.TutorialBossAreaHandler.clearAllBosses();
+
+        // 4d. Reset popup zone seen state (allows popups to show again)
+        com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler.clearPlayer(player.getUUID());
 
         // 5. Clear any active waypoint visuals on the client
         TutorialWaypointNetworking.sendClearToPlayer(player);

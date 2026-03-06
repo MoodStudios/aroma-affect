@@ -26,9 +26,10 @@ public class TutorialPortalManager extends SavedData {
                     BlockPos.CODEC.optionalFieldOf("sourceCorner2").forGetter(d -> Optional.ofNullable(d.sourceCorner2)),
                     BlockPos.CODEC.optionalFieldOf("destination").forGetter(d -> Optional.ofNullable(d.destination)),
                     Codec.FLOAT.fieldOf("destYaw").forGetter(PortalData::destYaw),
-                    Codec.FLOAT.fieldOf("destPitch").forGetter(PortalData::destPitch)
-            ).apply(instance, (id, c1, c2, dest, yaw, pitch) ->
-                    new PortalData(id, c1.orElse(null), c2.orElse(null), dest.orElse(null), yaw, pitch))
+                    Codec.FLOAT.fieldOf("destPitch").forGetter(PortalData::destPitch),
+                    Codec.INT.optionalFieldOf("delayTicks", 0).forGetter(PortalData::delayTicks)
+            ).apply(instance, (id, c1, c2, dest, yaw, pitch, delay) ->
+                    new PortalData(id, c1.orElse(null), c2.orElse(null), dest.orElse(null), yaw, pitch, delay))
     );
 
     private static final Codec<TutorialPortalManager> CODEC = RecordCodecBuilder.create(instance ->
@@ -57,6 +58,7 @@ public class TutorialPortalManager extends SavedData {
                     data.destYaw,
                     data.destPitch
             );
+            portal.setDelayTicks(data.delayTicks);
             portals.put(data.id, portal);
         }
     }
@@ -70,7 +72,8 @@ public class TutorialPortalManager extends SavedData {
                     portal.getSourceCorner2(),
                     portal.getDestination(),
                     portal.getDestYaw(),
-                    portal.getDestPitch()
+                    portal.getDestPitch(),
+                    portal.getDelayTicks()
             ));
         }
         return list;
@@ -181,6 +184,22 @@ public class TutorialPortalManager extends SavedData {
             BlockPos sourceCorner2,
             BlockPos destination,
             float destYaw,
-            float destPitch
+            float destPitch,
+            int delayTicks
     ) {}
+
+    /**
+     * Sets the custom delay for a portal.
+     */
+    public static boolean setDelay(ServerLevel level, String id, int delayTicks) {
+        TutorialPortalManager manager = get(level);
+        TutorialPortal portal = manager.portals.get(id);
+        if (portal == null) {
+            return false;
+        }
+        portal.setDelayTicks(delayTicks);
+        manager.setDirty();
+        AromaAffect.LOGGER.info("Set portal {} delay to {} ticks", id, delayTicks);
+        return true;
+    }
 }

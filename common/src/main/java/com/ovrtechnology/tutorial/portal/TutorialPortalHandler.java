@@ -161,8 +161,11 @@ public final class TutorialPortalHandler {
                 );
             }
 
+            // Use per-portal delay if configured, otherwise default
+            int requiredTicks = currentPortal.hasCustomDelay() ? currentPortal.getDelayTicks() : PORTAL_TIME_TICKS;
+
             // Check if ready to teleport
-            if (progress >= PORTAL_TIME_TICKS) {
+            if (progress >= requiredTicks) {
                 teleportPlayer(player, currentPortal, level);
                 // Reset progress after teleport
                 portalProgress.remove(playerId);
@@ -183,11 +186,24 @@ public final class TutorialPortalHandler {
      * Sends overlay progress update to a player.
      */
     private static void sendOverlayUpdate(ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+
         UUID playerId = player.getUUID();
         Integer progress = portalProgress.get(playerId);
+        String portalId = playerInPortal.get(playerId);
 
-        if (progress != null && progress > 0) {
-            float overlayProgress = Math.min(1.0f, (float) progress / PORTAL_TIME_TICKS);
+        if (progress != null && progress > 0 && portalId != null) {
+            // Use per-portal delay for accurate overlay progress
+            int requiredTicks = PORTAL_TIME_TICKS;
+            for (TutorialPortal portal : TutorialPortalManager.getCompletePortals(level)) {
+                if (portal.getId().equals(portalId) && portal.hasCustomDelay()) {
+                    requiredTicks = portal.getDelayTicks();
+                    break;
+                }
+            }
+            float overlayProgress = Math.min(1.0f, (float) progress / requiredTicks);
             TutorialPortalOverlayNetworking.sendOverlayProgress(player, overlayProgress);
         }
     }
