@@ -2,8 +2,9 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -14,8 +15,33 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class TutorialBossCinematicNetworking {
 
-    private static final ResourceLocation BOSS_CINEMATIC_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_boss_cinematic");
+    public record BossCinematicPayload(String bossType,
+                                       double cameraX, double cameraY, double cameraZ,
+                                       float yaw, float pitch,
+                                       double bossX, double bossY, double bossZ) implements CustomPacketPayload {
+        public static final Type<BossCinematicPayload> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_boss_cinematic"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, BossCinematicPayload> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeUtf(payload.bossType, 64);
+                    buf.writeDouble(payload.cameraX);
+                    buf.writeDouble(payload.cameraY);
+                    buf.writeDouble(payload.cameraZ);
+                    buf.writeFloat(payload.yaw);
+                    buf.writeFloat(payload.pitch);
+                    buf.writeDouble(payload.bossX);
+                    buf.writeDouble(payload.bossY);
+                    buf.writeDouble(payload.bossZ);
+                },
+                buf -> new BossCinematicPayload(
+                        buf.readUtf(64),
+                        buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                        buf.readFloat(), buf.readFloat(),
+                        buf.readDouble(), buf.readDouble(), buf.readDouble()
+                )
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -31,20 +57,14 @@ public final class TutorialBossCinematicNetworking {
         // S2C: Boss cinematic
         NetworkManager.registerReceiver(
                 NetworkManager.Side.S2C,
-                BOSS_CINEMATIC_PACKET,
-                (buf, context) -> {
-                    String bossType = buf.readUtf(64);
-                    double cameraX = buf.readDouble();
-                    double cameraY = buf.readDouble();
-                    double cameraZ = buf.readDouble();
-                    float yaw = buf.readFloat();
-                    float pitch = buf.readFloat();
-                    double bossX = buf.readDouble();
-                    double bossY = buf.readDouble();
-                    double bossZ = buf.readDouble();
-
+                BossCinematicPayload.TYPE,
+                BossCinematicPayload.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
-                        handleCinematicOnClient(bossType, cameraX, cameraY, cameraZ, yaw, pitch, bossX, bossY, bossZ);
+                        handleCinematicOnClient(payload.bossType(),
+                                payload.cameraX(), payload.cameraY(), payload.cameraZ(),
+                                payload.yaw(), payload.pitch(),
+                                payload.bossX(), payload.bossY(), payload.bossZ());
                     });
                 }
         );
@@ -59,18 +79,9 @@ public final class TutorialBossCinematicNetworking {
                                           double cameraX, double cameraY, double cameraZ,
                                           float yaw, float pitch,
                                           double bossX, double bossY, double bossZ) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), player.registryAccess());
-        buf.writeUtf(bossType, 64);
-        buf.writeDouble(cameraX);
-        buf.writeDouble(cameraY);
-        buf.writeDouble(cameraZ);
-        buf.writeFloat(yaw);
-        buf.writeFloat(pitch);
-        buf.writeDouble(bossX);
-        buf.writeDouble(bossY);
-        buf.writeDouble(bossZ);
-        NetworkManager.sendToPlayer(player, BOSS_CINEMATIC_PACKET, buf);
+        NetworkManager.sendToPlayer(player, new BossCinematicPayload(
+                bossType, cameraX, cameraY, cameraZ, yaw, pitch, bossX, bossY, bossZ
+        ));
     }
 
     private static void handleCinematicOnClient(String bossType,
