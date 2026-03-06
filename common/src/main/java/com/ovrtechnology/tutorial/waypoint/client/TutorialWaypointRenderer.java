@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.waypoint.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -78,7 +79,10 @@ public final class TutorialWaypointRenderer {
         }
         initialized = true;
 
-        ClientTickEvent.CLIENT_POST.register(TutorialWaypointRenderer::onClientTick);
+        ClientTickEvent.CLIENT_POST.register(client -> {
+            if (ReplayCompat.isInReplay()) return;
+            onClientTick(client);
+        });
         AromaAffect.LOGGER.debug("Tutorial waypoint renderer initialized");
     }
 

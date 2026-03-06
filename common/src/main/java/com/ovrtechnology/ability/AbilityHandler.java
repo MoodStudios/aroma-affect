@@ -1,6 +1,7 @@
 package com.ovrtechnology.ability;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import net.minecraft.world.InteractionResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -66,7 +67,10 @@ public final class AbilityHandler {
         InteractionEvent.RIGHT_CLICK_BLOCK.register(AbilityHandler::onRightClickBlock);
 
         // Register server tick event for processing ongoing interactions
-        TickEvent.SERVER_LEVEL_POST.register(AbilityHandler::onServerTick);
+        TickEvent.SERVER_LEVEL_POST.register(level -> {
+            if (ReplayCompat.isReplayServer(level.getServer())) return;
+            onServerTick(level);
+        });
 
         initialized = true;
         AromaAffect.LOGGER.info("AbilityHandler initialized");

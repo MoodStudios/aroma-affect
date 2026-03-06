@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.portal;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.tutorial.TutorialModule;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
@@ -45,6 +46,7 @@ public final class TutorialNetherPortalBlocker {
 
         // Check EVERY tick for maximum responsiveness
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             // Check all players every tick
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 checkAndBlockPortal(player);

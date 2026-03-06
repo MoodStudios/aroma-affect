@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.client.ClientTickEvent;
 
 /**
@@ -46,6 +47,7 @@ public final class ScentTriggerHandler {
         try {
             // Register client tick handler for processing scent durations and passive-mode
             ClientTickEvent.CLIENT_POST.register(minecraft -> {
+                if (ReplayCompat.isInReplay()) return;
                 // Process active scent durations
                 ScentTriggerManager.getInstance().tick();
                 

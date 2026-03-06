@@ -1,6 +1,7 @@
 package com.ovrtechnology.lookup;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.lookup.strategy.BiomeLookupStrategy;
 import com.ovrtechnology.lookup.strategy.BlockLookupStrategy;
 import com.ovrtechnology.lookup.strategy.LookupStrategy;
@@ -138,6 +139,7 @@ public final class LookupManager {
     }
     
     private void onServerTick(MinecraftServer server) {
+        if (ReplayCompat.isReplayServer(server)) return;
         tickCounter++;
         if (tickCounter >= CACHE_CLEANUP_INTERVAL) {
             tickCounter = 0;

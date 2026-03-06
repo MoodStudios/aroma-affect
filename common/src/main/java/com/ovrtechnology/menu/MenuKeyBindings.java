@@ -1,6 +1,7 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
+
 import com.ovrtechnology.keybind.AromaAffectKeyCategory;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import dev.architectury.event.events.client.ClientTickEvent;
@@ -83,9 +84,7 @@ public final class MenuKeyBindings {
         KeyMappingRegistry.register(RESET_COOLDOWNS);
         
         // Register tick handler to check for key presses
-        ClientTickEvent.CLIENT_POST.register(instance -> {
-            handleKeyInputs();
-        });
+        ClientTickEvent.CLIENT_POST.register(instance -> handleKeyInputs());
         
         initialized = true;
         AromaAffect.LOGGER.info("Menu keybindings initialized");

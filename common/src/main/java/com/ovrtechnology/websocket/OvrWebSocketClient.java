@@ -1,6 +1,7 @@
 package com.ovrtechnology.websocket;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.client.ClientTickEvent;
 import lombok.Getter;
 
@@ -169,11 +170,12 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
         // Register tick handler for main thread execution
         ClientTickEvent.CLIENT_POST.register(instance -> {
+            if (ReplayCompat.isInReplay()) return;
             INSTANCE.processMainThreadQueue();
         });
 
-        // Start connection if auto-connect is enabled
-        if (config.isAutoConnect()) {
+        // Start connection if auto-connect is enabled (skip during replay)
+        if (config.isAutoConnect() && !ReplayCompat.isInReplay()) {
             INSTANCE.connectAsync();
         }
 

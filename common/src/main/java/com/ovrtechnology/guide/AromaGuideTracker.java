@@ -1,5 +1,6 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.AromaGuideNetworking;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
@@ -64,7 +65,10 @@ public final class AromaGuideTracker {
      * Initialize the client tick listener.
      */
     public static void init() {
-        ClientTickEvent.CLIENT_POST.register(AromaGuideTracker::onClientTick);
+        ClientTickEvent.CLIENT_POST.register(client -> {
+            if (ReplayCompat.isInReplay()) return;
+            onClientTick(client);
+        });
     }
 
     private static void onClientTick(Minecraft client) {

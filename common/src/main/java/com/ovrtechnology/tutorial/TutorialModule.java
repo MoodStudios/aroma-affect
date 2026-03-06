@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.TutorialAnimationNetworking;
 import com.ovrtechnology.network.TutorialChestNetworking;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
@@ -173,6 +174,7 @@ public final class TutorialModule {
 
         // Register server started event to auto-restore regen areas
         LifecycleEvent.SERVER_STARTED.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             for (ServerLevel level : server.getAllLevels()) {
                 if (isActive(level)) {
                     int restored = TutorialRegenAreaManager.restoreAllAreas(level);

@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.dream;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.TutorialDreamOverlayNetworking;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
@@ -55,6 +56,7 @@ public final class TutorialDreamEndHandler {
         initialized = true;
 
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             for (ServerLevel level : server.getAllLevels()) {
                 if (!TutorialModule.isActive(level)) {
                     continue;

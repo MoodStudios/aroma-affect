@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
@@ -44,6 +45,7 @@ public final class StructureSyncHandler {
         initialized = true;
 
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             if (++tickCounter < CHECK_INTERVAL_TICKS) return;
             tickCounter = 0;
 

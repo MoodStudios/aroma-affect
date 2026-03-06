@@ -1,6 +1,7 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import com.ovrtechnology.trigger.config.ClientConfig;
@@ -45,6 +46,7 @@ public final class TrackingHud {
 
         // Tick ActiveTrackingState globally
         ClientTickEvent.CLIENT_POST.register(instance -> {
+            if (ReplayCompat.isInReplay()) return;
             ActiveTrackingState.tick();
             tickNotification();
         });

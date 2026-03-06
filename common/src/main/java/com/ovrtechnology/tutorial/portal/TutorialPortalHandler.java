@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.portal;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
@@ -74,6 +75,7 @@ public final class TutorialPortalHandler {
         initialized = true;
 
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             currentTick++;
             tickCounter++;
             overlayTickCounter++;

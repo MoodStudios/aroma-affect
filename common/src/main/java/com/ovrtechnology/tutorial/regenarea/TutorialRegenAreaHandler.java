@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.regenarea;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.tutorial.TutorialModule;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.BlockEvent;
@@ -100,6 +101,7 @@ public final class TutorialRegenAreaHandler {
 
         // Tick pending regenerations
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             if (pendingRegens.isEmpty()) {
                 return;
             }

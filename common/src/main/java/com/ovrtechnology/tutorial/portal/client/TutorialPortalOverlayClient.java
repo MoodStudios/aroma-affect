@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.portal.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
@@ -34,6 +35,7 @@ public final class TutorialPortalOverlayClient {
 
         // Register tick handler for smooth interpolation
         ClientTickEvent.CLIENT_POST.register(client -> {
+            if (ReplayCompat.isInReplay()) return;
             // Smoothly interpolate towards target progress
             if (Math.abs(displayProgress - currentProgress) > 0.001f) {
                 displayProgress += (currentProgress - displayProgress) * LERP_SPEED;

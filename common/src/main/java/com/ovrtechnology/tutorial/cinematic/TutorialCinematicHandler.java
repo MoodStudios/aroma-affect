@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.cinematic;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.lookup.LookupTarget;
@@ -72,6 +73,7 @@ public final class TutorialCinematicHandler {
         initialized = true;
 
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             // Process all active cinematics
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 tickPlayerCinematic(player);

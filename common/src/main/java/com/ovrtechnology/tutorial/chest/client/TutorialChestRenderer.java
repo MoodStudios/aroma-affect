@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.chest.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -58,7 +59,10 @@ public final class TutorialChestRenderer {
         }
         initialized = true;
 
-        ClientTickEvent.CLIENT_POST.register(TutorialChestRenderer::onClientTick);
+        ClientTickEvent.CLIENT_POST.register(client -> {
+            if (ReplayCompat.isInReplay()) return;
+            onClientTick(client);
+        });
         AromaAffect.LOGGER.debug("Tutorial chest renderer initialized");
     }
 

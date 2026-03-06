@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.waypoint;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.lookup.LookupTarget;
@@ -67,6 +68,7 @@ public final class TutorialWaypointAreaHandler {
         initialized = true;
 
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             tickCounter++;
             if (tickCounter < CHECK_INTERVAL) {
                 return;

@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.spawn;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.network.TutorialIntroNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
@@ -75,6 +76,7 @@ public final class TutorialJoinHandler {
     }
 
     private static void onPlayerJoin(ServerPlayer player) {
+        if (ReplayCompat.isReplayServer(player.level().getServer())) return;
         ServerLevel level = (ServerLevel) player.level();
 
         // Check if tutorial mode is active

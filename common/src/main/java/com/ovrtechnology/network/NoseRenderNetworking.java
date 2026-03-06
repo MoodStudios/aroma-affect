@@ -1,6 +1,7 @@
 package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
@@ -101,6 +102,7 @@ public final class NoseRenderNetworking {
 
         // When a player joins, send them all existing player preferences
         PlayerEvent.PLAYER_JOIN.register(serverPlayer -> {
+            if (ReplayCompat.isReplayServer(serverPlayer.level().getServer())) return;
             for (Map.Entry<UUID, NoseRenderPreferencesManager.NosePrefs> entry
                     : NoseRenderPreferencesManager.getAllServerPrefs()) {
                 sendPrefsToPlayer(serverPlayer, entry.getKey(),

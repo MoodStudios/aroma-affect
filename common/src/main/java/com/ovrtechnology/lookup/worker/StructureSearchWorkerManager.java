@@ -1,6 +1,7 @@
 package com.ovrtechnology.lookup.worker;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.server.MinecraftServer;
@@ -75,10 +76,12 @@ public final class StructureSearchWorkerManager {
     }
     
     private void onServerTickPre(MinecraftServer server) {
+        if (ReplayCompat.isReplayServer(server)) return;
         tickStartTime = System.currentTimeMillis();
     }
     
     private synchronized void onServerTickPost(MinecraftServer server) {
+        if (ReplayCompat.isReplayServer(server)) return;
         if (workers.isEmpty()) {
             return;
         }

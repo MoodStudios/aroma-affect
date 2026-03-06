@@ -1,6 +1,7 @@
 package com.ovrtechnology.search;
 
 import com.ovrtechnology.AromaAffect;
+
 import com.ovrtechnology.keybind.AromaAffectKeyCategory;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
@@ -63,9 +64,7 @@ public final class SearchKeyBindings {
         KeyMappingRegistry.register(TOGGLE_SEARCH);
         
         // Register tick handler to check for key presses
-        ClientTickEvent.CLIENT_POST.register(instance -> {
-            handleKeyInputs();
-        });
+        ClientTickEvent.CLIENT_POST.register(instance -> handleKeyInputs());
         
         initialized = true;
         AromaAffect.LOGGER.info("Search keybindings initialized (default: V key)");

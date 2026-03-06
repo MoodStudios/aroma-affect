@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.noseequip;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
@@ -52,7 +53,7 @@ public final class TutorialNoseEquipHandler {
         initialized = true;
 
         TickEvent.SERVER_LEVEL_POST.register(TutorialNoseEquipHandler::onServerTick);
-        TickEvent.SERVER_POST.register(server -> processDelayedActions());
+        TickEvent.SERVER_POST.register(server -> { if (ReplayCompat.isReplayServer(server)) return; processDelayedActions(); });
         AromaAffect.LOGGER.debug("Tutorial nose equip handler initialized");
     }
 
@@ -104,6 +105,7 @@ public final class TutorialNoseEquipHandler {
     }
 
     private static void onServerTick(ServerLevel level) {
+        if (ReplayCompat.isReplayServer(level.getServer())) return;
         if (!TutorialModule.isActive(level)) return;
 
         for (ServerPlayer player : level.players()) {

@@ -22,6 +22,7 @@ import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.trigger.config.ClientConfig;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
 import dev.architectury.event.events.client.ClientTickEvent;
@@ -140,6 +141,7 @@ public final class AromaAffectClient {
 
     private static void initNoseRenderSync() {
         ClientTickEvent.CLIENT_POST.register(minecraft -> {
+            if (ReplayCompat.isInReplay()) return;
             if (minecraft.player != null && !sentInitialPrefs) {
                 sentInitialPrefs = true;
                 boolean noseEnabled = com.ovrtechnology.nose.client.NoseRenderToggles.isNoseEnabled();

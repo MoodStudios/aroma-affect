@@ -1,6 +1,7 @@
 package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import dev.architectury.event.events.common.PlayerEvent;
 import lombok.experimental.UtilityClass;
@@ -23,7 +24,7 @@ public final class SnifferSyncHandler {
 
     private static void onPlayerJoin(ServerPlayer player) {
         var server = player.level().getServer();
-        if (server == null) return;
+        if (server == null || ReplayCompat.isReplayServer(server)) return;
 
         // Schedule the sync for the next tick to ensure the player is fully loaded
         server.execute(() -> syncAllSniffersToPlayer(player));

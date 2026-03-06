@@ -1,6 +1,7 @@
 package com.ovrtechnology.command.path;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
@@ -64,7 +65,10 @@ public final class ActivePathManager {
             return;
         }
 
-        TickEvent.SERVER_POST.register(INSTANCE::onServerTick);
+        TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
+            INSTANCE.onServerTick(server);
+        });
         INSTANCE.initialized = true;
         AromaAffect.LOGGER.info("Active path manager initialized");
     }

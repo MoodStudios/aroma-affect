@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.animation.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationType;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
@@ -56,7 +57,10 @@ public final class TutorialAnimationRenderer {
         }
         initialized = true;
 
-        ClientTickEvent.CLIENT_POST.register(TutorialAnimationRenderer::onClientTick);
+        ClientTickEvent.CLIENT_POST.register(client -> {
+            if (ReplayCompat.isInReplay()) return;
+            onClientTick(client);
+        });
         AromaAffect.LOGGER.debug("Tutorial animation renderer initialized");
     }
 

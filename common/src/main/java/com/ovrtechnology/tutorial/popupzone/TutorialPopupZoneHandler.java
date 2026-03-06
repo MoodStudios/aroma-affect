@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.popupzone;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.TutorialPopupNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
 import dev.architectury.event.events.common.TickEvent;
@@ -40,6 +41,7 @@ public final class TutorialPopupZoneHandler {
         initialized = true;
 
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             tickCounter++;
             if (tickCounter < CHECK_INTERVAL) return;
             tickCounter = 0;

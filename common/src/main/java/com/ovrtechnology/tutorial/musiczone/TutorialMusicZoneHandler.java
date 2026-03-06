@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.musiczone;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.tutorial.TutorialModule;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
@@ -48,6 +49,7 @@ public final class TutorialMusicZoneHandler {
         initialized = true;
 
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             globalTick++;
             tickCounter++;
             if (tickCounter < CHECK_INTERVAL) {

@@ -3,6 +3,7 @@ package com.ovrtechnology.guide;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.event.events.common.PlayerEvent;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.UUIDUtil;
@@ -29,6 +30,7 @@ public final class AromaGuideFirstJoinHandler {
     }
 
     private static void onPlayerJoin(ServerPlayer player) {
+        if (ReplayCompat.isReplayServer(player.level().getServer())) return;
         ServerLevel overworld = player.level().getServer().overworld();
         GuideRecipientData data = overworld.getDataStorage().computeIfAbsent(GuideRecipientData.TYPE);
 

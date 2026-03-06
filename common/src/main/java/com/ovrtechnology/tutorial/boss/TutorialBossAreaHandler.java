@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.boss;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
@@ -46,6 +47,7 @@ public final class TutorialBossAreaHandler {
 
         // Register server tick handler
         TickEvent.SERVER_POST.register(server -> {
+            if (ReplayCompat.isReplayServer(server)) return;
             for (ServerLevel level : server.getAllLevels()) {
                 if (!TutorialModule.isActive(level)) {
                     continue;
