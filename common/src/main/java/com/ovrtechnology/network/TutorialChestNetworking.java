@@ -3,9 +3,10 @@ package com.ovrtechnology.network;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.tutorial.chest.TutorialChest;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -18,14 +19,51 @@ import java.util.List;
  */
 public final class TutorialChestNetworking {
 
-    private static final ResourceLocation CHEST_SYNC_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_chest_sync");
+    public record ChestSyncPayload(BlockPos[] positions) implements CustomPacketPayload {
+        public static final Type<ChestSyncPayload> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_chest_sync"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, ChestSyncPayload> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeVarInt(payload.positions.length);
+                    for (BlockPos pos : payload.positions) {
+                        buf.writeInt(pos.getX());
+                        buf.writeInt(pos.getY());
+                        buf.writeInt(pos.getZ());
+                    }
+                },
+                buf -> {
+                    int count = buf.readVarInt();
+                    BlockPos[] positions = new BlockPos[count];
+                    for (int i = 0; i < count; i++) {
+                        positions[i] = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
+                    }
+                    return new ChestSyncPayload(positions);
+                }
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
-    private static final ResourceLocation CHEST_CONSUMED_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_chest_consumed");
+    public record ChestConsumedPayload(BlockPos position) implements CustomPacketPayload {
+        public static final Type<ChestConsumedPayload> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_chest_consumed"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, ChestConsumedPayload> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeInt(payload.position.getX());
+                    buf.writeInt(payload.position.getY());
+                    buf.writeInt(payload.position.getZ());
+                },
+                buf -> new ChestConsumedPayload(new BlockPos(buf.readInt(), buf.readInt(), buf.readInt()))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
-    private static final ResourceLocation CHEST_CLEAR_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_chest_clear");
+    public record ChestClearPayload() implements CustomPacketPayload {
+        public static final Type<ChestClearPayload> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_chest_clear"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, ChestClearPayload> STREAM_CODEC =
+                StreamCodec.unit(new ChestClearPayload());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -44,17 +82,10 @@ public final class TutorialChestNetworking {
         // Client receives chest sync (list of positions)
         NetworkManager.registerReceiver(
                 NetworkManager.Side.S2C,
-                CHEST_SYNC_PACKET_ID,
-                (buf, context) -> {
-                    int chestCount = buf.readVarInt();
-                    BlockPos[] positions = new BlockPos[chestCount];
-
-                    for (int i = 0; i < chestCount; i++) {
-                        int x = buf.readInt();
-                        int y = buf.readInt();
-                        int z = buf.readInt();
-                        positions[i] = new BlockPos(x, y, z);
-                    }
+                ChestSyncPayload.TYPE,
+                ChestSyncPayload.STREAM_CODEC,
+                (payload, context) -> {
+                    BlockPos[] positions = payload.positions();
 
                     context.queue(() -> {
                         // Call client-side handler via reflection
@@ -74,12 +105,10 @@ public final class TutorialChestNetworking {
         // Client receives chest consumed (single position to remove)
         NetworkManager.registerReceiver(
                 NetworkManager.Side.S2C,
-                CHEST_CONSUMED_PACKET_ID,
-                (buf, context) -> {
-                    int x = buf.readInt();
-                    int y = buf.readInt();
-                    int z = buf.readInt();
-                    BlockPos pos = new BlockPos(x, y, z);
+                ChestConsumedPayload.TYPE,
+                ChestConsumedPayload.STREAM_CODEC,
+                (payload, context) -> {
+                    BlockPos pos = payload.position();
 
                     context.queue(() -> {
                         try {
@@ -98,8 +127,9 @@ public final class TutorialChestNetworking {
         // Client receives clear all chests
         NetworkManager.registerReceiver(
                 NetworkManager.Side.S2C,
-                CHEST_CLEAR_PACKET_ID,
-                (buf, context) -> {
+                ChestClearPayload.TYPE,
+                ChestClearPayload.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         try {
                             Class<?> rendererClass = Class.forName(
@@ -123,18 +153,11 @@ public final class TutorialChestNetworking {
      * @param chests list of unconsumed chests
      */
     public static void sendChestsToPlayer(ServerPlayer player, List<TutorialChest> chests) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        buf.writeVarInt(chests.size());
-        for (TutorialChest chest : chests) {
-            BlockPos pos = chest.getPosition();
-            buf.writeInt(pos.getX());
-            buf.writeInt(pos.getY());
-            buf.writeInt(pos.getZ());
+        BlockPos[] positions = new BlockPos[chests.size()];
+        for (int i = 0; i < chests.size(); i++) {
+            positions[i] = chests.get(i).getPosition();
         }
-        NetworkManager.sendToPlayer(player, CHEST_SYNC_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new ChestSyncPayload(positions));
     }
 
     /**
@@ -144,14 +167,7 @@ public final class TutorialChestNetworking {
      * @param position the chest position
      */
     public static void sendChestConsumed(ServerPlayer player, BlockPos position) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        buf.writeInt(position.getX());
-        buf.writeInt(position.getY());
-        buf.writeInt(position.getZ());
-        NetworkManager.sendToPlayer(player, CHEST_CONSUMED_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new ChestConsumedPayload(position));
     }
 
     /**
@@ -160,11 +176,7 @@ public final class TutorialChestNetworking {
      * @param player the player to send to
      */
     public static void sendClearToPlayer(ServerPlayer player) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        NetworkManager.sendToPlayer(player, CHEST_CLEAR_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new ChestClearPayload());
     }
 
     /**

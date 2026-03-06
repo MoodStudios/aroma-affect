@@ -3,8 +3,9 @@ package com.ovrtechnology.network;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -18,8 +19,30 @@ import java.util.UUID;
  */
 public final class SnifferEquipmentNetworking {
 
-    private static final ResourceLocation SNIFFER_EQUIPMENT_SYNC_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniffer_equipment_sync");
+    public record SnifferEquipmentSyncS2C(UUID snifferUUID, UUID ownerUUID, ItemStack saddleItem, ItemStack decorationItem) implements CustomPacketPayload {
+        public static final Type<SnifferEquipmentSyncS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniffer_equipment_sync"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, SnifferEquipmentSyncS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeUUID(payload.snifferUUID);
+                    buf.writeBoolean(payload.ownerUUID != null);
+                    if (payload.ownerUUID != null) {
+                        buf.writeUUID(payload.ownerUUID);
+                    }
+                    ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, payload.saddleItem);
+                    ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, payload.decorationItem);
+                },
+                buf -> {
+                    UUID snifferUUID = buf.readUUID();
+                    boolean hasOwner = buf.readBoolean();
+                    UUID ownerUUID = hasOwner ? buf.readUUID() : null;
+                    ItemStack saddleItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+                    ItemStack decorationItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+                    return new SnifferEquipmentSyncS2C(snifferUUID, ownerUUID, saddleItem, decorationItem);
+                }
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -37,20 +60,15 @@ public final class SnifferEquipmentNetworking {
         initialized = true;
 
         // Register client-side receiver for equipment sync packets (S2C)
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SNIFFER_EQUIPMENT_SYNC_ID, (buf, context) -> {
-            UUID snifferUUID = buf.readUUID();
-            boolean hasOwner = buf.readBoolean();
-            UUID ownerUUID = hasOwner ? buf.readUUID() : null;
-            ItemStack saddleItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
-            ItemStack decorationItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
-
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SnifferEquipmentSyncS2C.TYPE, SnifferEquipmentSyncS2C.STREAM_CODEC,
+                (payload, context) -> {
             context.queue(() -> {
-                SnifferTamingData data = SnifferTamingData.get(snifferUUID);
-                data.ownerUUID = ownerUUID;
-                data.saddleItem = saddleItem;
-                data.decorationItem = decorationItem;
+                SnifferTamingData data = SnifferTamingData.get(payload.snifferUUID());
+                data.ownerUUID = payload.ownerUUID();
+                data.saddleItem = payload.saddleItem();
+                data.decorationItem = payload.decorationItem();
                 AromaAffect.LOGGER.debug("Received sniffer equipment sync for {}: owner={}, saddle={}, decoration={}",
-                        snifferUUID, ownerUUID, !saddleItem.isEmpty(), !decorationItem.isEmpty());
+                        payload.snifferUUID(), payload.ownerUUID(), !payload.saddleItem().isEmpty(), !payload.decorationItem().isEmpty());
             });
         });
 
@@ -65,25 +83,12 @@ public final class SnifferEquipmentNetworking {
      * @param data        the sniffer's taming data
      */
     public static void sendEquipmentSync(ServerPlayer player, UUID snifferUUID, SnifferTamingData data) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-
-        buf.writeUUID(snifferUUID);
-        buf.writeBoolean(data.ownerUUID != null);
-        if (data.ownerUUID != null) {
-            buf.writeUUID(data.ownerUUID);
-        }
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, data.saddleItem);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, data.decorationItem);
-
-        if (!NetworkManager.canPlayerReceive(player, SNIFFER_EQUIPMENT_SYNC_ID)) {
-            buf.release();
+        if (!NetworkManager.canPlayerReceive(player, SnifferEquipmentSyncS2C.TYPE)) {
             return;
         }
 
-        NetworkManager.sendToPlayer(player, SNIFFER_EQUIPMENT_SYNC_ID, buf);
+        NetworkManager.sendToPlayer(player, new SnifferEquipmentSyncS2C(
+                snifferUUID, data.ownerUUID, data.saddleItem, data.decorationItem));
     }
 
     /**

@@ -13,10 +13,11 @@ import com.ovrtechnology.tutorial.waypoint.TutorialWaypoint;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointAreaHandler;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointManager;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,16 +43,76 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TutorialDialogueContentNetworking {
 
-    private static final ResourceLocation DIALOGUE_SYNC_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_sync");
-    private static final ResourceLocation DIALOGUE_OPEN_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_open");
-    private static final ResourceLocation DIALOGUE_CLOSED_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_closed");
-    private static final ResourceLocation DIALOGUE_SELF_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_self");
+    // ── Payload records ──────────────────────────────────────────────────────
 
-    /** Client-side cache of custom dialogue texts (id → text). */
+    public record DialogueClosedC2S(String dialogueId) implements CustomPacketPayload {
+        public static final Type<DialogueClosedC2S> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_closed"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, DialogueClosedC2S> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> buf.writeUtf(payload.dialogueId, 256),
+                buf -> new DialogueClosedC2S(buf.readUtf(256))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record DialogueSyncS2C(Map<String, String> texts) implements CustomPacketPayload {
+        public static final Type<DialogueSyncS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_sync"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, DialogueSyncS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeVarInt(payload.texts.size());
+                    for (Map.Entry<String, String> entry : payload.texts.entrySet()) {
+                        buf.writeUtf(entry.getKey(), 256);
+                        buf.writeUtf(entry.getValue(), 8192);
+                    }
+                },
+                buf -> {
+                    int count = buf.readVarInt();
+                    Map<String, String> texts = new HashMap<>();
+                    for (int i = 0; i < count; i++) {
+                        String id = buf.readUtf(256);
+                        String text = buf.readUtf(8192);
+                        texts.put(id, text);
+                    }
+                    return new DialogueSyncS2C(texts);
+                }
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record DialogueOpenS2C(int entityId, String dialogueId, boolean hasTrade, String tradeId) implements CustomPacketPayload {
+        public static final Type<DialogueOpenS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_open"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, DialogueOpenS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeVarInt(payload.entityId);
+                    buf.writeUtf(payload.dialogueId, 256);
+                    buf.writeBoolean(payload.hasTrade);
+                    buf.writeUtf(payload.tradeId, 256);
+                },
+                buf -> new DialogueOpenS2C(
+                        buf.readVarInt(),
+                        buf.readUtf(256),
+                        buf.readBoolean(),
+                        buf.readUtf(256)
+                )
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record DialogueSelfS2C(String dialogueId) implements CustomPacketPayload {
+        public static final Type<DialogueSelfS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_dialogue_self"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, DialogueSelfS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> buf.writeUtf(payload.dialogueId, 256),
+                buf -> new DialogueSelfS2C(buf.readUtf(256))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    // ── Fields ───────────────────────────────────────────────────────────────
+
+    /** Client-side cache of custom dialogue texts (id -> text). */
     private static final Map<String, String> clientDialogueCache = new ConcurrentHashMap<>();
 
     private static boolean initialized = false;
@@ -66,12 +127,8 @@ public final class TutorialDialogueContentNetworking {
         initialized = true;
 
         // C2S: Client tells server that player closed a dialogue
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.C2S,
-                DIALOGUE_CLOSED_PACKET,
-                (buf, context) -> {
-                    String dialogueId = buf.readUtf(256);
-
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, DialogueClosedC2S.TYPE, DialogueClosedC2S.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         Player player = context.getPlayer();
                         if (player == null || !(player instanceof ServerPlayer serverPlayer)) {
@@ -81,56 +138,35 @@ public final class TutorialDialogueContentNetworking {
                             return;
                         }
 
-                        onDialogueClosed(serverPlayer, level, dialogueId);
+                        onDialogueClosed(serverPlayer, level, payload.dialogueId());
                     });
                 }
         );
 
         // S2C: Sync dialogue map to client
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.S2C,
-                DIALOGUE_SYNC_PACKET,
-                (buf, context) -> {
-                    int count = buf.readVarInt();
-                    Map<String, String> newCache = new HashMap<>();
-                    for (int i = 0; i < count; i++) {
-                        String id = buf.readUtf(256);
-                        String text = buf.readUtf(8192);
-                        newCache.put(id, text);
-                    }
-
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, DialogueSyncS2C.TYPE, DialogueSyncS2C.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         clientDialogueCache.clear();
-                        clientDialogueCache.putAll(newCache);
+                        clientDialogueCache.putAll(payload.texts());
                     });
                 }
         );
 
         // S2C: Open dialogue with params
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.S2C,
-                DIALOGUE_OPEN_PACKET,
-                (buf, context) -> {
-                    int entityId = buf.readVarInt();
-                    String dialogueId = buf.readUtf(256);
-                    boolean hasTrade = buf.readBoolean();
-                    String tradeId = buf.readUtf(256);
-
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, DialogueOpenS2C.TYPE, DialogueOpenS2C.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
-                        openDialogueOnClient(entityId, dialogueId, hasTrade, tradeId);
+                        openDialogueOnClient(payload.entityId(), payload.dialogueId(), payload.hasTrade(), payload.tradeId());
                     });
                 }
         );
 
         // S2C: Open self-dialogue (player talks to themselves - dream end)
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.S2C,
-                DIALOGUE_SELF_PACKET,
-                (buf, context) -> {
-                    String dialogueId = buf.readUtf(256);
-
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, DialogueSelfS2C.TYPE, DialogueSelfS2C.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
-                        openSelfDialogueOnClient(dialogueId);
+                        openSelfDialogueOnClient(payload.dialogueId());
                     });
                 }
         );
@@ -147,14 +183,7 @@ public final class TutorialDialogueContentNetworking {
      */
     public static void syncToPlayer(ServerPlayer player, ServerLevel level) {
         Map<String, String> texts = TutorialDialogueManager.getAllDialogueTexts(level);
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), player.registryAccess());
-        buf.writeVarInt(texts.size());
-        for (Map.Entry<String, String> entry : texts.entrySet()) {
-            buf.writeUtf(entry.getKey(), 256);
-            buf.writeUtf(entry.getValue(), 8192);
-        }
-        NetworkManager.sendToPlayer(player, DIALOGUE_SYNC_PACKET, buf);
+        NetworkManager.sendToPlayer(player, new DialogueSyncS2C(texts));
     }
 
     /**
@@ -175,13 +204,8 @@ public final class TutorialDialogueContentNetworking {
      */
     public static void sendOpenDialogue(ServerPlayer player, int entityId,
                                          String dialogueId, boolean hasTrade, String tradeId) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), player.registryAccess());
-        buf.writeVarInt(entityId);
-        buf.writeUtf(dialogueId, 256);
-        buf.writeBoolean(hasTrade);
-        buf.writeUtf(tradeId != null ? tradeId : "", 256);
-        NetworkManager.sendToPlayer(player, DIALOGUE_OPEN_PACKET, buf);
+        NetworkManager.sendToPlayer(player, new DialogueOpenS2C(
+                entityId, dialogueId, hasTrade, tradeId != null ? tradeId : ""));
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -193,10 +217,7 @@ public final class TutorialDialogueContentNetworking {
      * Used for the dream ending sequence.
      */
     public static void sendOpenSelfDialogue(ServerPlayer player, String dialogueId) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                io.netty.buffer.Unpooled.buffer(), player.registryAccess());
-        buf.writeUtf(dialogueId, 256);
-        NetworkManager.sendToPlayer(player, DIALOGUE_SELF_PACKET, buf);
+        NetworkManager.sendToPlayer(player, new DialogueSelfS2C(dialogueId));
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -207,10 +228,7 @@ public final class TutorialDialogueContentNetworking {
      * Client sends this when the player closes a dialogue screen.
      */
     public static void sendDialogueClosed(RegistryAccess registryAccess, String dialogueId) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), registryAccess);
-        buf.writeUtf(dialogueId, 256);
-        NetworkManager.sendToServer(DIALOGUE_CLOSED_PACKET, buf);
+        NetworkManager.sendToServer(new DialogueClosedC2S(dialogueId));
     }
 
     // ─────────────────────────────────────────────────────────────────────────────

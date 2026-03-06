@@ -4,8 +4,9 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,10 +23,32 @@ import java.util.UUID;
  */
 public final class NoseRenderNetworking {
 
-    private static final ResourceLocation NOSE_PREFS_C2S =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_c2s");
-    private static final ResourceLocation NOSE_PREFS_S2C =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_s2c");
+    public record NosePrefsC2S(boolean noseEnabled, boolean strapEnabled) implements CustomPacketPayload {
+        public static final Type<NosePrefsC2S> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_c2s"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, NosePrefsC2S> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeBoolean(payload.noseEnabled);
+                    buf.writeBoolean(payload.strapEnabled);
+                },
+                buf -> new NosePrefsC2S(buf.readBoolean(), buf.readBoolean())
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record NosePrefsS2C(UUID playerUuid, boolean noseEnabled, boolean strapEnabled) implements CustomPacketPayload {
+        public static final Type<NosePrefsS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_s2c"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, NosePrefsS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeUUID(payload.playerUuid);
+                    buf.writeBoolean(payload.noseEnabled);
+                    buf.writeBoolean(payload.strapEnabled);
+                },
+                buf -> new NosePrefsS2C(buf.readUUID(), buf.readBoolean(), buf.readBoolean())
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -43,43 +66,38 @@ public final class NoseRenderNetworking {
         initialized = true;
 
         // S2C: Server tells client about a player's nose preferences
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NOSE_PREFS_S2C, (buf, context) -> {
-            UUID playerUuid = buf.readUUID();
-            boolean noseEnabled = buf.readBoolean();
-            boolean strapEnabled = buf.readBoolean();
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NosePrefsS2C.TYPE, NosePrefsS2C.STREAM_CODEC,
+                (payload, context) -> {
+                    context.queue(() -> {
+                        UUID localUuid = net.minecraft.client.Minecraft.getInstance().player != null
+                                ? net.minecraft.client.Minecraft.getInstance().player.getUUID() : null;
+                        boolean isSelf = localUuid != null && payload.playerUuid().equals(localUuid);
 
-            context.queue(() -> {
-                UUID localUuid = net.minecraft.client.Minecraft.getInstance().player != null
-                        ? net.minecraft.client.Minecraft.getInstance().player.getUUID() : null;
-                boolean isSelf = localUuid != null && playerUuid.equals(localUuid);
-
-                // Local player preferences are authoritative on this client.
-                // Ignore echoed server packets for self to avoid desync when toggling rapidly.
-                if (isSelf) {
-                    return;
-                }
-                NoseRenderPreferencesManager.setClientPrefs(playerUuid, noseEnabled, strapEnabled);
-            });
-        });
+                        // Local player preferences are authoritative on this client.
+                        // Ignore echoed server packets for self to avoid desync when toggling rapidly.
+                        if (isSelf) {
+                            return;
+                        }
+                        NoseRenderPreferencesManager.setClientPrefs(payload.playerUuid(), payload.noseEnabled(), payload.strapEnabled());
+                    });
+                });
 
         // C2S: Client tells server their nose preferences
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NOSE_PREFS_C2S, (buf, context) -> {
-            boolean noseEnabled = buf.readBoolean();
-            boolean strapEnabled = buf.readBoolean();
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NosePrefsC2S.TYPE, NosePrefsC2S.STREAM_CODEC,
+                (payload, context) -> {
+                    context.queue(() -> {
+                        if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+                            UUID uuid = serverPlayer.getUUID();
+                            NoseRenderPreferencesManager.setServerPrefs(uuid, payload.noseEnabled(), payload.strapEnabled());
 
-            context.queue(() -> {
-                if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
-                    UUID uuid = serverPlayer.getUUID();
-                    NoseRenderPreferencesManager.setServerPrefs(uuid, noseEnabled, strapEnabled);
-
-                    // Broadcast to all connected players
-                    MinecraftServer server = serverPlayer.level().getServer();
-                    if (server != null) {
-                        broadcastPrefs(server, uuid, noseEnabled, strapEnabled);
-                    }
-                }
-            });
-        });
+                            // Broadcast to all connected players
+                            MinecraftServer server = serverPlayer.level().getServer();
+                            if (server != null) {
+                                broadcastPrefs(server, uuid, payload.noseEnabled(), payload.strapEnabled());
+                            }
+                        }
+                    });
+                });
 
         // When a player joins, send them all existing player preferences
         PlayerEvent.PLAYER_JOIN.register(serverPlayer -> {
@@ -104,11 +122,7 @@ public final class NoseRenderNetworking {
      */
     public static void sendPrefsToServer(net.minecraft.core.RegistryAccess registryAccess,
                                           boolean noseEnabled, boolean strapEnabled) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), registryAccess);
-        buf.writeBoolean(noseEnabled);
-        buf.writeBoolean(strapEnabled);
-        NetworkManager.sendToServer(NOSE_PREFS_C2S, buf);
+        NetworkManager.sendToServer(new NosePrefsC2S(noseEnabled, strapEnabled));
     }
 
     private static void broadcastPrefs(MinecraftServer server, UUID playerUuid,
@@ -120,17 +134,10 @@ public final class NoseRenderNetworking {
 
     private static void sendPrefsToPlayer(ServerPlayer target, UUID playerUuid,
                                             boolean noseEnabled, boolean strapEnabled) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), target.registryAccess());
-        buf.writeUUID(playerUuid);
-        buf.writeBoolean(noseEnabled);
-        buf.writeBoolean(strapEnabled);
-
-        if (!NetworkManager.canPlayerReceive(target, NOSE_PREFS_S2C)) {
-            buf.release();
+        if (!NetworkManager.canPlayerReceive(target, NosePrefsS2C.TYPE)) {
             return;
         }
 
-        NetworkManager.sendToPlayer(target, NOSE_PREFS_S2C, buf);
+        NetworkManager.sendToPlayer(target, new NosePrefsS2C(playerUuid, noseEnabled, strapEnabled));
     }
 }

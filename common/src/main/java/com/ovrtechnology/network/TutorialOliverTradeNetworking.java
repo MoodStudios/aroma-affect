@@ -11,11 +11,12 @@ import com.ovrtechnology.tutorial.waypoint.TutorialWaypoint;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointAreaHandler;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointManager;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,10 +36,31 @@ import java.util.Optional;
  */
 public final class TutorialOliverTradeNetworking {
 
-    private static final ResourceLocation TRADE_REQUEST_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_oliver_trade_req");
-    private static final ResourceLocation TRADE_RESULT_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_oliver_trade_res");
+    public record TradeRequestC2S(int entityId, String tradeId) implements CustomPacketPayload {
+        public static final Type<TradeRequestC2S> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_oliver_trade_req"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, TradeRequestC2S> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeVarInt(payload.entityId);
+                    buf.writeUtf(payload.tradeId, 256);
+                },
+                buf -> new TradeRequestC2S(buf.readVarInt(), buf.readUtf(256))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record TradeResultS2C(boolean success, String message) implements CustomPacketPayload {
+        public static final Type<TradeResultS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_oliver_trade_res"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, TradeResultS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeBoolean(payload.success);
+                    buf.writeUtf(payload.message, 256);
+                },
+                buf -> new TradeResultS2C(buf.readBoolean(), buf.readUtf(256))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -52,13 +74,8 @@ public final class TutorialOliverTradeNetworking {
         initialized = true;
 
         // C2S: Player requests a trade
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.C2S,
-                TRADE_REQUEST_PACKET,
-                (buf, context) -> {
-                    int entityId = buf.readVarInt();
-                    String tradeId = buf.readUtf(256);
-
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, TradeRequestC2S.TYPE, TradeRequestC2S.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         Player player = context.getPlayer();
                         if (!(player instanceof ServerPlayer serverPlayer)) {
@@ -68,10 +85,10 @@ public final class TutorialOliverTradeNetworking {
                             return;
                         }
 
-                        AromaAffect.LOGGER.info("Trade packet received: entityId={}, tradeId='{}'", entityId, tradeId);
+                        AromaAffect.LOGGER.info("Trade packet received: entityId={}, tradeId='{}'", payload.entityId(), payload.tradeId());
 
                         // Validate Oliver entity exists and is in range
-                        Entity entity = level.getEntity(entityId);
+                        Entity entity = level.getEntity(payload.entityId());
                         if (!(entity instanceof TutorialOliverEntity oliver)) {
                             sendTradeResult(serverPlayer, false, "Oliver not found");
                             return;
@@ -86,7 +103,7 @@ public final class TutorialOliverTradeNetworking {
                         // Execute the trade and get detailed result
                         // Note: executeTradeWithResult already calls executeOnCompleteActions internally
                         TutorialTradeHandler.TradeResult result =
-                                TutorialTradeHandler.executeTradeWithResult(serverPlayer, level, tradeId);
+                                TutorialTradeHandler.executeTradeWithResult(serverPlayer, level, payload.tradeId());
                         sendTradeResult(serverPlayer, result.success(), result.message());
 
                         // Clear Oliver's trade after successful execution (trade was consumed)
@@ -98,19 +115,14 @@ public final class TutorialOliverTradeNetworking {
         );
 
         // S2C: Trade result
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.S2C,
-                TRADE_RESULT_PACKET,
-                (buf, context) -> {
-                    boolean success = buf.readBoolean();
-                    String message = buf.readUtf(256);
-
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, TradeResultS2C.TYPE, TradeResultS2C.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         // Show message in action bar
                         net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
                         if (minecraft.player != null) {
                             minecraft.player.displayClientMessage(
-                                    Component.literal(success ? "\u00a7a" + message : "\u00a7c" + message),
+                                    Component.literal(payload.success() ? "\u00a7a" + payload.message() : "\u00a7c" + payload.message()),
                                     true
                             );
                         }
@@ -125,21 +137,14 @@ public final class TutorialOliverTradeNetworking {
      * Client sends a trade request to the server.
      */
     public static void sendTradeRequest(RegistryAccess registryAccess, int oliverEntityId, String tradeId) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess);
-        buf.writeVarInt(oliverEntityId);
-        buf.writeUtf(tradeId, 256);
-        NetworkManager.sendToServer(TRADE_REQUEST_PACKET, buf);
+        NetworkManager.sendToServer(new TradeRequestC2S(oliverEntityId, tradeId));
     }
 
     /**
      * Server sends a trade result to a player.
      */
     public static void sendTradeResult(ServerPlayer player, boolean success, String message) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), player.registryAccess());
-        buf.writeBoolean(success);
-        buf.writeUtf(message, 256);
-        NetworkManager.sendToPlayer(player, TRADE_RESULT_PACKET, buf);
+        NetworkManager.sendToPlayer(player, new TradeResultS2C(success, message));
     }
 
     private static void executeTradeOnComplete(ServerPlayer player, ServerLevel level, String tradeId) {

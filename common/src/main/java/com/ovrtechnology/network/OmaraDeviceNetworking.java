@@ -6,9 +6,10 @@ import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.client.ScentPuffOverlay;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,15 +27,25 @@ import java.util.List;
  */
 public final class OmaraDeviceNetworking {
 
+    public record OmaraPuffS2C(String scentName, double intensity, int durationTicks) implements CustomPacketPayload {
+        public static final Type<OmaraPuffS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff_s2c"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, OmaraPuffS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeUtf(payload.scentName);
+                    buf.writeDouble(payload.intensity);
+                    buf.writeVarInt(payload.durationTicks);
+                },
+                buf -> new OmaraPuffS2C(buf.readUtf(), buf.readDouble(), buf.readVarInt())
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     /** Duration for Omara Device scent triggers (in ticks). 5 seconds = 100 ticks. */
     private static final int OMARA_SCENT_DURATION_TICKS = 100;
 
     /** Intensity for Omara Device scent triggers. */
     private static final double OMARA_SCENT_INTENSITY = 1.0;
-
-    private static final ResourceLocation OMARA_PUFF_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff_s2c");
 
     private static boolean initialized = false;
 
@@ -52,10 +63,11 @@ public final class OmaraDeviceNetworking {
         initialized = true;
 
         // Register client-side receiver for Omara puff packets (S2C)
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, OMARA_PUFF_PACKET_ID, (buf, context) -> {
-            String scentName = buf.readUtf();
-            double intensity = buf.readDouble();
-            int durationTicks = buf.readVarInt();
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, OmaraPuffS2C.TYPE, OmaraPuffS2C.STREAM_CODEC,
+                (payload, context) -> {
+            String scentName = payload.scentName();
+            double intensity = payload.intensity();
+            int durationTicks = payload.durationTicks();
 
             context.queue(() -> {
                 ScentTrigger trigger = ScentTrigger.fromOmaraDevice(scentName, durationTicks, intensity);
@@ -106,20 +118,10 @@ public final class OmaraDeviceNetworking {
     }
 
     private static void sendPuffToPlayer(ServerPlayer player, String scentName) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-
-        buf.writeUtf(scentName);
-        buf.writeDouble(OMARA_SCENT_INTENSITY);
-        buf.writeVarInt(OMARA_SCENT_DURATION_TICKS);
-
-        if (!NetworkManager.canPlayerReceive(player, OMARA_PUFF_PACKET_ID)) {
-            buf.release();
+        if (!NetworkManager.canPlayerReceive(player, OmaraPuffS2C.TYPE)) {
             return;
         }
 
-        NetworkManager.sendToPlayer(player, OMARA_PUFF_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new OmaraPuffS2C(scentName, OMARA_SCENT_INTENSITY, OMARA_SCENT_DURATION_TICKS));
     }
 }

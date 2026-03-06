@@ -3,9 +3,10 @@ package com.ovrtechnology.network;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationType;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -20,11 +21,36 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class TutorialAnimationNetworking {
 
-    private static final ResourceLocation ANIMATION_PLAY_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_animation_play");
+    public record AnimationPlayPayload(int typeOrdinal, int x1, int y1, int z1,
+                                       int x2, int y2, int z2) implements CustomPacketPayload {
+        public static final Type<AnimationPlayPayload> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_animation_play"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, AnimationPlayPayload> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeVarInt(payload.typeOrdinal);
+                    buf.writeInt(payload.x1);
+                    buf.writeInt(payload.y1);
+                    buf.writeInt(payload.z1);
+                    buf.writeInt(payload.x2);
+                    buf.writeInt(payload.y2);
+                    buf.writeInt(payload.z2);
+                },
+                buf -> new AnimationPlayPayload(
+                        buf.readVarInt(),
+                        buf.readInt(), buf.readInt(), buf.readInt(),
+                        buf.readInt(), buf.readInt(), buf.readInt()
+                )
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
-    private static final ResourceLocation ANIMATION_RESET_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_animation_reset");
+    public record AnimationResetPayload() implements CustomPacketPayload {
+        public static final Type<AnimationResetPayload> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_animation_reset"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, AnimationResetPayload> STREAM_CODEC =
+                StreamCodec.unit(new AnimationResetPayload());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -43,24 +69,18 @@ public final class TutorialAnimationNetworking {
         // Client receives animation play
         NetworkManager.registerReceiver(
                 NetworkManager.Side.S2C,
-                ANIMATION_PLAY_PACKET_ID,
-                (buf, context) -> {
-                    int typeOrdinal = buf.readVarInt();
-                    int x1 = buf.readInt();
-                    int y1 = buf.readInt();
-                    int z1 = buf.readInt();
-                    int x2 = buf.readInt();
-                    int y2 = buf.readInt();
-                    int z2 = buf.readInt();
-
+                AnimationPlayPayload.TYPE,
+                AnimationPlayPayload.STREAM_CODEC,
+                (payload, context) -> {
+                    int typeOrdinal = payload.typeOrdinal();
                     TutorialAnimationType[] types = TutorialAnimationType.values();
                     if (typeOrdinal < 0 || typeOrdinal >= types.length) {
                         AromaAffect.LOGGER.warn("Received invalid animation type ordinal: {}", typeOrdinal);
                         return;
                     }
                     TutorialAnimationType type = types[typeOrdinal];
-                    BlockPos corner1 = new BlockPos(x1, y1, z1);
-                    BlockPos corner2 = new BlockPos(x2, y2, z2);
+                    BlockPos corner1 = new BlockPos(payload.x1(), payload.y1(), payload.z1());
+                    BlockPos corner2 = new BlockPos(payload.x2(), payload.y2(), payload.z2());
 
                     context.queue(() -> {
                         // Call client-side handler via reflection
@@ -81,8 +101,9 @@ public final class TutorialAnimationNetworking {
         // Client receives animation reset
         NetworkManager.registerReceiver(
                 NetworkManager.Side.S2C,
-                ANIMATION_RESET_PACKET_ID,
-                (buf, context) -> {
+                AnimationResetPayload.TYPE,
+                AnimationResetPayload.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         try {
                             Class<?> rendererClass = Class.forName(
@@ -109,18 +130,11 @@ public final class TutorialAnimationNetworking {
      */
     public static void sendAnimationPlay(ServerPlayer player, TutorialAnimationType type,
                                          BlockPos corner1, BlockPos corner2) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        buf.writeVarInt(type.ordinal());
-        buf.writeInt(corner1.getX());
-        buf.writeInt(corner1.getY());
-        buf.writeInt(corner1.getZ());
-        buf.writeInt(corner2.getX());
-        buf.writeInt(corner2.getY());
-        buf.writeInt(corner2.getZ());
-        NetworkManager.sendToPlayer(player, ANIMATION_PLAY_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new AnimationPlayPayload(
+                type.ordinal(),
+                corner1.getX(), corner1.getY(), corner1.getZ(),
+                corner2.getX(), corner2.getY(), corner2.getZ()
+        ));
     }
 
     /**
@@ -129,10 +143,6 @@ public final class TutorialAnimationNetworking {
      * @param player the player to send to
      */
     public static void sendAnimationReset(ServerPlayer player) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        NetworkManager.sendToPlayer(player, ANIMATION_RESET_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new AnimationResetPayload());
     }
 }

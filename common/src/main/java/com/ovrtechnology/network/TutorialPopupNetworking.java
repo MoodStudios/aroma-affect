@@ -2,8 +2,9 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -14,8 +15,15 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class TutorialPopupNetworking {
 
-    private static final ResourceLocation POPUP_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_popup");
+    public record PopupS2C(String text) implements CustomPacketPayload {
+        public static final Type<PopupS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_popup"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, PopupS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> buf.writeUtf(payload.text, 4096),
+                buf -> new PopupS2C(buf.readUtf(4096))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -30,16 +38,10 @@ public final class TutorialPopupNetworking {
         initialized = true;
 
         // S2C: Receive popup text
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.S2C,
-                POPUP_PACKET,
-                (buf, context) -> {
-                    String text = buf.readUtf(4096);
-                    context.queue(() -> {
-                        clientPopupText = text;
-                    });
-                }
-        );
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, PopupS2C.TYPE, PopupS2C.STREAM_CODEC,
+                (payload, context) -> context.queue(() -> {
+                    clientPopupText = payload.text();
+                }));
 
         AromaAffect.LOGGER.debug("Tutorial popup networking initialized");
     }
@@ -48,10 +50,7 @@ public final class TutorialPopupNetworking {
      * Sends popup text to a player. Empty string hides the popup.
      */
     public static void sendPopup(ServerPlayer player, String text) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(), player.registryAccess());
-        buf.writeUtf(text, 4096);
-        NetworkManager.sendToPlayer(player, POPUP_PACKET, buf);
+        NetworkManager.sendToPlayer(player, new PopupS2C(text));
     }
 
     /**

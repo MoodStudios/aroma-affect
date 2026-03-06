@@ -4,10 +4,11 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.guide.AromaGuideTracker;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,10 +26,32 @@ import java.util.List;
  */
 public final class AromaGuideNetworking {
 
-    private static final ResourceLocation GUIDE_REQUEST_C2S =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_request_c2s");
-    private static final ResourceLocation GUIDE_TARGET_S2C =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_target_s2c");
+    public record GuideRequestC2S() implements CustomPacketPayload {
+        public static final Type<GuideRequestC2S> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_request_c2s"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, GuideRequestC2S> STREAM_CODEC =
+                StreamCodec.unit(new GuideRequestC2S());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record GuideTargetS2C(@Nullable BlockPos villagePos, @Nullable BlockPos compassTarget) implements CustomPacketPayload {
+        public static final Type<GuideTargetS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_target_s2c"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, GuideTargetS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeBoolean(payload.villagePos != null);
+                    if (payload.villagePos != null) buf.writeBlockPos(payload.villagePos);
+                    buf.writeBoolean(payload.compassTarget != null);
+                    if (payload.compassTarget != null) buf.writeBlockPos(payload.compassTarget);
+                },
+                buf -> {
+                    BlockPos v = buf.readBoolean() ? buf.readBlockPos() : null;
+                    BlockPos c = buf.readBoolean() ? buf.readBlockPos() : null;
+                    return new GuideTargetS2C(v, c);
+                }
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static final int SEARCH_RADIUS = 100; // in chunks
     private static final double NOSE_SMITH_SEARCH_RADIUS = 100.0;
@@ -44,54 +67,32 @@ public final class AromaGuideNetworking {
         }
         initialized = true;
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, GUIDE_REQUEST_C2S, (buf, context) ->
-                context.queue(() -> {
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, GuideRequestC2S.TYPE, GuideRequestC2S.STREAM_CODEC,
+                (payload, context) -> context.queue(() -> {
                     if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
                         sendGuideTarget(serverPlayer);
                     }
                 }));
 
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, GUIDE_TARGET_S2C, (buf, context) -> {
-            boolean hasVillage = buf.readBoolean();
-            BlockPos villagePos = hasVillage ? buf.readBlockPos() : null;
-
-            boolean hasTarget = buf.readBoolean();
-            BlockPos compassTarget = hasTarget ? buf.readBlockPos() : null;
-
-            context.queue(() -> AromaGuideTracker.applyServerTarget(villagePos, compassTarget));
-        });
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, GuideTargetS2C.TYPE, GuideTargetS2C.STREAM_CODEC,
+                (payload, context) -> context.queue(() ->
+                        AromaGuideTracker.applyServerTarget(payload.villagePos(), payload.compassTarget())));
 
         AromaAffect.LOGGER.info("AromaGuideNetworking initialized");
     }
 
     public static void requestGuideTarget(net.minecraft.core.RegistryAccess registryAccess) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess);
-        NetworkManager.sendToServer(GUIDE_REQUEST_C2S, buf);
+        NetworkManager.sendToServer(new GuideRequestC2S());
     }
 
     private static void sendGuideTarget(ServerPlayer player) {
         GuideTarget target = findGuideTarget(player);
 
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        buf.writeBoolean(target.nearestVillagePos != null);
-        if (target.nearestVillagePos != null) {
-            buf.writeBlockPos(target.nearestVillagePos);
-        }
-
-        buf.writeBoolean(target.compassTargetPos != null);
-        if (target.compassTargetPos != null) {
-            buf.writeBlockPos(target.compassTargetPos);
-        }
-
-        if (!NetworkManager.canPlayerReceive(player, GUIDE_TARGET_S2C)) {
-            buf.release();
+        if (!NetworkManager.canPlayerReceive(player, GuideTargetS2C.TYPE)) {
             return;
         }
 
-        NetworkManager.sendToPlayer(player, GUIDE_TARGET_S2C, buf);
+        NetworkManager.sendToPlayer(player, new GuideTargetS2C(target.nearestVillagePos, target.compassTargetPos));
     }
 
     private static GuideTarget findGuideTarget(ServerPlayer player) {

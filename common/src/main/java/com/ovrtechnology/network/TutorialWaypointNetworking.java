@@ -2,9 +2,10 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.networking.NetworkManager;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -18,11 +19,42 @@ import java.util.List;
  */
 public final class TutorialWaypointNetworking {
 
-    private static final ResourceLocation WAYPOINT_SYNC_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_waypoint_sync");
+    public record WaypointSyncS2C(String waypointId, List<BlockPos> positions) implements CustomPacketPayload {
+        public static final Type<WaypointSyncS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_waypoint_sync"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, WaypointSyncS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeUtf(payload.waypointId);
+                    buf.writeVarInt(payload.positions.size());
+                    for (BlockPos pos : payload.positions) {
+                        buf.writeInt(pos.getX());
+                        buf.writeInt(pos.getY());
+                        buf.writeInt(pos.getZ());
+                    }
+                },
+                buf -> {
+                    String waypointId = buf.readUtf();
+                    int positionCount = buf.readVarInt();
+                    List<BlockPos> positions = new ArrayList<>(positionCount);
+                    for (int i = 0; i < positionCount; i++) {
+                        int x = buf.readInt();
+                        int y = buf.readInt();
+                        int z = buf.readInt();
+                        positions.add(new BlockPos(x, y, z));
+                    }
+                    return new WaypointSyncS2C(waypointId, positions);
+                }
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
-    private static final ResourceLocation WAYPOINT_CLEAR_PACKET_ID =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_waypoint_clear");
+    public record WaypointClearS2C() implements CustomPacketPayload {
+        public static final Type<WaypointClearS2C> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_waypoint_clear"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, WaypointClearS2C> STREAM_CODEC =
+                StreamCodec.unit(new WaypointClearS2C());
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
 
     private static boolean initialized = false;
 
@@ -39,21 +71,8 @@ public final class TutorialWaypointNetworking {
         initialized = true;
 
         // Client receives waypoint sync with multiple positions
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.S2C,
-                WAYPOINT_SYNC_PACKET_ID,
-                (buf, context) -> {
-                    String waypointId = buf.readUtf();
-                    int positionCount = buf.readVarInt();
-
-                    List<BlockPos> positions = new ArrayList<>(positionCount);
-                    for (int i = 0; i < positionCount; i++) {
-                        int x = buf.readInt();
-                        int y = buf.readInt();
-                        int z = buf.readInt();
-                        positions.add(new BlockPos(x, y, z));
-                    }
-
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, WaypointSyncS2C.TYPE, WaypointSyncS2C.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         // Call client-side handler via reflection
                         try {
@@ -61,7 +80,7 @@ public final class TutorialWaypointNetworking {
                                     "com.ovrtechnology.tutorial.waypoint.client.TutorialWaypointRenderer"
                             );
                             rendererClass.getMethod("setActiveWaypoint", String.class, List.class)
-                                    .invoke(null, waypointId, positions);
+                                    .invoke(null, payload.waypointId(), payload.positions());
                         } catch (ReflectiveOperationException e) {
                             AromaAffect.LOGGER.debug("Failed to set waypoint on client", e);
                         }
@@ -70,10 +89,8 @@ public final class TutorialWaypointNetworking {
         );
 
         // Client receives waypoint clear
-        NetworkManager.registerReceiver(
-                NetworkManager.Side.S2C,
-                WAYPOINT_CLEAR_PACKET_ID,
-                (buf, context) -> {
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, WaypointClearS2C.TYPE, WaypointClearS2C.STREAM_CODEC,
+                (payload, context) -> {
                     context.queue(() -> {
                         try {
                             Class<?> rendererClass = Class.forName(
@@ -98,18 +115,7 @@ public final class TutorialWaypointNetworking {
      * @param positions  list of positions in order (1, 2, 3...)
      */
     public static void sendWaypointToPlayer(ServerPlayer player, String waypointId, List<BlockPos> positions) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        buf.writeUtf(waypointId);
-        buf.writeVarInt(positions.size());
-        for (BlockPos pos : positions) {
-            buf.writeInt(pos.getX());
-            buf.writeInt(pos.getY());
-            buf.writeInt(pos.getZ());
-        }
-        NetworkManager.sendToPlayer(player, WAYPOINT_SYNC_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new WaypointSyncS2C(waypointId, positions));
     }
 
     /**
@@ -126,10 +132,6 @@ public final class TutorialWaypointNetworking {
      * @param player the player to send to
      */
     public static void sendClearToPlayer(ServerPlayer player) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                player.registryAccess()
-        );
-        NetworkManager.sendToPlayer(player, WAYPOINT_CLEAR_PACKET_ID, buf);
+        NetworkManager.sendToPlayer(player, new WaypointClearS2C());
     }
 }
