@@ -123,6 +123,11 @@ public final class NoseSmithDialogueScreen extends Screen {
             sendTalkingState(true);
         }
 
+        // Live timer refresh: update dialogue text every second while noseless with active timer
+        if (!lastHasNose && noseSmith.getRegrowthSecondsRemaining() > 0 && keepAliveTicks == 0) {
+            rebuildDialogue(false);
+        }
+
         if (finished) {
             return;
         }
@@ -331,11 +336,24 @@ public final class NoseSmithDialogueScreen extends Screen {
             this.typeProgress = 0.0F;
             this.typedCodepoints = 0;
             this.finished = false;
+        } else if (finished) {
+            // Snap to new total so updated text displays fully
+            this.typedCodepoints = this.totalCodepoints;
+            this.typeProgress = this.totalCodepoints;
         }
     }
 
     private Component buildDialogue() {
         if (!noseSmith.hasNose()) {
+            int seconds = noseSmith.getRegrowthSecondsRemaining();
+            if (seconds > 0) {
+                int min = seconds / 60;
+                int sec = seconds % 60;
+                String time = String.format("%d:%02d", min, sec);
+                return Component.literal("A deal's a deal. Thanks again. My nose will grow back in ")
+                        .append(Component.literal(time).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
+                        .append(Component.literal("."));
+            }
             return Component.literal("A deal's a deal. Thanks again.");
         }
 

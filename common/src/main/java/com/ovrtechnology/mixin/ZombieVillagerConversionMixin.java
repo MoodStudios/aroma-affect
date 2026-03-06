@@ -38,13 +38,16 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
     private String aromaaffect$noseSmithRequestedFlower = "";
     @Unique
     private boolean aromaaffect$noseSmithHouseDecorated = false;
+    @Unique
+    private long aromaaffect$noseSmithNoseRemovedGameTime = -1L;
 
     @Override
-    public void aromaaffect$markAsNoseSmith(boolean hasNose, String requestedFlower, boolean houseDecorated) {
+    public void aromaaffect$markAsNoseSmith(boolean hasNose, String requestedFlower, boolean houseDecorated, long noseRemovedGameTime) {
         this.aromaaffect$wasNoseSmith = true;
         this.aromaaffect$noseSmithHasNose = hasNose;
         this.aromaaffect$noseSmithRequestedFlower = requestedFlower != null ? requestedFlower : "";
         this.aromaaffect$noseSmithHouseDecorated = houseDecorated;
+        this.aromaaffect$noseSmithNoseRemovedGameTime = noseRemovedGameTime;
     }
 
     // ── NBT persistence ──────────────────────────────────────────────────
@@ -56,6 +59,9 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
             output.putBoolean("aromaaffect:NoseSmithHasNose", aromaaffect$noseSmithHasNose);
             output.putString("aromaaffect:NoseSmithRequestedFlower", aromaaffect$noseSmithRequestedFlower);
             output.putBoolean("aromaaffect:NoseSmithHouseDecorated", aromaaffect$noseSmithHouseDecorated);
+            if (aromaaffect$noseSmithNoseRemovedGameTime >= 0) {
+                output.putString("aromaaffect:NoseSmithNoseRemovedGameTime", Long.toString(aromaaffect$noseSmithNoseRemovedGameTime));
+            }
         }
     }
 
@@ -66,6 +72,9 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
             aromaaffect$noseSmithHasNose = input.getBooleanOr("aromaaffect:NoseSmithHasNose", true);
             aromaaffect$noseSmithRequestedFlower = input.getString("aromaaffect:NoseSmithRequestedFlower").orElse("");
             aromaaffect$noseSmithHouseDecorated = input.getBooleanOr("aromaaffect:NoseSmithHouseDecorated", false);
+            aromaaffect$noseSmithNoseRemovedGameTime = input.getString("aromaaffect:NoseSmithNoseRemovedGameTime")
+                    .map(s -> { try { return Long.parseLong(s); } catch (NumberFormatException e) { return -1L; } })
+                    .orElse(-1L);
         }
     }
 
@@ -98,7 +107,8 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
                 noseSmith.restoreNoseSmithData(
                         aromaaffect$noseSmithHasNose,
                         aromaaffect$noseSmithRequestedFlower,
-                        aromaaffect$noseSmithHouseDecorated
+                        aromaaffect$noseSmithHouseDecorated,
+                        aromaaffect$noseSmithNoseRemovedGameTime
                 );
             }
         });

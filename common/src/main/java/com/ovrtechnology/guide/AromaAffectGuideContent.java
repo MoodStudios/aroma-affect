@@ -64,7 +64,7 @@ public final class AromaAffectGuideContent {
         // Hardcoded fallback if JSON loading fails
         AromaAffect.LOGGER.warn("[Guide] Noses JSON failed to load, using empty fallback");
         return GuideCategory.builder("noses", "Noses")
-                .icon(GuideIcon.ofItem(noseItem("basic_nose")))
+                .icon(GuideIcon.ofItem(noseItem("foragers_nose")))
                 .accentColor(0xFFE8A838)
                 .build();
     }

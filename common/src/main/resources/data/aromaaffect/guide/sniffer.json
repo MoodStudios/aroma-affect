@@ -15,7 +15,7 @@
         { "type": "spacer", "height": 8 },
         { "type": "tip", "translate": "guide.aromaaffect.sniffer.overview.tip_ancient" },
         { "type": "spacer", "height": 6 },
-        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.overview.link_precise", "target_page": "netherite_nose" },
+        { "type": "ability_link", "translate": "guide.aromaaffect.sniffer.overview.link_precise", "target_page": "ancient_nose" },
         { "type": "spacer", "height": 8 },
         { "type": "subheader", "translate": "guide.aromaaffect.sniffer.overview.what_can_header" },
         { "type": "text", "translate": "guide.aromaaffect.sniffer.overview.what_can_list" },

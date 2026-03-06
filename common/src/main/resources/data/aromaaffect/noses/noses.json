@@ -1,8 +1,8 @@
 {
   "noses": [
     {
-      "id": "basic_nose",
-      "image": "item/basic_nose",
+      "id": "foragers_nose",
+      "image": "item/foragers_nose",
       "model": "minecraft:iron_helmet",
       "tier": 1,
       "durability": 100,
@@ -34,8 +34,8 @@
       }
     },
     {
-      "id": "gold_nose",
-      "image": "item/gold_nose",
+      "id": "prospectors_nose",
+      "image": "item/prospectors_nose",
       "model": "minecraft:golden_helmet",
       "tier": 2,
       "durability": 150,
@@ -81,13 +81,13 @@
           "active_tracking"
         ],
         "noses": [
-          "basic_nose"
+          "foragers_nose"
         ]
       }
     },
     {
-      "id": "diamond_nose",
-      "image": "item/diamond_nose",
+      "id": "jewelers_nose",
+      "image": "item/jewelers_nose",
       "model": "minecraft:diamond_helmet",
       "tier": 3,
       "durability": 500,
@@ -122,13 +122,13 @@
           "danger_sense"
         ],
         "noses": [
-          "gold_nose"
+          "prospectors_nose"
         ]
       }
     },
     {
-      "id": "blaze_nose",
-      "image": "item/blaze_nose",
+      "id": "dimensional_nose",
+      "image": "item/dimensional_nose",
       "model": "minecraft:chainmail_helmet",
       "tier": 4,
       "durability": 500,
@@ -145,13 +145,13 @@
         "flowers": [],
         "abilities": [],
         "noses": [
-          "diamond_nose"
+          "jewelers_nose"
         ]
       }
     },
     {
-      "id": "netherite_nose",
-      "image": "item/netherite_nose",
+      "id": "ancient_nose",
+      "image": "item/ancient_nose",
       "model": "minecraft:netherite_helmet",
       "tier": 5,
       "durability": 750,
@@ -172,13 +172,13 @@
           "precise_sniffer"
         ],
         "noses": [
-          "blaze_nose"
+          "dimensional_nose"
         ]
       }
     },
     {
-      "id": "ultimate_nose",
-      "image": "item/ultimate_nose",
+      "id": "dragon_nose",
+      "image": "item/dragon_nose",
       "model": "minecraft:leather_helmet",
       "tier": 6,
       "durability": 1000,
@@ -218,7 +218,7 @@
           "omniscent"
         ],
         "noses": [
-          "netherite_nose"
+          "ancient_nose"
         ]
       }
     }

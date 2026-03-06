@@ -1,6 +1,1 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "aromaaffect:item/diamond_nose"
-  }
-}
+{"parent":"minecraft:item/generated","textures":{"layer0":"aromaaffect:item/jewelers_nose"}}

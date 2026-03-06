@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Loads nose definitions from JSON files.
  * Parses the data/aromaaffect/noses/ directory for nose definitions.
- * Handles texture validation and fallback to basic_nose texture.
+ * Handles texture validation and fallback to foragers_nose texture.
  * 
  * Note: Recipes are defined separately in data/aromaaffect/recipe/ as standard Minecraft recipe JSON files.
  */
@@ -36,7 +36,7 @@ public class NoseDefinitionLoader {
     /**
      * Default texture path for fallback
      */
-    private static final String DEFAULT_TEXTURE = "item/basic_nose";
+    private static final String DEFAULT_TEXTURE = "item/foragers_nose";
     
     /**
      * Default model (iron helmet) for fallback
@@ -183,7 +183,7 @@ public class NoseDefinitionLoader {
      */
     private static boolean textureExists(String texturePath) {
         // Convert texture path to full resource path
-        // texturePath is like "item/basic_nose", full path is "assets/aromaaffect/textures/item/basic_nose.png"
+        // texturePath is like "item/foragers_nose", full path is "assets/aromaaffect/textures/item/foragers_nose.png"
         String fullPath = "assets/aromaaffect/textures/" + texturePath + ".png";
         
         try (InputStream stream = NoseDefinitionLoader.class.getClassLoader().getResourceAsStream(fullPath)) {
