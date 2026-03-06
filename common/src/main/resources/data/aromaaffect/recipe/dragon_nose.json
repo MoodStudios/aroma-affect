@@ -8,11 +8,11 @@
   ],
   "key": {
     "D": "minecraft:dragon_breath",
-    "A": "aromaaffect:netherite_nose",
+    "A": "aromaaffect:ancient_nose",
     "E": "minecraft:ender_eye"
   },
   "result": {
-    "id": "aromaaffect:ultimate_nose",
+    "id": "aromaaffect:dragon_nose",
     "count": 1
   }
 }

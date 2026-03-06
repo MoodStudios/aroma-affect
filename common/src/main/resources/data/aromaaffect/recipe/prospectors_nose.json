@@ -2,18 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "DDD",
-    "DND",
+    "GGG",
+    "GNG",
     "SBS"
   ],
   "key": {
-    "D": "minecraft:diamond",
-    "N": "aromaaffect:gold_nose",
+    "G": "minecraft:gold_ingot",
+    "N": "aromaaffect:foragers_nose",
     "B": "minecraft:bone_meal",
     "S": "minecraft:string"
   },
   "result": {
-    "id": "aromaaffect:diamond_nose",
+    "id": "aromaaffect:prospectors_nose",
     "count": 1
   }
 }

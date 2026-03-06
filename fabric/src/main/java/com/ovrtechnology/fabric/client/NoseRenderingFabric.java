@@ -13,6 +13,9 @@ public final class NoseRenderingFabric {
         for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getAllNoses()) {
             ArmorRenderer.register(NoseArmorRenderer::new, supplier.get());
         }
+        for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getLegacyItems()) {
+            ArmorRenderer.register(NoseArmorRenderer::new, supplier.get());
+        }
     }
 }
 

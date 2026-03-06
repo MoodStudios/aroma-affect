@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 public class NoseDefinition {
     
     /**
-     * Unique identifier for this nose (e.g., "basic_nose", "iron_nose")
+     * Unique identifier for this nose (e.g., "foragers_nose", "iron_nose")
      */
     @SerializedName("id")
     private String id;

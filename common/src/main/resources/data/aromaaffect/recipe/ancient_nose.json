@@ -8,11 +8,11 @@
   ],
   "key": {
     "N": "minecraft:netherite_scrap",
-    "A": "aromaaffect:blaze_nose",
+    "A": "aromaaffect:dimensional_nose",
     "G": "minecraft:ghast_tear"
   },
   "result": {
-    "id": "aromaaffect:netherite_nose",
+    "id": "aromaaffect:ancient_nose",
     "count": 1
   }
 }

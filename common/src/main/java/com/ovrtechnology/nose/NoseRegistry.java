@@ -40,6 +40,13 @@ public final class NoseRegistry {
     private static final Map<String, NoseDefinition> noseDefinitions = new HashMap<>();
     
     /**
+     * Legacy alias suppliers (old IDs pointing to equivalent items).
+     * Used by renderers to register the custom model for old-world items.
+     */
+    @Getter
+    private static final List<RegistrySupplier<NoseItem>> legacyItems = new ArrayList<>();
+
+    /**
      * Whether the registry has been initialized
      */
     @Getter
@@ -66,6 +73,9 @@ public final class NoseRegistry {
             registerNose(definition);
         }
         
+        // Register legacy aliases so old worlds keep their items
+        registerLegacyAliases();
+
         // Register the deferred register with Architectury
         ITEMS.register();
         
@@ -98,6 +108,24 @@ public final class NoseRegistry {
         AromaAffect.LOGGER.debug("Registered nose item: {}", id);
     }
     
+    /**
+     * Registers old nose IDs as aliases pointing to the same definitions.
+     * This ensures items in old worlds are preserved when loaded.
+     * Legacy items won't appear in creative tabs or the guide.
+     */
+    private static void registerLegacyAliases() {
+        for (Map.Entry<String, String> entry : NoseIdRemapper.getMappings().entrySet()) {
+            String oldId = entry.getKey();
+            String newId = entry.getValue();
+            NoseDefinition def = noseDefinitions.get(newId);
+            if (def == null) continue;
+
+            RegistrySupplier<NoseItem> supplier = ITEMS.register(oldId, () -> new NoseItem(def, oldId));
+            legacyItems.add(supplier);
+            AromaAffect.LOGGER.debug("Registered legacy alias: {} -> {}", oldId, newId);
+        }
+    }
+
     /**
      * Get a registered nose item by ID
      */

@@ -1,6 +1,7 @@
 package com.ovrtechnology.nose.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.nose.NoseIdRemapper;
 import com.ovrtechnology.nose.NoseItem;
 import dev.architectury.registry.client.level.entity.EntityModelLayerRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -26,12 +27,13 @@ public final class NoseClient {
 
     public static ResourceLocation getArmorTexture(ItemStack stack) {
         if (stack.getItem() instanceof NoseItem noseItem) {
+            String resolvedId = NoseIdRemapper.resolve(noseItem.getItemId());
             return ResourceLocation.fromNamespaceAndPath(
                     AromaAffect.MOD_ID,
-                    "textures/entity/nose/" + noseItem.getItemId() + ".png"
+                    "textures/entity/nose/" + resolvedId + ".png"
             );
         }
 
-        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose/basic_nose.png");
+        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose/foragers_nose.png");
     }
 }

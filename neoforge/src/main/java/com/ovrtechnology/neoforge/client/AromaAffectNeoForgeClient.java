@@ -56,6 +56,9 @@ public final class AromaAffectNeoForgeClient {
         for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getAllNoses()) {
             event.registerItem(extensions, supplier.get());
         }
+        for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getLegacyItems()) {
+            event.registerItem(extensions, supplier.get());
+        }
     }
 }
 

@@ -7,7 +7,7 @@ package com.ovrtechnology.tutorial.waypoint;
  * the system checks which nose they have equipped and activates
  * the corresponding next waypoint.
  *
- * @param noseId         the nose ID to match (e.g., "gold_nose", "diamond_nose")
+ * @param noseId         the nose ID to match (e.g., "prospectors_nose", "jewelers_nose")
  * @param nextWaypointId the waypoint ID to activate if the nose matches
  */
 public record NoseChainCondition(String noseId, String nextWaypointId) {

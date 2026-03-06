@@ -87,12 +87,20 @@ public class NoseSmithEntity extends Villager {
     private static final int DIALOGUE_KEEPALIVE_TIMEOUT_TICKS = 100;
     private static final double DIALOGUE_MAX_DISTANCE_SQR = 8.0D * 8.0D;
 
+    private static final long NOSE_REGROWTH_TICKS = 12_000L; // 10 min @ 20 TPS
+    private static final int REGROWTH_SYNC_INTERVAL = 20;    // sync to client every 1s
+    private static final String TAG_NOSE_REMOVED_TIME = "NoseRemovedGameTime";
+
+    private static final EntityDataAccessor<Integer> REGROWTH_SECONDS_REMAINING =
+            SynchedEntityData.defineId(NoseSmithEntity.class, EntityDataSerializers.INT);
+
     private static volatile List<FlowerVariant> cachedPottableSmallFlowers;
 
     @Nullable
     private ResourceLocation requestedFlower;
 
     private boolean houseDecorated = false;
+    private long noseRemovedGameTime = -1L; // -1 = not tracking (nose is present)
 
     @Nullable
     private UUID dialoguePlayerId;
@@ -119,6 +127,7 @@ public class NoseSmithEntity extends Villager {
         super.defineSynchedData(builder);
         builder.define(HAS_NOSE, true);
         builder.define(REQUESTED_FLOWER_ID, "");
+        builder.define(REGROWTH_SECONDS_REMAINING, 0);
     }
 
     public boolean hasNose() {
@@ -127,6 +136,10 @@ public class NoseSmithEntity extends Villager {
 
     public void setHasNose(boolean hasNose) {
         this.entityData.set(HAS_NOSE, hasNose);
+    }
+
+    public int getRegrowthSecondsRemaining() {
+        return this.entityData.get(REGROWTH_SECONDS_REMAINING);
     }
 
     @Nullable
@@ -147,8 +160,11 @@ public class NoseSmithEntity extends Villager {
             output.putString(TAG_REQUESTED_FLOWER, requestedFlower.toString());
         }
         output.putBoolean(TAG_HOUSE_DECORATED, houseDecorated);
+        if (noseRemovedGameTime >= 0) {
+            output.putString(TAG_NOSE_REMOVED_TIME, Long.toString(noseRemovedGameTime));
+        }
     }
-    
+
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
@@ -161,6 +177,10 @@ public class NoseSmithEntity extends Villager {
         this.entityData.set(REQUESTED_FLOWER_ID, requestedFlower != null ? requestedFlower.toString() : "");
 
         houseDecorated = input.getBooleanOr(TAG_HOUSE_DECORATED, false);
+
+        noseRemovedGameTime = input.getString(TAG_NOSE_REMOVED_TIME)
+                .map(s -> { try { return Long.parseLong(s); } catch (NumberFormatException e) { return -1L; } })
+                .orElse(-1L);
     }
 
     @Override
@@ -171,7 +191,8 @@ public class NoseSmithEntity extends Villager {
             marker.aromaaffect$markAsNoseSmith(
                     hasNose(),
                     requestedFlower != null ? requestedFlower.toString() : "",
-                    houseDecorated
+                    houseDecorated,
+                    noseRemovedGameTime
             );
         }
         return result;
@@ -187,15 +208,18 @@ public class NoseSmithEntity extends Villager {
         this.houseDecorated = false;
         this.dialoguePlayerId = null;
         this.dialogueKeepAliveTicks = 0;
+        this.noseRemovedGameTime = -1L;
+        this.entityData.set(REGROWTH_SECONDS_REMAINING, 0);
     }
 
-    public void restoreNoseSmithData(boolean hadNose, String requestedFlowerStr, boolean wasHouseDecorated) {
+    public void restoreNoseSmithData(boolean hadNose, String requestedFlowerStr, boolean wasHouseDecorated, long noseRemovedTime) {
         setHasNose(hadNose);
         if (requestedFlowerStr != null && !requestedFlowerStr.isEmpty()) {
             this.requestedFlower = ResourceLocation.tryParse(requestedFlowerStr);
             this.entityData.set(REQUESTED_FLOWER_ID, requestedFlowerStr);
         }
         this.houseDecorated = wasHouseDecorated;
+        this.noseRemovedGameTime = noseRemovedTime;
     }
 
     @Override
@@ -236,6 +260,7 @@ public class NoseSmithEntity extends Villager {
         }
 
         tickDialogueSession(serverLevel);
+        tickNoseRegrowth(serverLevel);
         ensureRequestedFlowerInitialized(serverLevel);
         decorateHouseOnce(serverLevel);
         tryConsumeRequestedFlowerAndReward(serverLevel);
@@ -412,6 +437,22 @@ public class NoseSmithEntity extends Villager {
             }
         }
 
+        int flowersPlaced = placeQuestFlowers(serverLevel);
+
+        fillChestsWithScents(serverLevel, origin, min, max, random);
+
+        houseDecorated = true;
+        AromaAffect.LOGGER.debug("Decorated Nose Smith house: filled {} pots, replaced {} ground flowers, placed {} quest flowers", potsFilled, groundFlowersReplaced, flowersPlaced);
+    }
+
+    private int placeQuestFlowers(ServerLevel serverLevel) {
+        Block requested = getRequestedFlowerBlock(serverLevel);
+        if (requested == null) {
+            return 0;
+        }
+
+        RandomSource random = this.getRandom();
+        BlockPos origin = this.blockPosition();
         int flowersPlaced = 0;
         BlockState flowerState = requested.defaultBlockState();
 
@@ -465,10 +506,54 @@ public class NoseSmithEntity extends Villager {
             }
         }
 
-        fillChestsWithScents(serverLevel, origin, min, max, random);
+        return flowersPlaced;
+    }
 
-        houseDecorated = true;
-        AromaAffect.LOGGER.debug("Decorated Nose Smith house: filled {} pots, replaced {} ground flowers, placed {} quest flowers", potsFilled, groundFlowersReplaced, flowersPlaced);
+    private void tickNoseRegrowth(ServerLevel serverLevel) {
+        if (hasNose()) {
+            // Nose is present — ensure timer fields are clean
+            if (noseRemovedGameTime >= 0) {
+                noseRemovedGameTime = -1L;
+                this.entityData.set(REGROWTH_SECONDS_REMAINING, 0);
+            }
+            return;
+        }
+
+        // Backwards compat: noseless but no timestamp → start timer from now
+        if (noseRemovedGameTime < 0) {
+            noseRemovedGameTime = serverLevel.getGameTime();
+        }
+
+        long elapsed = serverLevel.getGameTime() - noseRemovedGameTime;
+        if (elapsed >= NOSE_REGROWTH_TICKS) {
+            regrowNose(serverLevel);
+            return;
+        }
+
+        // Sync remaining seconds to client periodically
+        if (this.tickCount % REGROWTH_SYNC_INTERVAL == 0) {
+            long ticksRemaining = NOSE_REGROWTH_TICKS - elapsed;
+            int secondsRemaining = Math.max(0, (int) (ticksRemaining / 20));
+            this.entityData.set(REGROWTH_SECONDS_REMAINING, secondsRemaining);
+        }
+    }
+
+    private void regrowNose(ServerLevel serverLevel) {
+        setHasNose(true);
+        noseRemovedGameTime = -1L;
+        this.entityData.set(REGROWTH_SECONDS_REMAINING, 0);
+
+        // Clear requested flower and pick a new one
+        this.requestedFlower = null;
+        this.entityData.set(REQUESTED_FLOWER_ID, "");
+        ensureRequestedFlowerInitialized(serverLevel);
+
+        // Place 1-2 quest flowers nearby
+        placeQuestFlowers(serverLevel);
+
+        // Visual + audio feedback
+        headNodTicks = 40;
+        serverLevel.playSound(null, this.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 1.0F, 1.0F);
     }
 
     private void tryConsumeRequestedFlowerAndReward(ServerLevel serverLevel) {
@@ -513,8 +598,9 @@ public class NoseSmithEntity extends Villager {
 
     private void giveNoseReward(ServerLevel serverLevel, @Nullable Player receiver) {
         setHasNose(false);
+        this.noseRemovedGameTime = serverLevel.getGameTime();
 
-        ItemStack noseItem = NoseRegistry.getNoseSupplier("basic_nose")
+        ItemStack noseItem = NoseRegistry.getNoseSupplier("foragers_nose")
                 .map(supplier -> new ItemStack(supplier.get()))
                 .orElse(ItemStack.EMPTY);
 
@@ -538,7 +624,7 @@ public class NoseSmithEntity extends Villager {
 
             serverLevel.addFreshEntity(drop);
         } else {
-            AromaAffect.LOGGER.warn("Failed to drop basic_nose: item not registered");
+            AromaAffect.LOGGER.warn("Failed to drop foragers_nose: item not registered");
         }
 
         headNodTicks = 40;
