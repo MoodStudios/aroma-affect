@@ -14,7 +14,7 @@
       "image": "structure/village",
       "fallback_name": "Desert Village",
       "color_html": "#C2B280",
-      "scent_id": "desert",
+      "scent_id": "savory_spice",
       "blocks": ["minecraft:sandstone", "minecraft:bell", "minecraft:terracotta"],
       "track_cost": 5
     },
@@ -23,7 +23,7 @@
       "image": "structure/village",
       "fallback_name": "Savanna Village",
       "color_html": "#BDB76B",
-      "scent_id": "kindred",
+      "scent_id": "savory_spice",
       "blocks": ["minecraft:acacia_log", "minecraft:bell"],
       "track_cost": 5
     },
@@ -188,7 +188,7 @@
       "image": "structure/jungle_pyramid",
       "fallback_name": "Jungle Temple",
       "color_html": "#556B2F",
-      "scent_id": "evergreen",
+      "scent_id": "citrus",
       "range": 35,
       "blocks": ["minecraft:cobblestone", "minecraft:mossy_cobblestone", "minecraft:chiseled_stone_bricks"],
       "track_cost": 25

@@ -58,7 +58,7 @@
     },
     {
       "entity_type": "minecraft:llama",
-      "scent_id": "barnyard",
+      "scent_id": "savory_spice",
       "fallback_name": "Llama",
       "color_html": "#C09E7B",
       "range": 5,
@@ -90,7 +90,7 @@
     },
     {
       "entity_type": "minecraft:ocelot",
-      "scent_id": "evergreen",
+      "scent_id": "citrus",
       "fallback_name": "Ocelot",
       "color_html": "#EFDE7D",
       "range": 4,
@@ -114,7 +114,7 @@
     },
     {
       "entity_type": "minecraft:bee",
-      "scent_id": "floral",
+      "scent_id": "sweet",
       "fallback_name": "Bee",
       "color_html": "#EDD35F",
       "range": 3,
@@ -131,7 +131,7 @@
     },
     {
       "entity_type": "minecraft:panda",
-      "scent_id": "evergreen",
+      "scent_id": "citrus",
       "fallback_name": "Panda",
       "color_html": "#E7E7E7",
       "range": 5,
@@ -139,7 +139,7 @@
     },
     {
       "entity_type": "minecraft:parrot",
-      "scent_id": "evergreen",
+      "scent_id": "citrus",
       "fallback_name": "Parrot",
       "color_html": "#FF0000",
       "range": 4,
@@ -244,7 +244,7 @@
     },
     {
       "entity_type": "minecraft:camel",
-      "scent_id": "desert",
+      "scent_id": "savory_spice",
       "fallback_name": "Camel",
       "color_html": "#FACB73",
       "range": 6,
@@ -422,12 +422,20 @@
     },
     {
       "entity_type": "minecraft:allay",
-      "scent_id": "floral",
+      "scent_id": "sweet",
       "fallback_name": "Allay",
       "color_html": "#00D4FF",
       "range": 5,
       "priority": "MEDLOW",
       "intensity": 0.5
+    },
+    {
+      "entity_type": "minecraft:mooshroom",
+      "scent_id": "sweet",
+      "fallback_name": "Mooshroom",
+      "color_html": "#A00F10",
+      "range": 5,
+      "priority": "MEDLOW"
     }
   ]
 }
