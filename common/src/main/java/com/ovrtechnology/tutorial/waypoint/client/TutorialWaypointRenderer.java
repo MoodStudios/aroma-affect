@@ -38,20 +38,6 @@ public final class TutorialWaypointRenderer {
             1.0f         // Medium size (more visible)
     );
 
-    // Green dust particles for endpoint marker
-    private static final DustParticleOptions GREEN_DUST = new DustParticleOptions(
-            0xFF00FF88,  // Bright green
-            1.2f
-    );
-    private static final DustParticleOptions GREEN_DUST_SMALL = new DustParticleOptions(
-            0xFF44FFAA,  // Lighter green
-            0.8f
-    );
-    private static final DustParticleOptions GREEN_DUST_BRIGHT = new DustParticleOptions(
-            0xFF88FFCC,  // Very bright green
-            1.5f
-    );
-
     // Active waypoint state
     @Nullable
     private static String activeWaypointId = null;
@@ -107,6 +93,11 @@ public final class TutorialWaypointRenderer {
         totalPathLength = calculatePathLength(pathPoints);
         pulseProgress = 0.0;
 
+        // Set the hologram target to the endpoint
+        if (!pathPoints.isEmpty()) {
+            TutorialArrowHologram.setTarget(pathPoints.get(pathPoints.size() - 1));
+        }
+
         AromaAffect.LOGGER.debug("Waypoint renderer activated: {} ({} points, {:.1f} blocks)",
                 id, positions.size(), totalPathLength);
     }
@@ -119,6 +110,10 @@ public final class TutorialWaypointRenderer {
         pathPoints.clear();
         totalPathLength = 0.0;
         pulseProgress = 0.0;
+
+        // Clear the hologram
+        TutorialArrowHologram.clear();
+
         AromaAffect.LOGGER.debug("Waypoint renderer cleared");
     }
 
@@ -182,9 +177,8 @@ public final class TutorialWaypointRenderer {
             renderPulseAt(level, secondPulseProgress);
         }
 
-        // Render endpoint markers
+        // Render start marker only (end is rendered by TutorialArrowHologram)
         renderEndpointMarker(level, pathPoints.get(0), true);
-        renderEndpointMarker(level, pathPoints.get(pathPoints.size() - 1), false);
     }
 
     private static void renderPulseAt(ClientLevel level, double progress) {
@@ -240,10 +234,8 @@ public final class TutorialWaypointRenderer {
     }
 
     private static void renderEndpointMarker(ClientLevel level, Vec3 pos, boolean isStart) {
-        double baseY = pos.y + 1.5;
-
         if (isStart) {
-            // Start point: small yellow sparkle ring
+            // Start point: small purple sparkle ring
             double time = System.currentTimeMillis() / 1000.0;
             for (int i = 0; i < 4; i++) {
                 double angle = time * 2.0 + (Math.PI * 0.5 * i);
@@ -256,64 +248,8 @@ public final class TutorialWaypointRenderer {
                         0, 0.02, 0
                 );
             }
-        } else {
-            // End point: animated spinning green rings
-            double time = System.currentTimeMillis() / 1000.0;
-
-            // ═══════════════════════════════════════════════════════════════
-            // OUTER RING - Main spinning circle (clockwise)
-            // ═══════════════════════════════════════════════════════════════
-            double outerRadius = 0.9;
-            int outerPoints = 16;
-            double outerRotation = time * 1.5;  // Moderate spin speed
-            for (int i = 0; i < outerPoints; i++) {
-                double angle = outerRotation + (2.0 * Math.PI * i / outerPoints);
-                double px = pos.x + Math.cos(angle) * outerRadius;
-                double pz = pos.z + Math.sin(angle) * outerRadius;
-                // Gentle wave on Y axis for 3D feel
-                double waveY = baseY + Math.sin(angle * 2.0 + time * 3.0) * 0.15;
-
-                level.addParticle(GREEN_DUST, px, waveY, pz, 0, 0, 0);
-            }
-
-            // ═══════════════════════════════════════════════════════════════
-            // INNER RING - Counter-rotating smaller circle
-            // ═══════════════════════════════════════════════════════════════
-            double innerRadius = 0.45;
-            int innerPoints = 10;
-            double innerRotation = -time * 2.5;  // Faster, opposite direction
-            for (int i = 0; i < innerPoints; i++) {
-                double angle = innerRotation + (2.0 * Math.PI * i / innerPoints);
-                double px = pos.x + Math.cos(angle) * innerRadius;
-                double pz = pos.z + Math.sin(angle) * innerRadius;
-                double waveY = baseY + Math.sin(angle * 3.0 + time * 4.0) * 0.1;
-
-                level.addParticle(GREEN_DUST_SMALL, px, waveY, pz, 0, 0, 0);
-            }
-
-            // ═══════════════════════════════════════════════════════════════
-            // ORBITING BRIGHT PARTICLES - 3 bright orbs chasing each other
-            // ═══════════════════════════════════════════════════════════════
-            double orbRadius = 0.7;
-            for (int i = 0; i < 3; i++) {
-                double orbAngle = time * 2.0 + (2.0 * Math.PI * i / 3.0);
-                double px = pos.x + Math.cos(orbAngle) * orbRadius;
-                double pz = pos.z + Math.sin(orbAngle) * orbRadius;
-                double orbY = baseY + Math.sin(time * 3.0 + i * 2.0) * 0.25;
-
-                level.addParticle(GREEN_DUST_BRIGHT, px, orbY, pz, 0, 0.01, 0);
-            }
-
-            // ═══════════════════════════════════════════════════════════════
-            // CENTER COLUMN - Gentle upward particles
-            // ═══════════════════════════════════════════════════════════════
-            double centerY = baseY - 0.3 + Math.abs(Math.sin(time * 2.0)) * 0.6;
-            level.addParticle(GREEN_DUST_BRIGHT, pos.x, centerY, pos.z, 0, 0.03, 0);
-
-            // Floating sparkle above
-            double sparkleY = baseY + 0.7 + Math.sin(time * 2.5) * 0.15;
-            level.addParticle(GREEN_DUST_SMALL, pos.x, sparkleY, pos.z, 0, 0.02, 0);
         }
+        // End point is now rendered by TutorialArrowHologram (UTF-8 3D text)
     }
 
     /**

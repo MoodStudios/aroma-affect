@@ -1,13 +1,22 @@
 package com.ovrtechnology.tutorial.spawn;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.network.TutorialAnimationNetworking;
+import com.ovrtechnology.network.TutorialChestNetworking;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.network.TutorialIntroNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
+import com.ovrtechnology.tutorial.animation.TutorialAnimationManager;
+import com.ovrtechnology.tutorial.boss.TutorialBossAreaHandler;
+import com.ovrtechnology.tutorial.boss.TutorialBossAreaManager;
+import com.ovrtechnology.tutorial.chest.TutorialChestManager;
 import com.ovrtechnology.tutorial.cinematic.TutorialCinematicHandler;
 import com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler;
+import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
+import com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler;
 import com.ovrtechnology.tutorial.portal.TutorialNetherPortalBlocker;
+import com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaManager;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypoint;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointAreaHandler;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointManager;
@@ -24,6 +33,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Set;
@@ -85,27 +96,36 @@ public final class TutorialJoinHandler {
         // Check if spawn point is set
         var spawnOpt = TutorialSpawnManager.getSpawn(level);
         if (spawnOpt.isEmpty()) {
+            AromaAffect.LOGGER.warn("Tutorial is active but no spawn point configured! Use /tutorial setspawn");
             return;
         }
 
-        // Prevent duplicate processing (e.g., dimension changes)
-        // Players who disconnect/die during intro are allowed to re-trigger
+        // SINGLEPLAYER OPTIMIZATION: Auto-reset everything when player joins
+        // This ensures a fresh tutorial experience every time the player enters
+        boolean isSingleplayer = level.getServer().isSingleplayer();
+
+        if (isSingleplayer) {
+            AromaAffect.LOGGER.info("Singleplayer detected - performing auto-reset for tutorial");
+            performFullReset(player, level);
+            return;
+        }
+
+        // MULTIPLAYER FLOW (original logic)
+        // Clean up any previous state
         if (playersInIntro.contains(player.getUUID())) {
-            // Was in intro, clean up and let them re-enter
             playersInIntro.remove(player.getUUID());
             TutorialCinematicHandler.stopCinematic(player);
             processedPlayers.remove(player.getUUID());
         }
 
-        if (!processedPlayers.add(player.getUUID())) {
-            return;
-        }
+        // Only show intro sequence once per session, but ALWAYS teleport to spawn
+        boolean isFirstJoin = processedPlayers.add(player.getUUID());
 
         TutorialSpawnManager.SpawnData spawn = spawnOpt.get();
 
-        // Check if there's an intro cinematic configured
+        // Check if there's an intro cinematic configured (only for first join)
         var introCinematicOpt = TutorialSpawnManager.getIntroCinematicId(level);
-        if (introCinematicOpt.isPresent()) {
+        if (isFirstJoin && introCinematicOpt.isPresent()) {
             // Intro cinematic flow: start looping cinematic + open intro screen
             playersInIntro.add(player.getUUID());
             TutorialCinematicHandler.startCinematic(player, introCinematicOpt.get(), true);
@@ -115,7 +135,7 @@ public final class TutorialJoinHandler {
             return;
         }
 
-        // Default flow: teleport + intro sequence + first waypoint
+        // ALWAYS teleport to tutorial spawn point when tutorial is active
         player.teleportTo(
                 level,
                 spawn.pos().getX() + 0.5,
@@ -130,13 +150,14 @@ public final class TutorialJoinHandler {
         // Sync custom dialogue texts to client
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
 
-        // Execute cinematic intro sequence
-        playIntroSequence(player, level);
+        // Only play intro sequence on first join
+        if (isFirstJoin) {
+            playIntroSequence(player, level);
+            activateFirstWaypoint(player, level);
+        }
 
-        // Activate first waypoint if configured
-        activateFirstWaypoint(player, level);
-
-        AromaAffect.LOGGER.debug("Player {} teleported to tutorial spawn", player.getName().getString());
+        AromaAffect.LOGGER.info("Player {} teleported to tutorial spawn (firstJoin={})",
+                player.getName().getString(), isFirstJoin);
     }
 
     private static void activateFirstWaypoint(ServerPlayer player, ServerLevel level) {
@@ -224,18 +245,52 @@ public final class TutorialJoinHandler {
     }
 
     /**
-     * Called when a player clicks START on the intro screen.
-     * Stops cinematic, teleports to spawn, plays intro sequence, activates first waypoint.
+     * Called when a player clicks PLAY DEMO on the intro screen.
+     * Performs full reset, teleports to spawn, plays intro sequence, activates first waypoint.
      */
-    public static void handleIntroStart(ServerPlayer player) {
+    public static void handlePlayDemo(ServerPlayer player) {
         if (!playersInIntro.remove(player.getUUID())) {
             return;
         }
 
         ServerLevel level = (ServerLevel) player.level();
+        UUID playerId = player.getUUID();
 
         // Stop the looping cinematic
         TutorialCinematicHandler.stopCinematic(player);
+
+        // FULL RESET: Reset all world and player state
+        // Re-enable map protection
+        com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler.disableBypass();
+
+        // Reset world state
+        TutorialChestManager.resetAllChests(level);
+        TutorialAnimationManager.resetAllAnimations(level);
+        TutorialRegenAreaManager.restoreAllAreas(level);
+
+        // Reset player inventory and health
+        player.getInventory().clearContent();
+        player.setHealth(player.getMaxHealth());
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().setSaturation(5.0f);
+        player.setGameMode(GameType.SURVIVAL);
+
+        // Reset all entities (Oliver, NoseSmith)
+        resetAllEntities(level);
+
+        // Reset player progress tracking
+        processedPlayers.remove(playerId);
+        TutorialWaypointAreaHandler.resetPlayer(playerId);
+        TutorialNoseEquipHandler.resetPlayer(playerId);
+        TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
+        TutorialBossAreaHandler.clearAllBosses();
+        TutorialPopupZoneHandler.clearPlayer(playerId);
+
+        // Clear client-side state
+        TutorialWaypointNetworking.sendClearToPlayer(player);
+        TutorialChestNetworking.syncAllChestsToPlayer(player);
+        TutorialAnimationNetworking.sendAnimationReset(player);
+        TutorialDialogueContentNetworking.syncToPlayer(player, level);
 
         // Teleport to spawn
         var spawnOpt = TutorialSpawnManager.getSpawn(level);
@@ -259,7 +314,92 @@ public final class TutorialJoinHandler {
         // Activate first waypoint
         activateFirstWaypoint(player, level);
 
-        AromaAffect.LOGGER.debug("Player {} started tutorial from intro screen", player.getName().getString());
+        AromaAffect.LOGGER.info("Player {} started tutorial (PLAY DEMO) - full reset performed", player.getName().getString());
+    }
+
+    /**
+     * Called when a player clicks WALKAROUND on the intro screen.
+     * Performs full reset, teleports to walkaround spawn for free exploration.
+     */
+    public static void handleWalkaround(ServerPlayer player) {
+        if (!playersInIntro.remove(player.getUUID())) {
+            return;
+        }
+
+        ServerLevel level = (ServerLevel) player.level();
+        UUID playerId = player.getUUID();
+
+        // Stop the looping cinematic
+        TutorialCinematicHandler.stopCinematic(player);
+
+        // FULL RESET: Reset all world and player state
+        // Re-enable map protection
+        com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler.disableBypass();
+
+        // Reset world state
+        TutorialChestManager.resetAllChests(level);
+        TutorialAnimationManager.resetAllAnimations(level);
+        TutorialRegenAreaManager.restoreAllAreas(level);
+
+        // Reset player inventory and health
+        player.getInventory().clearContent();
+        player.setHealth(player.getMaxHealth());
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().setSaturation(5.0f);
+        player.setGameMode(GameType.SURVIVAL);
+
+        // Reset all entities (Oliver, NoseSmith)
+        resetAllEntities(level);
+
+        // Reset player progress tracking
+        processedPlayers.remove(playerId);
+        TutorialWaypointAreaHandler.resetPlayer(playerId);
+        TutorialNoseEquipHandler.resetPlayer(playerId);
+        TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
+        TutorialBossAreaHandler.clearAllBosses();
+        TutorialPopupZoneHandler.clearPlayer(playerId);
+
+        // Clear client-side state
+        TutorialWaypointNetworking.sendClearToPlayer(player);
+        TutorialChestNetworking.syncAllChestsToPlayer(player);
+        TutorialAnimationNetworking.sendAnimationReset(player);
+        TutorialDialogueContentNetworking.syncToPlayer(player, level);
+
+        // Teleport to walkaround spawn (if set), otherwise use normal spawn
+        var walkaroundOpt = TutorialSpawnManager.getWalkaroundSpawn(level);
+        if (walkaroundOpt.isPresent()) {
+            TutorialSpawnManager.SpawnData spawn = walkaroundOpt.get();
+            player.teleportTo(
+                    level,
+                    spawn.pos().getX() + 0.5,
+                    spawn.pos().getY(),
+                    spawn.pos().getZ() + 0.5,
+                    Set.of(),
+                    spawn.yaw(),
+                    spawn.pitch(),
+                    false
+            );
+            AromaAffect.LOGGER.info("Player {} entered WALKAROUND mode at {} - full reset performed", player.getName().getString(), spawn.pos());
+        } else {
+            // Fallback to normal spawn if walkaround not configured
+            var spawnOpt = TutorialSpawnManager.getSpawn(level);
+            if (spawnOpt.isPresent()) {
+                TutorialSpawnManager.SpawnData spawn = spawnOpt.get();
+                player.teleportTo(
+                        level,
+                        spawn.pos().getX() + 0.5,
+                        spawn.pos().getY(),
+                        spawn.pos().getZ() + 0.5,
+                        Set.of(),
+                        spawn.yaw(),
+                        spawn.pitch(),
+                        false
+                );
+            }
+            AromaAffect.LOGGER.warn("No walkaround spawn set - using normal spawn. Set with /tutorial setwalkaround");
+        }
+
+        // No intro sequence or waypoints for walkaround - just free exploration
     }
 
     /**
@@ -288,5 +428,101 @@ public final class TutorialJoinHandler {
      */
     public static void resetAll() {
         processedPlayers.clear();
+    }
+
+    /**
+     * Performs a FULL tutorial reset for singleplayer.
+     * This resets all world state and player progress to give a fresh experience.
+     */
+    private static void performFullReset(ServerPlayer player, ServerLevel level) {
+        // 0. Re-enable map protection (in case it was bypassed)
+        com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler.disableBypass();
+
+        // 1. Reset all world state (chests, animations, regen areas)
+        TutorialChestManager.resetAllChests(level);
+        TutorialAnimationManager.resetAllAnimations(level);
+        TutorialRegenAreaManager.restoreAllAreas(level);
+
+        // 2. Clear player inventory and restore health/hunger
+        player.getInventory().clearContent();
+        player.setHealth(player.getMaxHealth());
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().setSaturation(5.0f);
+
+        // 3. Stop any active cinematic and force survival mode
+        TutorialCinematicHandler.stopCinematic(player);
+        player.setGameMode(GameType.SURVIVAL);
+
+        // 4. Reset all Oliver and NoseSmith entities to home positions
+        resetAllEntities(level);
+
+        // 5. Reset all player-specific progress tracking
+        UUID playerId = player.getUUID();
+        processedPlayers.remove(playerId);
+        playersInIntro.remove(playerId);
+        TutorialWaypointAreaHandler.resetPlayer(playerId);
+        TutorialNoseEquipHandler.resetPlayer(playerId);
+        TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
+        TutorialBossAreaHandler.clearAllBosses();
+        TutorialPopupZoneHandler.clearPlayer(playerId);
+
+        // 6. Clear client-side state
+        TutorialWaypointNetworking.sendClearToPlayer(player);
+        TutorialChestNetworking.syncAllChestsToPlayer(player);
+        TutorialAnimationNetworking.sendAnimationReset(player);
+        TutorialDialogueContentNetworking.syncToPlayer(player, level);
+
+        // 7. Check for intro cinematic
+        var introCinematicOpt = TutorialSpawnManager.getIntroCinematicId(level);
+        if (introCinematicOpt.isPresent()) {
+            playersInIntro.add(playerId);
+            TutorialCinematicHandler.startCinematic(player, introCinematicOpt.get(), true);
+            TutorialIntroNetworking.sendOpenIntro(player);
+            AromaAffect.LOGGER.info("Auto-reset complete - player {} entering intro cinematic", player.getName().getString());
+            return;
+        }
+
+        // 8. Teleport to spawn point
+        var spawnOpt = TutorialSpawnManager.getSpawn(level);
+        if (spawnOpt.isPresent()) {
+            TutorialSpawnManager.SpawnData spawn = spawnOpt.get();
+            player.teleportTo(
+                    level,
+                    spawn.pos().getX() + 0.5,
+                    spawn.pos().getY(),
+                    spawn.pos().getZ() + 0.5,
+                    Set.of(),
+                    spawn.yaw(),
+                    spawn.pitch(),
+                    false
+            );
+        }
+
+        // 9. Play intro sequence and activate first waypoint
+        playIntroSequence(player, level);
+        activateFirstWaypoint(player, level);
+
+        AromaAffect.LOGGER.info("Auto-reset complete for player {} - tutorial restarted", player.getName().getString());
+    }
+
+    /**
+     * Resets all Oliver and NoseSmith entities in the level to their home positions.
+     */
+    private static void resetAllEntities(ServerLevel level) {
+        for (Entity entity : level.getAllEntities()) {
+            if (entity instanceof TutorialOliverEntity oliver) {
+                oliver.resetToHome();
+            }
+            if (entity instanceof com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith) {
+                noseSmith.resetQuest();
+                com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnPos(level).ifPresent(pos -> {
+                    float yaw = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnYaw(level);
+                    noseSmith.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+                    noseSmith.setYRot(yaw);
+                    noseSmith.setYHeadRot(yaw);
+                    noseSmith.setYBodyRot(yaw);
+                });
+            }
+        }
     }
 }

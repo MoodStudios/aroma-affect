@@ -2,6 +2,7 @@ package com.ovrtechnology.tutorial.regenarea;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.tutorial.TutorialModule;
+import com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.BlockEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -44,7 +45,80 @@ public final class TutorialRegenAreaHandler {
 
     private static boolean initialized = false;
 
+    /**
+     * Per-dimension protection bypass state.
+     * When true for a dimension, map protection is disabled and all blocks can be broken.
+     * Resets to false on tutorial reset or player join.
+     */
+    private static final Map<String, Boolean> protectionBypassedByDimension = new ConcurrentHashMap<>();
+
     private TutorialRegenAreaHandler() {
+    }
+
+    /**
+     * Enables protection bypass for a specific level - allows breaking any block.
+     */
+    public static void enableBypass(ServerLevel level) {
+        String dimKey = level.dimension().location().toString();
+        protectionBypassedByDimension.put(dimKey, true);
+        AromaAffect.LOGGER.info("Map protection DISABLED for {} - all blocks can be broken", dimKey);
+    }
+
+    /**
+     * Enables protection bypass globally (all dimensions).
+     */
+    public static void enableBypass() {
+        protectionBypassedByDimension.put("global", true);
+        AromaAffect.LOGGER.info("Map protection DISABLED globally - all blocks can be broken");
+    }
+
+    /**
+     * Disables protection bypass - map becomes protected again.
+     */
+    public static void disableBypass(ServerLevel level) {
+        String dimKey = level.dimension().location().toString();
+        protectionBypassedByDimension.remove(dimKey);
+        protectionBypassedByDimension.remove("global");
+        AromaAffect.LOGGER.info("Map protection ENABLED for {} - map is protected", dimKey);
+    }
+
+    /**
+     * Disables protection bypass globally.
+     */
+    public static void disableBypass() {
+        protectionBypassedByDimension.clear();
+        AromaAffect.LOGGER.info("Map protection ENABLED - map is protected");
+    }
+
+    /**
+     * Toggles protection bypass state for a level.
+     * @return true if bypass is now enabled, false if disabled
+     */
+    public static boolean toggleBypass(ServerLevel level) {
+        String dimKey = level.dimension().location().toString();
+        boolean current = isBypassEnabled(level);
+        if (current) {
+            disableBypass(level);
+        } else {
+            enableBypass(level);
+        }
+        return !current;
+    }
+
+    /**
+     * Checks if protection bypass is currently enabled for a level.
+     */
+    public static boolean isBypassEnabled(ServerLevel level) {
+        String dimKey = level.dimension().location().toString();
+        return protectionBypassedByDimension.getOrDefault(dimKey, false)
+                || protectionBypassedByDimension.getOrDefault("global", false);
+    }
+
+    /**
+     * Checks if protection bypass is currently enabled (global check).
+     */
+    public static boolean isBypassEnabled() {
+        return !protectionBypassedByDimension.isEmpty();
     }
 
     /**
@@ -57,6 +131,10 @@ public final class TutorialRegenAreaHandler {
         initialized = true;
 
         // Listen for block break events
+        // TUTORIAL MAP IS INDESTRUCTIBLE except:
+        // 1. Blocks inside regen areas (they regenerate)
+        // 2. The Nose Smith flower position (quest item)
+        // 3. When protection bypass is enabled (via /tutorial protection off)
         BlockEvent.BREAK.register((level, pos, state, player, xp) -> {
             if (!(level instanceof ServerLevel serverLevel)) {
                 return EventResult.pass();
@@ -67,12 +145,31 @@ public final class TutorialRegenAreaHandler {
                 return EventResult.pass();
             }
 
-            // Check if the block is inside a regen area
-            Optional<TutorialRegenArea> areaOpt = TutorialRegenAreaManager.findAreaContaining(serverLevel, pos);
-            if (areaOpt.isEmpty()) {
+            // If protection bypass is enabled, allow all block breaking
+            if (isBypassEnabled(serverLevel)) {
                 return EventResult.pass();
             }
 
+            // Check if the block is inside a regen area (ALLOWED - will regenerate)
+            Optional<TutorialRegenArea> areaOpt = TutorialRegenAreaManager.findAreaContaining(serverLevel, pos);
+
+            // Check if this is the Nose Smith flower position (ALLOWED - quest item)
+            Optional<BlockPos> flowerPos = TutorialNoseSmithManager.getFlowerPos(serverLevel);
+            boolean isFlowerPos = flowerPos.isPresent() && flowerPos.get().equals(pos);
+
+            // If NOT in regen area AND NOT the flower -> BLOCK DESTRUCTION
+            if (areaOpt.isEmpty() && !isFlowerPos) {
+                AromaAffect.LOGGER.debug("Blocked block break at {} - tutorial map is protected", pos);
+                return EventResult.interruptFalse();
+            }
+
+            // If it's the flower, allow destruction without regeneration
+            if (isFlowerPos) {
+                AromaAffect.LOGGER.debug("Allowed flower break at {}", pos);
+                return EventResult.pass();
+            }
+
+            // Block is in regen area - allow and schedule regeneration
             TutorialRegenArea area = areaOpt.get();
 
             // Check if we have a saved block state for this position

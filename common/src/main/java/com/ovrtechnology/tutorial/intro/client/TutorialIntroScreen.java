@@ -34,7 +34,8 @@ public class TutorialIntroScreen extends Screen {
 
     // Animation state
     private int ticksOpen = 0;
-    private Button startButton;
+    private Button playDemoButton;
+    private Button walkaroundButton;
 
     public TutorialIntroScreen() {
         super(Component.literal("Tutorial Intro"));
@@ -44,19 +45,35 @@ public class TutorialIntroScreen extends Screen {
     protected void init() {
         super.init();
 
+        // Two buttons side by side
+        int buttonSpacing = 10;
+        int totalButtonsWidth = BUTTON_WIDTH * 2 + buttonSpacing;
         int totalHeight = LOGO_HEIGHT + GAP + BUTTON_HEIGHT;
         int topY = (this.height - totalHeight) / 2;
         int buttonY = topY + LOGO_HEIGHT + GAP;
+        int leftButtonX = (this.width - totalButtonsWidth) / 2;
+        int rightButtonX = leftButtonX + BUTTON_WIDTH + buttonSpacing;
 
-        startButton = Button.builder(
-                Component.literal("\u00a7l START EXPERIENCE"),
-                btn -> onStartClicked()
-        ).bounds((this.width - BUTTON_WIDTH) / 2, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
+        // PLAY DEMO button (starts tutorial)
+        playDemoButton = Button.builder(
+                Component.literal("\u00a7l PLAY DEMO"),
+                btn -> onPlayDemoClicked()
+        ).bounds(leftButtonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
 
-        // Button starts invisible, fades in with the rest
-        startButton.active = false;
-        startButton.visible = false;
-        addRenderableWidget(startButton);
+        // WALKAROUND button (free exploration)
+        walkaroundButton = Button.builder(
+                Component.literal("\u00a7f\u00a7l WALKAROUND"),
+                btn -> onWalkaroundClicked()
+        ).bounds(rightButtonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
+
+        // Buttons start invisible, fade in with the rest
+        playDemoButton.active = false;
+        playDemoButton.visible = false;
+        walkaroundButton.active = false;
+        walkaroundButton.visible = false;
+
+        addRenderableWidget(playDemoButton);
+        addRenderableWidget(walkaroundButton);
     }
 
     @Override
@@ -64,10 +81,16 @@ public class TutorialIntroScreen extends Screen {
         super.tick();
         ticksOpen++;
 
-        // Enable button after fade-in completes
-        if (startButton != null && ticksOpen >= FADE_IN_TICKS) {
-            startButton.active = true;
-            startButton.visible = true;
+        // Enable buttons after fade-in completes
+        if (ticksOpen >= FADE_IN_TICKS) {
+            if (playDemoButton != null) {
+                playDemoButton.active = true;
+                playDemoButton.visible = true;
+            }
+            if (walkaroundButton != null) {
+                walkaroundButton.active = true;
+                walkaroundButton.visible = true;
+            }
         }
     }
 
@@ -126,8 +149,13 @@ public class TutorialIntroScreen extends Screen {
         return false;
     }
 
-    private void onStartClicked() {
-        TutorialIntroNetworking.sendStartToServer(Minecraft.getInstance().player.registryAccess());
+    private void onPlayDemoClicked() {
+        TutorialIntroNetworking.sendPlayDemoToServer(Minecraft.getInstance().player.registryAccess());
+        this.onClose();
+    }
+
+    private void onWalkaroundClicked() {
+        TutorialIntroNetworking.sendWalkaroundToServer(Minecraft.getInstance().player.registryAccess());
         this.onClose();
     }
 }

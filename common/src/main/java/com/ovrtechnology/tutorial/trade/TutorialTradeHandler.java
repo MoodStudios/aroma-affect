@@ -2,6 +2,7 @@ package com.ovrtechnology.tutorial.trade;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
+import com.ovrtechnology.network.TutorialPopupNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationHandler;
 import com.ovrtechnology.tutorial.cinematic.TutorialCinematicHandler;
@@ -116,6 +117,17 @@ public final class TutorialTradeHandler {
         if (!player.getInventory().add(outputStack)) {
             // Drop remaining items at player's feet
             player.drop(outputStack, false);
+        }
+
+        // If output is a nose item, show equip popup
+        String outputItemId = trade.getOutputItemId().toLowerCase();
+        if (outputItemId.contains("nose") && !outputItemId.contains("smith")) {
+            TutorialPopupNetworking.sendPopup(player,
+                    "Equipa tu nueva nariz!\nClick izquierdo o abre inventario (E)");
+            AromaAffect.LOGGER.debug("Sent nose equip popup to player {}", player.getName().getString());
+
+            // Schedule popup clear after 8 seconds using scheduled executor
+            schedulePopupClear(player, 8000);
         }
 
         // Play success sound
@@ -336,4 +348,32 @@ public final class TutorialTradeHandler {
     }
 
     private record ResolvedInput(Item item, int required, int found) {}
+
+    /**
+     * Schedules clearing the popup after a delay.
+     * Uses a simple thread sleep approach since we're on the server.
+     */
+    private static void schedulePopupClear(ServerPlayer player, long delayMs) {
+        final java.util.UUID playerId = player.getUUID();
+        final net.minecraft.server.MinecraftServer server = player.level().getServer();
+
+        Thread clearThread = new Thread(() -> {
+            try {
+                Thread.sleep(delayMs);
+                // Run on main server thread
+                if (server != null && server.isRunning()) {
+                    server.execute(() -> {
+                        ServerPlayer p = server.getPlayerList().getPlayer(playerId);
+                        if (p != null && p.connection != null) {
+                            TutorialPopupNetworking.sendClearPopup(p);
+                        }
+                    });
+                }
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        });
+        clearThread.setDaemon(true);
+        clearThread.start();
+    }
 }

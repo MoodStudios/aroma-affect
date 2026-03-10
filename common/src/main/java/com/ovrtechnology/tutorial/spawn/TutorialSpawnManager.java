@@ -24,6 +24,10 @@ public class TutorialSpawnManager extends SavedData {
     private float spawnPitch;
     private String firstWaypointId;
     private String introCinematicId;
+    // Walkaround spawn point (free exploration mode)
+    private BlockPos walkaroundPos;
+    private float walkaroundYaw;
+    private float walkaroundPitch;
 
     private static final Codec<TutorialSpawnManager> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -31,7 +35,10 @@ public class TutorialSpawnManager extends SavedData {
                     Codec.FLOAT.fieldOf("spawnYaw").forGetter(m -> m.spawnYaw),
                     Codec.FLOAT.fieldOf("spawnPitch").forGetter(m -> m.spawnPitch),
                     Codec.STRING.optionalFieldOf("firstWaypointId", "").forGetter(m -> m.firstWaypointId != null ? m.firstWaypointId : ""),
-                    Codec.STRING.optionalFieldOf("introCinematicId", "").forGetter(m -> m.introCinematicId != null ? m.introCinematicId : "")
+                    Codec.STRING.optionalFieldOf("introCinematicId", "").forGetter(m -> m.introCinematicId != null ? m.introCinematicId : ""),
+                    BlockPos.CODEC.optionalFieldOf("walkaroundPos").forGetter(m -> Optional.ofNullable(m.walkaroundPos)),
+                    Codec.FLOAT.optionalFieldOf("walkaroundYaw", 0f).forGetter(m -> m.walkaroundYaw),
+                    Codec.FLOAT.optionalFieldOf("walkaroundPitch", 0f).forGetter(m -> m.walkaroundPitch)
             ).apply(instance, TutorialSpawnManager::new)
     );
 
@@ -48,14 +55,22 @@ public class TutorialSpawnManager extends SavedData {
         this.spawnPitch = 0f;
         this.firstWaypointId = "";
         this.introCinematicId = "";
+        this.walkaroundPos = null;
+        this.walkaroundYaw = 0f;
+        this.walkaroundPitch = 0f;
     }
 
-    private TutorialSpawnManager(Optional<BlockPos> spawnPos, float spawnYaw, float spawnPitch, String firstWaypointId, String introCinematicId) {
+    private TutorialSpawnManager(Optional<BlockPos> spawnPos, float spawnYaw, float spawnPitch,
+                                  String firstWaypointId, String introCinematicId,
+                                  Optional<BlockPos> walkaroundPos, float walkaroundYaw, float walkaroundPitch) {
         this.spawnPos = spawnPos.orElse(null);
         this.spawnYaw = spawnYaw;
         this.spawnPitch = spawnPitch;
         this.firstWaypointId = firstWaypointId != null ? firstWaypointId : "";
         this.introCinematicId = introCinematicId != null ? introCinematicId : "";
+        this.walkaroundPos = walkaroundPos.orElse(null);
+        this.walkaroundYaw = walkaroundYaw;
+        this.walkaroundPitch = walkaroundPitch;
     }
 
     /**
@@ -144,6 +159,52 @@ public class TutorialSpawnManager extends SavedData {
 
     private static TutorialSpawnManager get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(TYPE);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Walkaround spawn point (free exploration mode)
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Sets the walkaround spawn point for free exploration mode.
+     *
+     * @param level the server level
+     * @param pos   the walkaround spawn position
+     * @param yaw   the spawn yaw (horizontal rotation)
+     * @param pitch the spawn pitch (vertical rotation)
+     */
+    public static void setWalkaroundSpawn(ServerLevel level, BlockPos pos, float yaw, float pitch) {
+        TutorialSpawnManager manager = get(level);
+        manager.walkaroundPos = pos;
+        manager.walkaroundYaw = yaw;
+        manager.walkaroundPitch = pitch;
+        manager.setDirty();
+
+        AromaAffect.LOGGER.info("Walkaround spawn set to {} (yaw: {}, pitch: {})", pos, yaw, pitch);
+    }
+
+    /**
+     * Gets the walkaround spawn data for free exploration mode.
+     *
+     * @param level the server level
+     * @return optional containing walkaround spawn data if set, empty otherwise
+     */
+    public static Optional<SpawnData> getWalkaroundSpawn(ServerLevel level) {
+        TutorialSpawnManager manager = get(level);
+        if (manager.walkaroundPos == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new SpawnData(manager.walkaroundPos, manager.walkaroundYaw, manager.walkaroundPitch));
+    }
+
+    /**
+     * Checks if a walkaround spawn point is set.
+     *
+     * @param level the server level
+     * @return true if a walkaround spawn point is set
+     */
+    public static boolean hasWalkaroundSpawn(ServerLevel level) {
+        return get(level).walkaroundPos != null;
     }
 
     /**

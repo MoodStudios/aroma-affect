@@ -3,6 +3,7 @@ package com.ovrtechnology.tutorial.oliver.client.dialogue;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.network.TutorialOliverDialogueNetworking;
 import com.ovrtechnology.network.TutorialOliverTradeNetworking;
+import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -13,7 +14,9 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -174,6 +177,9 @@ public final class TutorialOliverDialogueScreen extends Screen {
     private boolean buttonsVisible = false;
     private boolean closedByTrade = false;
 
+    @Nullable
+    private SimpleSoundInstance voiceSound;
+
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver) {
         super(Component.literal("Oliver"));
         this.portraitEntity = oliver;
@@ -214,6 +220,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     protected void init() {
         rebuildDialogue(true);
         sendTalkingState(true);
+        playVoiceSound();
 
         int bottom = this.height - BOX_MARGIN;
         int right = this.width - BOX_MARGIN;
@@ -282,6 +289,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     @Override
     public void removed() {
         sendTalkingState(false);
+        stopVoiceSound();
 
         // Notify server that dialogue was closed (triggers on-complete hooks)
         // Skip if closed by trade — trade has its own on-complete flow via TutorialTradeHandler
@@ -508,7 +516,22 @@ public final class TutorialOliverDialogueScreen extends Screen {
     }
 
     private void playTypeSoundFor(int codePoint) {
-        // Typing sound disabled for tutorial dialogues - voice files will be used instead
+        // Typing sound disabled for tutorial dialogues - voice files are used instead
+    }
+
+    private void playVoiceSound() {
+        SoundEvent soundEvent = ModSounds.getDialogueSound(dialogueId);
+        if (soundEvent != null) {
+            voiceSound = SimpleSoundInstance.forUI(soundEvent, 1.0F, 1.0F);
+            Minecraft.getInstance().getSoundManager().play(voiceSound);
+        }
+    }
+
+    private void stopVoiceSound() {
+        if (voiceSound != null) {
+            Minecraft.getInstance().getSoundManager().stop(voiceSound);
+            voiceSound = null;
+        }
     }
 
     private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {

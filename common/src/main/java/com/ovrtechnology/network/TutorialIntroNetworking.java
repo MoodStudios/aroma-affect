@@ -14,8 +14,10 @@ public final class TutorialIntroNetworking {
 
     private static final ResourceLocation INTRO_OPEN_PACKET =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_intro_open");
-    private static final ResourceLocation INTRO_START_PACKET =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_intro_start");
+    private static final ResourceLocation INTRO_PLAY_DEMO_PACKET =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_intro_play_demo");
+    private static final ResourceLocation INTRO_WALKAROUND_PACKET =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_intro_walkaround");
 
     private static boolean initialized = false;
 
@@ -29,12 +31,21 @@ public final class TutorialIntroNetworking {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, INTRO_OPEN_PACKET,
                 (buf, context) -> context.queue(() -> openIntroOnClient()));
 
-        // C2S: Client tells server the player clicked START
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, INTRO_START_PACKET,
+        // C2S: Client tells server the player clicked PLAY DEMO
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, INTRO_PLAY_DEMO_PACKET,
                 (buf, context) -> context.queue(() -> {
                     Player player = context.getPlayer();
                     if (player instanceof ServerPlayer serverPlayer) {
-                        TutorialJoinHandler.handleIntroStart(serverPlayer);
+                        TutorialJoinHandler.handlePlayDemo(serverPlayer);
+                    }
+                }));
+
+        // C2S: Client tells server the player clicked WALKAROUND
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, INTRO_WALKAROUND_PACKET,
+                (buf, context) -> context.queue(() -> {
+                    Player player = context.getPlayer();
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        TutorialJoinHandler.handleWalkaround(serverPlayer);
                     }
                 }));
 
@@ -50,11 +61,19 @@ public final class TutorialIntroNetworking {
     }
 
     /**
-     * Client sends this to the server when the player clicks START.
+     * Client sends this to the server when the player clicks PLAY DEMO.
      */
-    public static void sendStartToServer(RegistryAccess registryAccess) {
+    public static void sendPlayDemoToServer(RegistryAccess registryAccess) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess);
-        NetworkManager.sendToServer(INTRO_START_PACKET, buf);
+        NetworkManager.sendToServer(INTRO_PLAY_DEMO_PACKET, buf);
+    }
+
+    /**
+     * Client sends this to the server when the player clicks WALKAROUND.
+     */
+    public static void sendWalkaroundToServer(RegistryAccess registryAccess) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess);
+        NetworkManager.sendToServer(INTRO_WALKAROUND_PACKET, buf);
     }
 
     private static void openIntroOnClient() {

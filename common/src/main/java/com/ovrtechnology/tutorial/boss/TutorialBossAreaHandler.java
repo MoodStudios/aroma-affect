@@ -140,11 +140,14 @@ public final class TutorialBossAreaHandler {
     private static final double DEFAULT_MOVEMENT_HEIGHT = 6.0;
 
     // Dragon flight pattern constants
-    private static final double DRAGON_CIRCLE_RADIUS = 6.0;
-    private static final double DRAGON_CIRCLE_SPEED = 0.015; // radians per tick (slow circle)
-    private static final double DRAGON_BOB_AMPLITUDE = 2.0;
-    private static final double DRAGON_BOB_SPEED = 0.04;
-    private static final double DRAGON_HOVER_HEIGHT = 5.0;
+    private static final double DRAGON_CIRCLE_RADIUS = 3.0; // Small circle so player can reach
+    private static final double DRAGON_CIRCLE_SPEED = 0.02; // radians per tick
+    private static final double DRAGON_BOB_AMPLITUDE = 0.5; // Gentle up/down
+    private static final double DRAGON_BOB_SPEED = 0.05;
+    private static final double DRAGON_HOVER_HEIGHT = 2.5; // Low so player can hit it
+
+    // Track dragon animation tick
+    private static long dragonAnimationTick = 0;
 
     private static void enforceMovementBounds(Entity boss, TutorialBossArea area) {
         // Dragon: fully controlled flight path (circle around spawn)
@@ -188,23 +191,47 @@ public final class TutorialBossAreaHandler {
     }
 
     /**
-     * Forces the dragon to stay near spawn. Uses teleportTo for proper client sync.
-     * The dragon keeps its AI (so hitboxes work) but gets teleported back every tick.
+     * Forces the dragon to fly in a small circle around spawn.
+     * AI stays ON for natural animations, but position is controlled every tick.
      */
     private static void enforceDragonFlightPath(Entity dragon, TutorialBossArea area) {
         if (!area.hasSpawnPos()) return;
+
+        dragonAnimationTick++;
 
         BlockPos spawn = area.getSpawnPos();
         double centerX = spawn.getX() + 0.5;
         double centerY = spawn.getY() + DRAGON_HOVER_HEIGHT;
         double centerZ = spawn.getZ() + 0.5;
 
-        // Kill velocity every tick unconditionally
-        dragon.setDeltaMovement(0, 0, 0);
-        dragon.hurtMarked = true;
+        // Calculate circular path position
+        double angle = dragonAnimationTick * DRAGON_CIRCLE_SPEED;
+        double targetX = centerX + Math.cos(angle) * DRAGON_CIRCLE_RADIUS;
+        double targetZ = centerZ + Math.sin(angle) * DRAGON_CIRCLE_RADIUS;
 
-        // Teleport back to spawn area every tick
-        dragon.teleportTo(centerX, centerY, centerZ);
+        // Add gentle bobbing motion
+        double bobOffset = Math.sin(dragonAnimationTick * DRAGON_BOB_SPEED) * DRAGON_BOB_AMPLITUDE;
+        double targetY = centerY + bobOffset;
+
+        // Calculate velocity towards target (smooth movement)
+        double dx = targetX - dragon.getX();
+        double dy = targetY - dragon.getY();
+        double dz = targetZ - dragon.getZ();
+
+        // Set velocity to move towards circle position
+        dragon.setDeltaMovement(dx * 0.3, dy * 0.3, dz * 0.3);
+
+        // Make dragon face movement direction
+        float targetYaw = (float) (Math.atan2(-dx, dz) * (180.0 / Math.PI));
+        dragon.setYRot(targetYaw);
+
+        // Safety: if too far from center, teleport back
+        double distSq = dx * dx + dy * dy + dz * dz;
+        if (distSq > 100) { // More than 10 blocks away
+            dragon.teleportTo(targetX, targetY, targetZ);
+        }
+
+        dragon.hurtMarked = true;
     }
 
     private static void spawnBossForArea(ServerLevel level, TutorialBossArea area, ServerPlayer triggerPlayer) {
@@ -318,6 +345,8 @@ public final class TutorialBossAreaHandler {
         activeBosses.clear();
         bossSpawnTimes.clear();
         spawnCooldowns.clear();
+        // Reset dragon animation tick to avoid overflow issues
+        dragonAnimationTick = 0;
     }
 
     /**

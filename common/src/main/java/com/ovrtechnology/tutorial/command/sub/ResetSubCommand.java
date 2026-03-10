@@ -88,6 +88,9 @@ public class ResetSubCommand implements TutorialSubCommand {
             return 0;
         }
 
+        // Re-enable map protection (in case it was bypassed)
+        com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler.disableBypass();
+
         // Reset all chests, animations, and regen areas
         ServerLevel level = source.getLevel();
         int chestsReset = TutorialChestManager.resetAllChests(level);
@@ -116,6 +119,9 @@ public class ResetSubCommand implements TutorialSubCommand {
             ));
             return 0;
         }
+
+        // Re-enable map protection (in case it was bypassed)
+        com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler.disableBypass();
 
         // Reset all chests and animations once (not per player)
         ServerLevel level = source.getLevel();

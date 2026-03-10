@@ -38,6 +38,8 @@ import com.ovrtechnology.tutorial.command.sub.PortalSubCommand;
 import com.ovrtechnology.tutorial.command.sub.RegenAreaSubCommand;
 import com.ovrtechnology.tutorial.command.sub.ResetSubCommand;
 import com.ovrtechnology.tutorial.command.sub.SetSpawnSubCommand;
+import com.ovrtechnology.tutorial.command.sub.SetWalkaroundSubCommand;
+import com.ovrtechnology.tutorial.command.sub.ProtectionSubCommand;
 import com.ovrtechnology.tutorial.command.sub.TradeSubCommand;
 import com.ovrtechnology.tutorial.command.sub.WaypointSubCommand;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverRegistry;
@@ -106,6 +108,8 @@ public final class TutorialModule {
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());
+        TutorialCommand.register(new SetWalkaroundSubCommand());
+        TutorialCommand.register(new ProtectionSubCommand());
         TutorialCommand.register(new WaypointSubCommand());
         TutorialCommand.register(new PortalSubCommand());
         TutorialCommand.register(new OliverSpawnSubCommand());

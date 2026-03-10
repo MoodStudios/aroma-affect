@@ -38,7 +38,8 @@ public final class TutorialBossHandler {
         }
         initialized = true;
 
-        // Prevent tutorial dragon from dealing damage to players
+        // TUTORIAL MODE: Players are IMMORTAL - cancel ALL damage to players
+        // Also force dragon to die on ANY hit (even bare hand)
         EntityEvent.LIVING_HURT.register((entity, source, amount) -> {
             if (!(entity.level() instanceof ServerLevel level)) {
                 return EventResult.pass();
@@ -48,12 +49,31 @@ public final class TutorialBossHandler {
                 return EventResult.pass();
             }
 
-            // If the victim is a player and the attacker is a tutorial dragon, cancel damage
-            if (entity instanceof Player) {
-                Entity attacker = source.getEntity();
-                if (attacker instanceof EnderDragon && attacker.getTags().contains("tutorial_boss_dragon")) {
+            // IMMORTAL PLAYERS: Cancel ALL damage to players in tutorial mode
+            if (entity instanceof Player player) {
+                AromaAffect.LOGGER.debug("Blocked {} damage to player {} in tutorial mode",
+                        amount, player.getName().getString());
+                return EventResult.interruptFalse();
+            }
+
+            // If the tutorial dragon receives ANY damage, kill it instantly
+            // This ensures even bare-hand hits kill the dragon (bypasses armor/resistance)
+            if (entity instanceof EnderDragon dragon && dragon.getTags().contains("tutorial_boss_dragon")) {
+                // Check if already dying to prevent re-entry
+                if (dragon.isDeadOrDying()) {
                     return EventResult.interruptFalse();
                 }
+
+                // Play short death sound (dragon is silent, so we play our own)
+                level.playSound(null, dragon.blockPosition(),
+                        net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP,
+                        net.minecraft.sounds.SoundSource.HOSTILE, 1.5F, 0.5F);
+
+                // Force kill - set health to 0 AND manually trigger death event
+                dragon.setHealth(0.0F);
+                dragon.die(source); // This fires LIVING_DEATH event
+                AromaAffect.LOGGER.info("Tutorial dragon hit - forcing instant death");
+                return EventResult.interruptFalse(); // Stop further damage processing
             }
 
             return EventResult.pass();

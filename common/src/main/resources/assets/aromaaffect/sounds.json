@@ -12,5 +12,83 @@
     "sounds": [
       "aromaaffect:puff/puff1"
     ]
+  },
+  "dialogue_oliver_greeting": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_greeting",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_greeting", "stream": true }
+    ]
+  },
+  "dialogue_oliver_mine_open": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_mine_open",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_mine_open", "stream": true }
+    ]
+  },
+  "dialogue_oliver_find_iron": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_find_iron",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_find_iron", "stream": true }
+    ]
+  },
+  "dialogue_oliver_need_iron": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_need_iron",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_need_iron", "stream": true }
+    ]
+  },
+  "dialogue_oliver_path_opened": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_path_opened",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_path_opened", "stream": true }
+    ]
+  },
+  "dialogue_oliver_need_gold": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_need_gold",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_need_gold", "stream": true }
+    ]
+  },
+  "dialogue_oliver_equip_prospector": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_equip_prospector",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_equip_prospector", "stream": true }
+    ]
+  },
+  "dialogue_oliver_dragon_quest": {
+    "subtitle": "subtitles.aromaaffect.dialogue.oliver_dragon_quest",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/oliver_dragon_quest", "stream": true }
+    ]
+  },
+  "dialogue_boss_blaze_enter": {
+    "subtitle": "subtitles.aromaaffect.dialogue.boss_blaze_enter",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/boss_blaze_enter", "stream": true }
+    ]
+  },
+  "dialogue_boss_blaze_killed": {
+    "subtitle": "subtitles.aromaaffect.dialogue.boss_blaze_killed",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/boss_blaze_killed", "stream": true }
+    ]
+  },
+  "dialogue_boss_dragon_enter": {
+    "subtitle": "subtitles.aromaaffect.dialogue.boss_dragon_enter",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/boss_dragon_enter", "stream": true }
+    ]
+  },
+  "dialogue_boss_dragon_killed": {
+    "subtitle": "subtitles.aromaaffect.dialogue.boss_dragon_killed",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/boss_dragon_killed", "stream": true }
+    ]
+  },
+  "dialogue_dream_end_wakeup": {
+    "subtitle": "subtitles.aromaaffect.dialogue.dream_end_wakeup",
+    "sounds": [
+      { "name": "aromaaffect:dialogue/dream_end_wakeup", "stream": true }
+    ]
   }
 }

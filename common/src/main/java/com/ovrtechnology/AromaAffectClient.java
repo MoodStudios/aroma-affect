@@ -9,6 +9,7 @@ import com.ovrtechnology.tutorial.boss.client.TutorialBossCinematicClient;
 import com.ovrtechnology.tutorial.dream.client.TutorialDreamOverlayClient;
 import com.ovrtechnology.tutorial.popupzone.client.TutorialPopupHudOverlay;
 import com.ovrtechnology.tutorial.portal.client.TutorialPortalOverlayClient;
+import com.ovrtechnology.tutorial.waypoint.client.TutorialArrowRenderer;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialWaypointRenderer;
 import com.ovrtechnology.menu.MenuKeyBindings;
 import com.ovrtechnology.search.SearchKeyBindings;
@@ -61,6 +62,9 @@ public final class AromaAffectClient {
 
         // Initialize tutorial waypoint path renderer
         TutorialWaypointRenderer.init();
+
+        // Initialize tutorial arrow texture renderer (endpoint marker)
+        TutorialArrowRenderer.init();
 
         // Initialize tutorial chest particle renderer
         TutorialChestRenderer.init();

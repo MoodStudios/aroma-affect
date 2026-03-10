@@ -105,11 +105,17 @@ public final class TutorialBossSpawner {
         // Set position
         dragon.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
 
-        // Modify stats - dies in 2 sword hits (2 HP = 1 heart)
+        // Modify stats - dies in 1 hit (1 HP = half heart)
         if (dragon.getAttribute(Attributes.MAX_HEALTH) != null) {
-            dragon.getAttribute(Attributes.MAX_HEALTH).setBaseValue(2.0D);
-            dragon.setHealth(2.0F);
+            dragon.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1.0D);
+            dragon.setHealth(1.0F);
         }
+
+        // Make dragon SILENT - prevents long growl/death sounds
+        // We'll play our own short sounds instead
+        dragon.setSilent(true);
+
+        // AI stays ON for natural flying animation - position controlled by TutorialBossAreaHandler
 
         // Set purple custom name
         dragon.setCustomName(Component.literal("Dragon").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
@@ -159,8 +165,8 @@ public final class TutorialBossSpawner {
                 0.05
         );
 
-        // Sound
-        level.playSound(null, pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 2.0F, 0.8F);
+        // Sound - short flap instead of long growl (dragon dies too fast for growl)
+        level.playSound(null, pos, SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 2.0F, 0.6F);
     }
 
     private static void spawnBlazeEffects(ServerLevel level, BlockPos pos) {
