@@ -1,6 +1,7 @@
 package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ReplayCompat;
 import dev.architectury.registry.menu.ExtendedMenuProvider;
 import dev.architectury.registry.menu.MenuRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
@@ -23,7 +24,10 @@ public class SnifferMenuRegistry {
                 int snifferId = buf.readInt();
                 Sniffer sniffer = (Sniffer) inventory.player.level().getEntity(snifferId);
                 if (sniffer == null) {
-                    throw new IllegalStateException("Sniffer not found with id: " + snifferId);
+                    // During Flashback replay/edit the entity may not exist.
+                    // Return a dummy menu that auto-closes (stillValid returns false).
+                    AromaAffect.LOGGER.warn("Sniffer not found with id: {} (likely in replay mode), opening dummy menu", snifferId);
+                    return SnifferMenu.createDummy(containerId, inventory);
                 }
                 return new SnifferMenu(containerId, inventory, new SnifferContainer(sniffer), sniffer);
             }));
@@ -37,6 +41,7 @@ public class SnifferMenuRegistry {
     }
 
     public static void openSnifferMenu(ServerPlayer player, Sniffer sniffer) {
+        if (ReplayCompat.isReplayServer(player.level().getServer())) return;
         MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
             @Override
             public void saveExtraData(FriendlyByteBuf buf) {

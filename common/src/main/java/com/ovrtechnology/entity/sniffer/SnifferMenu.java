@@ -2,6 +2,8 @@ package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import lombok.Getter;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,17 +14,29 @@ import net.minecraft.world.item.Items;
 
 public class SnifferMenu extends AbstractContainerMenu {
 
-    private final SnifferContainer snifferContainer;
+    private final Container container;
     @Getter
     private final Sniffer sniffer;
 
     public SnifferMenu(int containerId, Inventory playerInventory, SnifferContainer snifferContainer, Sniffer sniffer) {
+        this(containerId, playerInventory, (Container) snifferContainer, sniffer);
+    }
+
+    /**
+     * Creates a dummy menu for replay mode when the sniffer entity doesn't exist.
+     * stillValid() returns false so Minecraft auto-closes the screen on the next tick.
+     */
+    static SnifferMenu createDummy(int containerId, Inventory playerInventory) {
+        return new SnifferMenu(containerId, playerInventory, new SimpleContainer(SnifferContainer.CONTAINER_SIZE), null);
+    }
+
+    private SnifferMenu(int containerId, Inventory playerInventory, Container container, Sniffer sniffer) {
         super(SnifferMenuRegistry.SNIFFER_MENU.get(), containerId);
-        this.snifferContainer = snifferContainer;
+        this.container = container;
         this.sniffer = sniffer;
 
         // Slot de silla (solo SADDLE)
-        this.addSlot(new Slot(snifferContainer, SnifferContainer.SADDLE_SLOT, 8, 18) {
+        this.addSlot(new Slot(container, SnifferContainer.SADDLE_SLOT, 8, 18) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.is(Items.SADDLE);
@@ -35,7 +49,7 @@ public class SnifferMenu extends AbstractContainerMenu {
         });
 
         // Slot de Enhanced Sniffer Nose (solo acepta SnifferNoseItem)
-        this.addSlot(new Slot(snifferContainer, SnifferContainer.DECORATION_SLOT, 8, 36) {
+        this.addSlot(new Slot(container, SnifferContainer.DECORATION_SLOT, 8, 36) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.getItem() instanceof SnifferNoseItem;
@@ -103,6 +117,7 @@ public class SnifferMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return snifferContainer.stillValid(player);
+        if (sniffer == null) return false;
+        return container.stillValid(player);
     }
 }
