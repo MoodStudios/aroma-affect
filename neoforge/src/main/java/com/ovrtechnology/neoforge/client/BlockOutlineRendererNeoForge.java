@@ -3,6 +3,7 @@ package com.ovrtechnology.neoforge.client;
 import com.ovrtechnology.render.BlockOutlineRenderer;
 import com.ovrtechnology.render.PathTrailRenderer;
 import com.ovrtechnology.tutorial.chest.client.TutorialChestHologram;
+import com.ovrtechnology.tutorial.searchdiamond.client.DiamondTextHologram;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialArrowHologram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -44,6 +45,13 @@ public final class BlockOutlineRendererNeoForge {
 
         // Render chest exclamation icons
         TutorialChestHologram.render(
+                event.getPoseStack(),
+                bufferSource,
+                camPos.x, camPos.y, camPos.z
+        );
+
+        // Render diamond text hologram
+        DiamondTextHologram.render(
                 event.getPoseStack(),
                 bufferSource,
                 camPos.x, camPos.y, camPos.z

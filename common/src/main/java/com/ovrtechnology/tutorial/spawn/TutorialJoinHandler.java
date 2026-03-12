@@ -85,6 +85,10 @@ public final class TutorialJoinHandler {
             com.ovrtechnology.network.TutorialScentCounterNetworking.deactivateClient();
             // Reset finish zone trigger tracking
             com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(player.getUUID());
+            // End SearchDiamond session and regenerate zone
+            if (player instanceof ServerPlayer serverPlayer && serverPlayer.level() instanceof ServerLevel level) {
+                com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler.endSession(serverPlayer, true);
+            }
         });
 
         AromaAffect.LOGGER.debug("Tutorial join handler initialized");
@@ -539,6 +543,10 @@ public final class TutorialJoinHandler {
         com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
         com.ovrtechnology.network.TutorialScentCounterNetworking.deactivateClient();
         com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(playerId);
+        // Reset SearchDiamond - end session, regenerate zones, clear hologram
+        com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler.endSession(player, true);
+        com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler.resetAll(level);
+        com.ovrtechnology.network.SearchDiamondNetworking.sendClearHologram(player);
 
         // 5. Clear client-side state
         TutorialWaypointNetworking.sendClearToPlayer(player);

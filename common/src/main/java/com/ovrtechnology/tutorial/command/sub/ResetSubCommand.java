@@ -235,6 +235,11 @@ public class ResetSubCommand implements TutorialSubCommand {
         // 3f. Reset finish screen trigger
         com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(player.getUUID());
 
+        // 3g. Reset SearchDiamond - end session, regenerate zone, clear hologram
+        com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler.endSession(player, true);
+        com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler.resetAll(level);
+        com.ovrtechnology.network.SearchDiamondNetworking.sendClearHologram(player);
+
         // 4. Clear any active waypoint visuals on the client
         TutorialWaypointNetworking.sendClearToPlayer(player);
 

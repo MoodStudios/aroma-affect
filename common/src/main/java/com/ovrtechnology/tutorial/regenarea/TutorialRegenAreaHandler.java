@@ -3,6 +3,7 @@ package com.ovrtechnology.tutorial.regenarea;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.tutorial.TutorialModule;
 import com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager;
+import com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.BlockEvent;
 import dev.architectury.event.events.common.TickEvent;
@@ -13,6 +14,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -157,10 +159,29 @@ public final class TutorialRegenAreaHandler {
             Optional<BlockPos> flowerPos = TutorialNoseSmithManager.getFlowerPos(serverLevel);
             boolean isFlowerPos = flowerPos.isPresent() && flowerPos.get().equals(pos);
 
-            // If NOT in regen area AND NOT the flower -> BLOCK DESTRUCTION
-            if (areaOpt.isEmpty() && !isFlowerPos) {
+            // Check if player is in SearchDiamond session and block is in their zone (ALLOWED)
+            boolean isSearchDiamondZone = false;
+            boolean hasSearchDiamondSession = false;
+            if (player instanceof ServerPlayer serverPlayer) {
+                hasSearchDiamondSession = SearchDiamondZoneHandler.hasActiveSession(serverPlayer);
+                isSearchDiamondZone = SearchDiamondZoneHandler.canPlayerBreakAt(serverPlayer, pos, serverLevel);
+            }
+
+            // If NOT in regen area AND NOT the flower AND NOT in SearchDiamond zone -> BLOCK DESTRUCTION
+            if (areaOpt.isEmpty() && !isFlowerPos && !isSearchDiamondZone) {
+                // If player has active SearchDiamond session but is outside the zone, show helpful message
+                if (hasSearchDiamondSession && player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            "\u00a7e\u00a7lGet closer to the marked block! \u00a7eYou can only dig within the diamond search area."));
+                }
                 AromaAffect.LOGGER.debug("Blocked block break at {} - tutorial map is protected", pos);
                 return EventResult.interruptFalse();
+            }
+
+            // If it's in SearchDiamond zone, allow without regen area processing
+            if (isSearchDiamondZone) {
+                AromaAffect.LOGGER.debug("Allowed SearchDiamond zone break at {}", pos);
+                return EventResult.pass();
             }
 
             // If it's the flower, allow destruction without regeneration

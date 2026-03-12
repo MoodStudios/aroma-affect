@@ -10,6 +10,7 @@ import com.ovrtechnology.tutorial.dream.client.TutorialDreamOverlayClient;
 import com.ovrtechnology.tutorial.popupzone.client.TutorialPopupHudOverlay;
 import com.ovrtechnology.tutorial.scentcounter.client.TutorialScentCounterHud;
 import com.ovrtechnology.tutorial.portal.client.TutorialPortalOverlayClient;
+import com.ovrtechnology.tutorial.searchdiamond.client.DiamondTextHologram;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialArrowRenderer;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialWaypointRenderer;
 import com.ovrtechnology.menu.MenuKeyBindings;
@@ -87,6 +88,9 @@ public final class AromaAffectClient {
 
         // Initialize tutorial scent counter HUD
         TutorialScentCounterHud.init();
+
+        // Initialize diamond text hologram renderer
+        DiamondTextHologram.init();
 
         // Initialize Sniffer menu screen
         SnifferMenuRegistry.initClient();

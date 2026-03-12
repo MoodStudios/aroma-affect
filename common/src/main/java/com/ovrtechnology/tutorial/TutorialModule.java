@@ -12,6 +12,7 @@ import com.ovrtechnology.network.TutorialDreamOverlayNetworking;
 import com.ovrtechnology.network.TutorialPopupNetworking;
 import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
+import com.ovrtechnology.network.SearchDiamondNetworking;
 import com.ovrtechnology.tutorial.boss.TutorialBossModule;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationHandler;
 import com.ovrtechnology.tutorial.chest.TutorialChestHandler;
@@ -37,6 +38,8 @@ import com.ovrtechnology.tutorial.command.sub.OliverSpawnSubCommand;
 import com.ovrtechnology.tutorial.command.sub.PortalSubCommand;
 import com.ovrtechnology.tutorial.command.sub.RegenAreaSubCommand;
 import com.ovrtechnology.tutorial.command.sub.ResetSubCommand;
+import com.ovrtechnology.tutorial.command.sub.SearchDiamondSubCommand;
+import com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler;
 import com.ovrtechnology.tutorial.command.sub.SetSpawnSubCommand;
 import com.ovrtechnology.tutorial.command.sub.SetWalkaroundSubCommand;
 import com.ovrtechnology.tutorial.command.sub.ProtectionSubCommand;
@@ -107,6 +110,7 @@ public final class TutorialModule {
         TutorialPopupNetworking.init();
         com.ovrtechnology.network.TutorialScentCounterNetworking.init();
         com.ovrtechnology.network.TutorialFinishNetworking.init();
+        SearchDiamondNetworking.init();
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());
@@ -132,6 +136,7 @@ public final class TutorialModule {
         TutorialCommand.register(new MusicZoneSubCommand());
         TutorialCommand.register(new PopupZoneSubCommand());
         TutorialCommand.register(new com.ovrtechnology.tutorial.command.sub.FinishZoneSubCommand());
+        TutorialCommand.register(new SearchDiamondSubCommand());
 
         // Register tutorial commands (only visible when GameRule is active)
         TutorialCommand.init();
@@ -180,6 +185,9 @@ public final class TutorialModule {
 
         // Initialize finish screen zone handler
         com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.init();
+
+        // Initialize SearchDiamond zone handler
+        SearchDiamondZoneHandler.init();
 
         // Register server started event to auto-restore regen areas
         LifecycleEvent.SERVER_STARTED.register(server -> {
