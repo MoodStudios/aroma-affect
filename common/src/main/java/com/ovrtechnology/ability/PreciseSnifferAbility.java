@@ -159,6 +159,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
             // Fallback if no blocks configured
             if (validBlocks.isEmpty()) {
                 validBlocks.add(Blocks.SUSPICIOUS_SAND);
+                validBlocks.add(Blocks.SUSPICIOUS_GRAVEL);
             }
         }
         return validBlocks;
@@ -305,20 +306,29 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
             return;
         }
 
-        // Use the standard desert pyramid archaeology loot table
-        // This is the most common loot table for Suspicious Sand in vanilla
-        // TODO: In the future, we could use mixins/access transformers to get the
-        // actual loot table
-        ResourceKey<LootTable> lootTableKey = net.minecraft.world.level.storage.loot.BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY;
+        // Determine loot table and egg chance based on block type
+        Block currentBlock = level.getBlockState(pos).getBlock();
+        ResourceKey<LootTable> lootTableKey;
+        double eggChance;
 
-        // Roll loot with Sniffer Egg bias (using config chance)
+        if (currentBlock == Blocks.SUSPICIOUS_GRAVEL) {
+            // Suspicious gravel uses vanilla behavior — no Sniffer Egg boost
+            lootTableKey = net.minecraft.world.level.storage.loot.BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_COMMON;
+            eggChance = 0.0;
+        } else {
+            // Suspicious sand uses the Precise Sniffer bonus
+            lootTableKey = net.minecraft.world.level.storage.loot.BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY;
+            eggChance = getSnifferEggChance();
+        }
+
+        // Roll loot (vanilla for gravel, Sniffer Egg bias for sand)
         ItemStack loot = SnifferLootTable.rollLoot(
                 level,
                 pos,
                 lootTableKey,
                 player,
                 level.getRandom(),
-                getSnifferEggChance());
+                eggChance);
 
         if (!loot.isEmpty()) {
             // Spawn item entity at block position

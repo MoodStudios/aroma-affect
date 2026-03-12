@@ -41,6 +41,14 @@ public final class ActivePathManager {
     private static final double ARRIVAL_THRESHOLD = 5.0;
 
     /**
+     * Distance threshold for biome arrival (in blocks).
+     * Player must be within this distance of the destination AND in the correct biome.
+     * Larger than ARRIVAL_THRESHOLD because the destination is an approximate point
+     * inside a biome region, not an exact target.
+     */
+    private static final double BIOME_ARRIVAL_THRESHOLD = 100.0;
+
+    /**
      * How often to process paths (in ticks). Every 5 ticks = 4 times per second.
      */
     private static final int TICK_INTERVAL = 5;
@@ -176,12 +184,18 @@ public final class ActivePathManager {
             // Send distance update to client
             PathScentNetworking.sendDistanceUpdate(player, (int) distanceToDestination);
 
-            // Biome tracking: arrived when player enters the target biome (not exact point)
+            // Biome tracking: arrived when player is near the destination AND in the correct biome.
+            // Distance check prevents false arrival when the player is already standing in
+            // a blacklisted instance of the same biome type far from the actual destination.
             boolean arrived;
             if (path.targetType() == TargetType.BIOME && path.targetId() != null) {
-                var currentBiome = player.level().getBiome(playerPos);
-                var biomeKey = currentBiome.unwrapKey().orElse(null);
-                arrived = biomeKey != null && biomeKey.location().toString().equals(path.targetId());
+                if (distanceToDestination <= BIOME_ARRIVAL_THRESHOLD) {
+                    var currentBiome = player.level().getBiome(playerPos);
+                    var biomeKey = currentBiome.unwrapKey().orElse(null);
+                    arrived = biomeKey != null && biomeKey.location().toString().equals(path.targetId());
+                } else {
+                    arrived = false;
+                }
             } else {
                 arrived = distanceToDestination <= ARRIVAL_THRESHOLD;
             }
