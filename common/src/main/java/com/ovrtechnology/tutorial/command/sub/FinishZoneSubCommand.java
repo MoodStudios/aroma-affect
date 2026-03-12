@@ -7,8 +7,10 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.ovrtechnology.network.TutorialFinishNetworking;
 import com.ovrtechnology.tutorial.command.TutorialSubCommand;
 import com.ovrtechnology.tutorial.finishscreen.TutorialFinishZone;
+import com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler;
 import com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -67,6 +69,10 @@ public class FinishZoneSubCommand implements TutorialSubCommand {
                         .then(Commands.argument("id", StringArgumentType.word())
                                 .suggests(ZONE_SUGGESTIONS)
                                 .executes(this::executeInfo)))
+                .then(Commands.literal("test")
+                        .executes(this::executeTest))
+                .then(Commands.literal("reset")
+                        .executes(this::executeReset))
                 .executes(ctx -> {
                     ctx.getSource().sendSuccess(() -> Component.literal(
                             "\u00a7d[OVR Tutorial] \u00a7fFinish zone commands: create, delete, corner, list, info"), false);
@@ -156,6 +162,33 @@ public class FinishZoneSubCommand implements TutorialSubCommand {
                 "\u00a77  Corner 2: \u00a7e" + c2), false);
         context.getSource().sendSuccess(() -> Component.literal(
                 "\u00a77  Complete: " + (zone.isComplete() ? "\u00a7aYes" : "\u00a7cNo")), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int executeTest(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("\u00a7cMust be a player"));
+            return 0;
+        }
+
+        TutorialFinishNetworking.sendOpenFinish(player);
+
+        source.sendSuccess(() -> Component.literal(
+                "\u00a7d[OVR Tutorial] \u00a7fSent finish screen to player"), true);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int executeReset(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("\u00a7cMust be a player"));
+            return 0;
+        }
+
+        TutorialFinishZoneHandler.resetPlayer(player.getUUID());
+        source.sendSuccess(() -> Component.literal(
+                "\u00a7d[OVR Tutorial] \u00a7fReset finish screen trigger for player"), true);
         return Command.SINGLE_SUCCESS;
     }
 }

@@ -106,6 +106,7 @@ public final class TutorialModule {
         TutorialDreamOverlayNetworking.init();
         TutorialPopupNetworking.init();
         com.ovrtechnology.network.TutorialScentCounterNetworking.init();
+        com.ovrtechnology.network.TutorialFinishNetworking.init();
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());

@@ -7,6 +7,7 @@ import com.ovrtechnology.tutorial.dream.TutorialDreamEndHandler;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.EntityEvent;
+import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -77,6 +78,20 @@ public final class TutorialBossHandler {
             }
 
             return EventResult.pass();
+        });
+
+        // TUTORIAL MODE: Players don't lose hunger - keep food level at max
+        TickEvent.SERVER_POST.register(server -> {
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                if (!(player.level() instanceof ServerLevel level)) continue;
+                if (!TutorialModule.isActive(level)) continue;
+
+                // Keep hunger at max (20 = full bar)
+                if (player.getFoodData().getFoodLevel() < 20) {
+                    player.getFoodData().setFoodLevel(20);
+                    player.getFoodData().setSaturation(5.0f);
+                }
+            }
         });
 
         // Listen for entity death events

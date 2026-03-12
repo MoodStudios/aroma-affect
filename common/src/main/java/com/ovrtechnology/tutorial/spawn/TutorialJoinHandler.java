@@ -471,8 +471,12 @@ public final class TutorialJoinHandler {
                 TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.15f));
         TutorialNoseEquipHandler.scheduleDelayed(62, () ->
                 TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.05f));
-        TutorialNoseEquipHandler.scheduleDelayed(70, () ->
-                TutorialPortalOverlayNetworking.sendClearOverlay(player));
+        TutorialNoseEquipHandler.scheduleDelayed(70, () -> {
+                TutorialPortalOverlayNetworking.sendClearOverlay(player);
+                // Activate scent counter HUD for walkaround mode
+                com.ovrtechnology.network.TutorialScentCounterNetworking.sendActivate(player, 16);
+                AromaAffect.LOGGER.info("Scent counter activated for walkaround player {}", player.getName().getString());
+        });
     }
 
     public static void removeFromIntro(UUID playerId) {

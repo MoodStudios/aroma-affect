@@ -19,8 +19,11 @@ public class TutorialIntroScreen extends Screen {
     private static final ResourceLocation PARTNER_LOGO =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/guide/ovr_logo.png");
 
+    // Logo actual: 735x659 pixels
+    private static final int LOGO_TEX_WIDTH = 735;
+    private static final int LOGO_TEX_HEIGHT = 659;
     private static final int LOGO_WIDTH = 180;
-    private static final int LOGO_HEIGHT = 97;  // 735:396 aspect ratio
+    private static final int LOGO_HEIGHT = (int) (LOGO_WIDTH * ((float) LOGO_TEX_HEIGHT / LOGO_TEX_WIDTH)); // ~161
 
     // Partner logo: 881x396 -> display 70x31
     private static final int PARTNER_WIDTH = 70;
@@ -120,9 +123,15 @@ public class TutorialIntroScreen extends Screen {
         int logoX = (this.width - LOGO_WIDTH) / 2;
 
         // Logo (rendered behind overlay — becomes visible as overlay fades from black to semi-transparent)
+        // Scale the logo to fit LOGO_WIDTH x LOGO_HEIGHT
+        float scale = (float) LOGO_WIDTH / LOGO_TEX_WIDTH;
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(logoX, logoY);
+        graphics.pose().scale(scale, scale);
         graphics.blit(RenderPipelines.GUI_TEXTURED, MAIN_LOGO,
-                logoX, logoY, 0.0f, 0.0f,
-                LOGO_WIDTH, LOGO_HEIGHT, LOGO_WIDTH, LOGO_HEIGHT);
+                0, 0, 0.0f, 0.0f,
+                LOGO_TEX_WIDTH, LOGO_TEX_HEIGHT, LOGO_TEX_WIDTH, LOGO_TEX_HEIGHT);
+        graphics.pose().popMatrix();
 
         // Partner logo (top-left corner)
         graphics.blit(RenderPipelines.GUI_TEXTURED, PARTNER_LOGO,
