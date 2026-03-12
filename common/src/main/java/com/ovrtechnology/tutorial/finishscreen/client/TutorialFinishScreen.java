@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial.finishscreen.client;
 
 import com.ovrtechnology.AromaAffect;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,13 +23,14 @@ public class TutorialFinishScreen extends Screen {
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/moodlogo.png");
     private static final int MOOD_TEX_WIDTH = 735;
     private static final int MOOD_TEX_HEIGHT = 289;
-    private static final int MOOD_DISPLAY_WIDTH = 90;
+    private static final int MOOD_DISPLAY_WIDTH = 60;
 
-    // OVR Technology partner logo (top-left)
-    private static final ResourceLocation PARTNER_LOGO =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/guide/ovr_logo.png");
-    private static final int PARTNER_WIDTH = 70;
-    private static final int PARTNER_HEIGHT = 31;
+    // QR codes - 200x200 texture size
+    private static final ResourceLocation QR_LEFT =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_left.png");
+    private static final ResourceLocation QR_RIGHT =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_right.png");
+    private static final int QR_SIZE = 64;
 
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
@@ -44,7 +46,8 @@ public class TutorialFinishScreen extends Screen {
         super.init();
 
         int buttonX = (this.width - BUTTON_WIDTH) / 2;
-        int buttonY = this.height / 2 + 50;
+        // Position button below the QR codes
+        int buttonY = this.height / 2 + QR_SIZE + 30;
 
         thanksButton = Button.builder(
                 Component.literal("Thanks for playing!"),
@@ -59,17 +62,20 @@ public class TutorialFinishScreen extends Screen {
         // Dark overlay
         graphics.fill(0, 0, this.width, this.height, 0xAA000000);
 
-        // OVR Technology partner logo (top-left corner)
-        graphics.blit(RenderPipelines.GUI_TEXTURED, PARTNER_LOGO,
-                10, 10, 0.0f, 0.0f,
-                PARTNER_WIDTH, PARTNER_HEIGHT, PARTNER_WIDTH, PARTNER_HEIGHT);
-
-        // Mood Studios logo (top-right corner) - scaled
+        // "Powered by" text + Mood Studios logo (top-right corner)
         float moodScale = (float) MOOD_DISPLAY_WIDTH / MOOD_TEX_WIDTH;
         int moodDisplayHeight = (int) (MOOD_TEX_HEIGHT * moodScale);
         int moodX = this.width - MOOD_DISPLAY_WIDTH - 10;
+
+        // "Powered by" text above Mood logo
+        String poweredByText = "Powered by";
+        int textWidth = Minecraft.getInstance().font.width(poweredByText);
+        int textX = moodX + (MOOD_DISPLAY_WIDTH - textWidth) / 2;
+        graphics.drawString(Minecraft.getInstance().font, poweredByText, textX, 8, 0xFFFFFFFF, false);
+
+        // Mood Studios logo below text
         graphics.pose().pushMatrix();
-        graphics.pose().translate(moodX, 10);
+        graphics.pose().translate(moodX, 20);
         graphics.pose().scale(moodScale, moodScale);
         graphics.blit(RenderPipelines.GUI_TEXTURED, MOOD_LOGO,
                 0, 0, 0.0f, 0.0f,
@@ -80,7 +86,7 @@ public class TutorialFinishScreen extends Screen {
         float ovrScale = (float) OVR_DISPLAY_WIDTH / OVR_TEX_WIDTH;
         int ovrDisplayHeight = (int) (OVR_TEX_HEIGHT * ovrScale);
         int logoX = (this.width - OVR_DISPLAY_WIDTH) / 2;
-        int logoY = this.height / 2 - ovrDisplayHeight / 2 - 20;
+        int logoY = this.height / 2 - ovrDisplayHeight - 10;
         graphics.pose().pushMatrix();
         graphics.pose().translate(logoX, logoY);
         graphics.pose().scale(ovrScale, ovrScale);
@@ -88,6 +94,20 @@ public class TutorialFinishScreen extends Screen {
                 0, 0, 0.0f, 0.0f,
                 OVR_TEX_WIDTH, OVR_TEX_HEIGHT, OVR_TEX_WIDTH, OVR_TEX_HEIGHT);
         graphics.pose().popMatrix();
+
+        // QR codes below OVR logo
+        int qrY = logoY + ovrDisplayHeight + 15;
+        int qrSpacing = 20;
+        int totalQrWidth = QR_SIZE * 2 + qrSpacing;
+        int qrLeftX = (this.width - totalQrWidth) / 2;
+        int qrRightX = qrLeftX + QR_SIZE + qrSpacing;
+
+        graphics.blit(RenderPipelines.GUI_TEXTURED, QR_LEFT,
+                qrLeftX, qrY, 0.0f, 0.0f,
+                QR_SIZE, QR_SIZE, QR_SIZE, QR_SIZE);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, QR_RIGHT,
+                qrRightX, qrY, 0.0f, 0.0f,
+                QR_SIZE, QR_SIZE, QR_SIZE, QR_SIZE);
     }
 
     @Override
