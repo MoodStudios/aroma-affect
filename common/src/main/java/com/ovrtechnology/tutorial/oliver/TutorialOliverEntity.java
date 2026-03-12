@@ -130,7 +130,7 @@ public class TutorialOliverEntity extends Villager {
 
     public TutorialOliverEntity(EntityType<? extends Villager> entityType, Level level) {
         super(entityType, level);
-        this.setCustomName(Component.literal("§dOliver"));
+        this.setCustomName(Component.literal("§dAroma Guide"));
         this.setCustomNameVisible(true);
         this.setVillagerData(this.getVillagerData()
                 .withProfession(BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT))
@@ -399,9 +399,10 @@ public class TutorialOliverEntity extends Villager {
             // Handle mode-specific behavior (follow, walkto, stationary)
             tickMode(serverLevel);
 
-            // Ensure custom name is always present
-            if (this.getCustomName() == null) {
-                this.setCustomName(Component.literal("§dOliver"));
+            // Ensure custom name is always correct (updates existing entities too)
+            Component expectedName = Component.literal("§dAroma Guide");
+            if (this.getCustomName() == null || !this.getCustomName().getString().equals(expectedName.getString())) {
+                this.setCustomName(expectedName);
                 this.setCustomNameVisible(true);
             }
         }

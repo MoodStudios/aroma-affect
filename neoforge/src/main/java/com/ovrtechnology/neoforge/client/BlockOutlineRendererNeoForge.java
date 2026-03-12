@@ -2,6 +2,7 @@ package com.ovrtechnology.neoforge.client;
 
 import com.ovrtechnology.render.BlockOutlineRenderer;
 import com.ovrtechnology.render.PathTrailRenderer;
+import com.ovrtechnology.tutorial.chest.client.TutorialChestHologram;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialArrowHologram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -36,6 +37,13 @@ public final class BlockOutlineRendererNeoForge {
 
         // Render waypoint arrow hologram
         TutorialArrowHologram.render(
+                event.getPoseStack(),
+                bufferSource,
+                camPos.x, camPos.y, camPos.z
+        );
+
+        // Render chest exclamation icons
+        TutorialChestHologram.render(
                 event.getPoseStack(),
                 bufferSource,
                 camPos.x, camPos.y, camPos.z

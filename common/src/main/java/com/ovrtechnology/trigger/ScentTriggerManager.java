@@ -271,6 +271,9 @@ public final class ScentTriggerManager {
         // Send to OVR with intensity
         sendPlayToOvr(trigger.scentName(), trigger.intensity());
 
+        // Notify tutorial scent counter (if active)
+        com.ovrtechnology.network.TutorialScentCounterNetworking.onScentTriggered(trigger.scentName());
+
         AromaAffect.LOGGER.info("Triggered scent '{}' (priority: {}, duration: {} ticks, intensity: {})",
                 trigger.scentName(), trigger.priority(), trigger.durationTicks(), trigger.intensity());
 

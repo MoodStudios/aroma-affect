@@ -2,7 +2,6 @@ package com.ovrtechnology.tutorial.trade;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
-import com.ovrtechnology.network.TutorialPopupNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationHandler;
 import com.ovrtechnology.tutorial.cinematic.TutorialCinematicHandler;
@@ -22,8 +21,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handles the execution of Oliver trades.
@@ -119,17 +121,6 @@ public final class TutorialTradeHandler {
             player.drop(outputStack, false);
         }
 
-        // If output is a nose item, show equip popup
-        String outputItemId = trade.getOutputItemId().toLowerCase();
-        if (outputItemId.contains("nose") && !outputItemId.contains("smith")) {
-            TutorialPopupNetworking.sendPopup(player,
-                    "Equipa tu nueva nariz!\nClick izquierdo o abre inventario (E)");
-            AromaAffect.LOGGER.debug("Sent nose equip popup to player {}", player.getName().getString());
-
-            // Schedule popup clear after 8 seconds using scheduled executor
-            schedulePopupClear(player, 8000);
-        }
-
         // Play success sound
         level.playSound(
                 null,
@@ -220,14 +211,42 @@ public final class TutorialTradeHandler {
      * Multiple actions can be separated by semicolon (;).
      */
     private static void executeOliverAction(ServerPlayer player, ServerLevel level, String action) {
+        // Support multiple actions separated by semicolon
+        String[] actions = action.split(";");
+
+        // First pass: execute player-only actions (don't need Oliver)
+        for (String singleAction : actions) {
+            singleAction = singleAction.trim();
+            if (singleAction.isEmpty()) continue;
+            String actionLower = singleAction.toLowerCase();
+
+            if (actionLower.startsWith("clearinventory:")) {
+                String keepStr = singleAction.substring(15);
+                Set<String> keepItems = new HashSet<>(Arrays.asList(keepStr.split(",")));
+                clearInventoryKeeping(player, keepItems);
+            } else if (actionLower.startsWith("teleportplayer:")) {
+                String coordsStr = singleAction.substring(15);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.performEpicTeleport(player, level, x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
+                    }
+                }
+            }
+        }
+
+        // Second pass: execute Oliver-dependent actions
         TutorialOliverEntity oliver = findNearestOliver(player, level);
         if (oliver == null) {
             AromaAffect.LOGGER.warn("Cannot execute Oliver action '{}': no Oliver found nearby", action);
             return;
         }
 
-        // Support multiple actions separated by semicolon
-        String[] actions = action.split(";");
         String pendingDialogueId = null;
 
         for (String singleAction : actions) {
@@ -254,7 +273,6 @@ public final class TutorialTradeHandler {
                     }
                 }
             } else if (actionLower.startsWith("dialogue:")) {
-                // Defer dialogue opening until after all other actions
                 pendingDialogueId = singleAction.substring(9).trim();
                 oliver.setDialogueId(pendingDialogueId);
             } else if (actionLower.startsWith("trade:")) {
@@ -262,21 +280,8 @@ public final class TutorialTradeHandler {
                 oliver.setTradeId(tradeId);
             } else if (actionLower.equals("cleartrade")) {
                 oliver.setTradeId("");
-            } else if (actionLower.startsWith("teleportplayer:")) {
-                String coordsStr = singleAction.substring(15);
-                String[] parts = coordsStr.split(",");
-                if (parts.length == 3) {
-                    try {
-                        int x = Integer.parseInt(parts[0].trim());
-                        int y = Integer.parseInt(parts[1].trim());
-                        int z = Integer.parseInt(parts[2].trim());
-                        player.teleportTo(level, x + 0.5, y, z + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
-                        AromaAffect.LOGGER.debug("Teleported player to {}, {}, {}", x, y, z);
-                    } catch (NumberFormatException e) {
-                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
-                    }
-                }
             }
+            // clearinventory and teleportplayer already handled in first pass
 
             AromaAffect.LOGGER.debug("Executed Oliver action '{}' for trade completion", singleAction);
         }
@@ -350,30 +355,41 @@ public final class TutorialTradeHandler {
     private record ResolvedInput(Item item, int required, int found) {}
 
     /**
-     * Schedules clearing the popup after a delay.
-     * Uses a simple thread sleep approach since we're on the server.
+     * Clears the player's inventory, keeping only items whose registry ID contains
+     * one of the specified keep strings, plus whatever is in the HEAD armor slot (nose).
+     *
+     * @param player       the server player
+     * @param keepItemIds  item ID substrings to keep (e.g. "iron_pickaxe", "gold_nose")
      */
-    private static void schedulePopupClear(ServerPlayer player, long delayMs) {
-        final java.util.UUID playerId = player.getUUID();
-        final net.minecraft.server.MinecraftServer server = player.level().getServer();
+    public static void clearInventoryKeeping(ServerPlayer player, Set<String> keepItemIds) {
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
 
-        Thread clearThread = new Thread(() -> {
-            try {
-                Thread.sleep(delayMs);
-                // Run on main server thread
-                if (server != null && server.isRunning()) {
-                    server.execute(() -> {
-                        ServerPlayer p = server.getPlayerList().getPlayer(playerId);
-                        if (p != null && p.connection != null) {
-                            TutorialPopupNetworking.sendClearPopup(p);
-                        }
-                    });
+        // Preserve HEAD slot (nose)
+        ItemStack headSlot = player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).copy();
+
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
+            if (stack.isEmpty()) continue;
+
+            String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+            boolean keep = false;
+            for (String keepId : keepItemIds) {
+                if (itemId.contains(keepId)) {
+                    keep = true;
+                    break;
                 }
-            } catch (InterruptedException e) {
-                // Ignore
             }
-        });
-        clearThread.setDaemon(true);
-        clearThread.start();
+
+            if (!keep) {
+                inv.setItem(i, ItemStack.EMPTY);
+            }
+        }
+
+        // Restore HEAD slot in case it was cleared
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, headSlot);
+
+        player.inventoryMenu.broadcastChanges();
+        AromaAffect.LOGGER.info("Cleared inventory for player {}, keeping: {}", player.getName().getString(), keepItemIds);
     }
+
 }

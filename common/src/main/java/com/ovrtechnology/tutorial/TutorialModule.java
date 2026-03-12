@@ -105,6 +105,7 @@ public final class TutorialModule {
         TutorialBossCinematicNetworking.init();
         TutorialDreamOverlayNetworking.init();
         TutorialPopupNetworking.init();
+        com.ovrtechnology.network.TutorialScentCounterNetworking.init();
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());
@@ -129,6 +130,7 @@ public final class TutorialModule {
         TutorialCommand.register(new NoseSmithSubCommand());
         TutorialCommand.register(new MusicZoneSubCommand());
         TutorialCommand.register(new PopupZoneSubCommand());
+        TutorialCommand.register(new com.ovrtechnology.tutorial.command.sub.FinishZoneSubCommand());
 
         // Register tutorial commands (only visible when GameRule is active)
         TutorialCommand.init();
@@ -174,6 +176,9 @@ public final class TutorialModule {
 
         // Initialize popup zone handler
         TutorialPopupZoneHandler.init();
+
+        // Initialize finish screen zone handler
+        com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.init();
 
         // Register server started event to auto-restore regen areas
         LifecycleEvent.SERVER_STARTED.register(server -> {

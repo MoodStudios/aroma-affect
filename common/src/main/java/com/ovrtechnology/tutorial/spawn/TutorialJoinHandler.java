@@ -5,6 +5,7 @@ import com.ovrtechnology.network.TutorialAnimationNetworking;
 import com.ovrtechnology.network.TutorialChestNetworking;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.network.TutorialIntroNetworking;
+import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationManager;
@@ -80,6 +81,10 @@ public final class TutorialJoinHandler {
             playersInIntro.remove(player.getUUID());
             TutorialNetherPortalBlocker.onPlayerLeave(player.getUUID());
             TutorialNoseEquipHandler.onPlayerLeave(player.getUUID());
+            // Reset scent counter client state (critical for singleplayer where JVM is shared)
+            com.ovrtechnology.network.TutorialScentCounterNetworking.deactivateClient();
+            // Reset finish zone trigger tracking
+            com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(player.getUUID());
         });
 
         AromaAffect.LOGGER.debug("Tutorial join handler initialized");
@@ -111,6 +116,10 @@ public final class TutorialJoinHandler {
         }
 
         // MULTIPLAYER FLOW (original logic)
+        // Ensure scent counter starts deactivated on reconnect
+        com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
+        com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(player.getUUID());
+
         // Clean up any previous state
         if (playersInIntro.contains(player.getUUID())) {
             playersInIntro.remove(player.getUUID());
@@ -275,9 +284,6 @@ public final class TutorialJoinHandler {
         player.getFoodData().setSaturation(5.0f);
         player.setGameMode(GameType.SURVIVAL);
 
-        // Reset all entities (Oliver, NoseSmith)
-        resetAllEntities(level);
-
         // Reset player progress tracking
         processedPlayers.remove(playerId);
         TutorialWaypointAreaHandler.resetPlayer(playerId);
@@ -285,6 +291,8 @@ public final class TutorialJoinHandler {
         TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
         TutorialBossAreaHandler.clearAllBosses();
         TutorialPopupZoneHandler.clearPlayer(playerId);
+        com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
+        com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(playerId);
 
         // Clear client-side state
         TutorialWaypointNetworking.sendClearToPlayer(player);
@@ -292,7 +300,7 @@ public final class TutorialJoinHandler {
         TutorialAnimationNetworking.sendAnimationReset(player);
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
 
-        // Teleport to spawn
+        // Teleport to spawn FIRST (so chunks around spawn load)
         var spawnOpt = TutorialSpawnManager.getSpawn(level);
         if (spawnOpt.isPresent()) {
             TutorialSpawnManager.SpawnData spawn = spawnOpt.get();
@@ -307,6 +315,10 @@ public final class TutorialJoinHandler {
                     false
             );
         }
+
+        // Reset entities AFTER teleport (chunks around spawn now loaded)
+        resetAllEntities(level);
+        TutorialNoseEquipHandler.scheduleDelayed(10, () -> resetAllEntities(level));
 
         // Play the intro sequence (titles, particles, sound)
         playIntroSequence(player, level);
@@ -348,9 +360,6 @@ public final class TutorialJoinHandler {
         player.getFoodData().setSaturation(5.0f);
         player.setGameMode(GameType.SURVIVAL);
 
-        // Reset all entities (Oliver, NoseSmith)
-        resetAllEntities(level);
-
         // Reset player progress tracking
         processedPlayers.remove(playerId);
         TutorialWaypointAreaHandler.resetPlayer(playerId);
@@ -358,6 +367,8 @@ public final class TutorialJoinHandler {
         TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
         TutorialBossAreaHandler.clearAllBosses();
         TutorialPopupZoneHandler.clearPlayer(playerId);
+        com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
+        com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(playerId);
 
         // Clear client-side state
         TutorialWaypointNetworking.sendClearToPlayer(player);
@@ -365,10 +376,56 @@ public final class TutorialJoinHandler {
         TutorialAnimationNetworking.sendAnimationReset(player);
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
 
-        // Teleport to walkaround spawn (if set), otherwise use normal spawn
+        // Determine walkaround spawn (or fallback to normal spawn)
+        TutorialSpawnManager.SpawnData walkaroundSpawn = null;
         var walkaroundOpt = TutorialSpawnManager.getWalkaroundSpawn(level);
         if (walkaroundOpt.isPresent()) {
-            TutorialSpawnManager.SpawnData spawn = walkaroundOpt.get();
+            walkaroundSpawn = walkaroundOpt.get();
+        } else {
+            var spawnOpt = TutorialSpawnManager.getSpawn(level);
+            if (spawnOpt.isPresent()) {
+                walkaroundSpawn = spawnOpt.get();
+            }
+            AromaAffect.LOGGER.warn("No walkaround spawn set - using normal spawn. Set with /tutorial setwalkaround");
+        }
+
+        if (walkaroundSpawn != null) {
+            performWalkaroundTeleport(player, level, walkaroundSpawn);
+        }
+
+        // No intro sequence or waypoints for walkaround - just free exploration
+    }
+
+    /**
+     * Removes a player from the intro state (e.g., when stopped via command).
+     */
+    /**
+     * Performs an animated walkaround teleport with overlay fade, sounds, and particles.
+     */
+    private static void performWalkaroundTeleport(ServerPlayer player, ServerLevel level, TutorialSpawnManager.SpawnData spawn) {
+        // Phase 1: Buildup - fade to full overlay with sounds
+        TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.5f);
+        level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.AMBIENT, 1.0f, 0.8f);
+        level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.AMBIENT, 0.5f, 0.6f);
+
+        // Departure particles
+        level.sendParticles(ParticleTypes.CHERRY_LEAVES,
+                player.getX(), player.getY() + 1.0, player.getZ(),
+                30, 1.0, 1.0, 1.0, 0.02);
+
+        // Phase 2: Full overlay
+        TutorialNoseEquipHandler.scheduleDelayed(8, () -> {
+            TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.85f);
+            level.playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.AMBIENT, 0.4f, 1.2f);
+        });
+
+        // Phase 3: Teleport while fully covered
+        TutorialNoseEquipHandler.scheduleDelayed(15, () -> {
+            TutorialPortalOverlayNetworking.sendOverlayProgress(player, 1.0f);
+        });
+
+        TutorialNoseEquipHandler.scheduleDelayed(20, () -> {
+            // Actual teleport
             player.teleportTo(
                     level,
                     spawn.pos().getX() + 0.5,
@@ -379,32 +436,45 @@ public final class TutorialJoinHandler {
                     spawn.pitch(),
                     false
             );
+
             AromaAffect.LOGGER.info("Player {} entered WALKAROUND mode at {} - full reset performed", player.getName().getString(), spawn.pos());
-        } else {
-            // Fallback to normal spawn if walkaround not configured
-            var spawnOpt = TutorialSpawnManager.getSpawn(level);
-            if (spawnOpt.isPresent()) {
-                TutorialSpawnManager.SpawnData spawn = spawnOpt.get();
-                player.teleportTo(
-                        level,
-                        spawn.pos().getX() + 0.5,
-                        spawn.pos().getY(),
-                        spawn.pos().getZ() + 0.5,
-                        Set.of(),
-                        spawn.yaw(),
-                        spawn.pitch(),
-                        false
-                );
-            }
-            AromaAffect.LOGGER.warn("No walkaround spawn set - using normal spawn. Set with /tutorial setwalkaround");
+
+            // Reset entities AFTER teleport (chunks around spawn now loaded)
+            resetAllEntities(level);
+            TutorialNoseEquipHandler.scheduleDelayed(10, () -> resetAllEntities(level));
+
+            // Arrival sound
+            level.playSound(null, spawn.pos(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.AMBIENT, 1.0f, 1.2f);
+        });
+
+        // Phase 4: Arrival particles
+        for (int tick = 25; tick <= 45; tick += 5) {
+            TutorialNoseEquipHandler.scheduleDelayed(tick, () -> {
+                double px = spawn.pos().getX() + 0.5;
+                double py = spawn.pos().getY() + 0.5;
+                double pz = spawn.pos().getZ() + 0.5;
+                level.sendParticles(ParticleTypes.CHERRY_LEAVES, px, py, pz,
+                        15, 1.5, 1.2, 1.5, 0.01);
+                level.sendParticles(ParticleTypes.END_ROD, px, py + 1.0, pz,
+                        5, 0.5, 0.5, 0.5, 0.02);
+            });
         }
 
-        // No intro sequence or waypoints for walkaround - just free exploration
+        // Phase 5: Gradual fade-out
+        TutorialNoseEquipHandler.scheduleDelayed(30, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.7f));
+        TutorialNoseEquipHandler.scheduleDelayed(38, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.5f));
+        TutorialNoseEquipHandler.scheduleDelayed(46, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.3f));
+        TutorialNoseEquipHandler.scheduleDelayed(54, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.15f));
+        TutorialNoseEquipHandler.scheduleDelayed(62, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.05f));
+        TutorialNoseEquipHandler.scheduleDelayed(70, () ->
+                TutorialPortalOverlayNetworking.sendClearOverlay(player));
     }
 
-    /**
-     * Removes a player from the intro state (e.g., when stopped via command).
-     */
     public static void removeFromIntro(UUID playerId) {
         playersInIntro.remove(playerId);
     }
@@ -453,10 +523,7 @@ public final class TutorialJoinHandler {
         TutorialCinematicHandler.stopCinematic(player);
         player.setGameMode(GameType.SURVIVAL);
 
-        // 4. Reset all Oliver and NoseSmith entities to home positions
-        resetAllEntities(level);
-
-        // 5. Reset all player-specific progress tracking
+        // 4. Reset all player-specific progress tracking
         UUID playerId = player.getUUID();
         processedPlayers.remove(playerId);
         playersInIntro.remove(playerId);
@@ -465,24 +532,28 @@ public final class TutorialJoinHandler {
         TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
         TutorialBossAreaHandler.clearAllBosses();
         TutorialPopupZoneHandler.clearPlayer(playerId);
+        com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
+        com.ovrtechnology.network.TutorialScentCounterNetworking.deactivateClient();
+        com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(playerId);
 
-        // 6. Clear client-side state
+        // 5. Clear client-side state
         TutorialWaypointNetworking.sendClearToPlayer(player);
         TutorialChestNetworking.syncAllChestsToPlayer(player);
         TutorialAnimationNetworking.sendAnimationReset(player);
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
 
-        // 7. Check for intro cinematic
+        // 6. Check for intro cinematic
         var introCinematicOpt = TutorialSpawnManager.getIntroCinematicId(level);
         if (introCinematicOpt.isPresent()) {
             playersInIntro.add(playerId);
             TutorialCinematicHandler.startCinematic(player, introCinematicOpt.get(), true);
             TutorialIntroNetworking.sendOpenIntro(player);
             AromaAffect.LOGGER.info("Auto-reset complete - player {} entering intro cinematic", player.getName().getString());
+            // Entity reset will happen in handlePlayDemo/handleWalkaround after teleport
             return;
         }
 
-        // 8. Teleport to spawn point
+        // 7. Teleport to spawn point FIRST (so chunks around spawn load)
         var spawnOpt = TutorialSpawnManager.getSpawn(level);
         if (spawnOpt.isPresent()) {
             TutorialSpawnManager.SpawnData spawn = spawnOpt.get();
@@ -498,7 +569,13 @@ public final class TutorialJoinHandler {
             );
         }
 
-        // 9. Play intro sequence and activate first waypoint
+        // 8. Reset entities AFTER teleport (chunks around spawn are now loaded)
+        resetAllEntities(level);
+
+        // 9. Also schedule a delayed re-reset to catch entities in chunks that load after
+        TutorialNoseEquipHandler.scheduleDelayed(10, () -> resetAllEntities(level));
+
+        // 10. Play intro sequence and activate first waypoint
         playIntroSequence(player, level);
         activateFirstWaypoint(player, level);
 
@@ -507,22 +584,77 @@ public final class TutorialJoinHandler {
 
     /**
      * Resets all Oliver and NoseSmith entities in the level to their home positions.
+     * <p>
+     * Uses a two-step approach: first iterates all loaded entities, then specifically
+     * searches near the NoseSmith's configured spawn position (force-loading the chunk
+     * if necessary) to catch entities that may be in unloaded chunks.
      */
     private static void resetAllEntities(ServerLevel level) {
+        // Step 1: Reset all Oliver entities found in loaded chunks
         for (Entity entity : level.getAllEntities()) {
             if (entity instanceof TutorialOliverEntity oliver) {
                 oliver.resetToHome();
             }
-            if (entity instanceof com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith) {
-                noseSmith.resetQuest();
-                com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnPos(level).ifPresent(pos -> {
-                    float yaw = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnYaw(level);
-                    noseSmith.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-                    noseSmith.setYRot(yaw);
-                    noseSmith.setYHeadRot(yaw);
-                    noseSmith.setYBodyRot(yaw);
-                });
+        }
+
+        // Step 2: Reset NoseSmith by searching near its configured spawn position
+        // This ensures we find it even if its chunk wasn't loaded yet
+        resetNoseSmith(level);
+    }
+
+    /**
+     * Finds and resets the NoseSmith entity near its configured spawn position.
+     * Force-loads the chunk at the spawn position to ensure the entity is accessible.
+     */
+    private static void resetNoseSmith(ServerLevel level) {
+        var spawnOpt = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnPos(level);
+        if (spawnOpt.isEmpty()) {
+            // No spawn configured, fall back to searching all loaded entities
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith) {
+                    noseSmith.resetQuest();
+                }
             }
+            return;
+        }
+
+        net.minecraft.core.BlockPos spawnPos = spawnOpt.get();
+        float spawnYaw = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnYaw(level);
+
+        // Force-load the chunk at spawn position so the entity is accessible
+        level.getChunk(spawnPos);
+
+        // Search in a wide area around the spawn position (NoseSmith may have wandered)
+        net.minecraft.world.phys.AABB searchArea = new net.minecraft.world.phys.AABB(
+                spawnPos.getX() - 200, spawnPos.getY() - 100, spawnPos.getZ() - 200,
+                spawnPos.getX() + 200, spawnPos.getY() + 100, spawnPos.getZ() + 200
+        );
+
+        java.util.List<com.ovrtechnology.entity.nosesmith.NoseSmithEntity> noseSmiths =
+                level.getEntitiesOfClass(com.ovrtechnology.entity.nosesmith.NoseSmithEntity.class, searchArea);
+
+        if (noseSmiths.isEmpty()) {
+            // Also try all loaded entities as fallback
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith) {
+                    noseSmith.resetQuest();
+                    noseSmith.teleportTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+                    noseSmith.setYRot(spawnYaw);
+                    noseSmith.setYHeadRot(spawnYaw);
+                    noseSmith.setYBodyRot(spawnYaw);
+                    AromaAffect.LOGGER.info("Reset NoseSmith (fallback search) and teleported to {}", spawnPos);
+                }
+            }
+            return;
+        }
+
+        for (com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith : noseSmiths) {
+            noseSmith.resetQuest();
+            noseSmith.teleportTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+            noseSmith.setYRot(spawnYaw);
+            noseSmith.setYHeadRot(spawnYaw);
+            noseSmith.setYBodyRot(spawnYaw);
+            AromaAffect.LOGGER.info("Reset NoseSmith and teleported to {}", spawnPos);
         }
     }
 }

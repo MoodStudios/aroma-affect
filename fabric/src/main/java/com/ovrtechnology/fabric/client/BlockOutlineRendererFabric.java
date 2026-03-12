@@ -2,6 +2,7 @@ package com.ovrtechnology.fabric.client;
 
 import com.ovrtechnology.render.BlockOutlineRenderer;
 import com.ovrtechnology.render.PathTrailRenderer;
+import com.ovrtechnology.tutorial.chest.client.TutorialChestHologram;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialArrowHologram;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.world.phys.Vec3;
@@ -27,6 +28,13 @@ public final class BlockOutlineRendererFabric {
 
             // Render waypoint arrow hologram
             TutorialArrowHologram.render(
+                    context.matrices(),
+                    context.consumers(),
+                    camPos.x, camPos.y, camPos.z
+            );
+
+            // Render chest exclamation icons
+            TutorialChestHologram.render(
                     context.matrices(),
                     context.consumers(),
                     camPos.x, camPos.y, camPos.z

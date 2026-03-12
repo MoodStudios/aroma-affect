@@ -165,12 +165,51 @@ public final class TutorialNoseEquipHandler {
 
     private static void executeTriggerActions(ServerPlayer player, ServerLevel level,
                                                TutorialNoseEquipTrigger.NoseEquipAction action) {
-        AromaAffect.LOGGER.info("[NoseEquip] Executing actions - oliver:'{}' cinematic:'{}' waypoint:'{}' animation:'{}'",
-                action.onCompleteOliverAction(), action.onCompleteCinematicId(),
+        AromaAffect.LOGGER.info("[NoseEquip] Executing actions - nose:'{}' oliver:'{}' cinematic:'{}' waypoint:'{}' animation:'{}'",
+                action.noseId(), action.onCompleteOliverAction(), action.onCompleteCinematicId(),
                 action.onCompleteWaypointId(), action.onCompleteAnimationId());
 
-        // Oliver action
-        if (action.hasOliverAction()) {
+        // Auto clear inventory when equipping Prospector Nose (gold_nose)
+        if ("gold_nose".equals(action.noseId())) {
+            com.ovrtechnology.tutorial.trade.TutorialTradeHandler.clearInventoryKeeping(
+                    player, java.util.Set.of("gold_nose"));
+            AromaAffect.LOGGER.info("[NoseEquip] Auto-cleared inventory for Prospector Nose (gold_nose)");
+        }
+
+        // For blaze_nose (Dimensional Nose), ensure teleport uses epic sequence
+        // Extract teleportplayer from oliver action, run it via performEpicTeleport(),
+        // and pass remaining actions to executeOliverAction() without the teleport part
+        if ("blaze_nose".equals(action.noseId()) && action.hasOliverAction()) {
+            String oliverAction = action.onCompleteOliverAction();
+            StringBuilder remainingActions = new StringBuilder();
+            for (String part : oliverAction.split(";")) {
+                part = part.trim();
+                if (part.isEmpty()) continue;
+                if (part.toLowerCase().startsWith("teleportplayer:")) {
+                    String coordsStr = part.substring(15);
+                    String[] coords = coordsStr.split(",");
+                    if (coords.length == 3) {
+                        try {
+                            int x = Integer.parseInt(coords[0].trim());
+                            int y = Integer.parseInt(coords[1].trim());
+                            int z = Integer.parseInt(coords[2].trim());
+                            AromaAffect.LOGGER.info("[NoseEquip] Epic teleport for blaze_nose to {},{},{}", x, y, z);
+                            performEpicTeleport(player, level, x, y, z);
+                        } catch (NumberFormatException e) {
+                            AromaAffect.LOGGER.warn("[NoseEquip] Invalid blaze_nose teleport coords: {}", coordsStr);
+                        }
+                    }
+                } else {
+                    if (remainingActions.length() > 0) remainingActions.append(";");
+                    remainingActions.append(part);
+                }
+            }
+            // Execute remaining actions (dialogue, trade, etc.) without the teleport
+            if (remainingActions.length() > 0) {
+                executeOliverAction(player, level, remainingActions.toString());
+            }
+        } else if (action.hasOliverAction()) {
+            // Normal oliver action processing for other noses
             executeOliverAction(player, level, action.onCompleteOliverAction());
         }
 
@@ -203,9 +242,9 @@ public final class TutorialNoseEquipHandler {
 
     /**
      * Epic dimensional teleport with darkness, sounds, particles and screen flash.
-     * Used for the Nether → End transition.
+     * Extended buildup for dramatic effect. Public so other handlers can reuse it.
      */
-    private static void performEpicTeleport(ServerPlayer player, ServerLevel level, int x, int y, int z) {
+    public static void performEpicTeleport(ServerPlayer player, ServerLevel level, int x, int y, int z) {
         double fromX = player.getX();
         double fromY = player.getY();
         double fromZ = player.getZ();
@@ -213,79 +252,109 @@ public final class TutorialNoseEquipHandler {
         // 1. Stop all current sounds
         player.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(null, null));
 
-        // 2. Departure effects — dramatic particles at origin
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL,
-                fromX, fromY + 1.0, fromZ, 80, 0.5, 1.0, 0.5, 0.15);
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,
-                fromX, fromY + 0.5, fromZ, 50, 1.0, 0.5, 1.0, 0.05);
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL,
-                fromX, fromY + 1.0, fromZ, 100, 0.8, 1.5, 0.8, 1.0);
-
-        // 3. Departure sound — end portal
+        // 2. Initial buildup — ominous sounds
         level.playSound(null, fromX, fromY, fromZ,
-                net.minecraft.sounds.SoundEvents.END_PORTAL_SPAWN,
-                net.minecraft.sounds.SoundSource.AMBIENT, 1.0f, 0.8f);
+                net.minecraft.sounds.SoundEvents.ENDER_EYE_DEATH,
+                net.minecraft.sounds.SoundSource.AMBIENT, 1.0f, 0.3f);
+        level.playSound(null, fromX, fromY, fromZ,
+                net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE,
+                net.minecraft.sounds.SoundSource.AMBIENT, 1.5f, 0.5f);
 
-        // 4. Apply Darkness effect (50 ticks = 2.5s) for dimensional transition feel
+        // 3. Early overlay fade
+        com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.3f);
+
+        // 4. Apply Darkness effect (80 ticks = 4s) for extended dimensional transition
         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                net.minecraft.world.effect.MobEffects.DARKNESS, 50, 0, false, false, false));
+                net.minecraft.world.effect.MobEffects.DARKNESS, 80, 0, false, false, false));
 
-        // 5. Send dream overlay flash (white screen)
-        com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.8f);
+        // 5. Departure particles — building up
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL,
+                fromX, fromY + 1.0, fromZ, 60, 0.5, 1.0, 0.5, 0.1);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL,
+                fromX, fromY + 1.0, fromZ, 80, 0.8, 1.5, 0.8, 1.0);
 
-        // 6. Teleport after a brief moment (10 ticks = 0.5s) for buildup
+        // 6. Intensify at tick 10
         scheduleDelayed(10, () -> {
-            // Teleport
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.6f);
+            level.playSound(null, fromX, fromY, fromZ,
+                    net.minecraft.sounds.SoundEvents.END_PORTAL_SPAWN,
+                    net.minecraft.sounds.SoundSource.AMBIENT, 1.0f, 0.8f);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,
+                    fromX, fromY + 0.5, fromZ, 60, 1.0, 0.5, 1.0, 0.05);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.WITCH,
+                    fromX, fromY + 1.0, fromZ, 30, 0.5, 1.0, 0.5, 0.1);
+        });
+
+        // 7. Flash to white at tick 18
+        scheduleDelayed(18, () ->
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.9f));
+
+        // 8. Teleport at tick 22 (1.1s buildup)
+        scheduleDelayed(22, () -> {
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 1.0f);
+
             player.teleportTo(level, x + 0.5, y, z + 0.5,
                     java.util.Set.of(), player.getYRot(), player.getXRot(), false);
 
-            // Full white flash on arrival
-            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 1.0f);
-
             // Arrival particles — epic end dimension entrance
             level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD,
-                    x + 0.5, y + 1.5, z + 0.5, 60, 1.5, 2.0, 1.5, 0.1);
+                    x + 0.5, y + 1.5, z + 0.5, 80, 2.0, 2.5, 2.0, 0.1);
             level.sendParticles(net.minecraft.core.particles.ParticleTypes.REVERSE_PORTAL,
-                    x + 0.5, y + 1.0, z + 0.5, 100, 2.0, 1.0, 2.0, 0.2);
+                    x + 0.5, y + 1.0, z + 0.5, 120, 2.0, 1.5, 2.0, 0.2);
             level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANT,
-                    x + 0.5, y + 0.5, z + 0.5, 40, 2.0, 0.5, 2.0, 0.5);
+                    x + 0.5, y + 0.5, z + 0.5, 50, 2.0, 0.5, 2.0, 0.5);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                    x + 0.5, y + 0.2, z + 0.5, 15, 1.5, 0.1, 1.5, 0.02);
 
-            // Arrival sound — ender dragon growl + amethyst chime
+            // Arrival sounds
             level.playSound(null, x + 0.5, y, z + 0.5,
                     net.minecraft.sounds.SoundEvents.ENDER_DRAGON_AMBIENT,
                     net.minecraft.sounds.SoundSource.HOSTILE, 0.6f, 0.5f);
             level.playSound(null, x + 0.5, y, z + 0.5,
                     net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME,
                     net.minecraft.sounds.SoundSource.AMBIENT, 1.0f, 0.5f);
+            level.playSound(null, x + 0.5, y, z + 0.5,
+                    net.minecraft.sounds.SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(),
+                    net.minecraft.sounds.SoundSource.AMBIENT, 0.8f, 0.6f);
 
             AromaAffect.LOGGER.debug("Epic teleport: player arrived at {}, {}, {}", x, y, z);
         });
 
-        // 7. Fade out overlay gradually after arrival
-        scheduleDelayed(25, () ->
-            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.5f));
+        // 9. Gradual fade out
         scheduleDelayed(35, () ->
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.7f));
+        scheduleDelayed(42, () ->
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.4f));
+        scheduleDelayed(50, () ->
             com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.2f));
-        scheduleDelayed(45, () ->
+        scheduleDelayed(60, () ->
+            com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendOverlayProgress(player, 0.05f));
+        scheduleDelayed(70, () ->
             com.ovrtechnology.network.TutorialDreamOverlayNetworking.sendClearOverlay(player));
     }
 
-    private static void scheduleDelayed(int ticks, Runnable action) {
+    public static void scheduleDelayed(int ticks, Runnable action) {
         synchronized (delayedActions) {
             delayedActions.add(new DelayedAction(ticks, action));
         }
     }
 
     private static void processDelayedActions() {
+        List<Runnable> toRun = new ArrayList<>();
         synchronized (delayedActions) {
             Iterator<DelayedAction> it = delayedActions.iterator();
             while (it.hasNext()) {
                 DelayedAction da = it.next();
                 if (--da.ticksRemaining <= 0) {
-                    da.action.run();
+                    toRun.add(da.action);
                     it.remove();
                 }
             }
+        }
+        // Execute outside synchronized block to avoid ConcurrentModificationException
+        // when callbacks schedule new delayed actions
+        for (Runnable r : toRun) {
+            r.run();
         }
     }
 
@@ -299,6 +368,36 @@ public final class TutorialNoseEquipHandler {
     }
 
     private static void executeOliverAction(ServerPlayer player, ServerLevel level, String action) {
+        // Support multiple actions separated by semicolon
+        String[] actions = action.split(";");
+
+        // First pass: execute player-only actions (don't need Oliver)
+        for (String singleAction : actions) {
+            singleAction = singleAction.trim();
+            if (singleAction.isEmpty()) continue;
+            String actionLower = singleAction.toLowerCase();
+
+            if (actionLower.startsWith("clearinventory:")) {
+                String keepStr = singleAction.substring(15);
+                java.util.Set<String> keepItems = new java.util.HashSet<>(java.util.Arrays.asList(keepStr.split(",")));
+                com.ovrtechnology.tutorial.trade.TutorialTradeHandler.clearInventoryKeeping(player, keepItems);
+            } else if (actionLower.startsWith("teleportplayer:")) {
+                String coordsStr = singleAction.substring(15);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        performEpicTeleport(player, level, x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
+                    }
+                }
+            }
+        }
+
+        // Second pass: execute Oliver-dependent actions
         TutorialOliverEntity oliver = level.getEntitiesOfClass(TutorialOliverEntity.class,
                 player.getBoundingBox().inflate(100.0), e -> true
         ).stream().findFirst().orElse(null);
@@ -308,8 +407,6 @@ public final class TutorialNoseEquipHandler {
             return;
         }
 
-        // Support multiple actions separated by semicolon
-        String[] actions = action.split(";");
         String pendingDialogueId = null;
 
         for (String singleAction : actions) {
@@ -336,7 +433,6 @@ public final class TutorialNoseEquipHandler {
                     }
                 }
             } else if (actionLower.startsWith("dialogue:")) {
-                // Defer dialogue opening until after all other actions (especially trade:)
                 pendingDialogueId = singleAction.substring(9).trim();
                 oliver.setDialogueId(pendingDialogueId);
             } else if (actionLower.startsWith("trade:")) {
@@ -344,20 +440,8 @@ public final class TutorialNoseEquipHandler {
                 AromaAffect.LOGGER.debug("[NoseEquip] Oliver trade set to {}", singleAction.substring(6).trim());
             } else if (actionLower.equals("cleartrade")) {
                 oliver.setTradeId("");
-            } else if (actionLower.startsWith("teleportplayer:")) {
-                String coordsStr = singleAction.substring(15);
-                String[] parts = coordsStr.split(",");
-                if (parts.length == 3) {
-                    try {
-                        int x = Integer.parseInt(parts[0].trim());
-                        int y = Integer.parseInt(parts[1].trim());
-                        int z = Integer.parseInt(parts[2].trim());
-                        performEpicTeleport(player, level, x, y, z);
-                    } catch (NumberFormatException e) {
-                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
-                    }
-                }
             }
+            // clearinventory and teleportplayer already handled in first pass
         }
 
         // Open dialogue AFTER processing all actions (so trade is set first)

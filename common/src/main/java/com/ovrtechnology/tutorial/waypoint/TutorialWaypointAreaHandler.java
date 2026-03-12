@@ -312,6 +312,36 @@ public final class TutorialWaypointAreaHandler {
      * </ul>
      */
     private static void executeOliverAction(ServerPlayer player, ServerLevel level, String action) {
+        // Support multiple actions separated by semicolon
+        String[] actions = action.split(";");
+
+        // First pass: execute player-only actions (don't need Oliver)
+        for (String singleAction : actions) {
+            singleAction = singleAction.trim();
+            if (singleAction.isEmpty()) continue;
+            String actionLower = singleAction.toLowerCase();
+
+            if (actionLower.startsWith("clearinventory:")) {
+                String keepStr = singleAction.substring(15);
+                java.util.Set<String> keepItems = new java.util.HashSet<>(java.util.Arrays.asList(keepStr.split(",")));
+                com.ovrtechnology.tutorial.trade.TutorialTradeHandler.clearInventoryKeeping(player, keepItems);
+            } else if (actionLower.startsWith("teleportplayer:")) {
+                String coordsStr = singleAction.substring(15);
+                String[] parts = coordsStr.split(",");
+                if (parts.length == 3) {
+                    try {
+                        int x = Integer.parseInt(parts[0].trim());
+                        int y = Integer.parseInt(parts[1].trim());
+                        int z = Integer.parseInt(parts[2].trim());
+                        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.performEpicTeleport(player, level, x, y, z);
+                    } catch (NumberFormatException e) {
+                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
+                    }
+                }
+            }
+        }
+
+        // Second pass: execute Oliver-dependent actions
         TutorialOliverEntity oliver = findNearestOliver(player, level);
         if (oliver == null) {
             AromaAffect.LOGGER.warn("Cannot execute Oliver action '{}': no Oliver found within 100 blocks of player {}", action, player.getName().getString());
@@ -319,8 +349,6 @@ public final class TutorialWaypointAreaHandler {
         }
         AromaAffect.LOGGER.info("Found Oliver at {}, executing action '{}'", oliver.blockPosition(), action);
 
-        // Support multiple actions separated by semicolon
-        String[] actions = action.split(";");
         String pendingDialogueId = null;
 
         for (String singleAction : actions) {
@@ -352,7 +380,6 @@ public final class TutorialWaypointAreaHandler {
                     AromaAffect.LOGGER.warn("Invalid walkto format: {}", singleAction);
                 }
             } else if (actionLower.startsWith("dialogue:")) {
-                // Defer dialogue opening until after all other actions (especially trade:)
                 pendingDialogueId = singleAction.substring(9).trim();
                 oliver.setDialogueId(pendingDialogueId);
             } else if (actionLower.startsWith("trade:")) {
@@ -362,26 +389,11 @@ public final class TutorialWaypointAreaHandler {
             } else if (actionLower.equals("cleartrade")) {
                 oliver.setTradeId("");
                 AromaAffect.LOGGER.debug("Oliver action: trade cleared");
-            } else if (actionLower.startsWith("teleportplayer:")) {
-                String coordsStr = singleAction.substring(15);
-                String[] parts = coordsStr.split(",");
-                if (parts.length == 3) {
-                    try {
-                        int x = Integer.parseInt(parts[0].trim());
-                        int y = Integer.parseInt(parts[1].trim());
-                        int z = Integer.parseInt(parts[2].trim());
-                        player.teleportTo(level, x + 0.5, y, z + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), false);
-                        AromaAffect.LOGGER.debug("Teleported player to {}, {}, {}", x, y, z);
-                    } catch (NumberFormatException e) {
-                        AromaAffect.LOGGER.warn("Invalid teleportplayer coordinates: {}", coordsStr);
-                    }
-                }
             } else if (actionLower.startsWith("lookup:")) {
                 String blockId = singleAction.substring(7).trim();
                 triggerLookup(player, level, blockId);
-            } else {
-                AromaAffect.LOGGER.warn("Unknown Oliver action: {}", singleAction);
             }
+            // clearinventory and teleportplayer already handled in first pass
         }
 
         // Open dialogue AFTER processing all actions (so trade is set first)

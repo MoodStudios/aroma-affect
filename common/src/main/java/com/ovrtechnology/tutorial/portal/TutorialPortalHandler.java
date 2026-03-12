@@ -209,7 +209,10 @@ public final class TutorialPortalHandler {
     }
 
     /**
-     * Teleports a player through a portal.
+     * Teleports a player through a portal with a multi-phase epic sequence.
+     * <p>
+     * Phases: buildup sounds/particles → flash to white → hold → teleport →
+     * arrival particles → gradual fade-out → clear.
      */
     private static void teleportPlayer(ServerPlayer player, TutorialPortal portal, ServerLevel level) {
         BlockPos dest = portal.getDestination();
@@ -220,118 +223,125 @@ public final class TutorialPortalHandler {
         // Find Oliver near the player BEFORE teleporting
         TutorialOliverEntity oliver = findNearestOliver(level, player.getX(), player.getY(), player.getZ());
 
-        // Flash overlay to full before clearing (dimensional flash)
-        TutorialPortalOverlayNetworking.sendOverlayProgress(player, 1.0f);
-
-        // Set cooldown
+        // Set cooldown immediately to prevent re-triggering
         teleportCooldowns.put(player.getUUID(), currentTick + COOLDOWN_TICKS);
 
-        // === SOURCE DIMENSIONAL EFFECT ===
         double srcX = player.position().x;
         double srcY = player.position().y;
         double srcZ = player.position().z;
-
-        // Purple spiral
-        spawnTeleportParticles(level, srcX, srcY, srcZ);
-
-        // Dimensional vortex: portal particles swirling inward
-        level.sendParticles(ParticleTypes.PORTAL, srcX, srcY + 1, srcZ,
-                60, 1.5, 1.5, 1.5, 1.0);
-
-        // Reverse portal burst (pulling in)
-        level.sendParticles(ParticleTypes.REVERSE_PORTAL, srcX, srcY + 1, srcZ,
-                40, 0.5, 1.0, 0.5, 0.3);
-
-        // Witch magic sparkles
-        level.sendParticles(ParticleTypes.WITCH, srcX, srcY + 0.5, srcZ,
-                25, 0.8, 1.0, 0.8, 0.1);
-
-        // Dimensional rift sound (end portal + enderman teleport)
-        level.playSound(null, srcX, srcY, srcZ,
-                SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.6f, 1.5f);
-        level.playSound(null, srcX, srcY, srcZ,
-                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 0.7f);
-
-        // Teleport player
-        player.teleportTo(
-                level,
-                dest.getX() + 0.5,
-                dest.getY(),
-                dest.getZ() + 0.5,
-                Set.of(),
-                portal.getDestYaw(),
-                portal.getDestPitch(),
-                false
-        );
-
-        // Teleport Oliver along with the player (offset slightly so they don't overlap)
-        if (oliver != null) {
-            // Spawn particles at Oliver's source location
-            spawnTeleportParticles(level, oliver.getX(), oliver.getY(), oliver.getZ());
-
-            // Teleport Oliver near the destination (2 blocks offset)
-            double oliverDestX = dest.getX() + 2.5;
-            double oliverDestY = dest.getY();
-            double oliverDestZ = dest.getZ() + 0.5;
-            oliver.teleportTo(oliverDestX, oliverDestY, oliverDestZ);
-
-            // Make Oliver face the player
-            oliver.setYRot(portal.getDestYaw() + 180);
-            oliver.setYHeadRot(portal.getDestYaw() + 180);
-
-            // Spawn particles at Oliver's destination
-            spawnTeleportParticles(level, oliverDestX, oliverDestY + 1, oliverDestZ);
-
-            AromaAffect.LOGGER.debug("Oliver teleported with player via portal {}", portal.getId());
-        }
-
-        // === DESTINATION DIMENSIONAL EFFECT ===
         double dstX = dest.getX() + 0.5;
         double dstY = dest.getY();
         double dstZ = dest.getZ() + 0.5;
 
-        // Purple spiral at destination
-        spawnTeleportParticles(level, dstX, dstY + 1, dstZ);
+        // ── TICK 0: Buildup starts ──
+        // Stop all sounds (cuts any ambient)
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(null, null));
 
-        // Materialization burst: end rod + enchant expanding outward
-        level.sendParticles(ParticleTypes.END_ROD, dstX, dstY + 1.5, dstZ,
-                35, 0.2, 0.5, 0.2, 0.15);
-        level.sendParticles(ParticleTypes.ENCHANT, dstX, dstY + 0.5, dstZ,
-                40, 0.8, 0.3, 0.8, 0.5);
+        // Overlay already at 1.0 from portal progress — keep it
+        TutorialPortalOverlayNetworking.sendOverlayProgress(player, 1.0f);
 
-        // Reverse portal (expanding outward from arrival point)
-        level.sendParticles(ParticleTypes.REVERSE_PORTAL, dstX, dstY + 1, dstZ,
-                50, 0.3, 0.8, 0.3, 0.5);
+        // Ominous buildup sounds
+        level.playSound(null, srcX, srcY, srcZ,
+                SoundEvents.ENDER_EYE_DEATH, SoundSource.AMBIENT, 1.0f, 0.3f);
+        level.playSound(null, srcX, srcY, srcZ,
+                SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.AMBIENT, 1.5f, 0.5f);
 
-        // Smoke burst for dramatic arrival
-        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, dstX, dstY + 0.5, dstZ,
-                10, 0.5, 0.1, 0.5, 0.02);
+        // Departure particles — vortex pulling in
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL, srcX, srcY + 1.0, srcZ,
+                80, 0.5, 1.0, 0.5, 0.15);
+        level.sendParticles(ParticleTypes.PORTAL, srcX, srcY + 1, srcZ,
+                100, 1.5, 1.5, 1.5, 1.0);
+        spawnTeleportParticles(level, srcX, srcY, srcZ);
 
-        // Arrival sounds
-        level.playSound(null, dstX, dstY, dstZ,
-                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
-        level.playSound(null, dstX, dstY, dstZ,
-                SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 0.5f, 1.4f);
-
-        // Clear overlay after a brief flash
-        TutorialPortalOverlayNetworking.sendClearOverlay(player);
-
-        // Apply darkness + blindness for dramatic dimensional transition
+        // Apply darkness for the dimensional crossing
         player.addEffect(new MobEffectInstance(
-                MobEffects.DARKNESS,
-                25,  // 1.25 seconds
-                0,
-                false, false, false
-        ));
-        player.addEffect(new MobEffectInstance(
-                MobEffects.BLINDNESS,
-                15,  // 0.75 seconds
-                0,
-                false, false, false
-        ));
+                MobEffects.DARKNESS, 100, 0, false, false, false));
 
-        AromaAffect.LOGGER.debug("Player {} teleported via portal {} (dimensional effect)",
-                player.getName().getString(), portal.getId());
+        // ── TICK 8: Intensify ──
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(8, () -> {
+            level.playSound(null, srcX, srcY, srcZ,
+                    SoundEvents.END_PORTAL_SPAWN, SoundSource.AMBIENT, 0.8f, 0.8f);
+            level.sendParticles(ParticleTypes.SMOKE, srcX, srcY + 0.5, srcZ,
+                    60, 1.0, 0.5, 1.0, 0.05);
+            level.sendParticles(ParticleTypes.WITCH, srcX, srcY + 1.0, srcZ,
+                    40, 0.5, 1.0, 0.5, 0.1);
+        });
+
+        // ── TICK 15: Atmospheric sound during white hold ──
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(15, () -> {
+            level.playSound(null, srcX, srcY, srcZ,
+                    SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.AMBIENT, 0.6f, 0.5f);
+        });
+
+        // ── TICK 22: TELEPORT ──
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(22, () -> {
+            // Teleport player
+            player.teleportTo(level, dstX, dstY, dstZ,
+                    Set.of(), portal.getDestYaw(), portal.getDestPitch(), false);
+
+            // Teleport Oliver along with the player
+            if (oliver != null) {
+                spawnTeleportParticles(level, oliver.getX(), oliver.getY(), oliver.getZ());
+                double oliverDestX = dest.getX() + 2.5;
+                double oliverDestY = dest.getY();
+                double oliverDestZ = dest.getZ() + 0.5;
+                oliver.teleportTo(oliverDestX, oliverDestY, oliverDestZ);
+                oliver.setYRot(portal.getDestYaw() + 180);
+                oliver.setYHeadRot(portal.getDestYaw() + 180);
+                spawnTeleportParticles(level, oliverDestX, oliverDestY + 1, oliverDestZ);
+            }
+
+            // Massive arrival particles
+            level.sendParticles(ParticleTypes.END_ROD, dstX, dstY + 1.5, dstZ,
+                    80, 2.0, 2.5, 2.0, 0.1);
+            level.sendParticles(ParticleTypes.REVERSE_PORTAL, dstX, dstY + 1.0, dstZ,
+                    120, 2.0, 1.5, 2.0, 0.2);
+            level.sendParticles(ParticleTypes.ENCHANT, dstX, dstY + 0.5, dstZ,
+                    50, 2.0, 0.5, 2.0, 0.5);
+            level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, dstX, dstY + 0.2, dstZ,
+                    15, 1.5, 0.1, 1.5, 0.02);
+
+            // Arrival sounds
+            level.playSound(null, dstX, dstY, dstZ,
+                    SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 0.7f);
+            level.playSound(null, dstX, dstY, dstZ,
+                    SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.AMBIENT, 1.0f, 0.5f);
+            level.playSound(null, dstX, dstY, dstZ,
+                    SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.AMBIENT, 0.8f, 0.6f);
+
+            AromaAffect.LOGGER.debug("Player {} teleported via portal {}", player.getName().getString(), portal.getId());
+        });
+
+        // ── TICK 27+: Prolonged arrival particles ──
+        for (int t = 27; t <= 50; t += 8) {
+            final int tick = t;
+            com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(tick, () -> {
+                level.sendParticles(ParticleTypes.END_ROD, dstX, dstY + 1.5, dstZ,
+                        10, 2.5, 2.0, 2.5, 0.03);
+                level.sendParticles(ParticleTypes.ENCHANT, dstX, dstY + 0.5, dstZ,
+                        15, 2.0, 0.5, 2.0, 0.3);
+            });
+        }
+
+        // ── TICK 30: Ambient sound at destination ──
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(30, () -> {
+            level.playSound(null, dstX, dstY, dstZ,
+                    SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.AMBIENT, 0.5f, 0.7f);
+        });
+
+        // ── TICK 35-75: Gradual "opening eyes" fade-out ──
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(35, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.7f));
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(42, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.5f));
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(50, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.3f));
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(58, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.15f));
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(66, () ->
+                TutorialPortalOverlayNetworking.sendOverlayProgress(player, 0.05f));
+        com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.scheduleDelayed(75, () ->
+                TutorialPortalOverlayNetworking.sendClearOverlay(player));
     }
 
     /**

@@ -32,7 +32,7 @@ import java.util.Map;
  * <p>
  * Features:
  * <ul>
- *   <li>Typewriter text animation (30 characters/second)</li>
+ *   <li>Typewriter text animation synced with voice duration</li>
  *   <li>Portrait of Oliver that follows mouse</li>
  *   <li>Close button after typing finishes</li>
  *   <li>Keepalive packets to server</li>
@@ -56,8 +56,27 @@ public final class TutorialOliverDialogueScreen extends Screen {
     private static final int COLOR_TEXT = 0xFFE8E8E8;
     private static final int COLOR_HEADER_TEXT = 0xFFFF69B4;  // Pink header
 
-    private static final float CHARACTERS_PER_SECOND = 30.0F;
+    private static final float DEFAULT_CHARACTERS_PER_SECOND = 30.0F;
     private static final int[] HARMONY_SEMITONES = {0, 2, 4, 7, 9, 12};
+
+    /**
+     * Voice file durations in seconds, keyed by dialogueId.
+     * Used to synchronize typewriter text speed with voice playback.
+     */
+    private static final Map<String, Float> VOICE_DURATIONS = Map.ofEntries(
+            Map.entry("oliver_greeting", 7.24F),
+            Map.entry("oliver_mine_open", 5.02F),
+            Map.entry("oliver_find_iron", 7.11F),
+            Map.entry("oliver_need_iron", 5.25F),
+            Map.entry("oliver_path_opened", 5.43F),
+            Map.entry("oliver_need_gold", 6.45F),
+            Map.entry("oliver_equip_prospector", 4.44F),
+            Map.entry("oliver_dragon_quest", 10.16F),
+            Map.entry("boss_blaze_enter", 13.09F),
+            Map.entry("boss_blaze_killed", 6.09F),
+            Map.entry("boss_dragon_enter", 5.56F),
+            Map.entry("dream_end_wakeup", 17.63F)
+    );
 
     /**
      * Dialogue content based on dialogue ID.
@@ -164,6 +183,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     private int[] lineCodepointCounts = new int[0];
     private int totalCodepoints = 0;
 
+    private float charactersPerSecond = DEFAULT_CHARACTERS_PER_SECOND;
     private float typeProgress = 0.0F;
     private int typedCodepoints = 0;
     private boolean finished = false;
@@ -181,7 +201,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
     private SimpleSoundInstance voiceSound;
 
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver) {
-        super(Component.literal("Oliver"));
+        super(Component.literal("Aroma Guide"));
         this.portraitEntity = oliver;
         this.oliver = oliver;
         this.selfMode = false;
@@ -192,7 +212,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
 
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver, String dialogueId,
                                          boolean hasTrade, String tradeId) {
-        super(Component.literal("Oliver"));
+        super(Component.literal("Aroma Guide"));
         this.portraitEntity = oliver;
         this.oliver = oliver;
         this.selfMode = false;
@@ -220,7 +240,6 @@ public final class TutorialOliverDialogueScreen extends Screen {
     protected void init() {
         rebuildDialogue(true);
         sendTalkingState(true);
-        playVoiceSound();
 
         int bottom = this.height - BOX_MARGIN;
         int right = this.width - BOX_MARGIN;
@@ -272,7 +291,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
         }
 
         // Advance typewriter animation
-        typeProgress = Math.min(totalCodepoints, typeProgress + (CHARACTERS_PER_SECOND / 20.0F));
+        typeProgress = Math.min(totalCodepoints, typeProgress + (charactersPerSecond / 20.0F));
         int desired = (int) typeProgress;
         while (typedCodepoints < desired && typedCodepoints < totalCodepoints) {
             int codePoint = dialogueCodepoints[typedCodepoints];
@@ -493,6 +512,14 @@ public final class TutorialOliverDialogueScreen extends Screen {
         this.totalCodepoints = total;
         this.lineCodepointCounts = counts.stream().mapToInt(Integer::intValue).toArray();
 
+        // Sync text speed with voice duration so both finish together
+        Float voiceDuration = VOICE_DURATIONS.get(dialogueId);
+        if (voiceDuration != null && voiceDuration > 0 && total > 0) {
+            this.charactersPerSecond = total / voiceDuration;
+        } else {
+            this.charactersPerSecond = DEFAULT_CHARACTERS_PER_SECOND;
+        }
+
         if (resetTypewriter) {
             this.typeProgress = 0.0F;
             this.typedCodepoints = 0;
@@ -516,7 +543,24 @@ public final class TutorialOliverDialogueScreen extends Screen {
     }
 
     private void playTypeSoundFor(int codePoint) {
-        // Typing sound disabled for tutorial dialogues - voice files are used instead
+        if (Character.isWhitespace(codePoint)) {
+            return;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.getSoundManager() == null) {
+            return;
+        }
+
+        RandomSource random = minecraft.player != null ? minecraft.player.getRandom() : RandomSource.create();
+
+        // Musical typing sound with harmony
+        int octaveRoll = random.nextInt(10);
+        int octaveShift = octaveRoll == 0 ? -12 : (octaveRoll <= 2 ? 12 : 0);
+        int semitone = HARMONY_SEMITONES[random.nextInt(HARMONY_SEMITONES.length)] + octaveShift;
+        float pitch = (float) Math.pow(2.0D, semitone / 12.0D);
+
+        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
     }
 
     private void playVoiceSound() {

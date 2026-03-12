@@ -175,6 +175,19 @@ public final class TutorialDialogueContentNetworking {
      */
     public static void sendOpenDialogue(ServerPlayer player, int entityId,
                                          String dialogueId, boolean hasTrade, String tradeId) {
+        // Make the player look at Oliver before opening the dialogue
+        Entity target = player.level().getEntity(entityId);
+        if (target != null) {
+            double dx = target.getX() - player.getX();
+            double dy = (target.getEyeY()) - player.getEyeY();
+            double dz = target.getZ() - player.getZ();
+            double horizontalDist = Math.sqrt(dx * dx + dz * dz);
+            float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
+            float pitch = (float) -Math.toDegrees(Math.atan2(dy, horizontalDist));
+            player.teleportTo((ServerLevel) player.level(), player.getX(), player.getY(), player.getZ(),
+                    java.util.Set.of(), yaw, pitch, false);
+        }
+
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
                 Unpooled.buffer(), player.registryAccess());
         buf.writeVarInt(entityId);

@@ -213,38 +213,41 @@ public class ResetSubCommand implements TutorialSubCommand {
         // or player was left in spectator by a bug)
         player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
 
-        // 2. Reset all Oliver entities to home position
-        resetAllOlivers(level);
-
-        // 3. Reset intro sequence state (allows title/particles to play again)
+        // 2. Reset intro sequence state (allows title/particles to play again)
         TutorialJoinHandler.resetPlayer(player.getUUID());
 
-        // 4. Reset waypoint progress (completed waypoints, active waypoint)
+        // 3. Reset waypoint progress (completed waypoints, active waypoint)
         TutorialWaypointAreaHandler.resetPlayer(player.getUUID());
 
-        // 4b. Reset nose equip triggers (allows them to fire again)
+        // 3b. Reset nose equip triggers (allows them to fire again)
         com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.resetPlayer(player.getUUID());
 
-        // 4c. Reset boss area triggers (allows boss to spawn again)
+        // 3c. Reset boss area triggers (allows boss to spawn again)
         com.ovrtechnology.tutorial.boss.TutorialBossAreaManager.get(level).resetPlayerTriggers(player.getUUID());
         com.ovrtechnology.tutorial.boss.TutorialBossAreaHandler.clearAllBosses();
 
-        // 4d. Reset popup zone seen state (allows popups to show again)
+        // 3d. Reset popup zone seen state (allows popups to show again)
         com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler.clearPlayer(player.getUUID());
 
-        // 5. Clear any active waypoint visuals on the client
+        // 3e. Deactivate scent counter HUD
+        com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
+
+        // 3f. Reset finish screen trigger
+        com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(player.getUUID());
+
+        // 4. Clear any active waypoint visuals on the client
         TutorialWaypointNetworking.sendClearToPlayer(player);
 
-        // 6. Sync chest state to client (so particles show again for unconsumed chests)
+        // 5. Sync chest state to client (so particles show again for unconsumed chests)
         TutorialChestNetworking.syncAllChestsToPlayer(player);
 
-        // 6b. Clear animation client state
+        // 5b. Clear animation client state
         TutorialAnimationNetworking.sendAnimationReset(player);
 
-        // 7. Sync custom dialogue texts to client
+        // 6. Sync custom dialogue texts to client
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
 
-        // 8. Teleport to spawn point
+        // 7. Teleport to spawn point FIRST (so chunks load)
         var spawnOpt = TutorialSpawnManager.getSpawn(level);
         if (spawnOpt.isPresent()) {
             TutorialSpawnManager.SpawnData spawn = spawnOpt.get();
@@ -259,9 +262,12 @@ public class ResetSubCommand implements TutorialSubCommand {
                     false
             );
 
-            // 9. Play intro sequence (particles, sound, title)
+            // 8. Play intro sequence (particles, sound, title)
             playIntroSequence(player, level);
         }
+
+        // 9. Reset all Oliver and NoseSmith entities AFTER teleport (chunks now loaded)
+        resetAllOlivers(level);
 
         // 10. Activate first waypoint if configured
         var firstWpOpt = TutorialSpawnManager.getFirstWaypointId(level);
@@ -284,25 +290,54 @@ public class ResetSubCommand implements TutorialSubCommand {
     /**
      * Finds all Oliver entities in the level and resets them to home position.
      * Also resets all Nose Smith entities to initial quest state.
+     * Force-loads the NoseSmith spawn chunk to ensure it's found even if far away.
      */
     private void resetAllOlivers(ServerLevel level) {
-        Iterable<Entity> allEntities = level.getAllEntities();
-        for (Entity entity : allEntities) {
+        // Reset all Olivers in loaded chunks
+        for (Entity entity : level.getAllEntities()) {
             if (entity instanceof TutorialOliverEntity oliver) {
                 oliver.resetToHome();
                 AromaAffect.LOGGER.debug("Reset: Oliver teleported home to {}", oliver.getHomePos());
             }
-            if (entity instanceof com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith) {
+        }
+
+        // Reset NoseSmith - search near configured spawn position (force-loads chunk)
+        var spawnOpt = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnPos(level);
+        if (spawnOpt.isPresent()) {
+            net.minecraft.core.BlockPos spawnPos = spawnOpt.get();
+            float spawnYaw = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnYaw(level);
+
+            // Force-load the chunk at spawn position
+            level.getChunk(spawnPos);
+
+            // Search in wide area around spawn (NoseSmith may have wandered far)
+            net.minecraft.world.phys.AABB searchArea = new net.minecraft.world.phys.AABB(
+                    spawnPos.getX() - 200, spawnPos.getY() - 100, spawnPos.getZ() - 200,
+                    spawnPos.getX() + 200, spawnPos.getY() + 100, spawnPos.getZ() + 200
+            );
+
+            java.util.List<com.ovrtechnology.entity.nosesmith.NoseSmithEntity> noseSmiths =
+                    level.getEntitiesOfClass(com.ovrtechnology.entity.nosesmith.NoseSmithEntity.class, searchArea);
+
+            for (com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith : noseSmiths) {
                 noseSmith.resetQuest();
-                // Teleport to configured spawn if available
-                com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnPos(level).ifPresent(pos -> {
-                    float yaw = com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager.getSpawnYaw(level);
-                    noseSmith.teleportTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-                    noseSmith.setYRot(yaw);
-                    noseSmith.setYHeadRot(yaw);
-                    noseSmith.setYBodyRot(yaw);
-                });
-                AromaAffect.LOGGER.debug("Reset: Nose Smith quest reset at {}", noseSmith.blockPosition());
+                noseSmith.teleportTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+                noseSmith.setYRot(spawnYaw);
+                noseSmith.setYHeadRot(spawnYaw);
+                noseSmith.setYBodyRot(spawnYaw);
+                AromaAffect.LOGGER.debug("Reset: Nose Smith quest reset and teleported to {}", spawnPos);
+            }
+
+            if (noseSmiths.isEmpty()) {
+                AromaAffect.LOGGER.warn("Reset: No NoseSmith found near spawn position {}", spawnPos);
+            }
+        } else {
+            // No spawn configured, try all loaded entities
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof com.ovrtechnology.entity.nosesmith.NoseSmithEntity noseSmith) {
+                    noseSmith.resetQuest();
+                    AromaAffect.LOGGER.debug("Reset: Nose Smith quest reset (no spawn configured)");
+                }
             }
         }
     }
