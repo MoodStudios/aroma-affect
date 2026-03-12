@@ -29,7 +29,8 @@
         "cooldown_ticks": 40,
         "durability_cost": 5,
         "valid_blocks": [
-          "minecraft:suspicious_sand"
+          "minecraft:suspicious_sand",
+          "minecraft:suspicious_gravel"
         ],
         "sniffer_egg_chance": 0.4
       }

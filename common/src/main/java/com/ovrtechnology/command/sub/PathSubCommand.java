@@ -35,9 +35,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
@@ -313,7 +315,12 @@ public class PathSubCommand implements SubCommand {
 
     private static final int MAX_BLACKLIST_RETRIES = 3;
     private static final int STRUCTURE_EXCLUSION_THRESHOLD = 128;
-    private static final int BIOME_EXCLUSION_THRESHOLD = 256;
+    /** How often (in blocks) to sample biome along the line between two points. */
+    private static final int BIOME_SAMPLE_INTERVAL = 64;
+    /** Beyond this distance, assume two points cannot be in the same biome region. */
+    private static final int BIOME_MAX_CONTIGUITY_DISTANCE = 10000;
+    /** How far past a blacklisted biome to shift the search origin on retry. */
+    private static final int BIOME_SHIFT_DISTANCE = 1500;
 
     private void createPath(CommandSourceStack source, LookupResult result, BlockPos origin,
                              ServerLevel level, ServerPlayer player, int retryCount) {
@@ -338,14 +345,24 @@ public class PathSubCommand implements SubCommand {
             // blocks are already filtered by BlockLookupStrategy exclusions)
             if (player != null && (lookupType == LookupType.STRUCTURE || lookupType == LookupType.BIOME)) {
                 String targetId = result.target().resourceId().toString();
-                int threshold = lookupType == LookupType.STRUCTURE
-                        ? STRUCTURE_EXCLUSION_THRESHOLD : BIOME_EXCLUSION_THRESHOLD;
 
-                if (BlacklistSyncManager.getInstance().isExcludedNearby(
-                        player.getUUID(), targetId, finalDestination, threshold)) {
+                boolean isBlacklisted;
+                if (lookupType == LookupType.BIOME) {
+                    // For biomes, check contiguity: sample biome along the line between
+                    // blacklisted and found positions. If same biome the whole way, it's
+                    // the same region — reject even if far apart.
+                    isBlacklisted = isBiomeBlacklistedByContiguity(
+                            level, player.getUUID(), targetId, result.target().resourceId(), finalDestination);
+                } else {
+                    isBlacklisted = BlacklistSyncManager.getInstance().isExcludedNearby(
+                            player.getUUID(), targetId, finalDestination, STRUCTURE_EXCLUSION_THRESHOLD);
+                }
+
+                if (isBlacklisted) {
                     if (retryCount < MAX_BLACKLIST_RETRIES) {
                         // Retry with shifted origin — search past the blacklisted position
-                        BlockPos shiftedOrigin = computeShiftedOrigin(origin, finalDestination);
+                        int shiftDistance = lookupType == LookupType.BIOME ? BIOME_SHIFT_DISTANCE : 500;
+                        BlockPos shiftedOrigin = computeShiftedOrigin(origin, finalDestination, shiftDistance);
                         AromaAffect.LOGGER.debug("Blacklisted position found at {}, retrying with shifted origin {} (attempt {})",
                                 finalDestination, shiftedOrigin, retryCount + 1);
                         LookupManager.getInstance().lookupAsync(level, shiftedOrigin, result.target(), -1, retryResult -> {
@@ -433,23 +450,82 @@ public class PathSubCommand implements SubCommand {
     /**
      * Computes a search origin that's past the blacklisted position,
      * so the next search finds a different target.
+     *
+     * @param shiftDistance how far (in blocks) past the blacklisted position to shift
      */
-    private BlockPos computeShiftedOrigin(BlockPos playerOrigin, BlockPos blacklistedPos) {
+    private BlockPos computeShiftedOrigin(BlockPos playerOrigin, BlockPos blacklistedPos, int shiftDistance) {
         double dx = blacklistedPos.getX() - playerOrigin.getX();
         double dz = blacklistedPos.getZ() - playerOrigin.getZ();
         double dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < 1.0) {
             // Player is at the blacklisted position, shift in arbitrary direction
-            return new BlockPos(blacklistedPos.getX() + 500, playerOrigin.getY(), blacklistedPos.getZ());
+            return new BlockPos(blacklistedPos.getX() + shiftDistance, playerOrigin.getY(), blacklistedPos.getZ());
         }
 
-        // Shift 500 blocks past the blacklisted position in the same direction
+        // Shift past the blacklisted position in the same direction
         double nx = dx / dist;
         double nz = dz / dist;
-        int shiftX = blacklistedPos.getX() + (int) (nx * 500);
-        int shiftZ = blacklistedPos.getZ() + (int) (nz * 500);
+        int shiftX = blacklistedPos.getX() + (int) (nx * shiftDistance);
+        int shiftZ = blacklistedPos.getZ() + (int) (nz * shiftDistance);
         return new BlockPos(shiftX, playerOrigin.getY(), shiftZ);
+    }
+
+    /**
+     * Checks whether a found biome position belongs to the same contiguous biome region
+     * as any blacklisted position for that biome type.
+     * <p>
+     * Instead of a fixed-radius check, this samples the biome at intervals along the line
+     * between each blacklisted position and the found position. If the biome is continuous
+     * the entire way (no gap of a different biome), the two points are in the same region.
+     */
+    private boolean isBiomeBlacklistedByContiguity(ServerLevel level, java.util.UUID playerId,
+                                                    String targetId, ResourceLocation biomeId,
+                                                    BlockPos foundPos) {
+        Set<BlockPos> excluded = BlacklistSyncManager.getInstance()
+                .getExcludedPositionsForTarget(playerId, targetId);
+        if (excluded.isEmpty()) return false;
+
+        ResourceKey<Biome> biomeKey = ResourceKey.create(Registries.BIOME, biomeId);
+
+        for (BlockPos blacklistedPos : excluded) {
+            if (isSameBiomeRegion(level, blacklistedPos, foundPos, biomeKey)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if two positions are in the same contiguous biome region by sampling
+     * the biome along the straight line between them. If every sample point has the
+     * target biome, the two points are considered part of the same region.
+     */
+    private boolean isSameBiomeRegion(ServerLevel level, BlockPos a, BlockPos b,
+                                       ResourceKey<Biome> biomeKey) {
+        double dx = b.getX() - a.getX();
+        double dz = b.getZ() - a.getZ();
+        double distance = Math.sqrt(dx * dx + dz * dz);
+
+        // Very far apart — assume different regions (optimization)
+        if (distance > BIOME_MAX_CONTIGUITY_DISTANCE) return false;
+
+        // Sample biome along the line at intervals
+        int samples = Math.max(2, (int) (distance / BIOME_SAMPLE_INTERVAL));
+        int seaLevel = level.getSeaLevel();
+
+        for (int i = 0; i <= samples; i++) {
+            double t = (double) i / samples;
+            int x = (int) (a.getX() + dx * t);
+            int z = (int) (a.getZ() + dz * t);
+            BlockPos samplePos = new BlockPos(x, seaLevel, z);
+
+            if (!level.getBiome(samplePos).is(biomeKey)) {
+                return false; // Gap found — different biome region
+            }
+        }
+
+        return true; // Continuous — same biome region
     }
 
     /**
