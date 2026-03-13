@@ -16,7 +16,11 @@ public class TutorialFinishScreen extends Screen {
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/ovr_logo.png");
     private static final int OVR_TEX_WIDTH = 881;
     private static final int OVR_TEX_HEIGHT = 396;
+<<<<<<< HEAD
     private static final int OVR_DISPLAY_WIDTH = 190;
+=======
+    private static final int OVR_DISPLAY_WIDTH = 160;
+>>>>>>> 346d5335bd6497b0e3e7f9165255f2daa4eb1fdb
 
     // Mood Studios logo (top-right) - 735x289 actual texture size
     private static final ResourceLocation MOOD_LOGO =
@@ -30,7 +34,11 @@ public class TutorialFinishScreen extends Screen {
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_left.png");
     private static final ResourceLocation QR_RIGHT =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_right.png");
+<<<<<<< HEAD
     private static final int QR_SIZE = 50;
+=======
+    private static final int QR_SIZE = 56;
+>>>>>>> 346d5335bd6497b0e3e7f9165255f2daa4eb1fdb
 
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
@@ -51,8 +59,13 @@ public class TutorialFinishScreen extends Screen {
         super.init();
 
         int buttonX = (this.width - BUTTON_WIDTH) / 2;
+<<<<<<< HEAD
         // Position button below the "Thanks for playing" text
         int buttonY = this.height - 40;
+=======
+        // Position button: ensure it's always visible above the bottom edge
+        int buttonY = this.height - BUTTON_HEIGHT - 8;
+>>>>>>> 346d5335bd6497b0e3e7f9165255f2daa4eb1fdb
 
         thanksButton = Button.builder(
                 Component.literal("Continue discovering scents"),
@@ -122,11 +135,17 @@ public class TutorialFinishScreen extends Screen {
                 MOOD_TEX_WIDTH, MOOD_TEX_HEIGHT, MOOD_TEX_WIDTH, MOOD_TEX_HEIGHT);
         graphics.pose().popMatrix();
 
-        // Main OVR logo (center) - scaled
+        // Calculate total content height to center vertically
         float ovrScale = (float) OVR_DISPLAY_WIDTH / OVR_TEX_WIDTH;
         int ovrDisplayHeight = (int) (OVR_TEX_HEIGHT * ovrScale);
+        int gap = 8;
+        int labelHeight = 12;
+        int totalContentHeight = ovrDisplayHeight + gap + labelHeight + QR_SIZE + gap + BUTTON_HEIGHT;
+        int startY = (this.height - totalContentHeight) / 2;
+
+        // Main OVR logo (center) - scaled
         int logoX = (this.width - OVR_DISPLAY_WIDTH) / 2;
-        int logoY = this.height / 2 - ovrDisplayHeight - 20;
+        int logoY = startY;
         graphics.pose().pushMatrix();
         graphics.pose().translate(logoX, logoY);
         graphics.pose().scale(ovrScale, ovrScale);
@@ -140,8 +159,8 @@ public class TutorialFinishScreen extends Screen {
         int totalQrWidth = QR_SIZE * 2 + qrSpacing;
         int qrLeftX = (this.width - totalQrWidth) / 2;
         int qrRightX = qrLeftX + QR_SIZE + qrSpacing;
-        int qrLabelY = logoY + ovrDisplayHeight + 10;
-        int qrY = qrLabelY + 12;
+        int qrLabelY = logoY + ovrDisplayHeight + gap;
+        int qrY = qrLabelY + labelHeight;
 
         // QR Code 1 label and image
         String qr1Label = "QR Code 1";

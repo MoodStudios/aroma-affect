@@ -3,7 +3,6 @@ package com.ovrtechnology.tutorial.oliver.client.dialogue;
 import com.ovrtechnology.network.TutorialDialogueContentNetworking;
 import com.ovrtechnology.network.TutorialOliverDialogueNetworking;
 import com.ovrtechnology.network.TutorialOliverTradeNetworking;
-import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,13 +11,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -57,7 +51,6 @@ public final class TutorialOliverDialogueScreen extends Screen {
     private static final int COLOR_HEADER_TEXT = 0xFFFF69B4;  // Pink header
 
     private static final float DEFAULT_CHARACTERS_PER_SECOND = 30.0F;
-    private static final int[] HARMONY_SEMITONES = {0, 2, 4, 7, 9, 12};
 
     /**
      * Voice file durations in seconds, keyed by dialogueId.
@@ -197,9 +190,6 @@ public final class TutorialOliverDialogueScreen extends Screen {
     private boolean buttonsVisible = false;
     private boolean closedByTrade = false;
 
-    @Nullable
-    private SimpleSoundInstance voiceSound;
-
     public TutorialOliverDialogueScreen(TutorialOliverEntity oliver) {
         super(Component.literal("Aroma Guide"));
         this.portraitEntity = oliver;
@@ -296,7 +286,6 @@ public final class TutorialOliverDialogueScreen extends Screen {
         while (typedCodepoints < desired && typedCodepoints < totalCodepoints) {
             int codePoint = dialogueCodepoints[typedCodepoints];
             typedCodepoints++;
-            playTypeSoundFor(codePoint);
         }
 
         if (typedCodepoints >= totalCodepoints) {
@@ -308,7 +297,6 @@ public final class TutorialOliverDialogueScreen extends Screen {
     @Override
     public void removed() {
         sendTalkingState(false);
-        stopVoiceSound();
 
         // Notify server that dialogue was closed (triggers on-complete hooks)
         // Skip if closed by trade — trade has its own on-complete flow via TutorialTradeHandler
@@ -542,41 +530,6 @@ public final class TutorialOliverDialogueScreen extends Screen {
         return Component.literal(content);
     }
 
-    private void playTypeSoundFor(int codePoint) {
-        if (Character.isWhitespace(codePoint)) {
-            return;
-        }
-
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.getSoundManager() == null) {
-            return;
-        }
-
-        RandomSource random = minecraft.player != null ? minecraft.player.getRandom() : RandomSource.create();
-
-        // Musical typing sound with harmony
-        int octaveRoll = random.nextInt(10);
-        int octaveShift = octaveRoll == 0 ? -12 : (octaveRoll <= 2 ? 12 : 0);
-        int semitone = HARMONY_SEMITONES[random.nextInt(HARMONY_SEMITONES.length)] + octaveShift;
-        float pitch = (float) Math.pow(2.0D, semitone / 12.0D);
-
-        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
-    }
-
-    private void playVoiceSound() {
-        SoundEvent soundEvent = ModSounds.getDialogueSound(dialogueId);
-        if (soundEvent != null) {
-            voiceSound = SimpleSoundInstance.forUI(soundEvent, 1.0F, 1.0F);
-            Minecraft.getInstance().getSoundManager().play(voiceSound);
-        }
-    }
-
-    private void stopVoiceSound() {
-        if (voiceSound != null) {
-            Minecraft.getInstance().getSoundManager().stop(voiceSound);
-            voiceSound = null;
-        }
-    }
 
     private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
         guiGraphics.fill(left, top, right, top + 1, color);

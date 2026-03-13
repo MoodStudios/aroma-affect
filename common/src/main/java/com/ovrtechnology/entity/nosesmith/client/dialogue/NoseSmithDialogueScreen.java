@@ -11,13 +11,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +38,6 @@ public final class NoseSmithDialogueScreen extends Screen {
     private static final int COLOR_TEXT = 0xFFE8E8E8;
 
     private static final float CHARACTERS_PER_SECOND = 30.0F;
-    private static final int[] HARMONY_SEMITONES = {0, 2, 4, 7, 9, 12};
 
     private final NoseSmithEntity noseSmith;
 
@@ -138,7 +134,6 @@ public final class NoseSmithDialogueScreen extends Screen {
         while (typedCodepoints < desired && typedCodepoints < totalCodepoints) {
             int codePoint = dialogueCodepoints[typedCodepoints];
             typedCodepoints++;
-            playTypeSoundFor(codePoint);
         }
 
         if (typedCodepoints >= totalCodepoints) {
@@ -362,25 +357,6 @@ public final class NoseSmithDialogueScreen extends Screen {
         return BuiltInRegistries.BLOCK.get(flowerId).map(holder -> holder.value()).orElse(null);
     }
 
-    private void playTypeSoundFor(int codePoint) {
-        if (Character.isWhitespace(codePoint)) {
-            return;
-        }
-
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.getSoundManager() == null) {
-            return;
-        }
-
-        RandomSource random = minecraft.player != null ? minecraft.player.getRandom() : RandomSource.create();
-
-        int octaveRoll = random.nextInt(10);
-        int octaveShift = octaveRoll == 0 ? -12 : (octaveRoll <= 2 ? 12 : 0);
-        int semitone = HARMONY_SEMITONES[random.nextInt(HARMONY_SEMITONES.length)] + octaveShift;
-        float pitch = (float) Math.pow(2.0D, semitone / 12.0D);
-
-        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
-    }
 
     private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
         guiGraphics.fill(left, top, right, top + 1, color);
