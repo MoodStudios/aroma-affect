@@ -16,21 +16,21 @@ public class TutorialFinishScreen extends Screen {
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/ovr_logo.png");
     private static final int OVR_TEX_WIDTH = 881;
     private static final int OVR_TEX_HEIGHT = 396;
-    private static final int OVR_DISPLAY_WIDTH = 250;
+    private static final int OVR_DISPLAY_WIDTH = 190;
 
     // Mood Studios logo (top-right) - 735x289 actual texture size
     private static final ResourceLocation MOOD_LOGO =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/moodlogo.png");
     private static final int MOOD_TEX_WIDTH = 735;
     private static final int MOOD_TEX_HEIGHT = 289;
-    private static final int MOOD_DISPLAY_WIDTH = 60;
+    private static final int MOOD_DISPLAY_WIDTH = 50;
 
-    // QR codes - 64x64 display size
+    // QR codes - 50x50 display size
     private static final ResourceLocation QR_LEFT =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_left.png");
     private static final ResourceLocation QR_RIGHT =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_right.png");
-    private static final int QR_SIZE = 64;
+    private static final int QR_SIZE = 50;
 
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
@@ -51,11 +51,11 @@ public class TutorialFinishScreen extends Screen {
         super.init();
 
         int buttonX = (this.width - BUTTON_WIDTH) / 2;
-        // Position button below the QR codes (adjusted for labels)
-        int buttonY = this.height / 2 + QR_SIZE + 45;
+        // Position button below the "Thanks for playing" text
+        int buttonY = this.height - 40;
 
         thanksButton = Button.builder(
-                Component.literal("Thanks for playing!"),
+                Component.literal("Continue discovering scents"),
                 btn -> this.onClose()
         ).bounds(buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
 
@@ -160,6 +160,13 @@ public class TutorialFinishScreen extends Screen {
         graphics.blit(RenderPipelines.GUI_TEXTURED, QR_RIGHT,
                 qrRightX, qrY, 0.0f, 0.0f,
                 QR_SIZE, QR_SIZE, QR_SIZE, QR_SIZE);
+
+        // "Thanks for playing" text above the button
+        String thanksText = "Thanks for playing";
+        int thanksTextWidth = Minecraft.getInstance().font.width(thanksText);
+        int thanksTextX = (this.width - thanksTextWidth) / 2;
+        int thanksTextY = this.height - 55;
+        graphics.drawString(Minecraft.getInstance().font, thanksText, thanksTextX, thanksTextY, 0xFFFFFFFF, true);
     }
 
     @Override

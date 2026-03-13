@@ -91,7 +91,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
         // PHASE 1: Welcome & Introduction
         // ═══════════════════════════════════════════════════════════════════
         dialogues.put("phase1",
-                "Welcome, stranger! I am Oliver, keeper of ancient scent knowledge. " +
+                "Welcome, stranger! I am the Aroma Guide, keeper of ancient scent knowledge." +
                 "Here, I shall teach you how the wonderful world of noses works... " +
                 "Follow the glowing path ahead to find the Nose Smith. He holds the key to your aromatic journey!");
 
@@ -126,7 +126,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
         // ═══════════════════════════════════════════════════════════════════
         // Utility Dialogues
         // ═══════════════════════════════════════════════════════════════════
-        dialogues.put("default", "Welcome to the OVR Experience! I'm Oliver, your guide. Let me show you around...");
+        dialogues.put("default", "Welcome to the OVR Experience! I'm the Aroma Guide. Let me show you around...");
         dialogues.put("hint", "Need a hint? Follow the glowing particles - they'll guide your way!");
         dialogues.put("lost", "Seems like you've wandered off the path! Look for the shimmering trail nearby.");
         dialogues.put("goodbye", "Safe travels, adventurer! Remember: Follow your nose!");

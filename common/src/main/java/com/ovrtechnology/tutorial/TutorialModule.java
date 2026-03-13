@@ -189,6 +189,9 @@ public final class TutorialModule {
         // Initialize SearchDiamond zone handler
         SearchDiamondZoneHandler.init();
 
+        // Initialize daylight handler (keeps tutorial always at daytime)
+        TutorialDaylightHandler.init();
+
         // Register server started event to auto-restore regen areas
         LifecycleEvent.SERVER_STARTED.register(server -> {
             for (ServerLevel level : server.getAllLevels()) {
