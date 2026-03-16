@@ -16,11 +16,7 @@ public class TutorialFinishScreen extends Screen {
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/ovr_logo.png");
     private static final int OVR_TEX_WIDTH = 881;
     private static final int OVR_TEX_HEIGHT = 396;
-<<<<<<< HEAD
     private static final int OVR_DISPLAY_WIDTH = 190;
-=======
-    private static final int OVR_DISPLAY_WIDTH = 160;
->>>>>>> 346d5335bd6497b0e3e7f9165255f2daa4eb1fdb
 
     // Mood Studios logo (top-right) - 735x289 actual texture size
     private static final ResourceLocation MOOD_LOGO =
@@ -34,11 +30,7 @@ public class TutorialFinishScreen extends Screen {
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_left.png");
     private static final ResourceLocation QR_RIGHT =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/tutorial/qr_right.png");
-<<<<<<< HEAD
-    private static final int QR_SIZE = 50;
-=======
     private static final int QR_SIZE = 56;
->>>>>>> 346d5335bd6497b0e3e7f9165255f2daa4eb1fdb
 
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
@@ -59,13 +51,8 @@ public class TutorialFinishScreen extends Screen {
         super.init();
 
         int buttonX = (this.width - BUTTON_WIDTH) / 2;
-<<<<<<< HEAD
-        // Position button below the "Thanks for playing" text
-        int buttonY = this.height - 40;
-=======
         // Position button: ensure it's always visible above the bottom edge
-        int buttonY = this.height - BUTTON_HEIGHT - 8;
->>>>>>> 346d5335bd6497b0e3e7f9165255f2daa4eb1fdb
+        int buttonY = this.height - BUTTON_HEIGHT - 10;
 
         thanksButton = Button.builder(
                 Component.literal("Continue discovering scents"),
@@ -184,7 +171,7 @@ public class TutorialFinishScreen extends Screen {
         String thanksText = "Thanks for playing";
         int thanksTextWidth = Minecraft.getInstance().font.width(thanksText);
         int thanksTextX = (this.width - thanksTextWidth) / 2;
-        int thanksTextY = this.height - 55;
+        int thanksTextY = this.height - BUTTON_HEIGHT - 22;
         graphics.drawString(Minecraft.getInstance().font, thanksText, thanksTextX, thanksTextY, 0xFFFFFFFF, true);
     }
 

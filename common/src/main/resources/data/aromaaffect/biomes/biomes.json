@@ -141,7 +141,7 @@
       "image": "biome/savanna",
       "fallback_name": "Savanna",
       "color_html": "#BDB25F",
-      "scent_id": "desert",
+      "scent_id": "savory_spice",
       "track_cost": 5
     },
     {
@@ -149,7 +149,7 @@
       "image": "biome/savanna",
       "fallback_name": "Savanna Plateau",
       "color_html": "#AEA42A",
-      "scent_id": "desert",
+      "scent_id": "savory_spice",
       "track_cost": 5
     },
     {
@@ -181,7 +181,7 @@
       "image": "biome/savanna",
       "fallback_name": "Windswept Savanna",
       "color_html": "#8DB360",
-      "scent_id": "desert",
+      "scent_id": "savory_spice",
       "track_cost": 10
     },
     {
@@ -189,7 +189,7 @@
       "image": "biome/jungle",
       "fallback_name": "Jungle",
       "color_html": "#537B09",
-      "scent_id": "evergreen",
+      "scent_id": "citrus",
       "track_cost": 10
     },
     {
@@ -197,7 +197,7 @@
       "image": "biome/jungle",
       "fallback_name": "Sparse Jungle",
       "color_html": "#64C73F",
-      "scent_id": "evergreen",
+      "scent_id": "citrus",
       "track_cost": 10
     },
     {
@@ -205,7 +205,7 @@
       "image": "biome/jungle",
       "fallback_name": "Bamboo Jungle",
       "color_html": "#64C73F",
-      "scent_id": "evergreen",
+      "scent_id": "citrus",
       "track_cost": 10
     },
     {
@@ -405,7 +405,7 @@
       "image": "biome/mushroom_fields",
       "fallback_name": "Mushroom Fields",
       "color_html": "#FF00FF",
-      "scent_id": "floral",
+      "scent_id": "sweet",
       "track_cost": 25
     },
     {

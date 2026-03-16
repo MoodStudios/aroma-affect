@@ -2,6 +2,7 @@ package com.ovrtechnology.tutorial.intro.client;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialIntroNetworking;
+import com.ovrtechnology.trigger.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -164,6 +165,13 @@ public class TutorialIntroScreen extends Screen {
     }
 
     private void onWalkaroundClicked() {
+        // Set minimum cooldowns for walkaround mode (1 second each)
+        ClientConfig config = ClientConfig.getInstance();
+        config.setPassiveBlockCooldownMs(1000);
+        config.setPassiveMobCooldownMs(1000);
+        config.setPassivePassiveMobCooldownMs(1000);
+        config.save();
+
         TutorialIntroNetworking.sendWalkaroundToServer(Minecraft.getInstance().player.registryAccess());
         this.onClose();
     }
