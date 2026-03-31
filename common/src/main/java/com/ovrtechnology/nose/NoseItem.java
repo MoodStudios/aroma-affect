@@ -84,7 +84,7 @@ public class NoseItem extends Item {
         Equippable equippable = Equippable.builder(EquipmentSlot.HEAD)
                 .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
                 .setAsset(equipmentAsset)
-                .setSwappable(false)
+                .setSwappable(true)
                 .setDamageOnHurt(true)
                 .build();
         
@@ -163,15 +163,13 @@ public class NoseItem extends Item {
             heldStack.setCount(0);
             player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
             return InteractionResult.SUCCESS;
-        } else if (headStack.getItem() instanceof NoseItem) {
-            // Swap with current nose
+        } else {
+            // Swap with current head item (nose or helmet)
             player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
             player.setItemInHand(hand, headStack.copy());
             player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
             return InteractionResult.SUCCESS;
         }
-        
-        return InteractionResult.PASS;
     }
     
     // ========== Nose-specific Methods ==========
