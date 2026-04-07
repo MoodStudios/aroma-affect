@@ -6,7 +6,7 @@ import com.ovrtechnology.entity.sniffer.client.TamedSnifferRenderState;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import net.minecraft.client.renderer.entity.SnifferRenderer;
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,16 +20,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class SnifferRendererMixin {
 
     @Unique
-    private static final ResourceLocation SNIFFER_WITH_SADDLE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_saddle.png");
+    private static final Identifier SNIFFER_WITH_SADDLE =
+            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_saddle.png");
 
     @Unique
-    private static final ResourceLocation SNIFFER_WITH_NOSE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_nose.png");
+    private static final Identifier SNIFFER_WITH_NOSE =
+            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_nose.png");
 
     @Unique
-    private static final ResourceLocation SNIFFER_WITH_SADDLE_AND_NOSE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_saddle_and_nose.png");
+    private static final Identifier SNIFFER_WITH_SADDLE_AND_NOSE =
+            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_saddle_and_nose.png");
 
     @Inject(method = "createRenderState", at = @At("HEAD"), cancellable = true)
     private void aromaaffect$createRenderState(CallbackInfoReturnable<SnifferRenderState> cir) {
@@ -54,10 +54,10 @@ public class SnifferRendererMixin {
         }
     }
 
-    @Inject(method = "getTextureLocation(Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;)Lnet/minecraft/resources/ResourceLocation;",
+    @Inject(method = "getTextureLocation(Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;)Lnet/minecraft/resources/Identifier;",
             at = @At("HEAD"),
             cancellable = true)
-    private void aromaaffect$getCustomTexture(SnifferRenderState state, CallbackInfoReturnable<ResourceLocation> cir) {
+    private void aromaaffect$getCustomTexture(SnifferRenderState state, CallbackInfoReturnable<Identifier> cir) {
         if (state instanceof TamedSnifferRenderState tamedState) {
             if (tamedState.hasSaddle && tamedState.hasNose) {
                 cir.setReturnValue(SNIFFER_WITH_SADDLE_AND_NOSE);

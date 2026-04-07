@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -102,14 +102,14 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
 
         for (String blockId : detectableBlocks) {
-            ResourceLocation resourceLocation = ResourceLocation.parse(blockId);
+            Identifier resourceLocation = Identifier.parse(blockId);
             addBlockCard(resourceLocation, true);
         }
 
         AromaAffect.LOGGER.debug("Loaded {} block cards from equipped nose", cards.size());
     }
 
-    private void addBlockCard(ResourceLocation blockId, boolean isUnlocked) {
+    private void addBlockCard(Identifier blockId, boolean isUnlocked) {
         var blockOptional = BuiltInRegistries.BLOCK.get(blockId);
         if (blockOptional.isEmpty()) {
             AromaAffect.LOGGER.warn("Block not found: {}", blockId);
@@ -140,7 +140,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             card.trackCost = blockDef.getTrackCost();
             RequiredItem req = blockDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
-                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                Identifier reqId = Identifier.parse(req.getItemId());
                 var itemOpt = BuiltInRegistries.ITEM.get(reqId);
                 if (itemOpt.isPresent()) {
                     card.requiredItem = new ItemStack(itemOpt.get().value());

@@ -9,7 +9,7 @@ import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -87,7 +87,7 @@ public final class StructureSyncHandler {
 
     private static boolean isInsideStructure(ServerLevel level, BlockPos playerPos, String structureId) {
         try {
-            ResourceLocation location = ResourceLocation.parse(structureId);
+            Identifier location = Identifier.parse(structureId);
             var structureOpt = level.registryAccess()
                     .lookupOrThrow(Registries.STRUCTURE)
                     .getOptional(location);

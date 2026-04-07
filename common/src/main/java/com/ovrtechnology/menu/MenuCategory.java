@@ -3,7 +3,7 @@ package com.ovrtechnology.menu;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.LookupType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -14,22 +14,22 @@ import net.minecraft.world.item.Items;
 public enum MenuCategory {
     BLOCKS("blocks", LookupType.BLOCK, Items.DIAMOND_ORE.getDefaultInstance(),
            "menu.aromaaffect.category.blocks", "menu.aromaaffect.category.blocks.description",
-           ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png"),
+           Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png"),
            "block"),
 
     BIOMES("biomes", LookupType.BIOME, Items.OAK_SAPLING.getDefaultInstance(),
            "menu.aromaaffect.category.biomes", "menu.aromaaffect.category.biomes.description",
-           ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png"),
+           Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png"),
            "biome"),
 
     STRUCTURES("structures", LookupType.STRUCTURE, Items.BELL.getDefaultInstance(),
                "menu.aromaaffect.category.structures", "menu.aromaaffect.category.structures.description",
-               ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png"),
+               Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png"),
                "structure"),
 
     FLOWERS("flowers", LookupType.FLOWER, Items.POPPY.getDefaultInstance(),
             "menu.aromaaffect.category.flowers", "menu.aromaaffect.category.flowers.description",
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png"),
+            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png"),
             "block");
 
     private final String id;
@@ -37,12 +37,12 @@ public enum MenuCategory {
     private final ItemStack iconItem;
     private final String translationKey;
     private final String descriptionKey;
-    private final ResourceLocation headerIcon;
+    private final Identifier headerIcon;
     private final String pathCommandType;
 
     MenuCategory(String id, LookupType lookupType, ItemStack iconItem,
                  String translationKey, String descriptionKey,
-                 ResourceLocation headerIcon, String pathCommandType) {
+                 Identifier headerIcon, String pathCommandType) {
         this.id = id;
         this.lookupType = lookupType;
         this.iconItem = iconItem;
@@ -75,7 +75,7 @@ public enum MenuCategory {
     /**
      * Gets the texture used as the header icon in selection menus.
      */
-    public ResourceLocation getHeaderIcon() {
+    public Identifier getHeaderIcon() {
         return headerIcon;
     }
 

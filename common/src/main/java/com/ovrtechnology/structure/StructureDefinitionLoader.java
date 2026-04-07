@@ -217,7 +217,7 @@ public class StructureDefinitionLoader {
         
         // Validate block ID format
         for (String blockId : blockIds) {
-            if (!StructureDefinition.isValidResourceLocation(blockId)) {
+            if (!StructureDefinition.isValidIdentifier(blockId)) {
                 addWarning("[" + structureId + "] Block ID '" + blockId + "' has invalid format - should be 'namespace:path'");
             }
         }

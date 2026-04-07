@@ -107,7 +107,7 @@ public final class ActivePathManager {
         activePaths.remove(playerId);
 
         // Create new active path
-        ActivePath path = new ActivePath(playerId, level.dimension().location(), destination, targetType, targetId);
+        ActivePath path = new ActivePath(playerId, level.dimension().identifier(), destination, targetType, targetId);
         activePaths.put(playerId, path);
 
         AromaAffect.LOGGER.debug("Created active path for player {} to {} (target: {} {})",
@@ -165,7 +165,7 @@ public final class ActivePathManager {
             }
 
             // Check if player is in the same dimension
-            if (!player.level().dimension().location().equals(path.dimension())) {
+            if (!player.level().dimension().identifier().equals(path.dimension())) {
                 // Player changed dimension, remove path
                 iterator.remove();
                 continue;
@@ -192,7 +192,7 @@ public final class ActivePathManager {
                 if (distanceToDestination <= BIOME_ARRIVAL_THRESHOLD) {
                     var currentBiome = player.level().getBiome(playerPos);
                     var biomeKey = currentBiome.unwrapKey().orElse(null);
-                    arrived = biomeKey != null && biomeKey.location().toString().equals(path.targetId());
+                    arrived = biomeKey != null && biomeKey.identifier().toString().equals(path.targetId());
                 } else {
                     arrived = false;
                 }
@@ -243,7 +243,7 @@ public final class ActivePathManager {
      */
     public record ActivePath(
             UUID playerId,
-            net.minecraft.resources.ResourceLocation dimension,
+            net.minecraft.resources.Identifier dimension,
             BlockPos destination,
             TargetType targetType,
             String targetId

@@ -5,7 +5,7 @@ import dev.architectury.event.events.client.ClientGuiEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public final class ScentPuffOverlay {
 
-    private static final Map<String, ResourceLocation> SCENT_MASKS = new HashMap<>();
+    private static final Map<String, Identifier> SCENT_MASKS = new HashMap<>();
 
     private static final long PULSE_DURATION_MS = 2000L;
     private static final long FADE_IN_MS = 90L;
@@ -30,7 +30,7 @@ public final class ScentPuffOverlay {
 
     private static boolean initialized = false;
 
-    private static ResourceLocation activeMask = null;
+    private static Identifier activeMask = null;
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
 
@@ -76,7 +76,7 @@ public final class ScentPuffOverlay {
         if (scentName == null || scentName.isBlank()) {
             return;
         }
-        ResourceLocation mask = resolveMask(scentName);
+        Identifier mask = resolveMask(scentName);
         if (mask == null) {
             AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
             return;
@@ -143,7 +143,7 @@ public final class ScentPuffOverlay {
         return 1.0f;
     }
 
-    private static ResourceLocation resolveMask(String scentName) {
+    private static Identifier resolveMask(String scentName) {
         String key = scentName.toLowerCase(Locale.ROOT).trim();
         return SCENT_MASKS.get(key);
     }
@@ -151,7 +151,7 @@ public final class ScentPuffOverlay {
     private static void register(String scentName, String maskFileStem) {
         SCENT_MASKS.put(
                 scentName.toLowerCase(Locale.ROOT),
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/masks/" + maskFileStem + ".png")
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/masks/" + maskFileStem + ".png")
         );
     }
 

@@ -5,7 +5,7 @@ import lombok.Getter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -55,7 +55,7 @@ public class SnifferNoseItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM, 
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
         ));
         
         // Sniffer nose items stack to 1 (they are unique items)

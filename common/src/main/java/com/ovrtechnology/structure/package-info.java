@@ -37,7 +37,7 @@
  * 
  * <h2>Modded Structure Support</h2>
  * <p>The system supports structures from any mod. Structure IDs use the standard
- * Minecraft ResourceLocation format (namespace:path), allowing modded structures
+ * Minecraft Identifier format (namespace:path), allowing modded structures
  * to be registered alongside vanilla ones. Examples:</p>
  * <ul>
  *   <li>{@code minecraft:stronghold} - Vanilla stronghold</li>

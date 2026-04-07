@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -147,7 +147,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
             if (def != null) {
                 List<String> blockIds = def.getConfigStringList("valid_blocks");
                 for (String blockId : blockIds) {
-                    ResourceLocation loc = ResourceLocation.tryParse(blockId);
+                    Identifier loc = Identifier.tryParse(blockId);
                     if (loc != null) {
                         Block block = BuiltInRegistries.BLOCK.getOptional(loc).orElse(null);
                         if (block != null && block != Blocks.AIR) {

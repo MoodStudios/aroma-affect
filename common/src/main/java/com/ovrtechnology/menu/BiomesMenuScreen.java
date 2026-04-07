@@ -11,7 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -31,7 +31,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
     private static final int TEX_W = 288;
     private static final int TEX_H = 192;
 
-    private static final ResourceLocation PLACEHOLDER_IMG = ResourceLocation.fromNamespaceAndPath(
+    private static final Identifier PLACEHOLDER_IMG = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/biomes/placeholder.png");
 
     static final Map<String, ItemStack> BIOME_ICONS = new HashMap<>();
@@ -168,21 +168,21 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         }
 
         for (String biomeId : detectableBiomes) {
-            ResourceLocation resourceLocation = ResourceLocation.parse(biomeId);
+            Identifier resourceLocation = Identifier.parse(biomeId);
             addBiomeCard(resourceLocation, true);
         }
 
         AromaAffect.LOGGER.debug("Loaded {} biome cards from equipped nose", cards.size());
     }
 
-    private void addBiomeCard(ResourceLocation biomeId, boolean isUnlocked) {
+    private void addBiomeCard(Identifier biomeId, boolean isUnlocked) {
         ItemStack icon = BIOME_ICONS.getOrDefault(biomeId.toString(), Items.GRASS_BLOCK.getDefaultInstance());
 
         String biomeName = MenuRenderUtils.capitalizeWords(biomeId.getPath().replace("_", " "));
         Component displayName = Component.literal(biomeName);
         Component description = Component.translatable("menu.aromaaffect.biomes.card.description", displayName);
 
-        ResourceLocation thumbnail = BiomeThumbnailResolver.resolve(biomeId);
+        Identifier thumbnail = BiomeThumbnailResolver.resolve(biomeId);
         SelectionCard card = new SelectionCard(biomeId, displayName, icon, isUnlocked, description, thumbnail);
 
         // Populate cost data from BiomeDefinitionLoader
@@ -191,7 +191,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
             card.trackCost = biomeDef.getTrackCost();
             RequiredItem req = biomeDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
-                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                Identifier reqId = Identifier.parse(req.getItemId());
                 var itemOpt = BuiltInRegistries.ITEM.get(reqId);
                 if (itemOpt.isPresent()) {
                     card.requiredItem = new ItemStack(itemOpt.get().value());
@@ -239,7 +239,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
             int thumbBorder = (int) (100 * imgAlpha) << 24 | 0x666666;
             graphics.fill(thumbX - 1, thumbY - 1, thumbX + THUMB_W + 1, thumbY + THUMB_H + 1, thumbBorder);
 
-            ResourceLocation thumbTex = card.thumbnail != null ? card.thumbnail : PLACEHOLDER_IMG;
+            Identifier thumbTex = card.thumbnail != null ? card.thumbnail : PLACEHOLDER_IMG;
             float thumbScale = (float) THUMB_W / TEX_W;
             graphics.pose().pushMatrix();
             graphics.pose().translate(thumbX, thumbY);

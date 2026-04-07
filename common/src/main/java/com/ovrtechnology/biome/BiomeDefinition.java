@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  * </pre>
  * 
  * <h2>Biome ID Format</h2>
- * <p>Biome IDs follow the Minecraft ResourceLocation format: {@code namespace:path}.
+ * <p>Biome IDs follow the Minecraft Identifier format: {@code namespace:path}.
  * For vanilla biomes, use {@code minecraft:} namespace. For modded biomes,
  * use the mod's namespace (e.g., {@code terralith:hot_shrubland}).</p>
  */
@@ -46,7 +46,7 @@ public class BiomeDefinition {
     private static final Pattern HTML_COLOR_PATTERN = Pattern.compile("^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$");
     
     /**
-     * Pattern for validating ResourceLocation format (namespace:path).
+     * Pattern for validating Identifier format (namespace:path).
      */
     private static final Pattern RESOURCE_LOCATION_PATTERN = Pattern.compile("^[a-z0-9_.-]+:[a-z0-9_./-]+$");
     
@@ -63,7 +63,7 @@ public class BiomeDefinition {
     /**
      * The Minecraft biome ID (e.g., "minecraft:jungle", "minecraft:desert").
      * This is the primary identifier and must be unique.
-     * Must follow ResourceLocation format: namespace:path
+     * Must follow Identifier format: namespace:path
      */
     @SerializedName("biome_id")
     private String biomeId;
@@ -307,7 +307,7 @@ public class BiomeDefinition {
     }
     
     /**
-     * Check if the biome_id has valid ResourceLocation format.
+     * Check if the biome_id has valid Identifier format.
      * 
      * @return true if biome_id matches namespace:path format
      */
@@ -338,12 +338,12 @@ public class BiomeDefinition {
     }
     
     /**
-     * Validate if a string is a valid ResourceLocation format.
+     * Validate if a string is a valid Identifier format.
      * 
      * @param resourceLocation The resource location to validate
      * @return true if valid namespace:path format
      */
-    public static boolean isValidResourceLocation(String resourceLocation) {
+    public static boolean isValidIdentifier(String resourceLocation) {
         if (resourceLocation == null || resourceLocation.isEmpty()) {
             return false;
         }

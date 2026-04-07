@@ -14,7 +14,7 @@ import com.ovrtechnology.lookup.LookupType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -23,7 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -50,7 +50,7 @@ public class LookupSubCommand implements SubCommand {
                     context.getSource().getLevel().registryAccess()
                             .lookupOrThrow(Registries.BIOME)
                             .listElementIds()
-                            .map(key -> key.location()),
+                            .map(key -> key.identifier()),
                     builder
             );
         }
@@ -66,7 +66,7 @@ public class LookupSubCommand implements SubCommand {
                     context.getSource().getLevel().registryAccess()
                             .lookupOrThrow(Registries.STRUCTURE)
                             .listElementIds()
-                            .map(key -> key.location()),
+                            .map(key -> key.identifier()),
                     builder
             );
         }
@@ -97,7 +97,7 @@ public class LookupSubCommand implements SubCommand {
         return builder
                 // Biome lookup: /aromatest lookup biome <id> [radius]
                 .then(Commands.literal("biome")
-                        .then(Commands.argument("biome_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("biome_id", IdentifierArgument.id())
                                 .suggests(BIOME_SUGGESTIONS)
                                 .executes(ctx -> executeLookup(ctx, LookupType.BIOME, "biome_id", -1))
                                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 32000))
@@ -109,7 +109,7 @@ public class LookupSubCommand implements SubCommand {
                 // Structure lookup: /aromatest lookup structure <id> [radius]
                 // Radius up to 10000 blocks (same as Explorer's Compass default)
                 .then(Commands.literal("structure")
-                        .then(Commands.argument("structure_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("structure_id", IdentifierArgument.id())
                                 .suggests(STRUCTURE_SUGGESTIONS)
                                 .executes(ctx -> executeLookup(ctx, LookupType.STRUCTURE, "structure_id", -1))
                                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 10000))
@@ -120,7 +120,7 @@ public class LookupSubCommand implements SubCommand {
                 )
                 // Block lookup: /aromatest lookup block <id> [radius]
                 .then(Commands.literal("block")
-                        .then(Commands.argument("block_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("block_id", IdentifierArgument.id())
                                 .suggests(BLOCK_SUGGESTIONS)
                                 .executes(ctx -> executeLookup(ctx, LookupType.BLOCK, "block_id", -1))
                                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 1024))
@@ -150,8 +150,8 @@ public class LookupSubCommand implements SubCommand {
     ) {
         CommandSourceStack source = context.getSource();
         
-        // Get the resource ID from the argument using ResourceLocationArgument
-        ResourceLocation resourceId = ResourceLocationArgument.getId(context, argumentName);
+        // Get the resource ID from the argument using IdentifierArgument
+        Identifier resourceId = IdentifierArgument.getId(context, argumentName);
         
         // Get the origin position
         BlockPos origin;

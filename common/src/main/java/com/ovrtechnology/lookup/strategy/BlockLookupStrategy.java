@@ -5,7 +5,7 @@ import com.ovrtechnology.lookup.LookupTarget;
 import com.ovrtechnology.lookup.LookupType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -71,7 +71,7 @@ public class BlockLookupStrategy implements LookupStrategy {
 
         try {
             // Resolve the block from registry
-            ResourceLocation blockId = target.resourceId();
+            Identifier blockId = target.resourceId();
             Block targetBlock = BuiltInRegistries.BLOCK.getOptional(blockId).orElse(null);
 
             if (targetBlock == null) {

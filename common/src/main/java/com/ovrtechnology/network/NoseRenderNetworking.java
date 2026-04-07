@@ -7,7 +7,7 @@ import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -25,7 +25,7 @@ public final class NoseRenderNetworking {
 
     public record NosePrefsC2S(boolean noseEnabled, boolean strapEnabled) implements CustomPacketPayload {
         public static final Type<NosePrefsC2S> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_c2s"));
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_c2s"));
         public static final StreamCodec<RegistryFriendlyByteBuf, NosePrefsC2S> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeBoolean(payload.noseEnabled);
@@ -38,7 +38,7 @@ public final class NoseRenderNetworking {
 
     public record NosePrefsS2C(UUID playerUuid, boolean noseEnabled, boolean strapEnabled) implements CustomPacketPayload {
         public static final Type<NosePrefsS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_s2c"));
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_s2c"));
         public static final StreamCodec<RegistryFriendlyByteBuf, NosePrefsS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUUID(payload.playerUuid);

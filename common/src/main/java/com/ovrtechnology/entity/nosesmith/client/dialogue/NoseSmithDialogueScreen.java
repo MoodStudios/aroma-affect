@@ -14,7 +14,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.RandomSource;
@@ -46,7 +46,7 @@ public final class NoseSmithDialogueScreen extends Screen {
     private final NoseSmithEntity noseSmith;
 
     @Nullable
-    private ResourceLocation lastFlowerId;
+    private Identifier lastFlowerId;
     private boolean lastHasNose;
 
     private Component dialogue = Component.empty();
@@ -109,7 +109,7 @@ public final class NoseSmithDialogueScreen extends Screen {
     public void tick() {
         super.tick();
 
-        ResourceLocation currentFlowerId = noseSmith.getRequestedFlowerId();
+        Identifier currentFlowerId = noseSmith.getRequestedFlowerId();
         boolean currentHasNose = noseSmith.hasNose();
         if (currentHasNose != lastHasNose || !equalsNullable(currentFlowerId, lastFlowerId)) {
             lastHasNose = currentHasNose;
@@ -372,7 +372,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
     @Nullable
     private Block getRequestedFlowerBlock() {
-        ResourceLocation flowerId = noseSmith.getRequestedFlowerId();
+        Identifier flowerId = noseSmith.getRequestedFlowerId();
         if (flowerId == null) {
             return null;
         }

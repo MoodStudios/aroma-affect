@@ -2,7 +2,7 @@ package com.ovrtechnology.guide;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
  *   GuideElement.header("Getting Started")
  *   GuideElement.text("Welcome to AromaCraft!")
  *   GuideElement.item(new ItemStack(Items.DIAMOND), "Diamond Nose")
- *   GuideElement.image(ResourceLocation.of("aromacraft:textures/gui/guide/banner.png"), 200, 60)
+ *   GuideElement.image(Identifier.of("aromacraft:textures/gui/guide/banner.png"), 200, 60)
  *   GuideElement.separator()
  *   GuideElement.spacer(8)
  *   GuideElement.craftingGrid(grid, result, "Recipe Name")
@@ -44,7 +44,7 @@ public final class GuideElement {
     @Nullable
     private final ItemStack itemStack;
     @Nullable
-    private final ResourceLocation imageTexture;
+    private final Identifier imageTexture;
     private final int imageWidth;
     private final int imageHeight;
     private final int spacerHeight;
@@ -57,7 +57,7 @@ public final class GuideElement {
     private final String targetPageId;
 
     private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
-                         @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
+                         @Nullable Identifier imageTexture, int imageWidth, int imageHeight,
                          int spacerHeight, int color,
                          @Nullable ItemStack[] craftingGrid, @Nullable ItemStack craftingResult,
                          @Nullable String targetPageId) {
@@ -75,7 +75,7 @@ public final class GuideElement {
     }
 
     private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
-                         @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
+                         @Nullable Identifier imageTexture, int imageWidth, int imageHeight,
                          int spacerHeight, int color) {
         this(type, text, itemStack, imageTexture, imageWidth, imageHeight, spacerHeight, color, null, null, null);
     }
@@ -116,7 +116,7 @@ public final class GuideElement {
         return new GuideElement(Type.ITEM_SHOWCASE, description, stack, null, 0, 0, 0, 0xFFD0D0D0);
     }
 
-    public static GuideElement image(ResourceLocation texture, int width, int height) {
+    public static GuideElement image(Identifier texture, int width, int height) {
         return new GuideElement(Type.IMAGE, null, null, texture, width, height, 0, 0xFFFFFFFF);
     }
 
@@ -281,7 +281,7 @@ public final class GuideElement {
     }
 
     @Nullable
-    public ResourceLocation getImageTexture() {
+    public Identifier getImageTexture() {
         return imageTexture;
     }
 

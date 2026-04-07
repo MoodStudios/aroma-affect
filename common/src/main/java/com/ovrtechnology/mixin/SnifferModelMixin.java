@@ -1,7 +1,7 @@
 package com.ovrtechnology.mixin;
 
 import com.ovrtechnology.entity.sniffer.client.TamedSnifferRenderState;
-import net.minecraft.client.model.SnifferModel;
+import net.minecraft.client.model.animal.sniffer.SnifferModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;
 import org.spongepowered.asm.mixin.Final;

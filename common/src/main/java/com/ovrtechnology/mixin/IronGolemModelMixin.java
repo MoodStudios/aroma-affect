@@ -1,7 +1,7 @@
 package com.ovrtechnology.mixin;
 
 import com.ovrtechnology.entity.irongolem.IronGolemNoseRenderState;
-import net.minecraft.client.model.IronGolemModel;
+import net.minecraft.client.model.animal.golem.IronGolemModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;

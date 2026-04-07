@@ -15,7 +15,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -75,7 +75,7 @@ public class ScentItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM,
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
         ));
 
         // Capsule items have durability (100 uses); other scent items stack normally

@@ -24,8 +24,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -36,7 +38,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalDouble;
+
 
 /**
  * Client-side X-ray trail renderer that draws a glowing path from the player
@@ -835,22 +837,16 @@ public final class PathTrailRenderer {
 
     // ── Inner RenderType factory ────────────────────────────────────────
 
-    private abstract static class TrailRenderType extends RenderType {
-        private TrailRenderType() {
-            super("dummy", 0, false, false, () -> {}, () -> {});
-        }
+    private static final class TrailRenderType {
+        private TrailRenderType() {}
 
         static RenderType create(String name, double lineWidth) {
-            return RenderType.create(
-                    name,
-                    1536,
-                    TRAIL_PIPELINE,
-                    CompositeState.builder()
-                            .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(lineWidth)))
-                            .setLayeringState(VIEW_OFFSET_Z_LAYERING)
-                            .setOutputState(ITEM_ENTITY_TARGET)
-                            .createCompositeState(false)
-            );
+            RenderSetup setup = RenderSetup.builder(TRAIL_PIPELINE)
+                    .bufferSize(1536)
+                    .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+                    .createRenderSetup();
+            return RenderType.create(name, setup);
         }
     }
 }

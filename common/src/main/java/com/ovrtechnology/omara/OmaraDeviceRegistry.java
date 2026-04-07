@@ -6,7 +6,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -39,7 +39,7 @@ public final class OmaraDeviceRegistry {
                     .noOcclusion()
                     .setId(ResourceKey.create(
                             Registries.BLOCK,
-                            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
+                            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
                     ))
             ));
 
@@ -51,7 +51,7 @@ public final class OmaraDeviceRegistry {
             () -> new BlockItem(OMARA_DEVICE.get(), new Item.Properties()
                     .setId(ResourceKey.create(
                             Registries.ITEM,
-                            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
+                            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
                     ))
             ));
 

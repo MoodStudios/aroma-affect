@@ -293,7 +293,7 @@ public class StructureLookupStrategy implements LookupStrategy {
             ServerLevel level,
             BlockPos origin,
             Structure structure,
-            net.minecraft.resources.ResourceLocation structureId,
+            net.minecraft.resources.Identifier structureId,
             StructurePlacement placement,
             int maxRadius,
             Consumer<StructureSearchResult> callback

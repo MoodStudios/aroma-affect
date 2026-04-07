@@ -3,7 +3,7 @@ package com.ovrtechnology.guide;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +28,7 @@ public class AromaGuideItem extends Item {
         super(new Properties()
                 .setId(ResourceKey.create(
                         Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "aroma_guide")
+                        Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "aroma_guide")
                 ))
                 .stacksTo(1)
                 .rarity(Rarity.UNCOMMON)

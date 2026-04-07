@@ -3,7 +3,7 @@ package com.ovrtechnology.entity.nosesmith.client;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.VillagerModel;
+import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.AgeableMobRenderer;
@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Renderer for the Nose Smith entity.
@@ -27,8 +27,8 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class NoseSmithRenderer extends AgeableMobRenderer<NoseSmithEntity, VillagerRenderState, VillagerModel> {
 
-    private static final ResourceLocation NOSE_SMITH_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose_smith.png");
+    private static final Identifier NOSE_SMITH_TEXTURE =
+            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose_smith.png");
 
     private final VillagerModel adultModel;
     private final VillagerModel babyModel;
@@ -78,7 +78,7 @@ public class NoseSmithRenderer extends AgeableMobRenderer<NoseSmithEntity, Villa
     }
 
     @Override
-    public ResourceLocation getTextureLocation(VillagerRenderState state) {
+    public Identifier getTextureLocation(VillagerRenderState state) {
         return NOSE_SMITH_TEXTURE;
     }
 

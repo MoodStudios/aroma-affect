@@ -1,11 +1,11 @@
 package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import java.net.URI;
@@ -16,9 +16,9 @@ import java.net.URI;
  */
 public class ShopScreen extends BaseMenuScreen {
 
-    private static final ResourceLocation OMARA_COVER = ResourceLocation.fromNamespaceAndPath(
+    private static final Identifier OMARA_COVER = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/shop/omara_cover.png");
-    private static final ResourceLocation ICON_BACK = ResourceLocation.fromNamespaceAndPath(
+    private static final Identifier ICON_BACK = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
 
     private static final String BUY_URL = "https://omara.ovrtechnology.com/?ref=aromaaffect-mod";

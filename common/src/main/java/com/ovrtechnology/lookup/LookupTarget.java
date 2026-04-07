@@ -1,6 +1,6 @@
 package com.ovrtechnology.lookup;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Objects;
 
@@ -11,7 +11,7 @@ import java.util.Objects;
  * @param type the type of lookup (biome, structure, or block)
  * @param resourceId the resource location identifying what to find
  */
-public record LookupTarget(LookupType type, ResourceLocation resourceId) {
+public record LookupTarget(LookupType type, Identifier resourceId) {
     
     public LookupTarget {
         Objects.requireNonNull(type, "type cannot be null");
@@ -21,21 +21,21 @@ public record LookupTarget(LookupType type, ResourceLocation resourceId) {
     /**
      * Creates a biome lookup target.
      */
-    public static LookupTarget biome(ResourceLocation biomeId) {
+    public static LookupTarget biome(Identifier biomeId) {
         return new LookupTarget(LookupType.BIOME, biomeId);
     }
     
     /**
      * Creates a structure lookup target.
      */
-    public static LookupTarget structure(ResourceLocation structureId) {
+    public static LookupTarget structure(Identifier structureId) {
         return new LookupTarget(LookupType.STRUCTURE, structureId);
     }
     
     /**
      * Creates a block lookup target.
      */
-    public static LookupTarget block(ResourceLocation blockId) {
+    public static LookupTarget block(Identifier blockId) {
         return new LookupTarget(LookupType.BLOCK, blockId);
     }
     

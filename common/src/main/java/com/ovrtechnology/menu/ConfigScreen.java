@@ -17,7 +17,7 @@ import com.ovrtechnology.websocket.WebSocketMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
@@ -33,7 +33,7 @@ import java.util.Set;
  */
 public class ConfigScreen extends BaseMenuScreen {
 
-    private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(
+    private static final Identifier ICON_CONFIG = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
 
     private enum Section { GENERAL, PASSIVE, SCENT_VALUES, WEBSOCKET }

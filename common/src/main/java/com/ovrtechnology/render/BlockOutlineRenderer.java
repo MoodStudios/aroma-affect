@@ -14,13 +14,16 @@ import com.ovrtechnology.menu.MenuCategory;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 
-import java.util.OptionalDouble;
+
 
 /**
  * Renders an X-ray wireframe outline at the destination block position
@@ -85,11 +88,13 @@ public final class BlockOutlineRenderer {
 
         VertexConsumer lineConsumer = consumers.getBuffer(LINES_NO_DEPTH);
 
-        ShapeRenderer.renderLineBox(
-                poseStack.last(), lineConsumer,
+        // Pack RGB into a single int color (RRGGBB)
+        int color = ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255);
+        ShapeRenderer.renderShape(
+                poseStack, lineConsumer,
+                Shapes.block(),
                 dx, dy, dz,
-                dx + 1.0, dy + 1.0, dz + 1.0,
-                r, g, b, alpha
+                color, alpha
         );
     }
 
@@ -124,24 +129,18 @@ public final class BlockOutlineRenderer {
     }
 
     /**
-     * Helper class to access protected RenderType.create and RenderStateShard fields.
+     * Helper class to create custom RenderType with no-depth lines.
      */
-    private abstract static class XRayRenderType extends RenderType {
-        private XRayRenderType() {
-            super("dummy", 0, false, false, () -> {}, () -> {});
-        }
+    private static final class XRayRenderType {
+        private XRayRenderType() {}
 
         static RenderType createLinesNoDepth() {
-            return create(
-                    "aromaaffect_lines_no_depth",
-                    1536,
-                    LINES_NO_DEPTH_PIPELINE,
-                    CompositeState.builder()
-                            .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
-                            .setLayeringState(VIEW_OFFSET_Z_LAYERING)
-                            .setOutputState(ITEM_ENTITY_TARGET)
-                            .createCompositeState(false)
-            );
+            RenderSetup setup = RenderSetup.builder(LINES_NO_DEPTH_PIPELINE)
+                    .bufferSize(1536)
+                    .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+                    .createRenderSetup();
+            return RenderType.create("aromaaffect_lines_no_depth", setup);
         }
     }
 }

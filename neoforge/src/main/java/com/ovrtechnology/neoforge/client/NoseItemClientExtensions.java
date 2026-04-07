@@ -11,7 +11,7 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
@@ -103,11 +103,11 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
     }
 
     @Override
-    public ResourceLocation getArmorTexture(
+    public Identifier getArmorTexture(
             ItemStack stack,
             EquipmentClientInfo.LayerType layerType,
             EquipmentClientInfo.Layer layer,
-            ResourceLocation defaultTexture
+            Identifier defaultTexture
     ) {
         return NoseClient.getArmorTexture(stack);
     }

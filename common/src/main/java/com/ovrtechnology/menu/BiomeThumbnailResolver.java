@@ -2,13 +2,13 @@ package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Resolves biome IDs to thumbnail texture {@link ResourceLocation}s.
+ * Resolves biome IDs to thumbnail texture {@link Identifier}s.
  *
  * <p>Path convention (allows resource-pack / modded biome extensibility):</p>
  * <pre>
@@ -25,10 +25,10 @@ import java.util.Map;
  */
 public final class BiomeThumbnailResolver {
 
-    private static final ResourceLocation PLACEHOLDER = ResourceLocation.fromNamespaceAndPath(
+    private static final Identifier PLACEHOLDER = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/biomes/placeholder.png");
 
-    private static final Map<ResourceLocation, ResourceLocation> CACHE = new HashMap<>();
+    private static final Map<Identifier, Identifier> CACHE = new HashMap<>();
 
     private BiomeThumbnailResolver() {}
 
@@ -37,9 +37,9 @@ public final class BiomeThumbnailResolver {
      * Returns the biome-specific texture if it exists in the current resource packs,
      * otherwise falls back to the placeholder.
      */
-    public static ResourceLocation resolve(ResourceLocation biomeId) {
+    public static Identifier resolve(Identifier biomeId) {
         return CACHE.computeIfAbsent(biomeId, id -> {
-            ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(
+            Identifier texture = Identifier.fromNamespaceAndPath(
                     AromaAffect.MOD_ID,
                     "textures/gui/sprites/biomes/" + id.getNamespace() + "/" + id.getPath() + ".png");
 

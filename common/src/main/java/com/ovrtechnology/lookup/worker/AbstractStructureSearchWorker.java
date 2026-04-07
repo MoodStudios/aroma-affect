@@ -3,7 +3,7 @@ package com.ovrtechnology.lookup.worker;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -29,7 +29,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
     protected final ServerLevel level;
     protected final BlockPos startPos;
     protected final Structure structure;
-    protected final ResourceLocation structureId;
+    protected final Identifier structureId;
     protected final T placement;
     protected final int maxRadius;
     protected final int maxSamples;
@@ -49,7 +49,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
             ServerLevel level,
             BlockPos startPos,
             Structure structure,
-            ResourceLocation structureId,
+            Identifier structureId,
             T placement,
             int maxRadius,
             int maxSamples,

@@ -2,7 +2,7 @@ package com.ovrtechnology.lookup.worker;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -33,7 +33,7 @@ public class RandomSpreadSearchWorker extends AbstractStructureSearchWorker<Rand
             ServerLevel level,
             BlockPos startPos,
             Structure structure,
-            ResourceLocation structureId,
+            Identifier structureId,
             RandomSpreadStructurePlacement placement,
             int maxRadius,
             int maxSamples,

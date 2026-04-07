@@ -10,7 +10,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
@@ -29,7 +29,7 @@ public final class OmaraDeviceNetworking {
 
     public record OmaraPuffS2C(String scentName, double intensity, int durationTicks) implements CustomPacketPayload {
         public static final Type<OmaraPuffS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff_s2c"));
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff_s2c"));
         public static final StreamCodec<RegistryFriendlyByteBuf, OmaraPuffS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUtf(payload.scentName);

@@ -16,7 +16,5 @@
  * @see com.ovrtechnology.menu.MenuManager
  * @see com.ovrtechnology.menu.MenuCategory
  */
-@MethodsReturnNonnullByDefault
 package com.ovrtechnology.menu;
 
-import net.minecraft.MethodsReturnNonnullByDefault;

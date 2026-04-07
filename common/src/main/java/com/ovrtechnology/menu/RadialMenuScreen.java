@@ -17,7 +17,7 @@ import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -71,10 +71,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private float[] selectionProgress = new float[0];
 
     /**
-     * Cache of grayscale texture variants keyed by original ResourceLocation.
-     * Generated once on first use via {@link #getGrayscaleIcon(ResourceLocation)}.
+     * Cache of grayscale texture variants keyed by original Identifier.
+     * Generated once on first use via {@link #getGrayscaleIcon(Identifier)}.
      */
-    private static final Map<ResourceLocation, ResourceLocation> GRAYSCALE_CACHE = new HashMap<>();
+    private static final Map<Identifier, Identifier> GRAYSCALE_CACHE = new HashMap<>();
 
     /**
      * Selected slice index (computed during render based on mouse position).
@@ -111,15 +111,15 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     // Texture locations for radial menu icons
-    private static final ResourceLocation ICON_STRUCTURES = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png");
-    private static final ResourceLocation ICON_BIOMES = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png");
-    private static final ResourceLocation ICON_BLOCKS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
-    private static final ResourceLocation ICON_FLOWERS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
-    private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
+    private static final Identifier ICON_STRUCTURES = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png");
+    private static final Identifier ICON_BIOMES = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png");
+    private static final Identifier ICON_BLOCKS = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
+    private static final Identifier ICON_FLOWERS = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
+    private static final Identifier ICON_CONFIG = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
 
-    private static final ResourceLocation ICON_PASSIVE = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
-    private static final ResourceLocation ICON_CENTER_LOGO = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part1.png");
-    private static final ResourceLocation ICON_CENTER_ARROW = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part2.png");
+    private static final Identifier ICON_PASSIVE = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
+    private static final Identifier ICON_CENTER_LOGO = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part1.png");
+    private static final Identifier ICON_CENTER_ARROW = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part2.png");
 
     // Icon display size (will be scaled from high-res textures)
     private static final int ICON_DISPLAY_SIZE = 32;
@@ -623,7 +623,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             int drawX = (int)(x - halfSize);
             int drawY = (int)(y - halfSize);
 
-            ResourceLocation icon = lockedSlots[i] ? getGrayscaleIcon(entry.icon()) : entry.icon();
+            Identifier icon = lockedSlots[i] ? getGrayscaleIcon(entry.icon()) : entry.icon();
 
             graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
@@ -951,11 +951,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     /**
-     * Returns a grayscale variant ResourceLocation for the given icon texture.
+     * Returns a grayscale variant Identifier for the given icon texture.
      * Generates and registers a DynamicTexture on first call, then caches it.
      */
-    private static ResourceLocation getGrayscaleIcon(ResourceLocation original) {
-        ResourceLocation cached = GRAYSCALE_CACHE.get(original);
+    private static Identifier getGrayscaleIcon(Identifier original) {
+        Identifier cached = GRAYSCALE_CACHE.get(original);
         if (cached != null) {
             return cached;
         }
@@ -978,7 +978,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 source.close();
 
                 String texName = original.getPath().replace('/', '_').replace('.', '_');
-                ResourceLocation grayLoc = ResourceLocation.fromNamespaceAndPath(
+                Identifier grayLoc = Identifier.fromNamespaceAndPath(
                         AromaAffect.MOD_ID, "dynamic/gray_" + texName);
                 DynamicTexture dynamicTexture = new DynamicTexture(() -> texName, grayscale);
                 Minecraft.getInstance().getTextureManager().register(grayLoc, dynamicTexture);
@@ -1205,7 +1205,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             String id,
             Component title,
             Component description,
-            ResourceLocation icon,
+            Identifier icon,
             Runnable onSelect
     ) {
     }

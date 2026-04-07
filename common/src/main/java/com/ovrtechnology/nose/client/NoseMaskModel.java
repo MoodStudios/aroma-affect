@@ -8,7 +8,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 
 /**
@@ -23,7 +23,7 @@ public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
     private final ModelPart strap;
 
     public NoseMaskModel(ModelPart root) {
-        super(root, RenderType::armorCutoutNoCull);
+        super(root, RenderTypes::armorCutoutNoCull);
         this.noseMask = this.head.getChild("nose_mask");
         this.strap = this.noseMask.getChild("strap");
     }

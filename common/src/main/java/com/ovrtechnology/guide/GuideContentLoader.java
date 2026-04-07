@@ -4,7 +4,7 @@ import com.google.gson.*;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -133,7 +133,7 @@ public final class GuideContentLoader {
                 return parseCraftingGrid(json);
             case "image":
                 return GuideElement.image(
-                        ResourceLocation.parse(json.get("texture").getAsString()),
+                        Identifier.parse(json.get("texture").getAsString()),
                         json.get("width").getAsInt(),
                         json.get("height").getAsInt());
             case "url_link":
@@ -187,7 +187,7 @@ public final class GuideContentLoader {
                 return GuideIcon.ofItem(resolveItem(json.get("item").getAsString()));
             case "texture":
                 return GuideIcon.ofTexture(
-                        ResourceLocation.parse(json.get("texture").getAsString()),
+                        Identifier.parse(json.get("texture").getAsString()),
                         json.get("width").getAsInt(),
                         json.get("height").getAsInt());
             case "symbol":
@@ -210,7 +210,7 @@ public final class GuideContentLoader {
         if (itemId == null || itemId.isEmpty() || itemId.equals("minecraft:air")) {
             return ItemStack.EMPTY;
         }
-        ResourceLocation loc = ResourceLocation.parse(itemId);
+        Identifier loc = Identifier.parse(itemId);
         return BuiltInRegistries.ITEM.getOptional(loc)
                 .map(ItemStack::new)
                 .orElse(ItemStack.EMPTY);

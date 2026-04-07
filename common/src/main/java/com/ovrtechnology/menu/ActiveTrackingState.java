@@ -4,7 +4,7 @@ import com.ovrtechnology.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -37,7 +37,7 @@ public final class ActiveTrackingState {
         ERROR
     }
 
-    private static ResourceLocation targetId;
+    private static Identifier targetId;
     private static Component displayName;
     private static ItemStack icon;
     private static MenuCategory category;
@@ -47,7 +47,7 @@ public final class ActiveTrackingState {
     private static TrackingStatus status = TrackingStatus.IDLE;
     private static String statusMessage;
     private static long statusTimestamp;
-    private static ResourceLocation lastDimensionId;
+    private static Identifier lastDimensionId;
 
     /** Duration in milliseconds before terminal states auto-clear. */
     private static final long AUTO_CLEAR_MS = 3000;
@@ -65,7 +65,7 @@ public final class ActiveTrackingState {
      * @param itemIcon item icon for the target
      * @param cat      the category this target belongs to
      */
-    public static void set(ResourceLocation id, Component name, ItemStack itemIcon, MenuCategory cat) {
+    public static void set(Identifier id, Component name, ItemStack itemIcon, MenuCategory cat) {
         targetId = id;
         displayName = name;
         icon = itemIcon;
@@ -143,7 +143,7 @@ public final class ActiveTrackingState {
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && mc.player.level() != null) {
-            ResourceLocation currentDimensionId = mc.player.level().dimension().location();
+            Identifier currentDimensionId = mc.player.level().dimension().identifier();
             if (lastDimensionId != null && !lastDimensionId.equals(currentDimensionId) && status != TrackingStatus.IDLE) {
                 clear();
             }
@@ -211,11 +211,11 @@ public final class ActiveTrackingState {
     /**
      * @return true if the given target ID is the one currently being tracked
      */
-    public static boolean isTracking(ResourceLocation id) {
+    public static boolean isTracking(Identifier id) {
         return targetId != null && targetId.equals(id);
     }
 
-    public static ResourceLocation getTargetId() {
+    public static Identifier getTargetId() {
         return targetId;
     }
 

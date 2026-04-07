@@ -8,7 +8,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -64,7 +64,7 @@ public class NoseItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM, 
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
         ));
         
         // Set durability
@@ -93,7 +93,7 @@ public class NoseItem extends Item {
         // Add Repairable component for anvil repair
         String repairId = definition.getRepair();
         if (repairId != null && !repairId.isEmpty()) {
-            ResourceLocation repairLoc = ResourceLocation.parse(repairId);
+            Identifier repairLoc = Identifier.parse(repairId);
             BuiltInRegistries.ITEM.getOptional(repairLoc).ifPresent(repairItem -> {
                 Holder<Item> holder = BuiltInRegistries.ITEM.wrapAsHolder(repairItem);
                 properties.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(holder)));

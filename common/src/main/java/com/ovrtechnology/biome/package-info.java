@@ -34,7 +34,7 @@
  * 
  * <h2>Modded Biome Support</h2>
  * <p>The system supports biomes from any mod. Biome IDs use the standard
- * Minecraft ResourceLocation format (namespace:path), allowing modded biomes
+ * Minecraft Identifier format (namespace:path), allowing modded biomes
  * to be registered alongside vanilla ones. Examples:</p>
  * <ul>
  *   <li>{@code minecraft:jungle} - Vanilla jungle biome</li>

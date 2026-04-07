@@ -12,13 +12,14 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
@@ -119,8 +120,8 @@ public final class NoseArmorRenderer implements ArmorRenderer {
             return;
         }
 
-        ResourceLocation texture = NoseClient.getArmorTexture(stack);
-        RenderType renderType = RenderType.armorCutoutNoCull(texture);
+        Identifier texture = NoseClient.getArmorTexture(stack);
+        RenderType renderType = RenderTypes.armorCutoutNoCull(texture);
 
         ArmorRenderer.submitTransformCopyingModel(
                 contextModel,

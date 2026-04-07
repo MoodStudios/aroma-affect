@@ -2,7 +2,7 @@ package com.ovrtechnology.keybind;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Shared keybinding category for all Aroma Affect keybindings.
@@ -19,7 +19,7 @@ public final class AromaAffectKeyCategory {
      * Registered once and shared across all keybinding classes.
      */
     public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "keybinds")
+            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "keybinds")
     );
     
     private AromaAffectKeyCategory() {

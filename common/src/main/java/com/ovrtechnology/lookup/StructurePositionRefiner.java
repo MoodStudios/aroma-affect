@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.ChunkPos;
@@ -58,7 +58,7 @@ public final class StructurePositionRefiner {
      * @param structureId resource location of the structure
      * @return a refined position pointing at an actual structure block, or the original approxPos as fallback
      */
-    public static BlockPos refine(ServerLevel level, BlockPos approxPos, ResourceLocation structureId) {
+    public static BlockPos refine(ServerLevel level, BlockPos approxPos, Identifier structureId) {
         try {
             Registry<Structure> structureRegistry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
             Structure structure = structureRegistry.getValue(structureId);

@@ -9,7 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -28,7 +28,7 @@ public final class AromaGuideNetworking {
 
     public record GuideRequestC2S() implements CustomPacketPayload {
         public static final Type<GuideRequestC2S> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_request_c2s"));
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_request_c2s"));
         public static final StreamCodec<RegistryFriendlyByteBuf, GuideRequestC2S> STREAM_CODEC =
                 StreamCodec.unit(new GuideRequestC2S());
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
@@ -36,7 +36,7 @@ public final class AromaGuideNetworking {
 
     public record GuideTargetS2C(@Nullable BlockPos villagePos, @Nullable BlockPos compassTarget) implements CustomPacketPayload {
         public static final Type<GuideTargetS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_target_s2c"));
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_target_s2c"));
         public static final StreamCodec<RegistryFriendlyByteBuf, GuideTargetS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeBoolean(payload.villagePos != null);

@@ -11,7 +11,7 @@ import dev.architectury.event.events.common.LifecycleEvent;
 import lombok.Getter;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -146,10 +146,10 @@ public final class RegistryValidator {
         for (BlockDefinition block : BlockRegistry.getAllBlocks()) {
             checked++;
             String blockId = block.getBlockId();
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(blockId);
+            Identifier resourceLocation = Identifier.tryParse(blockId);
             
             if (resourceLocation == null) {
-                AromaAffect.LOGGER.error("[BlockRegistry] Invalid ResourceLocation format: '{}'", blockId);
+                AromaAffect.LOGGER.error("[BlockRegistry] Invalid Identifier format: '{}'", blockId);
                 invalidBlockIds.add(blockId);
                 invalid++;
                 continue;
@@ -183,10 +183,10 @@ public final class RegistryValidator {
         for (BiomeDefinition biome : BiomeRegistry.getAllBiomes()) {
             checked++;
             String biomeId = biome.getBiomeId();
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(biomeId);
+            Identifier resourceLocation = Identifier.tryParse(biomeId);
             
             if (resourceLocation == null) {
-                AromaAffect.LOGGER.error("[BiomeRegistry] Invalid ResourceLocation format: '{}'", biomeId);
+                AromaAffect.LOGGER.error("[BiomeRegistry] Invalid Identifier format: '{}'", biomeId);
                 invalidBiomeIds.add(biomeId);
                 invalid++;
                 continue;
@@ -227,15 +227,15 @@ public final class RegistryValidator {
         
         // Log available structures for debugging
         AromaAffect.LOGGER.debug("Available structures in world: {}", 
-                structureRegistry.keySet().stream().map(ResourceLocation::toString).toList());
+                structureRegistry.keySet().stream().map(Identifier::toString).toList());
         
         for (StructureDefinition structure : StructureRegistry.getAllStructures()) {
             checked++;
             String structureId = structure.getStructureId();
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(structureId);
+            Identifier resourceLocation = Identifier.tryParse(structureId);
             
             if (resourceLocation == null) {
-                AromaAffect.LOGGER.error("[StructureRegistry] Invalid ResourceLocation format: '{}'", structureId);
+                AromaAffect.LOGGER.error("[StructureRegistry] Invalid Identifier format: '{}'", structureId);
                 invalidStructureIds.add(structureId);
                 invalid++;
                 continue;

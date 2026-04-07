@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -31,9 +31,9 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.npc.VillagerData;
-import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerData;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -97,7 +97,7 @@ public class NoseSmithEntity extends Villager {
     private static volatile List<FlowerVariant> cachedPottableSmallFlowers;
 
     @Nullable
-    private ResourceLocation requestedFlower;
+    private Identifier requestedFlower;
 
     private boolean houseDecorated = false;
     private long noseRemovedGameTime = -1L; // -1 = not tracking (nose is present)
@@ -143,13 +143,13 @@ public class NoseSmithEntity extends Villager {
     }
 
     @Nullable
-    public ResourceLocation getRequestedFlowerId() {
+    public Identifier getRequestedFlowerId() {
         String value = this.entityData.get(REQUESTED_FLOWER_ID);
         if (value == null || value.isBlank()) {
             return null;
         }
 
-        return ResourceLocation.tryParse(value);
+        return Identifier.tryParse(value);
     }
     
     @Override
@@ -171,7 +171,7 @@ public class NoseSmithEntity extends Villager {
         setHasNose(input.getBooleanOr(TAG_HAS_NOSE, true));
 
         requestedFlower = input.getString(TAG_REQUESTED_FLOWER)
-                .map(ResourceLocation::parse)
+                .map(Identifier::parse)
                 .orElse(null);
 
         this.entityData.set(REQUESTED_FLOWER_ID, requestedFlower != null ? requestedFlower.toString() : "");
@@ -215,7 +215,7 @@ public class NoseSmithEntity extends Villager {
     public void restoreNoseSmithData(boolean hadNose, String requestedFlowerStr, boolean wasHouseDecorated, long noseRemovedTime) {
         setHasNose(hadNose);
         if (requestedFlowerStr != null && !requestedFlowerStr.isEmpty()) {
-            this.requestedFlower = ResourceLocation.tryParse(requestedFlowerStr);
+            this.requestedFlower = Identifier.tryParse(requestedFlowerStr);
             this.entityData.set(REQUESTED_FLOWER_ID, requestedFlowerStr);
         }
         this.houseDecorated = wasHouseDecorated;
@@ -853,10 +853,10 @@ public class NoseSmithEntity extends Villager {
         }
 
         // Flowers: 1 emerald -> 1 of each flower (excluding quest flower)
-        ResourceLocation questFlower = getRequestedFlowerId();
+        Identifier questFlower = getRequestedFlowerId();
         List<FlowerVariant> flowers = getPottableSmallFlowers();
         for (FlowerVariant variant : flowers) {
-            ResourceLocation flowerId = BuiltInRegistries.BLOCK.getKey(variant.flower());
+            Identifier flowerId = BuiltInRegistries.BLOCK.getKey(variant.flower());
             if (flowerId.equals(questFlower)) {
                 continue;
             }

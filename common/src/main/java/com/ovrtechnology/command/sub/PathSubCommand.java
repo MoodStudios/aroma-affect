@@ -30,13 +30,13 @@ import com.ovrtechnology.tracking.TrackingConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.biome.Biome;
@@ -83,7 +83,7 @@ public class PathSubCommand implements SubCommand {
                     context.getSource().getLevel().registryAccess()
                             .lookupOrThrow(Registries.BIOME)
                             .listElementIds()
-                            .map(key -> key.location()),
+                            .map(key -> key.identifier()),
                     builder
             );
         }
@@ -99,7 +99,7 @@ public class PathSubCommand implements SubCommand {
                     context.getSource().getLevel().registryAccess()
                             .lookupOrThrow(Registries.STRUCTURE)
                             .listElementIds()
-                            .map(key -> key.location()),
+                            .map(key -> key.identifier()),
                     builder
             );
         }
@@ -129,7 +129,7 @@ public class PathSubCommand implements SubCommand {
     public ArgumentBuilder<CommandSourceStack, ?> build(LiteralArgumentBuilder<CommandSourceStack> builder) {
         return builder
                 .then(Commands.literal("biome")
-                        .then(Commands.argument("biome_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("biome_id", IdentifierArgument.id())
                                 .suggests(BIOME_SUGGESTIONS)
                                 .executes(ctx -> executePath(ctx, LookupType.BIOME, "biome_id", -1))
                                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 32000))
@@ -140,7 +140,7 @@ public class PathSubCommand implements SubCommand {
                 )
 
                 .then(Commands.literal("structure")
-                        .then(Commands.argument("structure_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("structure_id", IdentifierArgument.id())
                                 .suggests(STRUCTURE_SUGGESTIONS)
                                 .executes(ctx -> executePath(ctx, LookupType.STRUCTURE, "structure_id", -1))
                                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 10000))
@@ -151,7 +151,7 @@ public class PathSubCommand implements SubCommand {
                 )
 
                 .then(Commands.literal("block")
-                        .then(Commands.argument("block_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("block_id", IdentifierArgument.id())
                                 .suggests(BLOCK_SUGGESTIONS)
                                 .executes(ctx -> executePath(ctx, LookupType.BLOCK, "block_id", -1))
                                 .then(Commands.argument("radius", IntegerArgumentType.integer(1, 1024))
@@ -162,18 +162,18 @@ public class PathSubCommand implements SubCommand {
                 )
 
                 .then(Commands.literal("flower")
-                        .then(Commands.argument("flower_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("flower_id", IdentifierArgument.id())
                                 .suggests(BLOCK_SUGGESTIONS)
                                 .executes(ctx -> executePath(ctx, LookupType.FLOWER, "flower_id", -1))
                         )
                 )
 
                 .then(Commands.literal("recall")
-                        .then(Commands.argument("target_id", ResourceLocationArgument.id())
+                        .then(Commands.argument("target_id", IdentifierArgument.id())
                                 .then(Commands.argument("x", IntegerArgumentType.integer())
                                         .then(Commands.argument("y", IntegerArgumentType.integer())
                                                 .then(Commands.argument("z", IntegerArgumentType.integer())
-                                                        .then(Commands.argument("dimension", ResourceLocationArgument.id())
+                                                        .then(Commands.argument("dimension", IdentifierArgument.id())
                                                                 .executes(this::executeRecall)
                                                         )
                                                         .executes(this::executeRecall)
@@ -243,7 +243,7 @@ public class PathSubCommand implements SubCommand {
         CommandSourceStack source = context.getSource();
 
         // Get the resource ID from the argument
-        ResourceLocation resourceId = ResourceLocationArgument.getId(context, argumentName);
+        Identifier resourceId = IdentifierArgument.getId(context, argumentName);
 
         // Get the origin position and player
         BlockPos origin;
@@ -480,7 +480,7 @@ public class PathSubCommand implements SubCommand {
      * the entire way (no gap of a different biome), the two points are in the same region.
      */
     private boolean isBiomeBlacklistedByContiguity(ServerLevel level, java.util.UUID playerId,
-                                                    String targetId, ResourceLocation biomeId,
+                                                    String targetId, Identifier biomeId,
                                                     BlockPos foundPos) {
         Set<BlockPos> excluded = BlacklistSyncManager.getInstance()
                 .getExcludedPositionsForTarget(playerId, targetId);
@@ -585,7 +585,7 @@ public class PathSubCommand implements SubCommand {
 
     private boolean playerHasItem(ServerPlayer player, RequiredItem req) {
         if (req == null || req.getItemId() == null) return true;
-        ResourceLocation itemId = ResourceLocation.parse(req.getItemId());
+        Identifier itemId = Identifier.parse(req.getItemId());
         var itemOpt = BuiltInRegistries.ITEM.get(itemId);
         if (itemOpt.isEmpty()) return false;
 
@@ -605,7 +605,7 @@ public class PathSubCommand implements SubCommand {
         RequiredItem req = resolveRequiredItem(type, targetId);
         if (req == null || req.getItemId() == null) return;
 
-        ResourceLocation itemId = ResourceLocation.parse(req.getItemId());
+        Identifier itemId = Identifier.parse(req.getItemId());
         var itemOpt = BuiltInRegistries.ITEM.get(itemId);
         if (itemOpt.isEmpty()) return;
 
@@ -630,16 +630,16 @@ public class PathSubCommand implements SubCommand {
             return 0;
         }
 
-        ResourceLocation targetId = ResourceLocationArgument.getId(context, "target_id");
+        Identifier targetId = IdentifierArgument.getId(context, "target_id");
         int x = IntegerArgumentType.getInteger(context, "x");
         int y = IntegerArgumentType.getInteger(context, "y");
         int z = IntegerArgumentType.getInteger(context, "z");
         BlockPos destination = new BlockPos(x, y, z);
 
         // Validate dimension if provided
-        ResourceLocation expectedDimension = null;
+        Identifier expectedDimension = null;
         try {
-            expectedDimension = ResourceLocationArgument.getId(context, "dimension");
+            expectedDimension = IdentifierArgument.getId(context, "dimension");
         } catch (IllegalArgumentException ignored) {
             // dimension argument not provided (legacy command format)
         }
@@ -647,7 +647,7 @@ public class PathSubCommand implements SubCommand {
         ServerLevel level = source.getLevel();
 
         if (expectedDimension != null) {
-            String currentDimension = level.dimension().location().toString();
+            String currentDimension = level.dimension().identifier().toString();
             if (!currentDimension.equals(expectedDimension.toString())) {
                 PathScentNetworking.sendPathNotFound(player, "Wrong dimension");
                 return Command.SINGLE_SUCCESS;

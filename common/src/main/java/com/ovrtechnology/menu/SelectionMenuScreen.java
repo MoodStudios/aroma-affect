@@ -9,7 +9,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -44,7 +44,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     protected static final int BACK_BUTTON_SIZE = 24;
     protected static final int BACK_BUTTON_PADDING = 8;
 
-    protected static final ResourceLocation ICON_BACK = ResourceLocation.fromNamespaceAndPath(
+    protected static final Identifier ICON_BACK = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
 
     // ── Shared row colors ────────────────────────────────────────────────
@@ -477,7 +477,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         MenuManager.returnToRadialMenu();
     }
 
-    protected void startPath(ResourceLocation targetId) {
+    protected void startPath(Identifier targetId) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
@@ -505,18 +505,18 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     // ── Inner class ──────────────────────────────────────────────────────
 
     public static class SelectionCard {
-        public final ResourceLocation id;
+        public final Identifier id;
         public final Component displayName;
         public final ItemStack icon;
         public boolean isUnlocked;
         public final Component description;
-        public final ResourceLocation thumbnail;
+        public final Identifier thumbnail;
         public int trackCost = 10;
         public ItemStack requiredItem;
         public int requiredItemCount = 0;
 
-        public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon,
-                            boolean isUnlocked, Component description, ResourceLocation thumbnail) {
+        public SelectionCard(Identifier id, Component displayName, ItemStack icon,
+                            boolean isUnlocked, Component description, Identifier thumbnail) {
             this.id = id;
             this.displayName = displayName;
             this.icon = icon;
@@ -525,12 +525,12 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             this.thumbnail = thumbnail;
         }
 
-        public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon,
+        public SelectionCard(Identifier id, Component displayName, ItemStack icon,
                             boolean isUnlocked, Component description) {
             this(id, displayName, icon, isUnlocked, description, null);
         }
 
-        public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon, boolean isUnlocked) {
+        public SelectionCard(Identifier id, Component displayName, ItemStack icon, boolean isUnlocked) {
             this(id, displayName, icon, isUnlocked, null, null);
         }
     }

@@ -5,7 +5,7 @@ import com.ovrtechnology.nose.NoseIdRemapper;
 import com.ovrtechnology.nose.NoseItem;
 import dev.architectury.registry.client.level.entity.EntityModelLayerRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
@@ -24,8 +24,8 @@ public final class NoseClient {
     /** Ticks per animation frame (matches item texture frametime). */
     private static final int TICKS_PER_FRAME = 4;
 
-    /** Cached ResourceLocation arrays per animated nose to avoid allocation every frame. */
-    private static final Map<String, ResourceLocation[]> frameCache = new HashMap<>();
+    /** Cached Identifier arrays per animated nose to avoid allocation every frame. */
+    private static final Map<String, Identifier[]> frameCache = new HashMap<>();
 
     private NoseClient() {
     }
@@ -42,7 +42,7 @@ public final class NoseClient {
         AromaAffect.LOGGER.info("Nose client rendering initialized");
     }
 
-    public static ResourceLocation getArmorTexture(ItemStack stack) {
+    public static Identifier getArmorTexture(ItemStack stack) {
         if (stack.getItem() instanceof NoseItem noseItem) {
             String resolvedId = NoseIdRemapper.resolve(noseItem.getItemId());
 
@@ -51,20 +51,20 @@ public final class NoseClient {
                 return getAnimatedFrame(resolvedId, frameCount);
             }
 
-            return ResourceLocation.fromNamespaceAndPath(
+            return Identifier.fromNamespaceAndPath(
                     AromaAffect.MOD_ID,
                     "textures/entity/nose/" + resolvedId + ".png"
             );
         }
 
-        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose/foragers_nose.png");
+        return Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose/foragers_nose.png");
     }
 
-    private static ResourceLocation getAnimatedFrame(String noseId, int frameCount) {
-        ResourceLocation[] frames = frameCache.computeIfAbsent(noseId, id -> {
-            ResourceLocation[] arr = new ResourceLocation[frameCount];
+    private static Identifier getAnimatedFrame(String noseId, int frameCount) {
+        Identifier[] frames = frameCache.computeIfAbsent(noseId, id -> {
+            Identifier[] arr = new Identifier[frameCount];
             for (int i = 0; i < frameCount; i++) {
-                arr[i] = ResourceLocation.fromNamespaceAndPath(
+                arr[i] = Identifier.fromNamespaceAndPath(
                         AromaAffect.MOD_ID,
                         "textures/entity/nose/" + id + "_" + i + ".png"
                 );

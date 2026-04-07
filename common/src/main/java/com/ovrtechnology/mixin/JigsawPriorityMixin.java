@@ -1,7 +1,7 @@
 package com.ovrtechnology.mixin;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
@@ -25,7 +25,7 @@ public class JigsawPriorityMixin {
 
         List<StructureTemplate.JigsawBlockInfo> jigsaws = cir.getReturnValue();
         for (int i = 1; i < jigsaws.size(); i++) {
-            ResourceLocation pool = jigsaws.get(i).pool().location();
+            Identifier pool = jigsaws.get(i).pool().identifier();
             if (pool.getNamespace().equals("aromaaffect")
                     && pool.getPath().contains("nose_smith_house")) {
                 jigsaws.add(0, jigsaws.remove(i));

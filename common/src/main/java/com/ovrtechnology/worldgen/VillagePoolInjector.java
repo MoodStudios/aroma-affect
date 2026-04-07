@@ -6,7 +6,7 @@ import dev.architectury.event.events.common.LifecycleEvent;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
@@ -38,28 +38,28 @@ public final class VillagePoolInjector {
             this.id = id;
         }
 
-        public ResourceLocation townCentersPool() {
-            return ResourceLocation.withDefaultNamespace("village/" + id + "/town_centers");
+        public Identifier townCentersPool() {
+            return Identifier.withDefaultNamespace("village/" + id + "/town_centers");
         }
 
-        public ResourceLocation streetsPool() {
-            return ResourceLocation.withDefaultNamespace("village/" + id + "/streets");
+        public Identifier streetsPool() {
+            return Identifier.withDefaultNamespace("village/" + id + "/streets");
         }
 
-        public ResourceLocation noseSmithHouseTemplate() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/houses/nose_smith_house");
+        public Identifier noseSmithHouseTemplate() {
+            return Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/houses/nose_smith_house");
         }
 
-        public ResourceLocation noseSmithTownCenterTemplate() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/town_centers/nose_smith_start");
+        public Identifier noseSmithTownCenterTemplate() {
+            return Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/town_centers/nose_smith_start");
         }
 
-        public ResourceLocation noseSmithResidentPool() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_resident");
+        public Identifier noseSmithResidentPool() {
+            return Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_resident");
         }
 
-        public ResourceLocation noseSmithHousePool() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_house");
+        public Identifier noseSmithHousePool() {
+            return Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_house");
         }
     }
 

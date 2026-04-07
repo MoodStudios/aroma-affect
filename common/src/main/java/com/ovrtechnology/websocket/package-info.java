@@ -43,8 +43,6 @@
  * 
  * @since 0.0.1-experimental.1
  */
-@MethodsReturnNonnullByDefault
 package com.ovrtechnology.websocket;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
 

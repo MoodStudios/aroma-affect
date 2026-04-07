@@ -5,14 +5,14 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
 
-    private static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot");
-    private static final ResourceLocation HORSE_INVENTORY_LOCATION =
-            ResourceLocation.withDefaultNamespace("textures/gui/container/horse.png");
+    private static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
+    private static final Identifier HORSE_INVENTORY_LOCATION =
+            Identifier.withDefaultNamespace("textures/gui/container/horse.png");
 
     private float xMouse;
     private float yMouse;

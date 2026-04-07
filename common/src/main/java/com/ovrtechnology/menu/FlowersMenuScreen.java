@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -130,14 +130,14 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         }
 
         for (String flowerId : detectableFlowers) {
-            ResourceLocation resourceLocation = ResourceLocation.parse(flowerId);
+            Identifier resourceLocation = Identifier.parse(flowerId);
             addFlowerCard(resourceLocation, true);
         }
 
         AromaAffect.LOGGER.debug("Loaded {} flower cards from equipped nose", cards.size());
     }
 
-    private void addFlowerCard(ResourceLocation flowerId, boolean isUnlocked) {
+    private void addFlowerCard(Identifier flowerId, boolean isUnlocked) {
         ItemStack icon = FLOWER_ICONS.get(flowerId.toString());
 
         if (icon == null) {
@@ -164,7 +164,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             card.trackCost = flowerDef.getTrackCost();
             RequiredItem req = flowerDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
-                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                Identifier reqId = Identifier.parse(req.getItemId());
                 var itemOpt = BuiltInRegistries.ITEM.get(reqId);
                 if (itemOpt.isPresent()) {
                     card.requiredItem = new ItemStack(itemOpt.get().value());

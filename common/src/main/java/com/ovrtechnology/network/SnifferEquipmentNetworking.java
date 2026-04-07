@@ -6,7 +6,7 @@ import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,7 +21,7 @@ public final class SnifferEquipmentNetworking {
 
     public record SnifferEquipmentSyncS2C(UUID snifferUUID, UUID ownerUUID, ItemStack saddleItem, ItemStack decorationItem) implements CustomPacketPayload {
         public static final Type<SnifferEquipmentSyncS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniffer_equipment_sync"));
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniffer_equipment_sync"));
         public static final StreamCodec<RegistryFriendlyByteBuf, SnifferEquipmentSyncS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUUID(payload.snifferUUID);

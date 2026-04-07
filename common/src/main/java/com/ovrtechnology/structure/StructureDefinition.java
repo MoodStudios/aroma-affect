@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * </pre>
  * 
  * <h2>Structure ID Format</h2>
- * <p>Structure IDs follow the Minecraft ResourceLocation format: {@code namespace:path}.
+ * <p>Structure IDs follow the Minecraft Identifier format: {@code namespace:path}.
  * For vanilla structures, use {@code minecraft:} namespace. For modded structures,
  * use the mod's namespace (e.g., {@code create:contraption_base}).</p>
  */
@@ -56,7 +56,7 @@ public class StructureDefinition {
     private static final Pattern HTML_COLOR_PATTERN = Pattern.compile("^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$");
     
     /**
-     * Pattern for validating ResourceLocation format (namespace:path).
+     * Pattern for validating Identifier format (namespace:path).
      */
     private static final Pattern RESOURCE_LOCATION_PATTERN = Pattern.compile("^[a-z0-9_.-]+:[a-z0-9_./-]+$");
     
@@ -73,7 +73,7 @@ public class StructureDefinition {
     /**
      * The Minecraft structure ID (e.g., "minecraft:stronghold", "minecraft:village_plains").
      * This is the primary identifier and must be unique.
-     * Must follow ResourceLocation format: namespace:path
+     * Must follow Identifier format: namespace:path
      */
     @SerializedName("structure_id")
     private String structureId;
@@ -349,7 +349,7 @@ public class StructureDefinition {
     }
     
     /**
-     * Check if the structure_id has valid ResourceLocation format.
+     * Check if the structure_id has valid Identifier format.
      * 
      * @return true if structure_id matches namespace:path format
      */
@@ -380,12 +380,12 @@ public class StructureDefinition {
     }
     
     /**
-     * Validate if a string is a valid ResourceLocation format.
+     * Validate if a string is a valid Identifier format.
      * 
      * @param resourceLocation The resource location to validate
      * @return true if valid namespace:path format
      */
-    public static boolean isValidResourceLocation(String resourceLocation) {
+    public static boolean isValidIdentifier(String resourceLocation) {
         if (resourceLocation == null || resourceLocation.isEmpty()) {
             return false;
         }

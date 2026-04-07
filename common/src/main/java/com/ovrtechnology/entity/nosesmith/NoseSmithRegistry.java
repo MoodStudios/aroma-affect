@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
@@ -64,7 +64,7 @@ public final class NoseSmithRegistry {
                     .clientTrackingRange(10)
                     .build(ResourceKey.create(
                             Registries.ENTITY_TYPE,
-                            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_ID)
+                            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_ID)
                     ))
             );
     
@@ -79,7 +79,7 @@ public final class NoseSmithRegistry {
                             .stacksTo(64)
                             .setId(ResourceKey.create(
                                     Registries.ITEM,
-                                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_SPAWN_EGG_ID)
+                                    Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_SPAWN_EGG_ID)
                             ))
             ));
 
@@ -94,7 +94,7 @@ public final class NoseSmithRegistry {
                             .rarity(Rarity.EPIC)
                             .setId(ResourceKey.create(
                                     Registries.ITEM,
-                                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, SPECIAL_ROSE_ID)
+                                    Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, SPECIAL_ROSE_ID)
                             ))
             ));
 
@@ -109,7 +109,7 @@ public final class NoseSmithRegistry {
                             .rarity(Rarity.RARE)
                             .setId(ResourceKey.create(
                                     Registries.ITEM,
-                                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, IRON_NOSE_ID)
+                                    Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, IRON_NOSE_ID)
                             ))
             ));
 
@@ -145,9 +145,9 @@ public final class NoseSmithRegistry {
     }
     
     /**
-     * Get the ResourceLocation for the Nose Smith entity
+     * Get the Identifier for the Nose Smith entity
      */
-    public static ResourceLocation getNoseSmithLocation() {
-        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_ID);
+    public static Identifier getNoseSmithLocation() {
+        return Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, NOSE_SMITH_ID);
     }
 }

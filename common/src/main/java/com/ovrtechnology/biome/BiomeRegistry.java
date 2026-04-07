@@ -35,7 +35,7 @@ import java.util.*;
  * 
  * <h2>Modded Biome Support</h2>
  * <p>The registry supports biomes from any mod. Biome IDs use the standard
- * Minecraft ResourceLocation format (namespace:path), allowing modded biomes
+ * Minecraft Identifier format (namespace:path), allowing modded biomes
  * to be registered alongside vanilla ones.</p>
  */
 public final class BiomeRegistry {

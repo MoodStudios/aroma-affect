@@ -1,7 +1,7 @@
 package com.ovrtechnology.lookup.worker;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -9,13 +9,13 @@ import org.jetbrains.annotations.Nullable;
  */
 public record StructureSearchResult(
         boolean success,
-        @Nullable ResourceLocation structureId,
+        @Nullable Identifier structureId,
         @Nullable BlockPos position,
         int samples,
         long searchTimeMs
 ) {
     
-    public static StructureSearchResult success(ResourceLocation structureId, BlockPos position, int samples, long searchTimeMs) {
+    public static StructureSearchResult success(Identifier structureId, BlockPos position, int samples, long searchTimeMs) {
         return new StructureSearchResult(true, structureId, position, samples, searchTimeMs);
     }
     

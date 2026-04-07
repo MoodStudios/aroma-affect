@@ -15,7 +15,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -48,7 +48,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private static final int BACK_BUTTON_SIZE = 24;
     private static final int BACK_BUTTON_PADDING = 8;
 
-    private static final ResourceLocation ICON_BACK = ResourceLocation.fromNamespaceAndPath(
+    private static final Identifier ICON_BACK = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
 
     // ── Tab colors ───────────────────────────────────────────────────────
@@ -1125,7 +1125,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             }
         }
 
-        ResourceLocation targetLoc = ResourceLocation.parse(targetId);
+        Identifier targetLoc = Identifier.parse(targetId);
         ItemStack icon = getItemForTarget(targetId, categoryId);
         ActiveTrackingState.set(targetLoc, Component.literal(displayName), icon, cat);
 
@@ -1275,7 +1275,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         // Try as registered item (works for most blocks)
         try {
-            ResourceLocation loc = ResourceLocation.parse(targetId);
+            Identifier loc = Identifier.parse(targetId);
             var optItem = BuiltInRegistries.ITEM.getOptional(loc);
             if (optItem.isPresent()) {
                 ItemStack stack = new ItemStack(optItem.get());
@@ -1291,7 +1291,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
     private static String getCurrentDimension() {
         return Minecraft.getInstance().level != null
-                ? Minecraft.getInstance().level.dimension().location().toString()
+                ? Minecraft.getInstance().level.dimension().identifier().toString()
                 : null;
     }
 

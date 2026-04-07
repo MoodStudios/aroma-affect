@@ -4,7 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 /**
@@ -21,11 +21,11 @@ public final class ModSounds {
      */
     public static final RegistrySupplier<SoundEvent> SNIFF = SOUNDS.register("sniff",
             () -> SoundEvent.createVariableRangeEvent(
-                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniff")));
+                    Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniff")));
 
     public static final RegistrySupplier<SoundEvent> OMARA_PUFF = SOUNDS.register("omara_puff",
             () -> SoundEvent.createVariableRangeEvent(
-                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff")));
+                    Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff")));
 
     public static void init() {
         SOUNDS.register();

@@ -16,21 +16,21 @@ A Minecraft mod that brings the sense of smell to your gameplay through OVR scen
 [[dependencies.aromaaffect]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.10,)"
+versionRange = "[21.11,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.aromaaffect]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.10,)"
+versionRange = "[1.21.11,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.aromaaffect]]
 modId = "architectury"
 type = "required"
-versionRange = "[18.0.6,)"
+versionRange = "[19.0.0,)"
 ordering = "AFTER"
 side = "BOTH"
 

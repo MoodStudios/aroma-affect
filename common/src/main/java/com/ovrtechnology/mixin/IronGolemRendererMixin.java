@@ -4,7 +4,7 @@ import com.ovrtechnology.entity.irongolem.IronGolemNoseRenderState;
 import com.ovrtechnology.entity.irongolem.IronGolemNoseTracker;
 import net.minecraft.client.renderer.entity.IronGolemRenderer;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
-import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,7 +24,7 @@ public class IronGolemRendererMixin {
         cir.setReturnValue(new IronGolemNoseRenderState());
     }
 
-    @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/animal/IronGolem;Lnet/minecraft/client/renderer/entity/state/IronGolemRenderState;F)V",
+    @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/animal/golem/IronGolem;Lnet/minecraft/client/renderer/entity/state/IronGolemRenderState;F)V",
             at = @At("TAIL"))
     private void aromaaffect$extractRenderState(IronGolem ironGolem, IronGolemRenderState state, float partialTick, CallbackInfo ci) {
         if (state instanceof IronGolemNoseRenderState noseState) {
