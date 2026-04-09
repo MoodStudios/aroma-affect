@@ -172,6 +172,19 @@
       "color_html": "#D68910",
       "scent_id": "timber",
       "fallback_name": "Chest",
+      "range": 3,
+      "track_cost": 5
+    },
+    {
+      "block_id": "minecraft:spruce_log",
+      "color_html": "#6B4226",
+      "fallback_name": "Spruce Log",
+      "track_cost": 5
+    },
+    {
+      "block_id": "minecraft:spruce_wood",
+      "color_html": "#6B4226",
+      "fallback_name": "Spruce Wood",
       "track_cost": 5
     },
     {

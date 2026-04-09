@@ -266,11 +266,18 @@ public final class TutorialBossAreaHandler {
             TutorialOliverEntity oliver = findNearestOliver(level,
                     triggerPlayer.getX(), triggerPlayer.getY(), triggerPlayer.getZ());
 
+            // Trigger Smoky scent when entering the blaze (nether) area
+            if ("blaze".equalsIgnoreCase(area.getBossType())) {
+                com.ovrtechnology.network.TutorialScentZoneNetworking.sendScentTrigger(
+                        triggerPlayer, "Smoky", 1.0, "nether_arrival");
+            }
+
             if (oliver != null) {
                 String dialogueId = "boss_" + area.getBossType().toLowerCase() + "_enter";
                 oliver.setDialogueId(dialogueId);
+                // forced=false for boss dialogues to prevent Kindred from overriding the area scent
                 TutorialDialogueContentNetworking.sendOpenDialogue(
-                        triggerPlayer, oliver.getId(), dialogueId, false, ""
+                        triggerPlayer, oliver.getId(), dialogueId, false, "", false
                 );
                 AromaAffect.LOGGER.info("Triggered Oliver dialogue '{}' after boss spawn", dialogueId);
             }
@@ -336,6 +343,10 @@ public final class TutorialBossAreaHandler {
      */
     public static boolean isBossActive(String areaId) {
         return activeBosses.containsKey(areaId);
+    }
+
+    public static boolean isAnyBossActive() {
+        return !activeBosses.isEmpty();
     }
 
     /**

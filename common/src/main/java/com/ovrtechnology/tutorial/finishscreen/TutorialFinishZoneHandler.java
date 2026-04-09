@@ -2,6 +2,7 @@ package com.ovrtechnology.tutorial.finishscreen;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialFinishNetworking;
+import com.ovrtechnology.network.TutorialIntroNetworking;
 import com.ovrtechnology.tutorial.TutorialModule;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
@@ -55,7 +56,8 @@ public final class TutorialFinishZoneHandler {
             if (zone.isInsideArea(playerPos)) {
                 triggeredPlayers.add(playerId);
                 TutorialFinishNetworking.sendOpenFinish(player);
-                AromaAffect.LOGGER.info("Player {} entered finish zone '{}', showing finish screen",
+                TutorialIntroNetworking.sendPassiveLock(player, false);
+                AromaAffect.LOGGER.info("Player {} entered finish zone '{}', showing finish screen + activating passive mode",
                         player.getName().getString(), zone.getId());
                 return;
             }

@@ -62,77 +62,58 @@ public final class TutorialArrowHologram {
      * Renders the holographic arrow. Called during world rendering.
      */
     public static void render(PoseStack poseStack, MultiBufferSource bufferSource, double camX, double camY, double camZ) {
+        // Render static arrows (always visible)
+        for (var entry : TutorialStaticArrowManager.getClientArrows().entrySet()) {
+            net.minecraft.core.BlockPos pos = entry.getValue();
+            renderArrowAt(poseStack, bufferSource, camX, camY, camZ,
+                    new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
+        }
+
         if (!isVisible()) {
             return;
         }
 
+        renderArrowAt(poseStack, bufferSource, camX, camY, camZ, targetPosition);
+    }
+
+    private static void renderArrowAt(PoseStack poseStack, MultiBufferSource bufferSource,
+                                       double camX, double camY, double camZ, Vec3 pos) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) {
-            return;
-        }
+        if (mc.player == null) return;
 
-        // Check distance
-        double distance = mc.player.position().distanceTo(targetPosition);
-        if (distance > 60) {
-            return;
-        }
+        double distance = mc.player.position().distanceTo(pos);
+        if (distance > 60) return;
 
-        // Calculate bobbing
         double time = (System.currentTimeMillis() % 10000) / 1000.0;
         float bobOffset = (float) Math.sin(time * BOB_SPEED) * BOB_AMPLITUDE;
 
-        // World position relative to camera
-        double x = targetPosition.x - camX;
-        double y = targetPosition.y + BASE_HEIGHT + bobOffset - camY;
-        double z = targetPosition.z - camZ;
+        double x = pos.x - camX;
+        double y = pos.y + BASE_HEIGHT + bobOffset - camY;
+        double z = pos.z - camZ;
 
         poseStack.pushPose();
         poseStack.translate(x, y, z);
 
-        // Billboard effect - face the camera
         float yaw = mc.gameRenderer.getMainCamera().getYRot();
         float pitch = mc.gameRenderer.getMainCamera().getXRot();
         poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-yaw));
         poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(pitch));
 
-        // Render textured quad
         float halfW = ARROW_WIDTH / 2f;
         float halfH = ARROW_HEIGHT / 2f;
 
         Matrix4f matrix = poseStack.last().pose();
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityTranslucent(ARROW_TEXTURE));
         int light = LightTexture.FULL_BRIGHT;
-        int overlay = 0; // no overlay
 
-        // Quad vertices (facing -Z after billboard rotation)
-        // Order: bottom-left, bottom-right, top-right, top-left
-        consumer.addVertex(matrix, -halfW, -halfH, 0f)
-                .setColor(255, 255, 255, 255)
-                .setUv(0f, 1f)
-                .setOverlay(overlay)
-                .setLight(light)
-                .setNormal(0f, 0f, -1f);
-
-        consumer.addVertex(matrix, halfW, -halfH, 0f)
-                .setColor(255, 255, 255, 255)
-                .setUv(1f, 1f)
-                .setOverlay(overlay)
-                .setLight(light)
-                .setNormal(0f, 0f, -1f);
-
-        consumer.addVertex(matrix, halfW, halfH, 0f)
-                .setColor(255, 255, 255, 255)
-                .setUv(1f, 0f)
-                .setOverlay(overlay)
-                .setLight(light)
-                .setNormal(0f, 0f, -1f);
-
-        consumer.addVertex(matrix, -halfW, halfH, 0f)
-                .setColor(255, 255, 255, 255)
-                .setUv(0f, 0f)
-                .setOverlay(overlay)
-                .setLight(light)
-                .setNormal(0f, 0f, -1f);
+        consumer.addVertex(matrix, -halfW, -halfH, 0f).setColor(255, 255, 255, 255)
+                .setUv(0f, 1f).setOverlay(0).setLight(light).setNormal(0f, 0f, -1f);
+        consumer.addVertex(matrix, halfW, -halfH, 0f).setColor(255, 255, 255, 255)
+                .setUv(1f, 1f).setOverlay(0).setLight(light).setNormal(0f, 0f, -1f);
+        consumer.addVertex(matrix, halfW, halfH, 0f).setColor(255, 255, 255, 255)
+                .setUv(1f, 0f).setOverlay(0).setLight(light).setNormal(0f, 0f, -1f);
+        consumer.addVertex(matrix, -halfW, halfH, 0f).setColor(255, 255, 255, 255)
+                .setUv(0f, 0f).setOverlay(0).setLight(light).setNormal(0f, 0f, -1f);
 
         poseStack.popPose();
     }

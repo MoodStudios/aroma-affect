@@ -1,17 +1,22 @@
 package com.ovrtechnology.command.path;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.network.TutorialScentZoneNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
+import com.ovrtechnology.scent.ScentDefinition;
 import dev.architectury.event.events.common.TickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,6 +44,10 @@ public final class ActivePathManager {
      * Distance threshold to consider the player has arrived (in blocks).
      */
     private static final double ARRIVAL_THRESHOLD = 5.0;
+
+    /** Cooldown for block-mined scent triggers (10 seconds). */
+    private static final long BLOCK_MINED_SCENT_COOLDOWN_MS = 10000;
+    private static final Map<UUID, Long> blockMinedScentCooldowns = new HashMap<>();
 
     /**
      * How often to process paths (in ticks). Every 5 ticks = 4 times per second.
@@ -106,6 +115,8 @@ public final class ActivePathManager {
                 player.getName().getString(), destination,
                 targetType != null ? targetType : "none",
                 targetId != null ? targetId : "");
+
+        // riron sticky popup dismissed when ore is actually mined (TutorialOreDropHandler)
     }
 
     /**
@@ -176,12 +187,18 @@ public final class ActivePathManager {
             // Send distance update to client
             PathScentNetworking.sendDistanceUpdate(player, (int) distanceToDestination);
 
-            // Biome tracking: arrived when player enters the target biome (not exact point)
+            // Determine arrival based on target type
             boolean arrived;
             if (path.targetType() == TargetType.BIOME && path.targetId() != null) {
+                // Biome tracking: arrived when player enters the target biome
                 var currentBiome = player.level().getBiome(playerPos);
                 var biomeKey = currentBiome.unwrapKey().orElse(null);
                 arrived = biomeKey != null && biomeKey.location().toString().equals(path.targetId());
+            } else if (path.targetType() == TargetType.BLOCK && path.targetId() != null) {
+                // Block tracking: arrived when the target block is mined (no longer matches)
+                var blockState = player.level().getBlockState(destination);
+                var blockId = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(blockState.getBlock()).toString();
+                arrived = !blockId.equals(path.targetId());
             } else {
                 arrived = distanceToDestination <= ARRIVAL_THRESHOLD;
             }
@@ -193,6 +210,12 @@ public final class ActivePathManager {
                             "§6[Aroma Affect] §aYou have arrived at your destination!"
                     ));
                 }
+
+                // Trigger scent when block is mined (with 10s cooldown)
+                if (path.targetType() == TargetType.BLOCK && path.targetId() != null) {
+                    triggerBlockMinedScent(player, path.targetId());
+                }
+
                 PathScentNetworking.sendPathArrived(player);
                 iterator.remove();
                 continue;
@@ -234,4 +257,28 @@ public final class ActivePathManager {
             TargetType targetType,
             String targetId
     ) {}
+
+    /**
+     * Triggers the scent associated with a mined block, respecting cooldown.
+     */
+    private void triggerBlockMinedScent(ServerPlayer player, String blockId) {
+        UUID playerId = player.getUUID();
+        long now = System.currentTimeMillis();
+
+        Long lastTime = blockMinedScentCooldowns.get(playerId);
+        if (lastTime != null && now - lastTime < BLOCK_MINED_SCENT_COOLDOWN_MS) {
+            return; // On cooldown
+        }
+
+        Optional<ScentDefinition> scentOpt = BlockRegistry.getScentForBlock(blockId);
+        if (scentOpt.isEmpty()) {
+            return;
+        }
+
+        String scentName = scentOpt.get().getFallbackName();
+        blockMinedScentCooldowns.put(playerId, now);
+        TutorialScentZoneNetworking.sendScentTrigger(player, scentName, 1.0, "block_mined");
+        AromaAffect.LOGGER.info("Block mined scent '{}' triggered for player {} (block: {})",
+                scentName, player.getName().getString(), blockId);
+    }
 }

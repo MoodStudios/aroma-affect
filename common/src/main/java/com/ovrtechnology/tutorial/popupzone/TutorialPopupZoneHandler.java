@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Server-side handler for popup HUD zones.
  * <p>
- * Checks player positions against popup zones every 10 ticks.
- * Sends popup text when entering, clears when leaving.
+ * Some popups are "sticky" — they persist until a specific action is completed,
+ * even after the player leaves the trigger zone.
  */
 public final class TutorialPopupZoneHandler {
 
@@ -26,11 +26,20 @@ public final class TutorialPopupZoneHandler {
     private static int tickCounter = 0;
     private static final int CHECK_INTERVAL = 10;
 
+    /** Popup zone IDs that stick until dismissed by action completion. */
+    private static final Set<String> STICKY_ZONES = Set.of(
+            "find_nosesmith", "riron", "cowweb"
+    );
+
     // Track which zone each player is currently in
     private static final Map<UUID, String> playerCurrentZone = new ConcurrentHashMap<>();
 
     // Track which zones each player has already seen (won't show again until reset)
     private static final Map<UUID, Set<String>> playerSeenZones = new ConcurrentHashMap<>();
+
+    // Track active sticky popup per player (shown even outside zone)
+    private static final Map<UUID, String> playerStickyPopup = new ConcurrentHashMap<>();
+    private static final Map<UUID, String> playerStickyText = new ConcurrentHashMap<>();
 
     private TutorialPopupZoneHandler() {
     }
@@ -75,27 +84,78 @@ public final class TutorialPopupZoneHandler {
 
         if (currentZoneId != null) {
             if (!currentZoneId.equals(previousZoneId)) {
-                // Entered a new unseen zone (or switched zones)
+                // Entered a new unseen zone
                 playerCurrentZone.put(playerId, currentZoneId);
                 TutorialPopupNetworking.sendPopup(player, currentZone.getText());
+
+                // If it's a sticky zone, remember it
+                if (STICKY_ZONES.contains(currentZoneId)) {
+                    playerStickyPopup.put(playerId, currentZoneId);
+                    playerStickyText.put(playerId, currentZone.getText());
+                }
             }
         } else {
             if (previousZoneId != null) {
-                // Left the zone — mark as seen
-                seen.add(previousZoneId);
+                // Left the zone
                 playerCurrentZone.remove(playerId);
-                TutorialPopupNetworking.sendClearPopup(player);
+
+                if (STICKY_ZONES.contains(previousZoneId)) {
+                    // Sticky — keep showing it, don't clear
+                    // The popup stays visible until dismissStickyPopup is called
+                } else {
+                    // Non-sticky — mark as seen and clear
+                    seen.add(previousZoneId);
+                    TutorialPopupNetworking.sendClearPopup(player);
+                }
             }
+        }
+    }
+
+    /**
+     * Dismisses a sticky popup for a player.
+     * Called when the player completes the associated action.
+     */
+    public static void dismissStickyPopup(ServerPlayer player, String zoneId) {
+        UUID playerId = player.getUUID();
+        String currentSticky = playerStickyPopup.get(playerId);
+
+        if (zoneId.equals(currentSticky)) {
+            playerStickyPopup.remove(playerId);
+            playerStickyText.remove(playerId);
+            playerSeenZones.computeIfAbsent(playerId, k -> new HashSet<>()).add(zoneId);
+            TutorialPopupNetworking.sendClearPopup(player);
+            AromaAffect.LOGGER.info("Dismissed sticky popup '{}' for player {}", zoneId, player.getName().getString());
+        }
+    }
+
+    /**
+     * Dismisses ALL sticky popups for a player.
+     * Called when the player progresses to the next stage (waypoint/trade completed).
+     */
+    public static void dismissAllSticky(ServerPlayer player) {
+        UUID playerId = player.getUUID();
+        String currentSticky = playerStickyPopup.get(playerId);
+
+        if (currentSticky != null) {
+            playerStickyPopup.remove(playerId);
+            playerStickyText.remove(playerId);
+            playerSeenZones.computeIfAbsent(playerId, k -> new HashSet<>()).add(currentSticky);
+            TutorialPopupNetworking.sendClearPopup(player);
+            AromaAffect.LOGGER.info("Dismissed all sticky popups for player {} (stage progressed)", player.getName().getString());
         }
     }
 
     public static void clearPlayer(UUID playerId) {
         playerCurrentZone.remove(playerId);
         playerSeenZones.remove(playerId);
+        playerStickyPopup.remove(playerId);
+        playerStickyText.remove(playerId);
     }
 
     public static void clearAll() {
         playerCurrentZone.clear();
         playerSeenZones.clear();
+        playerStickyPopup.clear();
+        playerStickyText.clear();
     }
 }

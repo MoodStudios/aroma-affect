@@ -92,6 +92,15 @@ public final class AromaAffectClient {
         // Initialize diamond text hologram renderer
         DiamondTextHologram.init();
 
+        // Initialize NoseSmith flower hint HUD
+        com.ovrtechnology.entity.nosesmith.client.NoseSmithFlowerHint.init();
+
+        // Initialize nose equip hint HUD
+        com.ovrtechnology.nose.client.NoseEquipHint.init();
+
+        // Initialize F6 = New Game hotkey
+        com.ovrtechnology.tutorial.demo.DemoKeyHandler.init();
+
         // Initialize Sniffer menu screen
         SnifferMenuRegistry.initClient();
 

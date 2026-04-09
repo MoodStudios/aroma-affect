@@ -5,7 +5,6 @@
       "image": "biome/plains",
       "fallback_name": "Plains",
       "color_html": "#8DB360",
-      "scent_id": "floral",
       "track_cost": 5
     },
     {
@@ -77,7 +76,6 @@
       "image": "biome/birch_forest",
       "fallback_name": "Birch Forest",
       "color_html": "#589C6C",
-      "scent_id": "evergreen",
       "track_cost": 5
     },
     {

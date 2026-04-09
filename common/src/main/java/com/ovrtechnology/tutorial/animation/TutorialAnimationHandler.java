@@ -193,6 +193,14 @@ public final class TutorialAnimationHandler {
         double cz = (corner1.getZ() + corner2.getZ()) / 2.0 + 0.5;
         playStartSound(level, animation.getType(), cx, cy, cz);
 
+        // Trigger Smoky scent for the first_mine explosion
+        if ("first_mine".equals(animationId)) {
+            for (ServerPlayer player : level.players()) {
+                com.ovrtechnology.network.TutorialScentZoneNetworking.sendScentTrigger(
+                        player, "Smoky", 1.0, "mine_explosion");
+            }
+        }
+
         AromaAffect.LOGGER.info("Started animation {}", animationId);
         return true;
     }
@@ -297,7 +305,9 @@ public final class TutorialAnimationHandler {
             if (singleAction.isEmpty()) continue;
             String actionLower = singleAction.toLowerCase();
 
-            if (actionLower.startsWith("clearinventory:")) {
+            if (com.ovrtechnology.tutorial.OliverActionHelper.processPlayerAction(player, singleAction)) {
+                continue;
+            } else if (actionLower.startsWith("clearinventory:")) {
                 String keepStr = singleAction.substring(15);
                 java.util.Set<String> keepItems = new java.util.HashSet<>(java.util.Arrays.asList(keepStr.split(",")));
                 com.ovrtechnology.tutorial.trade.TutorialTradeHandler.clearInventoryKeeping(player, keepItems);
@@ -365,7 +375,7 @@ public final class TutorialAnimationHandler {
         if (pendingDialogueId != null) {
             TutorialDialogueContentNetworking.sendOpenDialogue(
                     player, oliver.getId(), pendingDialogueId,
-                    oliver.hasTrade(), oliver.getTradeId()
+                    oliver.hasTrade(), oliver.getTradeId(), true
             );
         }
     }

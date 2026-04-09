@@ -89,6 +89,10 @@ public final class TutorialJoinHandler {
             if (player instanceof ServerPlayer serverPlayer && serverPlayer.level() instanceof ServerLevel level) {
                 com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler.endSession(serverPlayer, true);
             }
+            // Stop demo timer
+            com.ovrtechnology.tutorial.demo.DemoTimerHandler.stopTimer(player instanceof net.minecraft.server.level.ServerPlayer sp ? sp : null);
+            // Schedule demo session cleanup (runs after server fully stops)
+            com.ovrtechnology.tutorial.demo.DemoWorldManager.scheduleCleanup();
         });
 
         AromaAffect.LOGGER.debug("Tutorial join handler initialized");
@@ -100,6 +104,17 @@ public final class TutorialJoinHandler {
         // Check if tutorial mode is active
         if (!TutorialModule.isActive(level)) {
             return;
+        }
+
+        // Lock passive mode immediately on entering a tutorial world
+        TutorialIntroNetworking.sendPassiveLock(player, true);
+
+        // Grant OP so tutorial commands work in singleplayer
+        if (level.getServer().isSingleplayer()) {
+            var nameAndId = new net.minecraft.server.players.NameAndId(player.getGameProfile());
+            if (!level.getServer().getPlayerList().isOp(nameAndId)) {
+                level.getServer().getPlayerList().op(nameAndId);
+            }
         }
 
         // Check if spawn point is set
@@ -143,6 +158,8 @@ public final class TutorialJoinHandler {
             playersInIntro.add(player.getUUID());
             TutorialCinematicHandler.startCinematic(player, introCinematicOpt.get(), true);
             TutorialDialogueContentNetworking.syncToPlayer(player, level);
+        com.ovrtechnology.tutorial.waypoint.client.TutorialStaticArrowManager.syncToPlayer(player, level);
+            com.ovrtechnology.tutorial.waypoint.client.TutorialStaticArrowManager.syncToPlayer(player, level);
             TutorialIntroNetworking.sendOpenIntro(player);
             AromaAffect.LOGGER.debug("Player {} entered intro cinematic", player.getName().getString());
             return;
@@ -162,6 +179,7 @@ public final class TutorialJoinHandler {
 
         // Sync custom dialogue texts to client
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
+        com.ovrtechnology.tutorial.waypoint.client.TutorialStaticArrowManager.syncToPlayer(player, level);
 
         // Only play intro sequence on first join
         if (isFirstJoin) {
@@ -200,15 +218,15 @@ public final class TutorialJoinHandler {
         // Send title animation timing packet
         player.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
 
-        // Title: "OVR EXPERIENCE" in OVR purple (#A890F0), bold
-        Component title = Component.literal("OVR EXPERIENCE")
+        // Title: "OVR TECHNOLOGY" in OVR purple (#A890F0), bold
+        Component title = Component.literal("OVR TECHNOLOGY")
                 .setStyle(Style.EMPTY
                         .withColor(TextColor.fromRgb(0xA890F0))
                         .withBold(true));
         player.connection.send(new ClientboundSetTitleTextPacket(title));
 
-        // Subtitle: "Discovery unlocked..." in white, italic
-        Component subtitle = Component.literal("Discovery unlocked...")
+        // Subtitle: "Scent unlocked..." in white, italic
+        Component subtitle = Component.literal("Scent unlocked...")
                 .setStyle(Style.EMPTY
                         .withColor(TextColor.fromRgb(0xFFFFFF))
                         .withItalic(true));
@@ -303,6 +321,10 @@ public final class TutorialJoinHandler {
         TutorialChestNetworking.syncAllChestsToPlayer(player);
         TutorialAnimationNetworking.sendAnimationReset(player);
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
+        com.ovrtechnology.tutorial.waypoint.client.TutorialStaticArrowManager.syncToPlayer(player, level);
+
+        // Lock passive mode during guided tutorial
+        TutorialIntroNetworking.sendPassiveLock(player, true);
 
         // Teleport to spawn FIRST (so chunks around spawn load)
         var spawnOpt = TutorialSpawnManager.getSpawn(level);
@@ -329,6 +351,9 @@ public final class TutorialJoinHandler {
 
         // Activate first waypoint
         activateFirstWaypoint(player, level);
+
+        // Start 15-minute demo timer
+        com.ovrtechnology.tutorial.demo.DemoTimerHandler.startTimer(player);
 
         AromaAffect.LOGGER.info("Player {} started tutorial (PLAY DEMO) - full reset performed", player.getName().getString());
     }
@@ -379,6 +404,10 @@ public final class TutorialJoinHandler {
         TutorialChestNetworking.syncAllChestsToPlayer(player);
         TutorialAnimationNetworking.sendAnimationReset(player);
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
+        com.ovrtechnology.tutorial.waypoint.client.TutorialStaticArrowManager.syncToPlayer(player, level);
+
+        // Unlock passive mode for free exploration
+        TutorialIntroNetworking.sendPassiveLock(player, false);
 
         // Determine walkaround spawn (or fallback to normal spawn)
         TutorialSpawnManager.SpawnData walkaroundSpawn = null;
@@ -396,6 +425,9 @@ public final class TutorialJoinHandler {
         if (walkaroundSpawn != null) {
             performWalkaroundTeleport(player, level, walkaroundSpawn);
         }
+
+        // Start 15-minute demo timer
+        com.ovrtechnology.tutorial.demo.DemoTimerHandler.startTimer(player);
 
         // No intro sequence or waypoints for walkaround - just free exploration
     }
@@ -520,6 +552,7 @@ public final class TutorialJoinHandler {
         TutorialChestManager.resetAllChests(level);
         TutorialAnimationManager.resetAllAnimations(level);
         TutorialRegenAreaManager.restoreAllAreas(level);
+        com.ovrtechnology.tutorial.TutorialFountainHandler.reset();
 
         // 2. Clear player inventory and restore health/hunger
         player.getInventory().clearContent();
@@ -553,6 +586,7 @@ public final class TutorialJoinHandler {
         TutorialChestNetworking.syncAllChestsToPlayer(player);
         TutorialAnimationNetworking.sendAnimationReset(player);
         TutorialDialogueContentNetworking.syncToPlayer(player, level);
+        com.ovrtechnology.tutorial.waypoint.client.TutorialStaticArrowManager.syncToPlayer(player, level);
 
         // 6. Check for intro cinematic
         var introCinematicOpt = TutorialSpawnManager.getIntroCinematicId(level);

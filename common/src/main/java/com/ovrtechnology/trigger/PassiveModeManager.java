@@ -60,6 +60,13 @@ public final class PassiveModeManager {
     private static final boolean DEV_MODE = true;
 
     /**
+     * When true, passive mode is locked off and cannot be toggled.
+     * Set by the tutorial system when the player enters guided tutorial mode (PLAY DEMO).
+     * Cleared when entering WALKAROUND or leaving the tutorial world.
+     */
+    private static boolean tutorialLocked = false;
+
+    /**
      * How often to check for passive triggers (in ticks).
      * Checking every 20 ticks (~1 second).
      */
@@ -165,6 +172,12 @@ public final class PassiveModeManager {
     public static void tick(Player player) {
         if (player == null) {
             AromaAffect.LOGGER.warn("Passive-mode tick called with null player!");
+            return;
+        }
+
+        // Check if passive mode is locked by tutorial
+        if (tutorialLocked) {
+            clearPassiveScent(player);
             return;
         }
 
@@ -675,14 +688,27 @@ public final class PassiveModeManager {
     private static void activateTrigger(Player player, TriggerCandidate candidate) {
         ScentTriggerManager manager = ScentTriggerManager.getInstance();
 
-        // In passive mode, we need to clear any previous passive trigger first
-        // This allows lower priority triggers to activate when higher priority sources are gone
-        // (e.g., block can activate after mob leaves, even though block has lower priority)
+        // Skip if the same scent is still actively playing from passive mode
+        ScentTrigger activeScent = manager.getActiveScent();
+        if (activeScent != null
+                && activeScent.source() == ScentTriggerSource.PASSIVE_MODE
+                && activeScent.scentName().equals(candidate.trigger.scentName())) {
+            return;
+        }
+
+        // Clear previous passive trigger to allow new one
         ScentTrigger currentActive = manager.getActiveScent();
         if (currentActive != null && currentActive.source() == ScentTriggerSource.PASSIVE_MODE) {
-            // Clear previous passive trigger to allow new one regardless of priority
             manager.stop();
         }
+
+        // Force intensity to 1.0 for all passive triggers
+        candidate = new TriggerCandidate(
+                ScentTrigger.fromPassiveMode(candidate.trigger.scentName(), candidate.trigger.priority(),
+                        candidate.trigger.durationTicks(), 1.0),
+                candidate.source, candidate.displayName, candidate.type,
+                candidate.range, candidate.distance
+        );
 
         // Update state
         currentPassiveTrigger = candidate.trigger;
@@ -734,8 +760,8 @@ public final class PassiveModeManager {
                 );
             }
 
-            // Send chat message to player
-            player.displayClientMessage(Component.literal(message), false);
+            // Chat message disabled for production
+            // player.displayClientMessage(Component.literal(message), false);
         }
 
         AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {})",
@@ -941,10 +967,15 @@ public final class PassiveModeManager {
     /**
      * Sets whether passive mode is enabled.
      * The state is persisted to disk.
+     * Ignored if passive mode is locked by the tutorial system.
      *
      * @param enabled true to enable passive mode, false to disable
      */
     public static void setPassiveModeEnabled(boolean enabled) {
+        if (tutorialLocked && enabled) {
+            AromaAffect.LOGGER.debug("Passive mode enable blocked: locked by tutorial");
+            return;
+        }
         PassiveModeConfig config = PassiveModeConfig.getInstance();
         config.setPassiveModeEnabled(enabled);
         config.save();
@@ -957,9 +988,53 @@ public final class PassiveModeManager {
 
     /**
      * Toggles passive mode on/off.
+     * Ignored if passive mode is locked by the tutorial system.
      */
     public static void togglePassiveMode() {
+        if (tutorialLocked) {
+            AromaAffect.LOGGER.debug("Passive mode toggle blocked: locked by tutorial");
+            return;
+        }
         setPassiveModeEnabled(!isPassiveModeEnabled());
+    }
+
+    /**
+     * Locks passive mode off for the guided tutorial.
+     * While locked, passive mode cannot be enabled or toggled.
+     */
+    public static void setTutorialLocked(boolean locked) {
+        tutorialLocked = locked;
+        if (locked) {
+            // Force disable while locked
+            PassiveModeConfig config = PassiveModeConfig.getInstance();
+            config.setPassiveModeEnabled(false);
+            config.save();
+            stopPassiveMode();
+            AromaAffect.LOGGER.info("Passive mode locked by tutorial");
+        } else {
+            // Auto-enable passive mode when unlocking
+            PassiveModeConfig config = PassiveModeConfig.getInstance();
+            config.setPassiveModeEnabled(true);
+            config.save();
+            // Reset passive state so triggers work fresh
+            currentPassiveTrigger = null;
+            currentTriggerSource = null;
+            currentTriggerType = null;
+            lastStructureId = null;
+            typeTriggerTimes.clear();
+            startupComplete = false;
+            startupTicksElapsed = 0;
+            AromaAffect.LOGGER.info("Passive mode unlocked and enabled (tutorial ended)");
+        }
+    }
+
+    /**
+     * Checks if passive mode is currently locked by the tutorial system.
+     *
+     * @return true if locked
+     */
+    public static boolean isTutorialLocked() {
+        return tutorialLocked;
     }
 
     /**

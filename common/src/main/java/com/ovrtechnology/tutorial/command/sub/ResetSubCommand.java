@@ -360,15 +360,15 @@ public class ResetSubCommand implements TutorialSubCommand {
         // Send title animation timing packet
         player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
 
-        // Title: "OVR EXPERIENCE" in OVR purple (#A890F0), bold
-        net.minecraft.network.chat.Component title = Component.literal("OVR EXPERIENCE")
+        // Title: "OVR TECHNOLOGY" in OVR purple (#A890F0), bold
+        net.minecraft.network.chat.Component title = Component.literal("OVR TECHNOLOGY")
                 .setStyle(net.minecraft.network.chat.Style.EMPTY
                         .withColor(net.minecraft.network.chat.TextColor.fromRgb(0xA890F0))
                         .withBold(true));
         player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(title));
 
-        // Subtitle: "Discovery unlocked..." in white, italic
-        net.minecraft.network.chat.Component subtitle = Component.literal("Discovery unlocked...")
+        // Subtitle: "Scent unlocked..." in white, italic
+        net.minecraft.network.chat.Component subtitle = Component.literal("Scent unlocked...")
                 .setStyle(net.minecraft.network.chat.Style.EMPTY
                         .withColor(net.minecraft.network.chat.TextColor.fromRgb(0xFFFFFF))
                         .withItalic(true));

@@ -3,6 +3,7 @@ package com.ovrtechnology.tutorial.regenarea;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.tutorial.TutorialModule;
 import com.ovrtechnology.tutorial.nosesmith.TutorialNoseSmithManager;
+import com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler;
 import com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.BlockEvent;
@@ -147,6 +148,20 @@ public final class TutorialRegenAreaHandler {
                 return EventResult.pass();
             }
 
+            // Cobwebs: always drop string + dismiss popup
+            if (state.is(net.minecraft.world.level.block.Blocks.COBWEB) && player instanceof ServerPlayer sp) {
+                TutorialPopupZoneHandler.dismissStickyPopup(sp, "cowweb");
+                // Force drop string regardless of tool used
+                net.minecraft.world.entity.item.ItemEntity stringDrop = new net.minecraft.world.entity.item.ItemEntity(
+                        serverLevel, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                        new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STRING, 1));
+                stringDrop.setDefaultPickUpDelay();
+                serverLevel.addFreshEntity(stringDrop);
+                // Remove the cobweb and cancel vanilla drop
+                serverLevel.destroyBlock(pos, false);
+                return EventResult.interruptFalse();
+            }
+
             // If protection bypass is enabled, allow all block breaking
             if (isBypassEnabled(serverLevel)) {
                 return EventResult.pass();
@@ -213,6 +228,22 @@ public final class TutorialRegenAreaHandler {
             AromaAffect.LOGGER.debug("Scheduled block regen at {} in {} ticks (area: {})",
                     pos, delayTicks, area.getId());
 
+            return EventResult.pass();
+        });
+
+        // Prevent placing flowers on the ground (causes inventory desync)
+        BlockEvent.PLACE.register((level, pos, state, placer) -> {
+            if (!(level instanceof ServerLevel serverLevel)) return EventResult.pass();
+            if (!TutorialModule.isActive(serverLevel)) return EventResult.pass();
+            if (isBypassEnabled(serverLevel)) return EventResult.pass();
+
+            if (state.is(net.minecraft.tags.BlockTags.SMALL_FLOWERS) || state.is(net.minecraft.tags.BlockTags.FLOWERS)) {
+                // Re-sync inventory to fix ghost item on client
+                if (placer instanceof ServerPlayer sp) {
+                    sp.inventoryMenu.broadcastChanges();
+                }
+                return EventResult.interruptFalse();
+            }
             return EventResult.pass();
         });
 

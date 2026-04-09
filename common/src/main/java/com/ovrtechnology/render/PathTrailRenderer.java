@@ -612,14 +612,7 @@ public final class PathTrailRenderer {
             PathTrackingMaskOverlay.onPathScentPuff(scentName, intensity);
 
             if (DEV_MODE) {
-                Minecraft mc = Minecraft.getInstance();
-                if (mc.player != null) {
-                    int intensityPercent = (int) Math.round(intensity * 100);
-                    String message = String.format(
-                            "§d[Aroma Affect] §7Scent: §e%s §7(§dpath tracking§7) §8[%d%%]",
-                            scentName, intensityPercent);
-                    mc.player.displayClientMessage(Component.literal(message), false);
-                }
+                // Chat message disabled for PAX demo
             }
         }
     }

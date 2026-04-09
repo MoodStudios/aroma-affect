@@ -377,7 +377,9 @@ public final class TutorialNoseEquipHandler {
             if (singleAction.isEmpty()) continue;
             String actionLower = singleAction.toLowerCase();
 
-            if (actionLower.startsWith("clearinventory:")) {
+            if (com.ovrtechnology.tutorial.OliverActionHelper.processPlayerAction(player, singleAction)) {
+                continue;
+            } else if (actionLower.startsWith("clearinventory:")) {
                 String keepStr = singleAction.substring(15);
                 java.util.Set<String> keepItems = new java.util.HashSet<>(java.util.Arrays.asList(keepStr.split(",")));
                 com.ovrtechnology.tutorial.trade.TutorialTradeHandler.clearInventoryKeeping(player, keepItems);
@@ -450,7 +452,7 @@ public final class TutorialNoseEquipHandler {
                     pendingDialogueId, oliver.hasTrade(), oliver.getTradeId());
             TutorialDialogueContentNetworking.sendOpenDialogue(
                     player, oliver.getId(), pendingDialogueId,
-                    oliver.hasTrade(), oliver.getTradeId()
+                    oliver.hasTrade(), oliver.getTradeId(), true
             );
         }
     }

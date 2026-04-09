@@ -179,6 +179,12 @@ public final class SearchDiamondZoneHandler {
         SearchDiamondNetworking.sendClearHologram(player);
         AromaAffect.LOGGER.info("[SearchDiamond] Cleared hologram for player");
 
+        // Victory scent + sound
+        com.ovrtechnology.network.TutorialScentZoneNetworking.sendScentTrigger(player, "Sweet", 1.0, "diamond_victory");
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,
+                net.minecraft.sounds.SoundSource.MASTER, 1.0f, 1.0f);
+
         // Send success title
         AromaAffect.LOGGER.info("[SearchDiamond] Sending success title to player");
         SearchDiamondNetworking.sendSuccessScreen(player);

@@ -3,14 +3,14 @@
   "scent_cooldown_ms": 5000,
   "item_use_cooldown_ms": 5000,
   "biome_cooldown_ms": 15000,
-  "block_cooldown_ms": 5000,
+  "block_cooldown_ms": 60000,
   "structure_cooldown_ms": 30000,
   "mob_cooldown_ms": 8000,
   "passive_mob_cooldown_ms": 8000,
   "path_tracking_cooldown_ms": 20000,
-  "item_intensity": 0.5,
-  "biome_intensity": 0.3,
-  "block_intensity": 0.4,
-  "structure_intensity": 0.35,
-  "mob_intensity": 0.4
+  "item_intensity": 1.0,
+  "biome_intensity": 1.0,
+  "block_intensity": 1.0,
+  "structure_intensity": 1.0,
+  "mob_intensity": 1.0
 }

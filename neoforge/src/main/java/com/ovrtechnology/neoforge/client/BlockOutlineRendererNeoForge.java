@@ -3,6 +3,7 @@ package com.ovrtechnology.neoforge.client;
 import com.ovrtechnology.render.BlockOutlineRenderer;
 import com.ovrtechnology.render.PathTrailRenderer;
 import com.ovrtechnology.tutorial.chest.client.TutorialChestHologram;
+import com.ovrtechnology.tutorial.scentzone.client.TutorialScentZoneRenderer;
 import com.ovrtechnology.tutorial.searchdiamond.client.DiamondTextHologram;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialArrowHologram;
 import net.minecraft.client.Minecraft;
@@ -55,6 +56,13 @@ public final class BlockOutlineRendererNeoForge {
                 event.getPoseStack(),
                 bufferSource,
                 camPos.x, camPos.y, camPos.z
+        );
+
+        // Render scent zone outlines
+        TutorialScentZoneRenderer.render(
+                event.getPoseStack(),
+                bufferSource,
+                camPos
         );
 
         bufferSource.endLastBatch();

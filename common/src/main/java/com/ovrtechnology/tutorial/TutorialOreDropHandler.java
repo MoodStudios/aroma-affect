@@ -1,6 +1,7 @@
 package com.ovrtechnology.tutorial;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.network.TutorialScentZoneNetworking;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.BlockEvent;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * In tutorial mode, ores drop ingots directly instead of raw ore.
  * This simplifies the tutorial flow so players don't need to smelt.
@@ -20,6 +25,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class TutorialOreDropHandler {
 
     private static boolean initialized = false;
+    private static final long SCENT_COOLDOWN_MS = 10000;
+    private static final Map<UUID, Long> lastScentTime = new HashMap<>();
 
     private TutorialOreDropHandler() {
     }
@@ -56,8 +63,20 @@ public final class TutorialOreDropHandler {
             serverLevel.addFreshEntity(item);
 
             // Give XP as if smelted
-            if (player instanceof ServerPlayer) {
-                player.giveExperiencePoints(1);
+            if (player instanceof ServerPlayer sp) {
+                sp.giveExperiencePoints(1);
+
+                // Dismiss "Press R" tooltip — player found ore
+                com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler.dismissStickyPopup(sp, "riron");
+
+                // Trigger scent (Terra Silva for overworld ores, with 10s cooldown)
+                UUID playerId = sp.getUUID();
+                long now = System.currentTimeMillis();
+                Long lastTime = lastScentTime.get(playerId);
+                if (lastTime == null || now - lastTime >= SCENT_COOLDOWN_MS) {
+                    lastScentTime.put(playerId, now);
+                    TutorialScentZoneNetworking.sendScentTrigger(sp, "Terra Silva", 1.0, "ore_mined");
+                }
             }
 
             // Cancel the vanilla break (we already handled it)

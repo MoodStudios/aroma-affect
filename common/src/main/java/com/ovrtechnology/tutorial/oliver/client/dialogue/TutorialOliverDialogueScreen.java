@@ -129,8 +129,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
         // ═══════════════════════════════════════════════════════════════════
         dialogues.put("boss_blaze_enter",
                 "Watch out, adventurer! A dangerous Blaze lurks ahead! " +
-                "Defeat this fiery creature and collect the materials it drops. " +
-                "I'll need those items to craft your next Nose upgrade. Good luck!");
+                "Defeat this fiery creature and I'll craft you a powerful new Nose. Good luck!");
 
         dialogues.put("boss_dragon_enter",
                 "By the ancient scents! A Dragon guards this territory! " +

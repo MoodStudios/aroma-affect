@@ -41,7 +41,7 @@ import java.util.function.Consumer;
 public class ScentItem extends Item {
 
     /** Development mode flag — shows debug messages in chat when a scent is triggered. */
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     /**
      * The definition that was used to create this scent item

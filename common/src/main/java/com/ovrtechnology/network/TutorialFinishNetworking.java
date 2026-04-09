@@ -22,7 +22,10 @@ public final class TutorialFinishNetworking {
 
         // S2C: Server tells client to open FinishScreen
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, FINISH_OPEN_PACKET,
-                (buf, context) -> context.queue(() -> openFinishOnClient()));
+                (buf, context) -> {
+                    boolean expired = buf.readBoolean();
+                    context.queue(() -> openFinishOnClient(expired));
+                });
 
         AromaAffect.LOGGER.debug("Tutorial finish networking initialized");
     }
@@ -31,18 +34,29 @@ public final class TutorialFinishNetworking {
      * Server sends this to a player to open the finish screen.
      */
     public static void sendOpenFinish(ServerPlayer player) {
+        sendOpenFinish(player, false);
+    }
+
+    /**
+     * Server sends this to a player to open the finish screen.
+     * @param timeExpired if true, hides the "Continue" button (timer ran out)
+     */
+    public static void sendOpenFinish(ServerPlayer player, boolean timeExpired) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.registryAccess());
+        buf.writeBoolean(timeExpired);
         NetworkManager.sendToPlayer(player, FINISH_OPEN_PACKET, buf);
     }
 
-    private static void openFinishOnClient() {
-        AromaAffect.LOGGER.info("openFinishOnClient() called - attempting to open screen via reflection");
+    private static void openFinishOnClient(boolean timeExpired) {
         try {
+            // Set the time expired flag before opening the screen
+            Class<?> screenClass = Class.forName(
+                    "com.ovrtechnology.tutorial.finishscreen.client.TutorialFinishScreen");
+            screenClass.getMethod("setTimeExpired", boolean.class).invoke(null, timeExpired);
+
             Class<?> clientClass = Class.forName(
                     "com.ovrtechnology.tutorial.finishscreen.client.TutorialFinishClient");
-            AromaAffect.LOGGER.info("Found TutorialFinishClient class");
             clientClass.getMethod("open").invoke(null);
-            AromaAffect.LOGGER.info("Reflection call completed successfully");
         } catch (ReflectiveOperationException e) {
             AromaAffect.LOGGER.error("Failed to open finish screen via network packet: {}", e.getMessage(), e);
         }

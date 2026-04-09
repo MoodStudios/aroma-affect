@@ -44,6 +44,9 @@ public class CinematicPlayerState {
     private int transitionTotalTicks;
     private int transitionTicksElapsed;
 
+    // Total ticks elapsed since cinematic started
+    private int totalTicksElapsed;
+
     /**
      * Creates a new cinematic state.
      *
@@ -96,6 +99,8 @@ public class CinematicPlayerState {
      * @return true if the frame is still active, false if it has finished
      */
     public boolean tick() {
+        totalTicksElapsed++;
+
         // Advance transition
         if (transitionTicksElapsed < transitionTotalTicks) {
             transitionTicksElapsed++;
@@ -106,6 +111,13 @@ public class CinematicPlayerState {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Gets the total ticks elapsed since this cinematic started.
+     */
+    public int getTotalTicksElapsed() {
+        return totalTicksElapsed;
     }
 
     // Original position getters

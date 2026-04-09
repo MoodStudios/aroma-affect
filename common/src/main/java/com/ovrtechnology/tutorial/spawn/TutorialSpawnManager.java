@@ -28,6 +28,11 @@ public class TutorialSpawnManager extends SavedData {
     private BlockPos walkaroundPos;
     private float walkaroundYaw;
     private float walkaroundPitch;
+    // Rain button position
+    private BlockPos rainButtonPos;
+    // Fountain button + target block
+    private BlockPos fountainButtonPos;
+    private BlockPos fountainBlockPos;
 
     private static final Codec<TutorialSpawnManager> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -38,7 +43,10 @@ public class TutorialSpawnManager extends SavedData {
                     Codec.STRING.optionalFieldOf("introCinematicId", "").forGetter(m -> m.introCinematicId != null ? m.introCinematicId : ""),
                     BlockPos.CODEC.optionalFieldOf("walkaroundPos").forGetter(m -> Optional.ofNullable(m.walkaroundPos)),
                     Codec.FLOAT.optionalFieldOf("walkaroundYaw", 0f).forGetter(m -> m.walkaroundYaw),
-                    Codec.FLOAT.optionalFieldOf("walkaroundPitch", 0f).forGetter(m -> m.walkaroundPitch)
+                    Codec.FLOAT.optionalFieldOf("walkaroundPitch", 0f).forGetter(m -> m.walkaroundPitch),
+                    BlockPos.CODEC.optionalFieldOf("rainButtonPos").forGetter(m -> Optional.ofNullable(m.rainButtonPos)),
+                    BlockPos.CODEC.optionalFieldOf("fountainButtonPos").forGetter(m -> Optional.ofNullable(m.fountainButtonPos)),
+                    BlockPos.CODEC.optionalFieldOf("fountainBlockPos").forGetter(m -> Optional.ofNullable(m.fountainBlockPos))
             ).apply(instance, TutorialSpawnManager::new)
     );
 
@@ -58,11 +66,16 @@ public class TutorialSpawnManager extends SavedData {
         this.walkaroundPos = null;
         this.walkaroundYaw = 0f;
         this.walkaroundPitch = 0f;
+        this.rainButtonPos = null;
+        this.fountainButtonPos = null;
+        this.fountainBlockPos = null;
     }
 
     private TutorialSpawnManager(Optional<BlockPos> spawnPos, float spawnYaw, float spawnPitch,
                                   String firstWaypointId, String introCinematicId,
-                                  Optional<BlockPos> walkaroundPos, float walkaroundYaw, float walkaroundPitch) {
+                                  Optional<BlockPos> walkaroundPos, float walkaroundYaw, float walkaroundPitch,
+                                  Optional<BlockPos> rainButtonPos,
+                                  Optional<BlockPos> fountainButtonPos, Optional<BlockPos> fountainBlockPos) {
         this.spawnPos = spawnPos.orElse(null);
         this.spawnYaw = spawnYaw;
         this.spawnPitch = spawnPitch;
@@ -71,6 +84,9 @@ public class TutorialSpawnManager extends SavedData {
         this.walkaroundPos = walkaroundPos.orElse(null);
         this.walkaroundYaw = walkaroundYaw;
         this.walkaroundPitch = walkaroundPitch;
+        this.rainButtonPos = rainButtonPos.orElse(null);
+        this.fountainButtonPos = fountainButtonPos.orElse(null);
+        this.fountainBlockPos = fountainBlockPos.orElse(null);
     }
 
     /**
@@ -205,6 +221,67 @@ public class TutorialSpawnManager extends SavedData {
      */
     public static boolean hasWalkaroundSpawn(ServerLevel level) {
         return get(level).walkaroundPos != null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Rain button position
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    public static void setRainButtonPos(ServerLevel level, BlockPos pos) {
+        TutorialSpawnManager manager = get(level);
+        manager.rainButtonPos = pos;
+        manager.setDirty();
+        AromaAffect.LOGGER.info("Rain button set at {}", pos);
+    }
+
+    public static Optional<BlockPos> getRainButtonPos(ServerLevel level) {
+        BlockPos pos = get(level).rainButtonPos;
+        return pos != null ? Optional.of(pos) : Optional.empty();
+    }
+
+    public static void clearRainButtonPos(ServerLevel level) {
+        TutorialSpawnManager manager = get(level);
+        manager.rainButtonPos = null;
+        manager.setDirty();
+        AromaAffect.LOGGER.info("Rain button cleared");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Fountain button + block positions
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    public static void setFountainButtonPos(ServerLevel level, BlockPos pos) {
+        TutorialSpawnManager manager = get(level);
+        manager.fountainButtonPos = pos;
+        manager.setDirty();
+        AromaAffect.LOGGER.info("Fountain button set at {}", pos);
+    }
+
+    public static Optional<BlockPos> getFountainButtonPos(ServerLevel level) {
+        return Optional.ofNullable(get(level).fountainButtonPos);
+    }
+
+    public static void clearFountainButtonPos(ServerLevel level) {
+        TutorialSpawnManager manager = get(level);
+        manager.fountainButtonPos = null;
+        manager.setDirty();
+    }
+
+    public static void setFountainBlockPos(ServerLevel level, BlockPos pos) {
+        TutorialSpawnManager manager = get(level);
+        manager.fountainBlockPos = pos;
+        manager.setDirty();
+        AromaAffect.LOGGER.info("Fountain water block set at {}", pos);
+    }
+
+    public static Optional<BlockPos> getFountainBlockPos(ServerLevel level) {
+        return Optional.ofNullable(get(level).fountainBlockPos);
+    }
+
+    public static void clearFountainBlockPos(ServerLevel level) {
+        TutorialSpawnManager manager = get(level);
+        manager.fountainBlockPos = null;
+        manager.setDirty();
     }
 
     /**

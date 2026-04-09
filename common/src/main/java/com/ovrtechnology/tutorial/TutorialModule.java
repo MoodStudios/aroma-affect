@@ -13,6 +13,7 @@ import com.ovrtechnology.network.TutorialPopupNetworking;
 import com.ovrtechnology.network.TutorialPortalOverlayNetworking;
 import com.ovrtechnology.network.TutorialWaypointNetworking;
 import com.ovrtechnology.network.SearchDiamondNetworking;
+import com.ovrtechnology.network.TutorialScentZoneNetworking;
 import com.ovrtechnology.tutorial.boss.TutorialBossModule;
 import com.ovrtechnology.tutorial.animation.TutorialAnimationHandler;
 import com.ovrtechnology.tutorial.chest.TutorialChestHandler;
@@ -39,10 +40,20 @@ import com.ovrtechnology.tutorial.command.sub.PortalSubCommand;
 import com.ovrtechnology.tutorial.command.sub.RegenAreaSubCommand;
 import com.ovrtechnology.tutorial.command.sub.ResetSubCommand;
 import com.ovrtechnology.tutorial.command.sub.SearchDiamondSubCommand;
+import com.ovrtechnology.tutorial.scentzone.TutorialBlockMineHandler;
+import com.ovrtechnology.tutorial.scentzone.TutorialItemPickupHandler;
+import com.ovrtechnology.tutorial.scentzone.TutorialItemUseHandler;
+import com.ovrtechnology.tutorial.scentzone.TutorialRainHandler;
+import com.ovrtechnology.tutorial.scentzone.TutorialWaterHandler;
+import com.ovrtechnology.tutorial.scentzone.TutorialScentZoneHandler;
 import com.ovrtechnology.tutorial.searchdiamond.SearchDiamondZoneHandler;
 import com.ovrtechnology.tutorial.command.sub.SetSpawnSubCommand;
 import com.ovrtechnology.tutorial.command.sub.SetWalkaroundSubCommand;
 import com.ovrtechnology.tutorial.command.sub.ProtectionSubCommand;
+import com.ovrtechnology.tutorial.command.sub.ArrowSubCommand;
+import com.ovrtechnology.tutorial.command.sub.FountainSubCommand;
+import com.ovrtechnology.tutorial.command.sub.RainButtonSubCommand;
+import com.ovrtechnology.tutorial.command.sub.ScentZoneSubCommand;
 import com.ovrtechnology.tutorial.command.sub.TradeSubCommand;
 import com.ovrtechnology.tutorial.command.sub.WaypointSubCommand;
 import com.ovrtechnology.tutorial.oliver.TutorialOliverRegistry;
@@ -52,9 +63,11 @@ import com.ovrtechnology.tutorial.portal.TutorialPortalHandler;
 import com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler;
 import com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaManager;
 import com.ovrtechnology.tutorial.spawn.TutorialJoinHandler;
+import com.ovrtechnology.tutorial.spawn.TutorialSpawnManager;
 import com.ovrtechnology.tutorial.waypoint.TutorialWaypointAreaHandler;
 import dev.architectury.event.events.common.LifecycleEvent;
 import lombok.experimental.UtilityClass;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 
 /**
@@ -111,6 +124,8 @@ public final class TutorialModule {
         com.ovrtechnology.network.TutorialScentCounterNetworking.init();
         com.ovrtechnology.network.TutorialFinishNetworking.init();
         SearchDiamondNetworking.init();
+        TutorialScentZoneNetworking.init();
+        com.ovrtechnology.tutorial.waypoint.client.TutorialStaticArrowManager.initNetworking();
 
         // Register tutorial subcommands
         TutorialCommand.register(new SetSpawnSubCommand());
@@ -137,6 +152,12 @@ public final class TutorialModule {
         TutorialCommand.register(new PopupZoneSubCommand());
         TutorialCommand.register(new com.ovrtechnology.tutorial.command.sub.FinishZoneSubCommand());
         TutorialCommand.register(new SearchDiamondSubCommand());
+        TutorialCommand.register(new ScentZoneSubCommand());
+        TutorialCommand.register(new RainButtonSubCommand());
+        TutorialCommand.register(new FountainSubCommand());
+        TutorialCommand.register(new ArrowSubCommand());
+        TutorialCommand.register(new com.ovrtechnology.tutorial.command.sub.SaveTemplateSubCommand());
+        TutorialCommand.register(new com.ovrtechnology.tutorial.command.sub.SkipTimerSubCommand());
 
         // Register tutorial commands (only visible when GameRule is active)
         TutorialCommand.init();
@@ -189,10 +210,43 @@ public final class TutorialModule {
         // Initialize SearchDiamond zone handler
         SearchDiamondZoneHandler.init();
 
+        // Initialize scent zone handler
+        TutorialScentZoneHandler.init();
+
+        // Initialize item pickup scent handler (flowers → Floral)
+        TutorialItemPickupHandler.init();
+
+        // Initialize rain exposure scent handler (rain → Petrichor)
+        TutorialRainHandler.init();
+
+        // Initialize block mine scent handler (any block with scent → trigger on mine)
+        TutorialBlockMineHandler.init();
+
+        // Initialize water touch handler (water → Marine)
+        TutorialWaterHandler.init();
+
+        // Initialize item use scent handler (honey bottle → Sweet)
+        TutorialItemUseHandler.init();
+
+        // Initialize damage handler (visual damage but heals after 0.5s)
+        TutorialDamageHandler.init();
+
+        // Initialize horse feed handler (apple + horse → Barnyard scent)
+        TutorialHorseFeedHandler.init();
+
+        // Initialize rain button handler
+        TutorialRainButtonHandler.init();
+
+        // Initialize fountain handler
+        TutorialFountainHandler.init();
+
+        // Initialize demo timer (15 min countdown)
+        com.ovrtechnology.tutorial.demo.DemoTimerHandler.init();
+
         // Initialize daylight handler (keeps tutorial always at daytime)
         TutorialDaylightHandler.init();
 
-        // Register server started event to auto-restore regen areas
+        // Register server started event to auto-restore regen areas and force-load chunks
         LifecycleEvent.SERVER_STARTED.register(server -> {
             for (ServerLevel level : server.getAllLevels()) {
                 if (isActive(level)) {
@@ -200,6 +254,7 @@ public final class TutorialModule {
                     if (restored > 0) {
                         AromaAffect.LOGGER.info("Tutorial: auto-restored {} blocks on server start", restored);
                     }
+                    forceLoadTutorialChunks(level);
                 }
             }
         });
@@ -217,10 +272,53 @@ public final class TutorialModule {
      * @param level the server level to check
      * @return {@code true} if the tutorial is active, {@code false} otherwise
      */
+    /**
+     * Force-loads chunks around the tutorial spawn point.
+     */
+    private static void forceLoadTutorialChunks(ServerLevel level) {
+        var spawnOpt = TutorialSpawnManager.getSpawn(level);
+        if (spawnOpt.isEmpty()) return;
+        BlockPos spawn = spawnOpt.get().pos();
+        int chunkX = spawn.getX() >> 4;
+        int chunkZ = spawn.getZ() >> 4;
+        int radius = 8;
+        int count = 0;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                level.setChunkForced(chunkX + dx, chunkZ + dz, true);
+                count++;
+            }
+        }
+        AromaAffect.LOGGER.info("Tutorial: force-loaded {} chunks around spawn", count);
+    }
+
+    /**
+     * Removes all force-loaded chunks. Call before disconnect to prevent save hang.
+     */
+    public static void unforceAllChunks(net.minecraft.server.MinecraftServer server) {
+        for (ServerLevel level : server.getAllLevels()) {
+            if (!isActive(level)) continue;
+            var spawnOpt = TutorialSpawnManager.getSpawn(level);
+            if (spawnOpt.isEmpty()) continue;
+            BlockPos spawn = spawnOpt.get().pos();
+            int chunkX = spawn.getX() >> 4;
+            int chunkZ = spawn.getZ() >> 4;
+            int radius = 8;
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    level.setChunkForced(chunkX + dx, chunkZ + dz, false);
+                }
+            }
+            level.noSave = true;
+        }
+        AromaAffect.LOGGER.info("Tutorial: unforced all chunks + noSave");
+    }
+
     public static boolean isActive(ServerLevel level) {
         if (level == null) {
             return false;
         }
         return level.getGameRules().getBoolean(TutorialGameRules.IS_OVR_TUTORIAL);
     }
+
 }

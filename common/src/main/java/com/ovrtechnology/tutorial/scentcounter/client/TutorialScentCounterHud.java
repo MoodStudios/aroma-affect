@@ -66,7 +66,7 @@ public final class TutorialScentCounterHud {
         int max = TutorialScentCounterNetworking.getClientMaxScents();
         boolean complete = count >= max;
 
-        String label = "Scent Counter: ";
+        String label = "Scents Discovered: ";
         String value = count + "/" + max;
 
         int labelWidth = font.width(label);

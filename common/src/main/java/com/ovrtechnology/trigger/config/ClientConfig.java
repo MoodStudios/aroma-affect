@@ -60,7 +60,7 @@ public final class ClientConfig {
 
     /** Cooldown for block triggers in passive mode (ms) */
     @Getter @Setter
-    private long passiveBlockCooldownMs = 5000;
+    private long passiveBlockCooldownMs = 60000;
 
     /** Cooldown for hostile mob triggers in passive mode (ms) */
     @Getter @Setter
@@ -134,7 +134,7 @@ public final class ClientConfig {
     }
 
     public void resetPassiveDefaults() {
-        passiveBlockCooldownMs = 5000;
+        passiveBlockCooldownMs = 60000;
         passiveMobCooldownMs = 8000;
         passivePassiveMobCooldownMs = 8000;
         passiveBlockRange = 2.5;

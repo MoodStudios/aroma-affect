@@ -267,8 +267,9 @@ public class NoseSmithEntity extends Villager {
             return InteractionResult.SUCCESS;
         }
 
-        if (this.level() instanceof ServerLevel) {
+        if (this.level() instanceof ServerLevel && player instanceof net.minecraft.server.level.ServerPlayer sp) {
             keepDialogueAlive(player);
+            com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler.dismissStickyPopup(sp, "find_nosesmith");
             return InteractionResult.SUCCESS_SERVER;
         }
 
@@ -635,6 +636,12 @@ public class NoseSmithEntity extends Villager {
 
             Item contentItem = content.asItem();
             if (contentItem == Items.AIR) {
+                continue;
+            }
+
+            // Exclude problematic flowers (eyeblossoms convert in light, wither rose damages)
+            ResourceLocation contentId = BuiltInRegistries.BLOCK.getKey(content);
+            if (contentId.getPath().contains("eyeblossom") || contentId.getPath().contains("wither")) {
                 continue;
             }
 

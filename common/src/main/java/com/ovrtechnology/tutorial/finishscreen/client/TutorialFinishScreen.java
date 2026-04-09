@@ -42,16 +42,30 @@ public class TutorialFinishScreen extends Screen {
     private int ticksOpen = 0;
     private Button thanksButton;
 
+    private static boolean timeExpired = false;
+
     public TutorialFinishScreen() {
         super(Component.literal("Thanks for Playing"));
+    }
+
+    /**
+     * Sets whether this screen was triggered by timer expiration.
+     * When true, the "Continue" button is hidden — player must wait for moderator F6.
+     */
+    public static void setTimeExpired(boolean expired) {
+        timeExpired = expired;
     }
 
     @Override
     protected void init() {
         super.init();
 
+        if (timeExpired) {
+            // No continue button — time's up, moderator must press F6
+            return;
+        }
+
         int buttonX = (this.width - BUTTON_WIDTH) / 2;
-        // Position button: ensure it's always visible above the bottom edge
         int buttonY = this.height - BUTTON_HEIGHT - 10;
 
         thanksButton = Button.builder(
@@ -59,7 +73,6 @@ public class TutorialFinishScreen extends Screen {
                 btn -> this.onClose()
         ).bounds(buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
 
-        // Button starts invisible, fades in with the rest
         thanksButton.active = false;
         thanksButton.visible = false;
 
@@ -76,6 +89,7 @@ public class TutorialFinishScreen extends Screen {
             thanksButton.active = true;
             thanksButton.visible = true;
         }
+
     }
 
     @Override
@@ -141,30 +155,17 @@ public class TutorialFinishScreen extends Screen {
                 OVR_TEX_WIDTH, OVR_TEX_HEIGHT, OVR_TEX_WIDTH, OVR_TEX_HEIGHT);
         graphics.pose().popMatrix();
 
-        // QR codes below OVR logo with labels
-        int qrSpacing = 60;
-        int totalQrWidth = QR_SIZE * 2 + qrSpacing;
-        int qrLeftX = (this.width - totalQrWidth) / 2;
-        int qrRightX = qrLeftX + QR_SIZE + qrSpacing;
+        // Single QR code centered below OVR logo
         int qrLabelY = logoY + ovrDisplayHeight + gap;
         int qrY = qrLabelY + labelHeight;
+        int qrX = (this.width - QR_SIZE) / 2;
 
-        // QR Code 1 label and image
-        String qr1Label = "QR Code 1";
-        int qr1LabelWidth = Minecraft.getInstance().font.width(qr1Label);
-        int qr1LabelX = qrLeftX + (QR_SIZE - qr1LabelWidth) / 2;
-        graphics.drawString(Minecraft.getInstance().font, qr1Label, qr1LabelX, qrLabelY, 0xFFFFFFFF, false);
+        String qrLabel = "ovrtechnology.com/aroma-affect";
+        int qrLabelWidth = Minecraft.getInstance().font.width(qrLabel);
+        int qrLabelX = (this.width - qrLabelWidth) / 2;
+        graphics.drawString(Minecraft.getInstance().font, qrLabel, qrLabelX, qrLabelY, 0xFFFFFFFF, false);
         graphics.blit(RenderPipelines.GUI_TEXTURED, QR_LEFT,
-                qrLeftX, qrY, 0.0f, 0.0f,
-                QR_SIZE, QR_SIZE, QR_SIZE, QR_SIZE);
-
-        // QR Code 2 label and image
-        String qr2Label = "QR Code 2";
-        int qr2LabelWidth = Minecraft.getInstance().font.width(qr2Label);
-        int qr2LabelX = qrRightX + (QR_SIZE - qr2LabelWidth) / 2;
-        graphics.drawString(Minecraft.getInstance().font, qr2Label, qr2LabelX, qrLabelY, 0xFFFFFFFF, false);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, QR_RIGHT,
-                qrRightX, qrY, 0.0f, 0.0f,
+                qrX, qrY, 0.0f, 0.0f,
                 QR_SIZE, QR_SIZE, QR_SIZE, QR_SIZE);
 
         // "Thanks for playing" text above the button
@@ -173,6 +174,14 @@ public class TutorialFinishScreen extends Screen {
         int thanksTextX = (this.width - thanksTextWidth) / 2;
         int thanksTextY = this.height - BUTTON_HEIGHT - 22;
         graphics.drawString(Minecraft.getInstance().font, thanksText, thanksTextX, thanksTextY, 0xFFFFFFFF, true);
+    }
+
+    @Override
+    public void onClose() {
+        if (timeExpired) {
+            return;
+        }
+        super.onClose();
     }
 
     @Override

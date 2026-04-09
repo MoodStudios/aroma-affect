@@ -11,7 +11,11 @@
     "SnifferRendererMixin",
     "SnifferModelMixin",
     "IronGolemModelMixin",
-    "IronGolemRendererMixin"
+    "IronGolemRendererMixin",
+    "TitleScreenMixin",
+    "MouseHandlerMixin",
+    "PauseScreenMixin",
+    "MinecraftMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",

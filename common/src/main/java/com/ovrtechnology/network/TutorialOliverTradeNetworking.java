@@ -248,7 +248,7 @@ public final class TutorialOliverTradeNetworking {
                     oliver.hasTrade(), oliver.getTradeId());
             TutorialDialogueContentNetworking.sendOpenDialogue(
                     player, oliver.getId(), pendingDialogueId,
-                    oliver.hasTrade(), oliver.getTradeId()
+                    oliver.hasTrade(), oliver.getTradeId(), true
             );
         }
     }

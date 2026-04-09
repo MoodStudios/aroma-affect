@@ -135,6 +135,9 @@ public final class TutorialTradeHandler {
 
         AromaAffect.LOGGER.debug("Trade {} executed for player {}", tradeId, player.getName().getString());
 
+        // Dismiss any sticky popup — player progressed
+        com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler.dismissAllSticky(player);
+
         // Execute onComplete actions
         executeOnCompleteActions(player, level, trade);
 
@@ -220,7 +223,9 @@ public final class TutorialTradeHandler {
             if (singleAction.isEmpty()) continue;
             String actionLower = singleAction.toLowerCase();
 
-            if (actionLower.startsWith("clearinventory:")) {
+            if (com.ovrtechnology.tutorial.OliverActionHelper.processPlayerAction(player, singleAction)) {
+                continue;
+            } else if (actionLower.startsWith("clearinventory:")) {
                 String keepStr = singleAction.substring(15);
                 Set<String> keepItems = new HashSet<>(Arrays.asList(keepStr.split(",")));
                 clearInventoryKeeping(player, keepItems);
@@ -290,7 +295,7 @@ public final class TutorialTradeHandler {
         if (pendingDialogueId != null) {
             TutorialDialogueContentNetworking.sendOpenDialogue(
                     player, oliver.getId(), pendingDialogueId,
-                    oliver.hasTrade(), oliver.getTradeId()
+                    oliver.hasTrade(), oliver.getTradeId(), true
             );
         }
     }

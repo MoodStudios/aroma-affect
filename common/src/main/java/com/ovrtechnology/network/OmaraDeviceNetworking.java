@@ -26,7 +26,7 @@ import java.util.List;
 public final class OmaraDeviceNetworking {
 
     /** Development mode flag — shows debug messages in chat when a scent is triggered. */
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     /** Duration for Omara Device scent triggers (in ticks). 5 seconds = 100 ticks. */
     private static final int OMARA_SCENT_DURATION_TICKS = 100;

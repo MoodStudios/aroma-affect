@@ -148,6 +148,9 @@ public final class TutorialCinematicHandler {
         // Put player in spectator mode for the cinematic
         player.setGameMode(GameType.SPECTATOR);
 
+        // Lock camera rotation on client
+        com.ovrtechnology.network.TutorialIntroNetworking.sendCameraLock(player, true);
+
         // Process first frame (set camera position, show titles)
         processFrame(player, level, cinematic, state);
 
@@ -192,6 +195,9 @@ public final class TutorialCinematicHandler {
 
             // Clear titles
             clearTitles(player);
+
+            // Unlock camera rotation on client
+            com.ovrtechnology.network.TutorialIntroNetworking.sendCameraLock(player, false);
         } finally {
             // Always remove from active cinematics, even if restoration fails
             activeCinematics.remove(player.getUUID());
@@ -238,6 +244,14 @@ public final class TutorialCinematicHandler {
 
         // ALWAYS teleport to interpolated camera position on every tick
         teleportToCamera(player, level, state);
+
+        // Special: mine_explosion_cam — start rain at tick 50 (~2.5 seconds in, after explosion)
+        if ("mine_explosion_cam".equals(state.getCinematicId())
+                && state.getTotalTicksElapsed() == 50 && !level.isRaining()) {
+            com.ovrtechnology.tutorial.TutorialDaylightHandler.allowRainFor(60000); // allow rain for 1 minute
+            level.setWeatherParameters(0, 1200, true, false); // rain for 1 minute
+            AromaAffect.LOGGER.info("Mine explosion cinematic: rain started at tick 50 (1 minute)");
+        }
 
         // Tick the frame (also advances interpolation)
         if (!state.tick()) {
@@ -352,6 +366,7 @@ public final class TutorialCinematicHandler {
                 playSound(player, frame.sound());
             }
 
+
             // Execute Oliver action
             if (frame.oliverAction() != null && !frame.oliverAction().isEmpty()) {
                 executeOliverAction(player, level, frame.oliverAction());
@@ -386,6 +401,8 @@ public final class TutorialCinematicHandler {
         try {
             restorePlayerState(player, state);
             clearTitles(player);
+            // Unlock camera rotation on client
+            com.ovrtechnology.network.TutorialIntroNetworking.sendCameraLock(player, false);
         } finally {
             activeCinematics.remove(player.getUUID());
         }
@@ -485,7 +502,9 @@ public final class TutorialCinematicHandler {
             if (singleAction.isEmpty()) continue;
             String actionLower = singleAction.toLowerCase();
 
-            if (actionLower.startsWith("clearinventory:")) {
+            if (com.ovrtechnology.tutorial.OliverActionHelper.processPlayerAction(player, singleAction)) {
+                continue;
+            } else if (actionLower.startsWith("clearinventory:")) {
                 String keepStr = singleAction.substring(15);
                 java.util.Set<String> keepItems = new java.util.HashSet<>(java.util.Arrays.asList(keepStr.split(",")));
                 com.ovrtechnology.tutorial.trade.TutorialTradeHandler.clearInventoryKeeping(player, keepItems);
@@ -553,7 +572,7 @@ public final class TutorialCinematicHandler {
         if (pendingDialogueId != null) {
             TutorialDialogueContentNetworking.sendOpenDialogue(
                     player, oliver.getId(), pendingDialogueId,
-                    oliver.hasTrade(), oliver.getTradeId()
+                    oliver.hasTrade(), oliver.getTradeId(), true
             );
         }
     }

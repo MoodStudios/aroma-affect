@@ -3,6 +3,7 @@ package com.ovrtechnology.fabric.client;
 import com.ovrtechnology.render.BlockOutlineRenderer;
 import com.ovrtechnology.render.PathTrailRenderer;
 import com.ovrtechnology.tutorial.chest.client.TutorialChestHologram;
+import com.ovrtechnology.tutorial.scentzone.client.TutorialScentZoneRenderer;
 import com.ovrtechnology.tutorial.searchdiamond.client.DiamondTextHologram;
 import com.ovrtechnology.tutorial.waypoint.client.TutorialArrowHologram;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
@@ -46,6 +47,13 @@ public final class BlockOutlineRendererFabric {
                     context.matrices(),
                     context.consumers(),
                     camPos.x, camPos.y, camPos.z
+            );
+
+            // Render scent zone outlines
+            TutorialScentZoneRenderer.render(
+                    context.matrices(),
+                    context.consumers(),
+                    camPos
             );
         });
     }

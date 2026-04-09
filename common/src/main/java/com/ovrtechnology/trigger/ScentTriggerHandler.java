@@ -53,6 +53,9 @@ public final class ScentTriggerHandler {
                 if (minecraft.player != null) {
                     PassiveModeManager.tick(minecraft.player);
                 }
+
+                // Check for delayed all-scents victory
+                com.ovrtechnology.network.TutorialScentCounterNetworking.tickClient();
             });
             
             AromaAffect.LOGGER.info("[ScentTriggerHandler] ClientTickEvent.CLIENT_POST registered successfully!");

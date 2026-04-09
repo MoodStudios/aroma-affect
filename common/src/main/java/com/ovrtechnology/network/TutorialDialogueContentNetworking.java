@@ -115,9 +115,10 @@ public final class TutorialDialogueContentNetworking {
                     String dialogueId = buf.readUtf(256);
                     boolean hasTrade = buf.readBoolean();
                     String tradeId = buf.readUtf(256);
+                    boolean forced = buf.readBoolean();
 
                     context.queue(() -> {
-                        openDialogueOnClient(entityId, dialogueId, hasTrade, tradeId);
+                        openDialogueOnClient(entityId, dialogueId, hasTrade, tradeId, forced);
                     });
                 }
         );
@@ -134,6 +135,9 @@ public final class TutorialDialogueContentNetworking {
                     });
                 }
         );
+
+        // Register smooth look-at tick handler (must be here, not during a tick)
+        initSmoothLookTicker();
 
         AromaAffect.LOGGER.debug("Tutorial dialogue content networking initialized");
     }
@@ -172,9 +176,22 @@ public final class TutorialDialogueContentNetworking {
 
     /**
      * Tells a client to open a dialogue screen with the given parameters.
+     * Defaults to forced=false (manual click).
      */
     public static void sendOpenDialogue(ServerPlayer player, int entityId,
                                          String dialogueId, boolean hasTrade, String tradeId) {
+        sendOpenDialogue(player, entityId, dialogueId, hasTrade, tradeId, false);
+    }
+
+    /**
+     * Tells a client to open a dialogue screen with the given parameters.
+     * Snaps the camera to look at Oliver before opening.
+     *
+     * @param forced true if this dialogue was triggered by stage progression (not manual click)
+     */
+    public static void sendOpenDialogue(ServerPlayer player, int entityId,
+                                         String dialogueId, boolean hasTrade, String tradeId,
+                                         boolean forced) {
         // Make the player look at Oliver before opening the dialogue
         Entity target = player.level().getEntity(entityId);
         if (target != null) {
@@ -194,7 +211,83 @@ public final class TutorialDialogueContentNetworking {
         buf.writeUtf(dialogueId, 256);
         buf.writeBoolean(hasTrade);
         buf.writeUtf(tradeId != null ? tradeId : "", 256);
+        buf.writeBoolean(forced);
         NetworkManager.sendToPlayer(player, DIALOGUE_OPEN_PACKET, buf);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Smooth look-at system (static tick queue, no dynamic listener registration)
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    private static SmoothLookTask activeLookTask = null;
+
+    /**
+     * Must be called once during mod init (NOT during a tick).
+     */
+    static void initSmoothLookTicker() {
+        dev.architectury.event.events.common.TickEvent.SERVER_POST.register(server -> {
+            if (activeLookTask == null) return;
+            SmoothLookTask task = activeLookTask;
+
+            if (task.player.isRemoved()) {
+                activeLookTask = null;
+                return;
+            }
+
+            task.tick++;
+            if (task.tick > task.totalTicks) {
+                activeLookTask = null;
+                return;
+            }
+
+            float progress = (float) task.tick / task.totalTicks;
+            float t = progress * progress * (3 - 2 * progress); // smoothstep
+
+            float currentYaw = task.startYaw + task.yawDiff * t;
+            float currentPitch = task.startPitch + (task.targetPitch - task.startPitch) * t;
+
+            task.player.teleportTo((ServerLevel) task.player.level(),
+                    task.player.getX(), task.player.getY(), task.player.getZ(),
+                    java.util.Set.of(), currentYaw, currentPitch, false);
+
+            if (task.tick == task.totalTicks) {
+                activeLookTask = null;
+                task.onComplete.run();
+            }
+        });
+    }
+
+    private static void smoothLookAt(ServerPlayer player, ServerLevel level,
+                                      float targetYaw, float targetPitch,
+                                      int totalTicks, Runnable onComplete) {
+
+        float startYaw = player.getYRot();
+        float startPitch = player.getXRot();
+
+        float yawDiff = targetYaw - startYaw;
+        while (yawDiff > 180) yawDiff -= 360;
+        while (yawDiff < -180) yawDiff += 360;
+
+        activeLookTask = new SmoothLookTask(player, startYaw, startPitch, targetPitch, yawDiff, totalTicks, onComplete);
+    }
+
+    private static class SmoothLookTask {
+        final ServerPlayer player;
+        final float startYaw, startPitch, targetPitch, yawDiff;
+        final int totalTicks;
+        final Runnable onComplete;
+        int tick = 0;
+
+        SmoothLookTask(ServerPlayer player, float startYaw, float startPitch,
+                       float targetPitch, float yawDiff, int totalTicks, Runnable onComplete) {
+            this.player = player;
+            this.startYaw = startYaw;
+            this.startPitch = startPitch;
+            this.targetPitch = targetPitch;
+            this.yawDiff = yawDiff;
+            this.totalTicks = totalTicks;
+            this.onComplete = onComplete;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -324,7 +417,9 @@ public final class TutorialDialogueContentNetworking {
 
             String actionLower = singleAction.toLowerCase();
 
-            if (actionLower.equals("follow")) {
+            if (com.ovrtechnology.tutorial.OliverActionHelper.processPlayerAction(player, singleAction)) {
+                continue;
+            } else if (actionLower.equals("follow")) {
                 oliver.setFollowing(player);
                 AromaAffect.LOGGER.info("Oliver is now following player {}", player.getName().getString());
             } else if (actionLower.equals("stop")) {
@@ -381,7 +476,7 @@ public final class TutorialDialogueContentNetworking {
                     player.getName().getString(), pendingDialogueId, oliver.hasTrade(), oliver.getTradeId());
             sendOpenDialogue(
                     player, oliver.getId(), pendingDialogueId,
-                    oliver.hasTrade(), oliver.getTradeId()
+                    oliver.hasTrade(), oliver.getTradeId(), true
             );
         }
     }
@@ -490,15 +585,15 @@ public final class TutorialDialogueContentNetworking {
      * Opens the dialogue on the client side via reflection.
      */
     private static void openDialogueOnClient(int entityId, String dialogueId,
-                                               boolean hasTrade, String tradeId) {
+                                               boolean hasTrade, String tradeId, boolean forced) {
         try {
             Class<?> dialogueClass = Class.forName(
                     "com.ovrtechnology.tutorial.oliver.client.dialogue.TutorialOliverDialogueClient"
             );
-            dialogueClass.getMethod("openWithParams", int.class, String.class, boolean.class, String.class)
-                    .invoke(null, entityId, dialogueId, hasTrade, tradeId);
+            dialogueClass.getMethod("openWithParams", int.class, String.class, boolean.class, String.class, boolean.class)
+                    .invoke(null, entityId, dialogueId, hasTrade, tradeId, forced);
         } catch (ReflectiveOperationException e) {
-            AromaAffect.LOGGER.debug("Failed to open dialogue via network packet", e);
+            AromaAffect.LOGGER.error("Failed to open dialogue via network packet", e);
         }
     }
 }

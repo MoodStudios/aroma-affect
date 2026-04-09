@@ -6,12 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 
 /**
  * Keeps the tutorial world at daytime with clear weather.
- * <p>
- * When the tutorial GameRule is active, this handler:
- * <ul>
- *   <li>Resets the time to noon whenever it reaches sunset</li>
- *   <li>Clears any rain, snow, or thunderstorms</li>
- * </ul>
+ * Rain can be temporarily allowed via {@link #allowRainUntil(long)}.
  */
 public final class TutorialDaylightHandler {
 
@@ -19,15 +14,11 @@ public final class TutorialDaylightHandler {
     private static int tickCounter = 0;
     private static final int CHECK_INTERVAL = 100; // Check every 5 seconds
 
-    /**
-     * Minecraft time constants:
-     * - 0 = sunrise (6:00 AM)
-     * - 6000 = noon (12:00 PM)
-     * - 12000 = sunset (6:00 PM)
-     * - 18000 = midnight (12:00 AM)
-     */
     private static final long TIME_NOON = 6000L;
     private static final long TIME_SUNSET = 12000L;
+
+    /** Timestamp (System.currentTimeMillis) until which rain is allowed. */
+    private static long rainAllowedUntil = 0;
 
     private TutorialDaylightHandler() {
     }
@@ -48,22 +39,31 @@ public final class TutorialDaylightHandler {
                 long dayTime = level.getDayTime() % 24000L;
                 if (dayTime >= TIME_SUNSET) {
                     level.setDayTime(TIME_NOON);
-                    AromaAffect.LOGGER.debug("Tutorial: Reset time to noon (was {})", dayTime);
                 }
 
-                // Clear weather (rain, snow, thunderstorms)
-                if (level.isRaining() || level.isThundering()) {
-                    level.setWeatherParameters(
-                            6000,  // clearWeatherTime (ticks of clear weather)
-                            0,     // rainTime
-                            false, // raining
-                            false  // thundering
-                    );
-                    AromaAffect.LOGGER.debug("Tutorial: Cleared weather");
+                // Clear weather — unless rain is temporarily allowed
+                if ((level.isRaining() || level.isThundering()) && !isRainAllowed()) {
+                    level.setWeatherParameters(6000, 0, false, false);
                 }
             }
         });
 
         AromaAffect.LOGGER.debug("Tutorial daylight handler initialized");
+    }
+
+    /**
+     * Allows rain for the specified duration in milliseconds.
+     * The daylight handler will not clear weather until this time passes.
+     */
+    public static void allowRainFor(long durationMs) {
+        rainAllowedUntil = System.currentTimeMillis() + durationMs;
+        AromaAffect.LOGGER.info("Rain allowed for {} ms", durationMs);
+    }
+
+    /**
+     * Checks if rain is currently allowed.
+     */
+    public static boolean isRainAllowed() {
+        return System.currentTimeMillis() < rainAllowedUntil;
     }
 }

@@ -275,25 +275,32 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Top-left: Passive mode toggle pill + Gear config button (side by side)
         boolean isPassiveEnabled = PassiveModeManager.isPassiveModeEnabled();
+        boolean isPassiveLocked = PassiveModeManager.isTutorialLocked();
         int toggleW = 36;
         int toggleH = 18;
         int toggleX = CORNER_BUTTON_PADDING;
         int toggleY = CORNER_BUTTON_PADDING;
 
-        isHoveringPassiveToggle = isInBounds(mouseX, mouseY, toggleX, toggleY, toggleW, toggleH);
+        isHoveringPassiveToggle = !isPassiveLocked && isInBounds(mouseX, mouseY, toggleX, toggleY, toggleW, toggleH);
 
-        // Toggle pill background
-        int toggleBg = isPassiveEnabled
-                ? MenuRenderUtils.withAlpha(isHoveringPassiveToggle ? 0xDDAA8FFF : 0xCC9A7CFF, appear)
-                : MenuRenderUtils.withAlpha(isHoveringPassiveToggle ? 0xDD777777 : 0xCC555555, appear);
+        // Toggle pill background (greyed out when locked by tutorial)
+        int toggleBg;
+        if (isPassiveLocked) {
+            toggleBg = MenuRenderUtils.withAlpha(0xCC333333, appear);
+        } else if (isPassiveEnabled) {
+            toggleBg = MenuRenderUtils.withAlpha(isHoveringPassiveToggle ? 0xDDAA8FFF : 0xCC9A7CFF, appear);
+        } else {
+            toggleBg = MenuRenderUtils.withAlpha(isHoveringPassiveToggle ? 0xDD777777 : 0xCC555555, appear);
+        }
         graphics.fill(toggleX, toggleY, toggleX + toggleW, toggleY + toggleH, toggleBg);
         MenuRenderUtils.renderOutline(graphics, toggleX, toggleY, toggleW, toggleH, MenuRenderUtils.withAlpha(0x44FFFFFF, appear));
 
-        // Toggle circle thumb
+        // Toggle circle thumb (dimmed when locked)
         int circleSize = toggleH - 4;
         int circleX = isPassiveEnabled ? toggleX + toggleW - circleSize - 2 : toggleX + 2;
         int circleY = toggleY + 2;
-        graphics.fill(circleX, circleY, circleX + circleSize, circleY + circleSize, MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+        int circleColor = isPassiveLocked ? 0xFF888888 : 0xFFFFFFFF;
+        graphics.fill(circleX, circleY, circleX + circleSize, circleY + circleSize, MenuRenderUtils.withAlpha(circleColor, appear));
 
         // Gear config button (right of toggle, same height as toggle)
         int gearX = toggleX + toggleW + 4;
@@ -431,6 +438,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     tooltipX,
                     toggleY + toggleH / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+        }
+        if (isPassiveLocked && isInBounds(mouseX, mouseY, toggleX, toggleY, toggleW, toggleH)) {
+            graphics.drawString(font, Component.translatable("menu.aromaaffect.button.passive.locked"),
+                    tooltipX,
+                    toggleY + toggleH / 2 - 4,
+                    MenuRenderUtils.withAlpha(0xFFFF6666, appear));
         }
         if (isHoveringConfigGear) {
             graphics.drawString(font, Component.translatable("config.aromaaffect.button.settings"),

@@ -77,6 +77,7 @@
   "menu.aromaaffect.button.compass": "Compass",
   "menu.aromaaffect.button.passive.on": "Passive Mode: ON",
   "menu.aromaaffect.button.passive.off": "Passive Mode: OFF",
+  "menu.aromaaffect.button.passive.locked": "Locked during tutorial",
   "menu.aromaaffect.category.locked": "Equip a Nose to unlock",
   
   "menu.aromaaffect.config.title": "Aroma Affect Configuration",
