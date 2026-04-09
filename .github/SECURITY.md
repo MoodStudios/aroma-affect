@@ -83,7 +83,7 @@ We appreciate responsible disclosure. Contributors who report valid security vul
 ---
 
 <p align="center">
-  <strong>© 2025 OVR Technology. All rights reserved.</strong><br>
+  <strong>© 2026 OVR Technology.</strong><br>
   Developed with ❤️ by <a href="https://moodstudios.co">Mood Studios</a>
 </p>
 

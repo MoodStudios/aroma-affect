@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/Minecraft-1.21.10-brightgreen" alt="Minecraft Version"/>
   <img src="https://img.shields.io/badge/NeoForge-Supported-orange" alt="NeoForge"/>
   <img src="https://img.shields.io/badge/Fabric-Supported-blue" alt="Fabric"/>
-  <img src="https://img.shields.io/badge/License-Proprietary-red" alt="License"/>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
 </p>
 
 ---
@@ -76,8 +76,7 @@ Aroma Affect uses [Architectury](https://www.curseforge.com/minecraft/mc-mods/ar
 aromaaffect/
 ├── common/     # Shared code for all platforms
 ├── fabric/     # Fabric-specific implementation
-├── neoforge/   # NeoForge-specific implementation
-└── scripts/    # Utility scripts (NBT tools, code generation)
+└── neoforge/   # NeoForge-specific implementation
 ```
 
 ## Building from Source
@@ -93,9 +92,9 @@ cd aroma-affect
 
 ## License
 
-**Copyright © 2025 OVR Technologies. All rights reserved.**
+**Copyright © 2026 OVR Technologies.**
 
-This software is proprietary and confidential. See the [LICENSE](LICENSE) file for full terms.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 

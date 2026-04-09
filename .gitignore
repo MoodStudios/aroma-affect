@@ -22,12 +22,9 @@ bin/
 .vscode/
 *.code-workspace
 
-# Cursor rules
-.cursor/rules/
-
-# Claude
-.claude/settings.local.json
-
+# Editor config
+.cursor/
+.claude/
 context/
 
 # Mac
@@ -103,6 +100,9 @@ loom-cache/
 test-output/
 test-results/
 
-#
+# Misc
 AGENTS.md
+
+# Scripts
+scripts/
 
