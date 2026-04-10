@@ -53,6 +53,9 @@ jobs:
     outputs:
       version: ${{ steps.validate.outputs.version }}
       minecraft_version: ${{ steps.properties.outputs.minecraft_version }}
+      neoforge_version: ${{ steps.properties.outputs.neoforge_version }}
+      fabric_loader_version: ${{ steps.properties.outputs.fabric_loader_version }}
+      architectury_version: ${{ steps.properties.outputs.architectury_version }}
       tag_name: ${{ steps.validate.outputs.tag_name }}
       is_prerelease: ${{ steps.validate.outputs.is_prerelease }}
     
@@ -60,10 +63,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Extract Minecraft Version
+      - name: Extract Properties
         id: properties
         run: |
           echo "minecraft_version=$(grep -E '^minecraft_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
+          echo "neoforge_version=$(grep -E '^neoforge_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
+          echo "fabric_loader_version=$(grep -E '^fabric_loader_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
+          echo "architectury_version=$(grep -E '^architectury_api_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
 
       - name: Validate Version Format
         id: validate
@@ -260,9 +266,9 @@ jobs:
           
           - **Minecraft:** ${{ needs.validate.outputs.minecraft_version }}
           - **Java:** 21+
-          - **NeoForge:** 21.10.50+ (for NeoForge version)
-          - **Fabric Loader:** 0.18.2+ (for Fabric version)
-          - **Architectury API:** 18.0.8+
+          - **NeoForge:** ${{ needs.validate.outputs.neoforge_version }}+ (for NeoForge version)
+          - **Fabric Loader:** ${{ needs.validate.outputs.fabric_loader_version }}+ (for Fabric version)
+          - **Architectury API:** ${{ needs.validate.outputs.architectury_version }}+
           
           EOF
 
