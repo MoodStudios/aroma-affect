@@ -10,6 +10,7 @@
   <a href="#requirements">Requirements</a> •
   <a href="#installation">Installation</a> •
   <a href="#building-from-source">Building</a> •
+  <a href="#contributing">Contributing</a> •
   <a href="#license">License</a>
 </p>
 
@@ -17,7 +18,7 @@
   <img src="https://img.shields.io/badge/Minecraft-1.21.10-brightgreen" alt="Minecraft Version"/>
   <img src="https://img.shields.io/badge/NeoForge-Supported-orange" alt="NeoForge"/>
   <img src="https://img.shields.io/badge/Fabric-Supported-blue" alt="Fabric"/>
-  <img src="https://img.shields.io/badge/License-Proprietary-red" alt="License"/>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
 </p>
 
 ---
@@ -31,7 +32,7 @@ The mod works on two levels:
 - **Passive Scenting:** The world around you emits scents automatically based on biomes, blocks, and environmental hazards. No items required.
 - **Active Tracking:** Equip a **Nose** to filter, focus, and actively track specific targets like ores, biomes, and structures.
 
-The mod is fully playable both **with** and **without** OVR scent hardware. Without hardware, all gameplay mechanics, visual feedback, and particle effects still work.
+The mod is fully playable both **with** and **without** OVR scent hardware. Scent enhances the experience — it doesn't gate it. Without hardware, all gameplay mechanics, visual feedback, and particle effects still work.
 
 ## Features
 
@@ -76,8 +77,7 @@ Aroma Affect uses [Architectury](https://www.curseforge.com/minecraft/mc-mods/ar
 aromaaffect/
 ├── common/     # Shared code for all platforms
 ├── fabric/     # Fabric-specific implementation
-├── neoforge/   # NeoForge-specific implementation
-└── scripts/    # Utility scripts (NBT tools, code generation)
+└── neoforge/   # NeoForge-specific implementation
 ```
 
 ## Building from Source
@@ -91,11 +91,35 @@ cd aroma-affect
 # Output JARs in fabric/build/libs and neoforge/build/libs
 ```
 
+## Why Open Source
+
+We believe the future of scent in games won't be built alone.
+
+By making Aroma Affect open, we hope to:
+- Lower the barrier for experimentation with scent in games
+- Enable creators to remix, extend, and build new experiences
+- Accelerate the emergence of shared patterns and best practices
+- Learn alongside the community what actually makes scent *fun*
+
+## Contributing
+
+We welcome contributions from the community — whether you're extending gameplay mechanics, improving performance, designing new scent-driven interactions, or experimenting in entirely new directions.
+
+Check out our [Contributing Guide](.github/CONTRIBUTING.md) to get started.
+
+Join the conversation on [Discord](https://discord.com/invite/ovr-omara).
+
 ## License
 
-**Copyright © 2025 OVR Technologies. All rights reserved.**
+**Copyright © 2026 OVR Technology, Inc.**
 
-This software is proprietary and confidential. See the [LICENSE](LICENSE) file for full terms.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## About OVR Technology
+
+[OVR Technology](https://ovrtechnology.com) is building the future of scent in digital experiences — developing hardware, software, and Scentware® to bring smell into gaming, immersive media, and beyond.
+
+> *"OVR Technology" and "Omara" are trademarks of OVR Technology, Inc. Use of these names in derivative works must not imply endorsement or affiliation without permission.*
 
 ---
 

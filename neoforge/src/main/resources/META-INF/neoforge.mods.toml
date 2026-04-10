@@ -1,7 +1,7 @@
 modLoader = "javafml"
 loaderVersion = "[10,)"
 #issueTrackerURL = ""
-license = "Proprietary"
+license = "MIT"
 
 [[mods]]
 modId = "aromaaffect"
