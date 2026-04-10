@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Minecraft-1.21.10-brightgreen" alt="Minecraft Version"/>
+  <img src="https://img.shields.io/badge/Minecraft-1.21.11-brightgreen" alt="Minecraft Version"/>
   <img src="https://img.shields.io/badge/NeoForge-Supported-orange" alt="NeoForge"/>
   <img src="https://img.shields.io/badge/Fabric-Supported-blue" alt="Fabric"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
@@ -50,9 +50,9 @@ Access your scent abilities through an intuitive radial menu system.
 
 ## Requirements
 
-- **Minecraft** 1.21.10
-- **NeoForge** 21.10.50-beta or **Fabric Loader** 0.18.2
-- **Architectury API** 18.0.8 (automatically included)
+- **Minecraft** 1.21.11
+- **NeoForge** 21.11.42 or **Fabric Loader** 0.18.6
+- **Architectury API** 19.0.1 (automatically included)
 
 ### OVR Bridge
 
@@ -64,7 +64,7 @@ To experience real-world scents with OVR hardware, you'll need the **OVR Bridge*
 
 ## Installation
 
-1. Install [NeoForge](https://neoforged.net/) or [Fabric](https://fabricmc.net/) for Minecraft 1.21.10
+1. Install [NeoForge](https://neoforged.net/) or [Fabric](https://fabricmc.net/) for Minecraft 1.21.11
 2. Download the latest Aroma Affect release for your loader
 3. Place the `.jar` file in your `mods` folder
 4. Launch Minecraft

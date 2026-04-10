@@ -53,7 +53,7 @@ body:
     attributes:
       label: Minecraft Version
       description: The Minecraft version you're playing on
-      placeholder: "1.21.10"
+      placeholder: "1.21.11"
     validations:
       required: true
 
@@ -62,7 +62,7 @@ body:
     attributes:
       label: Loader Version
       description: NeoForge or Fabric Loader version
-      placeholder: "NeoForge 21.10.50-beta / Fabric 0.18.2"
+      placeholder: "NeoForge 21.11.42 / Fabric 0.18.6"
     validations:
       required: true
 

@@ -6,7 +6,7 @@ The following versions of Aroma Affect receive security updates:
 
 | Version | Minecraft | Status |
 |---------|-----------|--------|
-| 1.0.x   | 1.21.10   | ✅ Supported |
+| 1.0.x   | 1.21.11   | ✅ Supported |
 
 ---
 
