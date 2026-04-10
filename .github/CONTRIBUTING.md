@@ -229,7 +229,7 @@ For questions or contribution inquiries:
 ---
 
 <p align="center">
-  <strong>© 2026 OVR Technology.</strong><br>
+  <strong>© 2026 OVR Technology, Inc.</strong><br>
   Developed with ❤️ by <a href="https://moodstudios.co">Mood Studios</a>
 </p>
 

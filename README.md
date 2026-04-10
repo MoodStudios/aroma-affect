@@ -10,6 +10,7 @@
   <a href="#requirements">Requirements</a> •
   <a href="#installation">Installation</a> •
   <a href="#building-from-source">Building</a> •
+  <a href="#contributing">Contributing</a> •
   <a href="#license">License</a>
 </p>
 
@@ -31,7 +32,7 @@ The mod works on two levels:
 - **Passive Scenting:** The world around you emits scents automatically based on biomes, blocks, and environmental hazards. No items required.
 - **Active Tracking:** Equip a **Nose** to filter, focus, and actively track specific targets like ores, biomes, and structures.
 
-The mod is fully playable both **with** and **without** OVR scent hardware. Without hardware, all gameplay mechanics, visual feedback, and particle effects still work.
+The mod is fully playable both **with** and **without** OVR scent hardware. Scent enhances the experience — it doesn't gate it. Without hardware, all gameplay mechanics, visual feedback, and particle effects still work.
 
 ## Features
 
@@ -90,11 +91,35 @@ cd aroma-affect
 # Output JARs in fabric/build/libs and neoforge/build/libs
 ```
 
+## Why Open Source
+
+We believe the future of scent in games won't be built alone.
+
+By making Aroma Affect open, we hope to:
+- Lower the barrier for experimentation with scent in games
+- Enable creators to remix, extend, and build new experiences
+- Accelerate the emergence of shared patterns and best practices
+- Learn alongside the community what actually makes scent *fun*
+
+## Contributing
+
+We welcome contributions from the community — whether you're extending gameplay mechanics, improving performance, designing new scent-driven interactions, or experimenting in entirely new directions.
+
+Check out our [Contributing Guide](.github/CONTRIBUTING.md) to get started.
+
+Join the conversation on [Discord](https://discord.com/invite/ovr-omara).
+
 ## License
 
-**Copyright © 2026 OVR Technologies.**
+**Copyright © 2026 OVR Technology, Inc.**
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## About OVR Technology
+
+[OVR Technology](https://ovrtechnology.com) is building the future of scent in digital experiences — developing hardware, software, and Scentware® to bring smell into gaming, immersive media, and beyond.
+
+> *"OVR Technology" and "Omara" are trademarks of OVR Technology, Inc. Use of these names in derivative works must not imply endorsement or affiliation without permission.*
 
 ---
 
