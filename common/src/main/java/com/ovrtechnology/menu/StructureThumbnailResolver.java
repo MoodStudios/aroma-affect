@@ -1,5 +1,6 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -20,8 +21,7 @@ import java.util.Map;
  */
 public final class StructureThumbnailResolver {
 
-    private static final ResourceLocation PLACEHOLDER = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/sprites/structures/placeholder.png");
+    private static final ResourceLocation PLACEHOLDER = Ids.mod("textures/gui/sprites/structures/placeholder.png");
 
     private static final Map<ResourceLocation, ResourceLocation> CACHE = new HashMap<>();
 
@@ -34,9 +34,7 @@ public final class StructureThumbnailResolver {
      */
     public static ResourceLocation resolve(ResourceLocation structureId) {
         return CACHE.computeIfAbsent(structureId, id -> {
-            ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(
-                    AromaAffect.MOD_ID,
-                    "textures/gui/sprites/structures/" + id.getNamespace() + "/" + id.getPath() + ".png");
+            ResourceLocation texture = Ids.mod("textures/gui/sprites/structures/" + id.getNamespace() + "/" + id.getPath() + ".png");
 
             if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
                 return texture;

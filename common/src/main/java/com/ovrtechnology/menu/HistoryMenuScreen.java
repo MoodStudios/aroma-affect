@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.history.BlacklistEntry;
 import com.ovrtechnology.history.HistoryEntry;
@@ -48,8 +50,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private static final int BACK_BUTTON_SIZE = 24;
     private static final int BACK_BUTTON_PADDING = 8;
 
-    private static final ResourceLocation ICON_BACK = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
+    private static final ResourceLocation ICON_BACK = Ids.mod("textures/gui/sprites/radial/icon_back.png");
 
     // ── Tab colors ───────────────────────────────────────────────────────
 
@@ -94,7 +95,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private final List<Integer> filteredIndices = new ArrayList<>();
 
     public HistoryMenuScreen() {
-        super(Component.translatable("history.aromaaffect.title"));
+        super(Texts.tr("history.aromaaffect.title"));
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────
@@ -108,8 +109,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int searchY = 56;
 
         searchBox = new EditBox(font, searchX, searchY, listWidth, SEARCH_BOX_HEIGHT,
-                Component.translatable("history.aromaaffect.search"));
-        searchBox.setHint(Component.translatable("history.aromaaffect.search"));
+                Texts.tr("history.aromaaffect.search"));
+        searchBox.setHint(Texts.tr("history.aromaaffect.search"));
         searchBox.setMaxLength(50);
         searchBox.setResponder(query -> {
             searchQuery = query;
@@ -251,9 +252,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         hoveredTabIndex = -1;
         Tab[] tabs = Tab.values();
         String[] labels = {
-                Component.translatable("history.aromaaffect.tab.history").getString(),
-                Component.translatable("history.aromaaffect.tab.saved").getString(),
-                Component.translatable("history.aromaaffect.tab.blacklist").getString()
+                Texts.tr("history.aromaaffect.tab.history").getString(),
+                Texts.tr("history.aromaaffect.tab.saved").getString(),
+                Texts.tr("history.aromaaffect.tab.blacklist").getString()
         };
         int[] colors = { TAB_HISTORY_COLOR, TAB_SAVED_COLOR, TAB_BLACKLIST_COLOR };
 
@@ -299,9 +300,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         if (filteredIndices.isEmpty()) {
             int textColor = MenuRenderUtils.withAlpha(0xFFAAAAAA, ap);
             Component emptyMsg = switch (activeTab) {
-                case HISTORY -> Component.translatable("history.aromaaffect.empty.history");
-                case SAVED -> Component.translatable("history.aromaaffect.empty.saved");
-                case BLACKLIST -> Component.translatable("history.aromaaffect.empty.blacklist");
+                case HISTORY -> Texts.tr("history.aromaaffect.empty.history");
+                case SAVED -> Texts.tr("history.aromaaffect.empty.saved");
+                case BLACKLIST -> Texts.tr("history.aromaaffect.empty.blacklist");
             };
             g.drawCenteredString(font, emptyMsg, width / 2, listTop + 20, textColor);
             return;
@@ -404,17 +405,17 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             int btnY = y + (ROW_HEIGHT - ICON_BTN_SIZE) / 2;
 
             btnX = renderIconButton(g, btnX, btnY, IconType.DELETE, 0xFFFF4444,
-                    Component.translatable("history.aromaaffect.action.delete"),
+                    Texts.tr("history.aromaaffect.action.delete"),
                     mouseX, mouseY, ap, filteredIdx, 4);
             btnX = renderTeleportIconButton(g, btnX, btnY, mouseX, mouseY, ap, filteredIdx, 3);
             if (!isBlacklisted) {
                 btnX = renderIconButton(g, btnX, btnY, IconType.BLACKLIST, 0xFFFF6B6B,
-                        Component.translatable("history.aromaaffect.action.blacklist"),
+                        Texts.tr("history.aromaaffect.action.blacklist"),
                         mouseX, mouseY, ap, filteredIdx, 1);
             }
             if (!isSaved) {
                 renderIconButton(g, btnX, btnY, IconType.SAVE, 0xFFFFCC44,
-                        Component.translatable("history.aromaaffect.action.save"),
+                        Texts.tr("history.aromaaffect.action.save"),
                         mouseX, mouseY, ap, filteredIdx, 0);
             }
         }
@@ -474,10 +475,10 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             int btnY = y + (ROW_HEIGHT - ICON_BTN_SIZE) / 2;
 
             btnX = renderIconButton(g, btnX, btnY, IconType.DELETE, 0xFFFF4444,
-                    Component.translatable("history.aromaaffect.action.delete"),
+                    Texts.tr("history.aromaaffect.action.delete"),
                     mouseX, mouseY, ap, filteredIdx, 3);
             btnX = renderIconButton(g, btnX, btnY, IconType.RENAME, 0xFF44AAFF,
-                    Component.translatable("history.aromaaffect.action.rename"),
+                    Texts.tr("history.aromaaffect.action.rename"),
                     mouseX, mouseY, ap, filteredIdx, 2);
             renderTeleportIconButton(g, btnX, btnY, mouseX, mouseY, ap, filteredIdx, 1);
         }
@@ -521,7 +522,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             int btnX = x + w - 4;
             int btnY = y + (ROW_HEIGHT - ICON_BTN_SIZE) / 2;
             renderIconButton(g, btnX, btnY, IconType.UNBLOCK, 0xFF44CC44,
-                    Component.translatable("history.aromaaffect.action.unblacklist"),
+                    Texts.tr("history.aromaaffect.action.unblacklist"),
                     mouseX, mouseY, ap, filteredIdx, 0);
         }
     }
@@ -586,12 +587,12 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         if (hov) {
             Component tip;
             if (forceDisabled) {
-                tip = Component.translatable("history.aromaaffect.wrong_dimension");
+                tip = Texts.tr("history.aromaaffect.wrong_dimension");
             } else if (canRetrack) {
                 int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
-                tip = Component.translatable("history.aromaaffect.action.retrack.cost", retrackCost);
+                tip = Texts.tr("history.aromaaffect.action.retrack.cost", retrackCost);
             } else {
-                tip = Component.translatable("history.aromaaffect.retrack.disabled");
+                tip = Texts.tr("history.aromaaffect.retrack.disabled");
             }
             pendingTooltip = tip;
             pendingTooltipX = mouseX;
@@ -713,7 +714,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             return rightEdge;
         }
         return renderIconButton(g, rightEdge, y, IconType.TELEPORT, 0xFF44AAFF,
-                Component.translatable("history.aromaaffect.action.teleport"),
+                Texts.tr("history.aromaaffect.action.teleport"),
                 mouseX, mouseY, ap, filteredIdx, actionIdx);
     }
 
@@ -882,8 +883,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 MenuRenderUtils.withAlpha(0xAA9A7CFF, ap));
 
         Component popupTitle = namePopupIsRename
-                ? Component.translatable("history.aromaaffect.popup.rename")
-                : Component.translatable("history.aromaaffect.popup.save");
+                ? Texts.tr("history.aromaaffect.popup.rename")
+                : Texts.tr("history.aromaaffect.popup.save");
         g.drawCenteredString(font, popupTitle, px + popupW / 2, py + 6,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
 
@@ -905,7 +906,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                         : MenuRenderUtils.withAlpha(0x8833AA33, ap));
         MenuRenderUtils.renderOutline(g, confirmX, confirmY, confirmW, confirmH,
                 MenuRenderUtils.withAlpha(0x8844FF44, ap));
-        g.drawCenteredString(font, Component.translatable("history.aromaaffect.popup.confirm"),
+        g.drawCenteredString(font, Texts.tr("history.aromaaffect.popup.confirm"),
                 confirmX + confirmW / 2, confirmY + 4,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
 
@@ -917,7 +918,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                         : MenuRenderUtils.withAlpha(0x80AA3333, ap));
         MenuRenderUtils.renderOutline(g, cancelX, confirmY, confirmW, confirmH,
                 MenuRenderUtils.withAlpha(0x88FF4444, ap));
-        g.drawCenteredString(font, Component.translatable("history.aromaaffect.popup.cancel"),
+        g.drawCenteredString(font, Texts.tr("history.aromaaffect.popup.cancel"),
                 cancelX + confirmW / 2, confirmY + 4,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
     }
@@ -1094,7 +1095,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         // Check if passive mode is active - cannot use active tracking while passive mode is enabled
         if (PassiveModeManager.isPassiveModeEnabled()) {
-            showErrorNotification(Component.translatable("message.aromaaffect.tracking.passive_mode_active"));
+            showErrorNotification(Texts.tr("message.aromaaffect.tracking.passive_mode_active"));
             if (player != null) {
                 player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
             }
@@ -1125,9 +1126,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             }
         }
 
-        ResourceLocation targetLoc = ResourceLocation.parse(targetId);
+        ResourceLocation targetLoc = Ids.parse(targetId);
         ItemStack icon = getItemForTarget(targetId, categoryId);
-        ActiveTrackingState.set(targetLoc, Component.literal(displayName), icon, cat);
+        ActiveTrackingState.set(targetLoc, Texts.lit(displayName), icon, cat);
 
         // Use recall command to go directly to known coordinates (no search needed)
         String dimArg = dimension != null ? dimension : "minecraft:overworld";
@@ -1172,7 +1173,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int py = (height - 80) / 2;
 
         nameEditBox = new EditBox(font, px + 10, py + 22, popupW - 20, 18,
-                Component.literal("Name"));
+                Texts.lit("Name"));
         nameEditBox.setMaxLength(64);
         nameEditBox.setValue(prefill != null ? prefill : "");
         nameEditBox.setFocused(true);
@@ -1275,7 +1276,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         // Try as registered item (works for most blocks)
         try {
-            ResourceLocation loc = ResourceLocation.parse(targetId);
+            ResourceLocation loc = Ids.parse(targetId);
             var optItem = BuiltInRegistries.ITEM.getOptional(loc);
             if (optItem.isPresent()) {
                 ItemStack stack = new ItemStack(optItem.get());

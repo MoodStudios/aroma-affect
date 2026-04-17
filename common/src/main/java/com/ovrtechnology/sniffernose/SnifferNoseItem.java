@@ -1,5 +1,7 @@
 package com.ovrtechnology.sniffernose;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 import net.minecraft.core.registries.Registries;
@@ -55,7 +57,7 @@ public class SnifferNoseItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM, 
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
+                Ids.mod(itemId)
         ));
         
         // Sniffer nose items stack to 1 (they are unique items)
@@ -88,8 +90,8 @@ public class SnifferNoseItem extends Item {
         super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
         
         // Add info that this is for the Sniffer mob
-        tooltipAdder.accept(Component.literal("§7For the Sniffer mob"));
-        tooltipAdder.accept(Component.literal("§8Tier: " + definition.getTier()));
+        tooltipAdder.accept(Texts.lit("§7For the Sniffer mob"));
+        tooltipAdder.accept(Texts.lit("§8Tier: " + definition.getTier()));
     }
     
     /**

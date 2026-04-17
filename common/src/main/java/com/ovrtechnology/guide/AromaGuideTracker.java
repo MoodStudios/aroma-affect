@@ -1,5 +1,6 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.network.AromaGuideNetworking;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
@@ -100,18 +101,18 @@ public final class AromaGuideTracker {
         if (compassTargetPos != null) {
             int distance = (int) Math.sqrt(player.blockPosition().distSqr(compassTargetPos));
             player.displayClientMessage(
-                    Component.translatable("item.aromaaffect.aroma_guide.distance", distance),
+                    Texts.tr("item.aromaaffect.aroma_guide.distance", distance),
                     true
             );
         } else if (nearestVillagePos != null) {
             int distance = (int) Math.sqrt(player.blockPosition().distSqr(nearestVillagePos));
             player.displayClientMessage(
-                    Component.translatable("item.aromaaffect.aroma_guide.distance", distance),
+                    Texts.tr("item.aromaaffect.aroma_guide.distance", distance),
                     true
             );
         } else {
             player.displayClientMessage(
-                    Component.translatable("item.aromaaffect.aroma_guide.searching"),
+                    Texts.tr("item.aromaaffect.aroma_guide.searching"),
                     true
             );
         }

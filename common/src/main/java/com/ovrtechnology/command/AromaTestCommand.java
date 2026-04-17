@@ -1,5 +1,6 @@
 package com.ovrtechnology.command;
 
+import com.ovrtechnology.util.Texts;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ovrtechnology.AromaAffect;
@@ -77,12 +78,12 @@ public final class AromaTestCommand {
         // Default execution (no subcommand) shows available subcommands
         builder.executes(context -> {
             context.getSource().sendSuccess(
-                    () -> Component.literal("§6[Aroma Affect] §7Available subcommands:"),
+                    () -> Texts.lit("§6[Aroma Affect] §7Available subcommands:"),
                     false
             );
             for (SubCommand subCommand : SUB_COMMANDS.values()) {
                 context.getSource().sendSuccess(
-                        () -> Component.literal("§7  - §e/aromatest " + subCommand.getName() + " §8- " + subCommand.getDescription()),
+                        () -> Texts.lit("§7  - §e/aromatest " + subCommand.getName() + " §8- " + subCommand.getDescription()),
                         false
                 );
             }

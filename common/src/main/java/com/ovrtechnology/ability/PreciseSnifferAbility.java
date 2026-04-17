@@ -1,5 +1,6 @@
 package com.ovrtechnology.ability;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseItem;
 import net.minecraft.core.BlockPos;
@@ -147,7 +148,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
             if (def != null) {
                 List<String> blockIds = def.getConfigStringList("valid_blocks");
                 for (String blockId : blockIds) {
-                    ResourceLocation loc = ResourceLocation.tryParse(blockId);
+                    ResourceLocation loc = Ids.tryParse(blockId);
                     if (loc != null) {
                         Block block = BuiltInRegistries.BLOCK.getOptional(loc).orElse(null);
                         if (block != null && block != Blocks.AIR) {

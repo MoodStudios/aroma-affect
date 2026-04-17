@@ -1,5 +1,6 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Texts;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -81,7 +82,7 @@ public final class GuideElement {
     }
 
     public static GuideElement header(String text) {
-        return header(Component.literal(text));
+        return header(Texts.lit(text));
     }
 
     public static GuideElement header(Component text) {
@@ -89,7 +90,7 @@ public final class GuideElement {
     }
 
     public static GuideElement subheader(String text) {
-        return subheader(Component.literal(text));
+        return subheader(Texts.lit(text));
     }
 
     public static GuideElement subheader(Component text) {
@@ -97,7 +98,7 @@ public final class GuideElement {
     }
 
     public static GuideElement text(String text) {
-        return text(Component.literal(text));
+        return text(Texts.lit(text));
     }
 
     public static GuideElement text(Component text) {
@@ -105,7 +106,7 @@ public final class GuideElement {
     }
 
     public static GuideElement coloredText(String text, int color) {
-        return new GuideElement(Type.TEXT, Component.literal(text), null, null, 0, 0, 0, color);
+        return new GuideElement(Type.TEXT, Texts.lit(text), null, null, 0, 0, 0, color);
     }
 
     public static GuideElement coloredText(Component text, int color) {
@@ -129,7 +130,7 @@ public final class GuideElement {
     }
 
     public static GuideElement tip(String text) {
-        return tip(Component.literal(text));
+        return tip(Texts.lit(text));
     }
 
     public static GuideElement tip(Component text) {
@@ -145,7 +146,7 @@ public final class GuideElement {
      */
     public static GuideElement craftingGrid(ItemStack[] grid, ItemStack result, String label) {
         if (grid.length != 9) throw new IllegalArgumentException("Crafting grid must have exactly 9 slots");
-        return new GuideElement(Type.CRAFTING_GRID, Component.literal(label), null, null,
+        return new GuideElement(Type.CRAFTING_GRID, Texts.lit(label), null, null,
                 0, 0, 0, 0xFFFFFFFF, grid.clone(), result.copy(), null);
     }
 
@@ -154,7 +155,7 @@ public final class GuideElement {
      * and navigates to the specified page when clicked.
      */
     public static GuideElement abilityLink(String abilityName, String targetPageId) {
-        return new GuideElement(Type.ABILITY_LINK, Component.literal(abilityName), null, null,
+        return new GuideElement(Type.ABILITY_LINK, Texts.lit(abilityName), null, null,
                 0, 0, 0, 0xFFD0D0D0, null, null, targetPageId);
     }
 
@@ -171,7 +172,7 @@ public final class GuideElement {
      * Renders with an accent-colored dash prefix to visually separate from items below.
      */
     public static GuideElement detectionLabel(String text) {
-        return new GuideElement(Type.TEXT, Component.literal("\u25B8 " + text).withStyle(ChatFormatting.BOLD),
+        return new GuideElement(Type.TEXT, Texts.lit("\u25B8 " + text).withStyle(ChatFormatting.BOLD),
                 null, null, 0, 0, 0, 0xFFAAAACC);
     }
 
@@ -179,7 +180,7 @@ public final class GuideElement {
      * Creates a detection label using a translatable component with the accent-colored prefix.
      */
     public static GuideElement detectionLabel(Component text) {
-        return new GuideElement(Type.TEXT, Component.literal("\u25B8 ").withStyle(ChatFormatting.BOLD).append(text),
+        return new GuideElement(Type.TEXT, Texts.lit("\u25B8 ").withStyle(ChatFormatting.BOLD).append(text),
                 null, null, 0, 0, 0, 0xFFAAAACC);
     }
 
@@ -188,7 +189,7 @@ public final class GuideElement {
      * Used for detection lists (blocks, structures, biomes, flowers).
      */
     public static GuideElement iconText(ItemStack icon, String text) {
-        return new GuideElement(Type.ICON_TEXT, Component.literal(text), icon.copy(), null,
+        return new GuideElement(Type.ICON_TEXT, Texts.lit(text), icon.copy(), null,
                 0, 0, 0, 0xFFD0D0D0);
     }
 
@@ -207,7 +208,7 @@ public final class GuideElement {
     public static GuideElement iconText(String text, ItemStack... icons) {
         ItemStack[] copies = new ItemStack[icons.length];
         for (int i = 0; i < icons.length; i++) copies[i] = icons[i].copy();
-        return new GuideElement(Type.ICON_TEXT, Component.literal(text), copies[0], null,
+        return new GuideElement(Type.ICON_TEXT, Texts.lit(text), copies[0], null,
                 0, 0, 0, 0xFFD0D0D0, copies, null, null);
     }
 
@@ -229,7 +230,7 @@ public final class GuideElement {
      * @param url   the URL to open when clicked
      */
     public static GuideElement urlLink(String label, String url) {
-        return new GuideElement(Type.URL_LINK, Component.literal(label), null, null,
+        return new GuideElement(Type.URL_LINK, Texts.lit(label), null, null,
                 0, 0, 0, 0xFF6D9EF8, null, null, url);
     }
 
@@ -245,7 +246,7 @@ public final class GuideElement {
      * Creates a non-linked ability element that shows as "• AbilityName — description".
      */
     public static GuideElement ability(String text) {
-        return new GuideElement(Type.TEXT, Component.literal("\u2022 " + text), null, null,
+        return new GuideElement(Type.TEXT, Texts.lit("\u2022 " + text), null, null,
                 0, 0, 0, 0xFFD0D0D0);
     }
 
@@ -253,7 +254,7 @@ public final class GuideElement {
      * Creates a non-linked ability element using a translatable component.
      */
     public static GuideElement ability(Component text) {
-        return new GuideElement(Type.TEXT, Component.literal("\u2022 ").append(text), null, null,
+        return new GuideElement(Type.TEXT, Texts.lit("\u2022 ").append(text), null, null,
                 0, 0, 0, 0xFFD0D0D0);
     }
 

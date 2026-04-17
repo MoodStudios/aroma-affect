@@ -1,5 +1,6 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -28,7 +29,7 @@ public class AromaGuideItem extends Item {
         super(new Properties()
                 .setId(ResourceKey.create(
                         Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "aroma_guide")
+                        Ids.mod("aroma_guide")
                 ))
                 .stacksTo(1)
                 .rarity(Rarity.UNCOMMON)

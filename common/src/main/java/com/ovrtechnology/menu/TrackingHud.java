@@ -1,5 +1,6 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
@@ -138,15 +139,15 @@ public final class TrackingHud {
         int accentColor;
         switch (status) {
             case ARRIVED -> {
-                text = Component.translatable("tracking.aromaaffect.status.arrived").getString();
+                text = Texts.tr("tracking.aromaaffect.status.arrived").getString();
                 accentColor = 0x44FF44;
             }
             case NOT_FOUND -> {
-                text = Component.translatable("tracking.aromaaffect.status.not_found").getString();
+                text = Texts.tr("tracking.aromaaffect.status.not_found").getString();
                 accentColor = 0xFF6644;
             }
             case ERROR -> {
-                text = Component.translatable("tracking.aromaaffect.status.error").getString();
+                text = Texts.tr("tracking.aromaaffect.status.error").getString();
                 accentColor = 0xFF4444;
             }
             default -> { return; }
@@ -201,10 +202,10 @@ public final class TrackingHud {
 
         String headerText;
         if (status == ActiveTrackingState.TrackingStatus.SEARCHING) {
-            headerText = Component.translatable("tracking.aromaaffect.status.searching").getString();
+            headerText = Texts.tr("tracking.aromaaffect.status.searching").getString();
         } else {
             MenuCategory cat = ActiveTrackingState.getCategory();
-            headerText = Component.translatable("menu.aromaaffect.tracking.label").getString();
+            headerText = Texts.tr("menu.aromaaffect.tracking.label").getString();
             if (cat != null) {
                 headerText += " · " + cat.getDisplayName().getString();
             }

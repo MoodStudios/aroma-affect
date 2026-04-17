@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.LookupType;
 import net.minecraft.network.chat.Component;
@@ -14,22 +16,22 @@ import net.minecraft.world.item.Items;
 public enum MenuCategory {
     BLOCKS("blocks", LookupType.BLOCK, Items.DIAMOND_ORE.getDefaultInstance(),
            "menu.aromaaffect.category.blocks", "menu.aromaaffect.category.blocks.description",
-           ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png"),
+           Ids.mod("textures/gui/sprites/radial/icon_blocks.png"),
            "block"),
 
     BIOMES("biomes", LookupType.BIOME, Items.OAK_SAPLING.getDefaultInstance(),
            "menu.aromaaffect.category.biomes", "menu.aromaaffect.category.biomes.description",
-           ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png"),
+           Ids.mod("textures/gui/sprites/radial/icon_biomes.png"),
            "biome"),
 
     STRUCTURES("structures", LookupType.STRUCTURE, Items.BELL.getDefaultInstance(),
                "menu.aromaaffect.category.structures", "menu.aromaaffect.category.structures.description",
-               ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png"),
+               Ids.mod("textures/gui/sprites/radial/icon_structures.png"),
                "structure"),
 
     FLOWERS("flowers", LookupType.FLOWER, Items.POPPY.getDefaultInstance(),
             "menu.aromaaffect.category.flowers", "menu.aromaaffect.category.flowers.description",
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png"),
+            Ids.mod("textures/gui/sprites/radial/icon_flowers.png"),
             "block");
 
     private final String id;
@@ -87,11 +89,11 @@ public enum MenuCategory {
     }
 
     public Component getDisplayName() {
-        return Component.translatable(translationKey);
+        return Texts.tr(translationKey);
     }
 
     public Component getDescription() {
-        return Component.translatable(descriptionKey);
+        return Texts.tr(descriptionKey);
     }
 
     public static MenuCategory fromId(String id) {

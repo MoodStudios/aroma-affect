@@ -1,5 +1,7 @@
 package com.ovrtechnology.network;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.config.ClientConfig;
@@ -29,7 +31,7 @@ public final class OmaraDeviceNetworking {
 
     public record OmaraPuffS2C(String scentName, double intensity, int durationTicks) implements CustomPacketPayload {
         public static final Type<OmaraPuffS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff_s2c"));
+                Ids.mod("omara_puff_s2c"));
         public static final StreamCodec<RegistryFriendlyByteBuf, OmaraPuffS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUtf(payload.scentName);
@@ -83,7 +85,7 @@ public final class OmaraDeviceNetworking {
                             scentName, intensityPercent);
                         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
                         if (mc.player != null) {
-                            mc.player.displayClientMessage(Component.literal(message), false);
+                            mc.player.displayClientMessage(Texts.lit(message), false);
                         }
                     }
                 }

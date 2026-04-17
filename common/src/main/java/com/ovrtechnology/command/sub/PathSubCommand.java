@@ -1,5 +1,7 @@
 package com.ovrtechnology.command.sub;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -196,19 +198,19 @@ public class PathSubCommand implements SubCommand {
 
     private int showUsage(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Path usage:"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest path biome <biome_id> [radius]"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest path structure <structure_id> [radius]"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest path block <block_id> [radius]"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest path stop §7- Stop the current path"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest path verbose §7- Toggle chat messages (" + (verbose ? "§aON" : "§cOFF") + "§7)"), false);
+        source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §7Path usage:"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest path biome <biome_id> [radius]"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest path structure <structure_id> [radius]"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest path block <block_id> [radius]"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest path stop §7- Stop the current path"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest path verbose §7- Toggle chat messages (" + (verbose ? "§aON" : "§cOFF") + "§7)"), false);
         return Command.SINGLE_SUCCESS;
     }
 
     private int toggleVerbose(CommandContext<CommandSourceStack> context) {
         verbose = !verbose;
         String state = verbose ? "§aEnabled" : "§cDisabled";
-        context.getSource().sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Verbose path messages: " + state), false);
+        context.getSource().sendSuccess(() -> Texts.lit("§6[Aroma Affect] §7Verbose path messages: " + state), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -216,18 +218,18 @@ public class PathSubCommand implements SubCommand {
         CommandSourceStack source = context.getSource();
 
         if (!(source.getEntity() instanceof ServerPlayer player)) {
-            source.sendFailure(Component.literal("§6[Aroma Affect] §cThis command can only be executed by a player"));
+            source.sendFailure(Texts.lit("§6[Aroma Affect] §cThis command can only be executed by a player"));
             return 0;
         }
 
         if (ActivePathManager.getInstance().hasActivePath(player.getUUID())) {
             ActivePathManager.getInstance().removePath(player.getUUID());
             if (verbose) {
-                source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aPath stopped successfully!"), false);
+                source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §aPath stopped successfully!"), false);
             }
         } else {
             if (verbose) {
-                source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7No active path to stop."), false);
+                source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §7No active path to stop."), false);
             }
         }
 
@@ -287,7 +289,7 @@ public class PathSubCommand implements SubCommand {
 
         // Send search message (verbose only)
         if (verbose) {
-            source.sendSuccess(() -> Component.literal(
+            source.sendSuccess(() -> Texts.lit(
                     "§6[Aroma Affect] §7Searching for §e" + type.getId() + " §7'§f" + resourceId + "§7'..."
             ), false);
         }
@@ -372,7 +374,7 @@ public class PathSubCommand implements SubCommand {
                     }
                     // Max retries — all nearby locations are blacklisted
                     if (verbose) {
-                        source.sendFailure(Component.literal(
+                        source.sendFailure(Texts.lit(
                                 "§6[Aroma Affect] §cAll nearby locations are blacklisted"));
                     }
                     PathScentNetworking.sendPathNotFound(player, "All nearby locations are blacklisted");
@@ -381,15 +383,15 @@ public class PathSubCommand implements SubCommand {
             }
 
             if (verbose) {
-                source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aCreating particle path!"), false);
-                source.sendSuccess(() -> Component.literal(
+                source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §aCreating particle path!"), false);
+                source.sendSuccess(() -> Texts.lit(
                         String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d",
                                 finalDestination.getX(), finalDestination.getY(), finalDestination.getZ())
                 ), false);
-                source.sendSuccess(() -> Component.literal(
+                source.sendSuccess(() -> Texts.lit(
                         "§7  Distance: §e" + result.getFormattedDistance() + " blocks"
                 ), false);
-                source.sendSuccess(() -> Component.literal(
+                source.sendSuccess(() -> Texts.lit(
                         "§7  §oThe path will guide you until you arrive. Use §e/aromatest path stop §7§oto cancel."
                 ), false);
             }
@@ -419,7 +421,7 @@ public class PathSubCommand implements SubCommand {
                 );
                 PathScentNetworking.sendPathFound(player, dist, finalDestination);
             } else if (player == null && verbose) {
-                source.sendSuccess(() -> Component.literal("§7  §o(Particles only visible to players)"), false);
+                source.sendSuccess(() -> Texts.lit("§7  §o(Particles only visible to players)"), false);
             }
 
         } else {
@@ -435,7 +437,7 @@ public class PathSubCommand implements SubCommand {
             };
 
             if (verbose) {
-                source.sendFailure(Component.literal(
+                source.sendFailure(Texts.lit(
                         "§6[Aroma Affect] §c" + reason + ": §7" + result.target().resourceId()
                 ));
             }
@@ -585,7 +587,7 @@ public class PathSubCommand implements SubCommand {
 
     private boolean playerHasItem(ServerPlayer player, RequiredItem req) {
         if (req == null || req.getItemId() == null) return true;
-        ResourceLocation itemId = ResourceLocation.parse(req.getItemId());
+        ResourceLocation itemId = Ids.parse(req.getItemId());
         var itemOpt = BuiltInRegistries.ITEM.get(itemId);
         if (itemOpt.isEmpty()) return false;
 
@@ -605,7 +607,7 @@ public class PathSubCommand implements SubCommand {
         RequiredItem req = resolveRequiredItem(type, targetId);
         if (req == null || req.getItemId() == null) return;
 
-        ResourceLocation itemId = ResourceLocation.parse(req.getItemId());
+        ResourceLocation itemId = Ids.parse(req.getItemId());
         var itemOpt = BuiltInRegistries.ITEM.get(itemId);
         if (itemOpt.isEmpty()) return;
 
@@ -626,7 +628,7 @@ public class PathSubCommand implements SubCommand {
         CommandSourceStack source = context.getSource();
 
         if (!(source.getEntity() instanceof ServerPlayer player)) {
-            source.sendFailure(Component.literal("§6[Aroma Affect] §cThis command can only be executed by a player"));
+            source.sendFailure(Texts.lit("§6[Aroma Affect] §cThis command can only be executed by a player"));
             return 0;
         }
 
@@ -691,8 +693,8 @@ public class PathSubCommand implements SubCommand {
         PathScentNetworking.sendPathFound(player, dist, destination);
 
         if (verbose) {
-            source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aRecalling path to known location!"), false);
-            source.sendSuccess(() -> Component.literal(
+            source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §aRecalling path to known location!"), false);
+            source.sendSuccess(() -> Texts.lit(
                     String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d", x, y, z)
             ), false);
         }

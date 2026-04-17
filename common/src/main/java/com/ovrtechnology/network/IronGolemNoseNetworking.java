@@ -1,5 +1,6 @@
 package com.ovrtechnology.network;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.irongolem.IronGolemNoseTracker;
 import dev.architectury.networking.NetworkManager;
@@ -18,7 +19,7 @@ public final class IronGolemNoseNetworking {
 
     public record IronGolemNoseSyncS2C(UUID golemUUID, boolean hasNose) implements CustomPacketPayload {
         public static final Type<IronGolemNoseSyncS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "iron_golem_nose_sync"));
+                Ids.mod("iron_golem_nose_sync"));
         public static final StreamCodec<RegistryFriendlyByteBuf, IronGolemNoseSyncS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUUID(payload.golemUUID);

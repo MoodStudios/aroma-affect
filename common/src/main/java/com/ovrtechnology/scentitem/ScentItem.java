@@ -1,5 +1,7 @@
 package com.ovrtechnology.scentitem;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -75,7 +77,7 @@ public class ScentItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM,
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
+                Ids.mod(itemId)
         ));
 
         // Capsule items have durability (100 uses); other scent items stack normally
@@ -177,7 +179,7 @@ public class ScentItem extends Item {
         if (!ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs)) {
             long remaining = ScentTriggerManager.getInstance().getRemainingCooldown(scentName);
             player.displayClientMessage(
-                Component.translatable("message.aromaaffect.scent_cooldown",
+                Texts.tr("message.aromaaffect.scent_cooldown",
                     String.format("%.1f", remaining / 1000.0)),
                 true
             );
@@ -207,7 +209,7 @@ public class ScentItem extends Item {
                 int intensityPercent = (int) Math.round(intensity * 100);
                 String message = String.format("§d[Aroma Affect] §7Scent: §e%s §7(§ditem use§7) §8[%d%%]",
                     scentName, intensityPercent);
-                player.displayClientMessage(Component.literal(message), false);
+                player.displayClientMessage(Texts.lit(message), false);
             }
 
             AromaAffect.LOGGER.debug("Item {} triggered scent '{}'", fullItemId, scentName);
@@ -277,14 +279,14 @@ public class ScentItem extends Item {
             
             for (String word : words) {
                 if (line.length() + word.length() + 1 > 40) {
-                    tooltipAdder.accept(Component.literal("§7" + line.toString().trim()));
+                    tooltipAdder.accept(Texts.lit("§7" + line.toString().trim()));
                     line = new StringBuilder();
                 }
                 line.append(word).append(" ");
             }
             
             if (line.length() > 0) {
-                tooltipAdder.accept(Component.literal("§7" + line.toString().trim()));
+                tooltipAdder.accept(Texts.lit("§7" + line.toString().trim()));
             }
         }
     }

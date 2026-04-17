@@ -1,5 +1,6 @@
 package com.ovrtechnology.omara;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.OmaraDeviceNetworking;
 import com.ovrtechnology.registry.ModSounds;
@@ -91,7 +92,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
 
     @Override
     protected Component getDefaultName() {
-        return Component.translatable("block.aromaaffect.omara_device");
+        return Texts.tr("block.aromaaffect.omara_device");
     }
 
     @Override

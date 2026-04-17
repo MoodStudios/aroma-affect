@@ -1,5 +1,6 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.BaseMenuScreen;
 import net.minecraft.client.Minecraft;
@@ -380,12 +381,12 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Category title (bold)
         int textX = left + margin + 22;
-        Component catTitle = Component.literal(entry.text).withStyle(ChatFormatting.BOLD);
+        Component catTitle = Texts.lit(entry.text).withStyle(ChatFormatting.BOLD);
         int maxCatWidth = right - textX - 20;
         String catTitleStr = entry.text;
         if (font.width(catTitle) > maxCatWidth) {
             catTitleStr = font.plainSubstrByWidth(catTitleStr, maxCatWidth - 10) + "..";
-            catTitle = Component.literal(catTitleStr).withStyle(ChatFormatting.BOLD);
+            catTitle = Texts.lit(catTitleStr).withStyle(ChatFormatting.BOLD);
         }
         g.drawString(font, catTitle, textX, y + (h - font.lineHeight) / 2,
                 applyAlpha(COLOR_CATEGORY_TEXT, alpha), true);
@@ -755,7 +756,7 @@ public class GuideScreen extends BaseMenuScreen {
         }
 
         // Draw subheader text in bold
-        Component boldText = Component.literal(str).withStyle(ChatFormatting.BOLD);
+        Component boldText = Texts.lit(str).withStyle(ChatFormatting.BOLD);
         g.drawString(font, boldText, x + 8 + iconOffset, y + 2, applyAlpha(element.getColor(), alpha), true);
 
         return font.lineHeight + 6;
@@ -997,7 +998,7 @@ public class GuideScreen extends BaseMenuScreen {
         g.drawString(font, nameStr, x + bulletWidth, y, applyAlpha(0xFFD0D0D0, alpha), false);
 
         // " (inherited)" in bold
-        Component inherited = Component.literal(" (inherited)").withStyle(ChatFormatting.BOLD);
+        Component inherited = Texts.lit(" (inherited)").withStyle(ChatFormatting.BOLD);
         int inheritedWidth = font.width(inherited);
         int inheritedX = x + bulletWidth + nameWidth;
         g.drawString(font, inherited, inheritedX, y, applyAlpha(0xFFAAAACC, alpha), false);
@@ -1116,7 +1117,7 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Draw text with underline
         int textX = startX + iconW + 3;
-        Component underlined = Component.literal(labelStr).withStyle(ChatFormatting.UNDERLINE);
+        Component underlined = Texts.lit(labelStr).withStyle(ChatFormatting.UNDERLINE);
         g.drawString(font, underlined, textX, y + 1, textColor, false);
 
         // Register clickable region

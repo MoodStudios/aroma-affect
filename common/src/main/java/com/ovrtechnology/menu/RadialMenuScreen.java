@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -106,20 +108,20 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private float arrowAngle = (float) (-Math.PI / 2.0);
 
     public RadialMenuScreen() {
-        super(Component.translatable("menu.aromaaffect.radial.title"));
+        super(Texts.tr("menu.aromaaffect.radial.title"));
         initializeEntries();
     }
 
     // Texture locations for radial menu icons
-    private static final ResourceLocation ICON_STRUCTURES = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png");
-    private static final ResourceLocation ICON_BIOMES = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png");
-    private static final ResourceLocation ICON_BLOCKS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
-    private static final ResourceLocation ICON_FLOWERS = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
-    private static final ResourceLocation ICON_CONFIG = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
+    private static final ResourceLocation ICON_STRUCTURES = Ids.mod("textures/gui/sprites/radial/icon_structures.png");
+    private static final ResourceLocation ICON_BIOMES = Ids.mod("textures/gui/sprites/radial/icon_biomes.png");
+    private static final ResourceLocation ICON_BLOCKS = Ids.mod("textures/gui/sprites/radial/icon_blocks.png");
+    private static final ResourceLocation ICON_FLOWERS = Ids.mod("textures/gui/sprites/radial/icon_flowers.png");
+    private static final ResourceLocation ICON_CONFIG = Ids.mod("textures/gui/sprites/radial/icon_config.png");
 
-    private static final ResourceLocation ICON_PASSIVE = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
-    private static final ResourceLocation ICON_CENTER_LOGO = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part1.png");
-    private static final ResourceLocation ICON_CENTER_ARROW = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part2.png");
+    private static final ResourceLocation ICON_PASSIVE = Ids.mod("textures/gui/sprites/radial/icon_passive.png");
+    private static final ResourceLocation ICON_CENTER_LOGO = Ids.mod("textures/gui/sprites/radial/ovr_isologo_part1.png");
+    private static final ResourceLocation ICON_CENTER_ARROW = Ids.mod("textures/gui/sprites/radial/ovr_isologo_part2.png");
 
     // Icon display size (will be scaled from high-res textures)
     private static final int ICON_DISPLAY_SIZE = 32;
@@ -135,24 +137,24 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // 0: structures (top-left), 1: biomes (top-right), 2: blocks (bottom-right), 3: flowers (bottom-left)
         entries.add(new RadialEntry(
                 "structures",
-                Component.translatable("menu.aromaaffect.category.structures"),
-                Component.translatable("menu.aromaaffect.category.structures.description"),
+                Texts.tr("menu.aromaaffect.category.structures"),
+                Texts.tr("menu.aromaaffect.category.structures.description"),
                 ICON_STRUCTURES,
                 () -> MenuManager.openStructuresMenu()
         ));
 
         entries.add(new RadialEntry(
                 "biomes",
-                Component.translatable("menu.aromaaffect.category.biomes"),
-                Component.translatable("menu.aromaaffect.category.biomes.description"),
+                Texts.tr("menu.aromaaffect.category.biomes"),
+                Texts.tr("menu.aromaaffect.category.biomes.description"),
                 ICON_BIOMES,
                 () -> MenuManager.openBiomesMenu()
         ));
 
         entries.add(new RadialEntry(
                 "blocks",
-                Component.translatable("menu.aromaaffect.category.blocks"),
-                Component.translatable("menu.aromaaffect.category.blocks.description"),
+                Texts.tr("menu.aromaaffect.category.blocks"),
+                Texts.tr("menu.aromaaffect.category.blocks.description"),
                 ICON_BLOCKS,
                 () -> MenuManager.openBlocksMenu()
         ));
@@ -160,8 +162,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // 4th slice: Flowers/Flora
         entries.add(new RadialEntry(
                 "flowers",
-                Component.translatable("menu.aromaaffect.category.flowers"),
-                Component.translatable("menu.aromaaffect.category.flowers.description"),
+                Texts.tr("menu.aromaaffect.category.flowers"),
+                Texts.tr("menu.aromaaffect.category.flowers.description"),
                 ICON_FLOWERS,
                 () -> MenuManager.openFlowersMenu()
         ));
@@ -425,33 +427,33 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int tooltipX = histX + histBtnSize + 8;
         if (isHoveringPassiveToggle) {
             Component passiveLabel = isPassiveEnabled
-                    ? Component.translatable("menu.aromaaffect.button.passive.on")
-                    : Component.translatable("menu.aromaaffect.button.passive.off");
+                    ? Texts.tr("menu.aromaaffect.button.passive.on")
+                    : Texts.tr("menu.aromaaffect.button.passive.off");
             graphics.drawString(font, passiveLabel,
                     tooltipX,
                     toggleY + toggleH / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringConfigGear) {
-            graphics.drawString(font, Component.translatable("config.aromaaffect.button.settings"),
+            graphics.drawString(font, Texts.tr("config.aromaaffect.button.settings"),
                     tooltipX,
                     gearY + gearBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringGuide) {
-            graphics.drawString(font, Component.translatable("guide.aromaaffect.button"),
+            graphics.drawString(font, Texts.tr("guide.aromaaffect.button"),
                     tooltipX,
                     guideY + guideBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringShop) {
-            graphics.drawString(font, Component.translatable("shop.aromaaffect.button"),
+            graphics.drawString(font, Texts.tr("shop.aromaaffect.button"),
                     tooltipX,
                     shopY + shopBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringHistory) {
-            graphics.drawString(font, Component.translatable("history.aromaaffect.button"),
+            graphics.drawString(font, Texts.tr("history.aromaaffect.button"),
                     tooltipX,
                     histY + histBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
@@ -770,16 +772,16 @@ public class RadialMenuScreen extends BaseMenuScreen {
         MenuCategory cat = ActiveTrackingState.getCategory();
         String headerText;
         switch (status) {
-            case SEARCHING -> headerText = Component.translatable("tracking.aromaaffect.status.searching").getString();
+            case SEARCHING -> headerText = Texts.tr("tracking.aromaaffect.status.searching").getString();
             case TRACKING -> {
-                headerText = Component.translatable("menu.aromaaffect.tracking.label").getString();
+                headerText = Texts.tr("menu.aromaaffect.tracking.label").getString();
                 if (cat != null) {
                     headerText += " · " + cat.getDisplayName().getString();
                 }
             }
-            case ARRIVED -> headerText = Component.translatable("tracking.aromaaffect.status.arrived").getString();
-            case NOT_FOUND -> headerText = Component.translatable("tracking.aromaaffect.status.not_found").getString();
-            case ERROR -> headerText = Component.translatable("tracking.aromaaffect.status.error").getString();
+            case ARRIVED -> headerText = Texts.tr("tracking.aromaaffect.status.arrived").getString();
+            case NOT_FOUND -> headerText = Texts.tr("tracking.aromaaffect.status.not_found").getString();
+            case ERROR -> headerText = Texts.tr("tracking.aromaaffect.status.error").getString();
             default -> headerText = "";
         }
 
@@ -898,7 +900,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Stop button below panel (only for SEARCHING and TRACKING states)
         if (status == ActiveTrackingState.TrackingStatus.SEARCHING
                 || status == ActiveTrackingState.TrackingStatus.TRACKING) {
-            Component stopLabel = Component.translatable("tracking.aromaaffect.stop");
+            Component stopLabel = Texts.tr("tracking.aromaaffect.stop");
             int stopTextW = font.width(stopLabel);
             int stopBtnW = stopTextW + 12;
             int stopBtnH = 14;
@@ -927,7 +929,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             // Teleport button (creative mode only, left of stop button)
             var player = Minecraft.getInstance().player;
             if (player != null && player.isCreative() && ActiveTrackingState.getDestination() != null) {
-                Component tpLabel = Component.literal("Teleport");
+                Component tpLabel = Texts.lit("Teleport");
                 int tpTextW = font.width(tpLabel);
                 int tpBtnW = tpTextW + 12;
                 int tpBtnH = 14;
@@ -978,8 +980,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 source.close();
 
                 String texName = original.getPath().replace('/', '_').replace('.', '_');
-                ResourceLocation grayLoc = ResourceLocation.fromNamespaceAndPath(
-                        AromaAffect.MOD_ID, "dynamic/gray_" + texName);
+                ResourceLocation grayLoc = Ids.mod("dynamic/gray_" + texName);
                 DynamicTexture dynamicTexture = new DynamicTexture(() -> texName, grayscale);
                 Minecraft.getInstance().getTextureManager().register(grayLoc, dynamicTexture);
                 GRAYSCALE_CACHE.put(original, grayLoc);
@@ -1032,7 +1033,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             int lockedTitleColor = ((int) (255 * alpha) << 24) | 0x999999;
             int lockedDescColor = ((int) (180 * alpha) << 24) | 0xFF6B6B;
             graphics.drawCenteredString(font, entry.title, centerX, y, lockedTitleColor);
-            graphics.drawCenteredString(font, Component.translatable("menu.aromaaffect.category.locked"), centerX, y + 12, lockedDescColor);
+            graphics.drawCenteredString(font, Texts.tr("menu.aromaaffect.category.locked"), centerX, y + 12, lockedDescColor);
         } else {
             int titleColor = ((int) (255 * alpha) << 24) | 0xFFFFFF;
             int descColor = ((int) (200 * alpha) << 24) | 0xD0D0D0;

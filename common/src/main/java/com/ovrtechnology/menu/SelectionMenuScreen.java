@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.trigger.PassiveModeManager;
@@ -44,8 +46,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     protected static final int BACK_BUTTON_SIZE = 24;
     protected static final int BACK_BUTTON_PADDING = 8;
 
-    protected static final ResourceLocation ICON_BACK = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
+    protected static final ResourceLocation ICON_BACK = Ids.mod("textures/gui/sprites/radial/icon_back.png");
 
     // ── Shared row colors ────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     // ── Constructor ──────────────────────────────────────────────────────
 
     protected SelectionMenuScreen(MenuCategory category) {
-        super(Component.translatable("menu.aromaaffect." + category.getId() + ".title"));
+        super(Texts.tr("menu.aromaaffect." + category.getId() + ".title"));
         this.category = category;
     }
 
@@ -135,8 +136,8 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int searchY = 52;
 
         searchBox = new EditBox(font, searchX, searchY, listWidth, SEARCH_BOX_HEIGHT,
-                Component.translatable("menu.aromaaffect." + category.getId() + ".search_placeholder"));
-        searchBox.setHint(Component.translatable("menu.aromaaffect." + category.getId() + ".search_placeholder"));
+                Texts.tr("menu.aromaaffect." + category.getId() + ".search_placeholder"));
+        searchBox.setHint(Texts.tr("menu.aromaaffect." + category.getId() + ".search_placeholder"));
         searchBox.setMaxLength(50);
         searchBox.setResponder(query -> {
             searchQuery = query;
@@ -269,7 +270,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             float alpha = animationProgress;
             int textColor = (int) (180 * alpha) << 24 | 0xAAAAAA;
             graphics.drawCenteredString(font,
-                    Component.translatable("menu.aromaaffect." + category.getId() + ".no_results"),
+                    Texts.tr("menu.aromaaffect." + category.getId() + ".no_results"),
                     width / 2, listTop + 20, textColor);
             return;
         }

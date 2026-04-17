@@ -1,5 +1,7 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.google.gson.*;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -133,7 +135,7 @@ public final class GuideContentLoader {
                 return parseCraftingGrid(json);
             case "image":
                 return GuideElement.image(
-                        ResourceLocation.parse(json.get("texture").getAsString()),
+                        Ids.parse(json.get("texture").getAsString()),
                         json.get("width").getAsInt(),
                         json.get("height").getAsInt());
             case "url_link":
@@ -187,7 +189,7 @@ public final class GuideContentLoader {
                 return GuideIcon.ofItem(resolveItem(json.get("item").getAsString()));
             case "texture":
                 return GuideIcon.ofTexture(
-                        ResourceLocation.parse(json.get("texture").getAsString()),
+                        Ids.parse(json.get("texture").getAsString()),
                         json.get("width").getAsInt(),
                         json.get("height").getAsInt());
             case "symbol":
@@ -210,7 +212,7 @@ public final class GuideContentLoader {
         if (itemId == null || itemId.isEmpty() || itemId.equals("minecraft:air")) {
             return ItemStack.EMPTY;
         }
-        ResourceLocation loc = ResourceLocation.parse(itemId);
+        ResourceLocation loc = Ids.parse(itemId);
         return BuiltInRegistries.ITEM.getOptional(loc)
                 .map(ItemStack::new)
                 .orElse(ItemStack.EMPTY);
@@ -225,10 +227,10 @@ public final class GuideContentLoader {
      */
     static Component resolveText(JsonObject json) {
         if (json.has("translate")) {
-            return Component.translatable(json.get("translate").getAsString());
+            return Texts.tr(json.get("translate").getAsString());
         }
         if (json.has("text")) {
-            return Component.literal(json.get("text").getAsString());
+            return Texts.lit(json.get("text").getAsString());
         }
         if (json.has("title")) {
             // title field might also be a text object
@@ -236,9 +238,9 @@ public final class GuideContentLoader {
             if (titleEl.isJsonObject()) {
                 return resolveText(titleEl.getAsJsonObject());
             }
-            return Component.literal(titleEl.getAsString());
+            return Texts.lit(titleEl.getAsString());
         }
-        return Component.empty();
+        return Texts.empty();
     }
 
     // ── Color Parsing ───────────────────────────────────────────────

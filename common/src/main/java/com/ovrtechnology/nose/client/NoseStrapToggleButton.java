@@ -1,5 +1,7 @@
 package com.ovrtechnology.nose.client;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
@@ -12,8 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 public final class NoseStrapToggleButton extends ImageButton {
     public static final int SIZE = 12;
 
-    private static final ResourceLocation STRAP_ON = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose/strap_on");
-    private static final ResourceLocation STRAP_OFF = ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose/strap_off");
+    private static final ResourceLocation STRAP_ON = Ids.mod("nose/strap_on");
+    private static final ResourceLocation STRAP_OFF = Ids.mod("nose/strap_off");
     private static final WidgetSprites PLACEHOLDER_SPRITES = new WidgetSprites(STRAP_OFF);
 
     public NoseStrapToggleButton(int x, int y, OnPress onPress) {
@@ -24,9 +26,9 @@ public final class NoseStrapToggleButton extends ImageButton {
                 SIZE,
                 PLACEHOLDER_SPRITES,
                 onPress,
-                Component.translatable("gui.aromaaffect.nose_strap.tooltip")
+                Texts.tr("gui.aromaaffect.nose_strap.tooltip")
         );
-        setTooltip(Tooltip.create(Component.translatable("gui.aromaaffect.nose_strap.tooltip")));
+        setTooltip(Tooltip.create(Texts.tr("gui.aromaaffect.nose_strap.tooltip")));
     }
 
     @Override

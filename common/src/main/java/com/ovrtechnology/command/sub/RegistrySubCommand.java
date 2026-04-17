@@ -1,5 +1,6 @@
 package com.ovrtechnology.command.sub;
 
+import com.ovrtechnology.util.Texts;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -59,12 +60,12 @@ public class RegistrySubCommand implements SubCommand {
     
     private int showUsage(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Registry usage:"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest registry structure §8- List structures"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest registry block §8- List blocks"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest registry biome §8- List biomes"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest registry scent §8- List scents"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest registry nose §8- List noses"), false);
+        source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §7Registry usage:"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest registry structure §8- List structures"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest registry block §8- List blocks"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest registry biome §8- List biomes"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest registry scent §8- List scents"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest registry nose §8- List noses"), false);
         return Command.SINGLE_SUCCESS;
     }
     
@@ -75,20 +76,20 @@ public class RegistrySubCommand implements SubCommand {
         int count = ids.size();
         
         if (count == 0) {
-            source.sendSuccess(() -> Component.literal(
+            source.sendSuccess(() -> Texts.lit(
                     "§6[Aroma Affect] §7No " + type.getDisplayName() + " registered."
             ), false);
             return Command.SINGLE_SUCCESS;
         }
         
         // Header
-        source.sendSuccess(() -> Component.literal(
+        source.sendSuccess(() -> Texts.lit(
                 "§6[Aroma Affect] §7Registered " + type.getDisplayName() + " §8(§e" + count + "§8):"
         ), false);
         
         // List IDs comma-separated
         String idList = String.join(", ", ids);
-        source.sendSuccess(() -> Component.literal("§f" + idList), false);
+        source.sendSuccess(() -> Texts.lit("§f" + idList), false);
         
         return Command.SINGLE_SUCCESS;
     }

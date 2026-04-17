@@ -1,5 +1,7 @@
 package com.ovrtechnology.omara;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.MenuRenderUtils;
 import com.ovrtechnology.scent.ScentDefinition;
@@ -18,8 +20,7 @@ import java.util.Optional;
 
 public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> {
 
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/container/omara_device.png");
+    private static final ResourceLocation TEXTURE = Ids.mod("textures/gui/container/omara_device.png");
 
     // Info panel starts right of the slot area
     private static final int INFO_X = 98;
@@ -155,7 +156,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
 
         if (cooldownTicks <= 0) {
             g.drawString(this.font,
-                    Component.translatable("gui.aromaaffect.omara_device.ready"),
+                    Texts.tr("gui.aromaaffect.omara_device.ready"),
                     infoX + 8, row3Y, 0xFF55FF55, true);
         } else {
             float secs = cooldownTicks / 20.0f;
@@ -193,7 +194,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         drawButton(g, bx, by, BTN_W, BTN_H, hovered);
 
         boolean isAuto = this.menu.getMode() == 0;
-        Component label = Component.translatable(isAuto
+        Component label = Texts.tr(isAuto
                 ? "gui.aromaaffect.omara_device.mode.auto"
                 : "gui.aromaaffect.omara_device.mode.redstone");
         int textColor = isAuto ? 0xFF55FF55 : 0xFFFF5555;
@@ -211,7 +212,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         drawButton(g, bx, by, BTN_W, BTN_H, hovered);
 
         boolean is60s = this.menu.getIntervalIndex() == 0;
-        Component label = Component.translatable(is60s
+        Component label = Texts.tr(is60s
                 ? "gui.aromaaffect.omara_device.interval.60s"
                 : "gui.aromaaffect.omara_device.interval.5min");
 

@@ -1,5 +1,6 @@
 package com.ovrtechnology.trigger;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -87,7 +88,7 @@ public final class StructureSyncHandler {
 
     private static boolean isInsideStructure(ServerLevel level, BlockPos playerPos, String structureId) {
         try {
-            ResourceLocation location = ResourceLocation.parse(structureId);
+            ResourceLocation location = Ids.parse(structureId);
             var structureOpt = level.registryAccess()
                     .lookupOrThrow(Registries.STRUCTURE)
                     .getOptional(location);

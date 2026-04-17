@@ -1,5 +1,6 @@
 package com.ovrtechnology.entity.sniffer;
 
+import com.ovrtechnology.util.Ids;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -10,9 +11,9 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
 
-    private static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot");
+    private static final ResourceLocation SLOT_SPRITE = Ids.vanilla("container/slot");
     private static final ResourceLocation HORSE_INVENTORY_LOCATION =
-            ResourceLocation.withDefaultNamespace("textures/gui/container/horse.png");
+            Ids.vanilla("textures/gui/container/horse.png");
 
     private float xMouse;
     private float yMouse;

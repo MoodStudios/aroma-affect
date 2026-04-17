@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.biome.BiomeDefinition;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
@@ -31,8 +33,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
     private static final int TEX_W = 288;
     private static final int TEX_H = 192;
 
-    private static final ResourceLocation PLACEHOLDER_IMG = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/sprites/biomes/placeholder.png");
+    private static final ResourceLocation PLACEHOLDER_IMG = Ids.mod("textures/gui/sprites/biomes/placeholder.png");
 
     static final Map<String, ItemStack> BIOME_ICONS = new HashMap<>();
 
@@ -168,7 +169,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         }
 
         for (String biomeId : detectableBiomes) {
-            ResourceLocation resourceLocation = ResourceLocation.parse(biomeId);
+            ResourceLocation resourceLocation = Ids.parse(biomeId);
             addBiomeCard(resourceLocation, true);
         }
 
@@ -179,8 +180,8 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         ItemStack icon = BIOME_ICONS.getOrDefault(biomeId.toString(), Items.GRASS_BLOCK.getDefaultInstance());
 
         String biomeName = MenuRenderUtils.capitalizeWords(biomeId.getPath().replace("_", " "));
-        Component displayName = Component.literal(biomeName);
-        Component description = Component.translatable("menu.aromaaffect.biomes.card.description", displayName);
+        Component displayName = Texts.lit(biomeName);
+        Component description = Texts.tr("menu.aromaaffect.biomes.card.description", displayName);
 
         ResourceLocation thumbnail = BiomeThumbnailResolver.resolve(biomeId);
         SelectionCard card = new SelectionCard(biomeId, displayName, icon, isUnlocked, description, thumbnail);
@@ -191,7 +192,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
             card.trackCost = biomeDef.getTrackCost();
             RequiredItem req = biomeDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
-                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                ResourceLocation reqId = Ids.parse(req.getItemId());
                 var itemOpt = BuiltInRegistries.ITEM.get(reqId);
                 if (itemOpt.isPresent()) {
                     card.requiredItem = new ItemStack(itemOpt.get().value());
@@ -280,7 +281,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         // Tracking indicator or cost section
         if (isTracking) {
             int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
-            Component trackingLabel = Component.translatable("menu.aromaaffect.selection.selected");
+            Component trackingLabel = Texts.tr("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
             graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - pad,
                     y + (rowHeight - 8) / 2, indicatorColor);

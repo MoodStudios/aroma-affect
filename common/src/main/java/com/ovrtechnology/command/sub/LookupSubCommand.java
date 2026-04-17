@@ -1,5 +1,6 @@
 package com.ovrtechnology.command.sub;
 
+import com.ovrtechnology.util.Texts;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -135,10 +136,10 @@ public class LookupSubCommand implements SubCommand {
     
     private int showUsage(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §7Lookup usage:"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest lookup biome <biome_id> [radius]"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest lookup structure <structure_id> [radius]"), false);
-        source.sendSuccess(() -> Component.literal("§e  /aromatest lookup block <block_id> [radius]"), false);
+        source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §7Lookup usage:"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest lookup biome <biome_id> [radius]"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest lookup structure <structure_id> [radius]"), false);
+        source.sendSuccess(() -> Texts.lit("§e  /aromatest lookup block <block_id> [radius]"), false);
         return Command.SINGLE_SUCCESS;
     }
     
@@ -165,7 +166,7 @@ public class LookupSubCommand implements SubCommand {
         LookupTarget target = new LookupTarget(type, resourceId);
         
         // Send "searching" message
-        source.sendSuccess(() -> Component.literal(
+        source.sendSuccess(() -> Texts.lit(
                 "§6[Aroma Affect] §7Searching for §e" + type.getId() + " §7'§f" + resourceId + "§7'..."
         ), false);
         
@@ -192,30 +193,30 @@ public class LookupSubCommand implements SubCommand {
             int yLevel = LookupManager.getInstance().findYLevel(serverLevel, pos.getX(), pos.getZ(), result.target().type());
 
             // Build result message with position
-            source.sendSuccess(() -> Component.literal("§6[Aroma Affect] §aFound! "), false);
-            source.sendSuccess(() -> Component.literal(
+            source.sendSuccess(() -> Texts.lit("§6[Aroma Affect] §aFound! "), false);
+            source.sendSuccess(() -> Texts.lit(
                     String.format("§7  Position: §aX: %d§7, §aY: %d§7, §aZ: %d", 
                             pos.getX(), yLevel, pos.getZ())
             ), false);
-            source.sendSuccess(() -> Component.literal(
+            source.sendSuccess(() -> Texts.lit(
                     "§7  Distance: §e" + result.getFormattedDistance() + " blocks"
             ), false);
           
             // Build clickable teleport command
             String tpCommand = String.format("/tp @s %d %d %d", pos.getX(), pos.getY(), pos.getZ());
-            MutableComponent teleportText = Component.literal("§8  Teleport: ")
-                    .append(Component.literal("§b§n" + tpCommand)
+            MutableComponent teleportText = Texts.lit("§8  Teleport: ")
+                    .append(Texts.lit("§b§n" + tpCommand)
                             .withStyle(Style.EMPTY
                                     .withClickEvent(new ClickEvent.RunCommand(tpCommand))
                                     .withHoverEvent(new HoverEvent.ShowText(
-                                            Component.literal("§aClick to teleport!")))
+                                            Texts.lit("§aClick to teleport!")))
                             ));
             source.sendSuccess(() -> teleportText, false);
             
             if (result.fromCache()) {
-                source.sendSuccess(() -> Component.literal("§8  (cached result)"), false);
+                source.sendSuccess(() -> Texts.lit("§8  (cached result)"), false);
             } else {
-                source.sendSuccess(() -> Component.literal(
+                source.sendSuccess(() -> Texts.lit(
                         "§8  (search took " + result.searchTimeMs() + "ms)"
                 ), false);
             }
@@ -231,7 +232,7 @@ public class LookupSubCommand implements SubCommand {
                 default -> "Unknown error";
             };
             
-            source.sendFailure(Component.literal(
+            source.sendFailure(Texts.lit(
                     "§6[Aroma Affect] §c" + reason + ": §7" + result.target().resourceId()
             ));
         }

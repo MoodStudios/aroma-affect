@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
@@ -31,8 +33,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
     private static final int TEX_W = 288;
     private static final int TEX_H = 192;
 
-    private static final ResourceLocation PLACEHOLDER_IMG = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/sprites/structures/placeholder.png");
+    private static final ResourceLocation PLACEHOLDER_IMG = Ids.mod("textures/gui/sprites/structures/placeholder.png");
 
     static final Map<String, StructureInfo> STRUCTURE_INFO = new HashMap<>();
 
@@ -116,7 +117,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
         }
 
         for (String structureId : detectableStructures) {
-            ResourceLocation resourceLocation = ResourceLocation.parse(structureId);
+            ResourceLocation resourceLocation = Ids.parse(structureId);
             addStructureCard(resourceLocation, true);
         }
 
@@ -137,8 +138,8 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
             displayName = MenuRenderUtils.capitalizeWords(structureId.getPath().replace("_", " "));
         }
 
-        Component name = Component.literal(displayName);
-        Component description = Component.translatable("menu.aromaaffect.structures.card.description", name);
+        Component name = Texts.lit(displayName);
+        Component description = Texts.tr("menu.aromaaffect.structures.card.description", name);
 
         ResourceLocation thumbnail = StructureThumbnailResolver.resolve(structureId);
         SelectionCard card = new SelectionCard(structureId, name, icon, isUnlocked, description, thumbnail);
@@ -149,7 +150,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
             card.trackCost = structureDef.getTrackCost();
             RequiredItem req = structureDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
-                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                ResourceLocation reqId = Ids.parse(req.getItemId());
                 var itemOpt = BuiltInRegistries.ITEM.get(reqId);
                 if (itemOpt.isPresent()) {
                     card.requiredItem = new ItemStack(itemOpt.get().value());
@@ -238,7 +239,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
         // Tracking indicator or cost section
         if (isTracking) {
             int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
-            Component trackingLabel = Component.translatable("menu.aromaaffect.selection.selected");
+            Component trackingLabel = Texts.tr("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
             graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - pad,
                     y + (rowHeight - 8) / 2, indicatorColor);

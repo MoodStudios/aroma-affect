@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.flower.FlowerDefinition;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
@@ -130,7 +132,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         }
 
         for (String flowerId : detectableFlowers) {
-            ResourceLocation resourceLocation = ResourceLocation.parse(flowerId);
+            ResourceLocation resourceLocation = Ids.parse(flowerId);
             addFlowerCard(resourceLocation, true);
         }
 
@@ -153,8 +155,8 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
 
         String flowerName = flowerId.getPath().replace("_", " ");
         flowerName = MenuRenderUtils.capitalizeWords(flowerName);
-        Component displayName = Component.literal(flowerName);
-        Component description = Component.translatable("menu.aromaaffect.flowers.card.description", displayName);
+        Component displayName = Texts.lit(flowerName);
+        Component description = Texts.tr("menu.aromaaffect.flowers.card.description", displayName);
 
         SelectionCard card = new SelectionCard(flowerId, displayName, icon, isUnlocked, description);
 
@@ -164,7 +166,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             card.trackCost = flowerDef.getTrackCost();
             RequiredItem req = flowerDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
-                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                ResourceLocation reqId = Ids.parse(req.getItemId());
                 var itemOpt = BuiltInRegistries.ITEM.get(reqId);
                 if (itemOpt.isPresent()) {
                     card.requiredItem = new ItemStack(itemOpt.get().value());
@@ -295,7 +297,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
 
         if (isTracking) {
             int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
-            Component trackingLabel = Component.translatable("menu.aromaaffect.selection.selected");
+            Component trackingLabel = Texts.tr("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
             graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - ROW_PADDING,
                     y + (rowHeight - 8) / 2, indicatorColor);
@@ -320,7 +322,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         }
 
         public String getDisplayName() {
-            return Component.translatable(translationKey).getString();
+            return Texts.tr(translationKey).getString();
         }
     }
 }
