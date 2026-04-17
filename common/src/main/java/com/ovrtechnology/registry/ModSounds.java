@@ -1,5 +1,6 @@
 package com.ovrtechnology.registry;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
@@ -21,11 +22,11 @@ public final class ModSounds {
      */
     public static final RegistrySupplier<SoundEvent> SNIFF = SOUNDS.register("sniff",
             () -> SoundEvent.createVariableRangeEvent(
-                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniff")));
+                    Ids.mod("sniff")));
 
     public static final RegistrySupplier<SoundEvent> OMARA_PUFF = SOUNDS.register("omara_puff",
             () -> SoundEvent.createVariableRangeEvent(
-                    ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff")));
+                    Ids.mod("omara_puff")));
 
     public static void init() {
         SOUNDS.register();

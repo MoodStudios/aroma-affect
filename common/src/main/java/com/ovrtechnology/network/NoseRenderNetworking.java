@@ -1,5 +1,6 @@
 package com.ovrtechnology.network;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import dev.architectury.event.events.common.PlayerEvent;
@@ -25,7 +26,7 @@ public final class NoseRenderNetworking {
 
     public record NosePrefsC2S(boolean noseEnabled, boolean strapEnabled) implements CustomPacketPayload {
         public static final Type<NosePrefsC2S> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_c2s"));
+                Ids.mod("nose_prefs_c2s"));
         public static final StreamCodec<RegistryFriendlyByteBuf, NosePrefsC2S> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeBoolean(payload.noseEnabled);
@@ -38,7 +39,7 @@ public final class NoseRenderNetworking {
 
     public record NosePrefsS2C(UUID playerUuid, boolean noseEnabled, boolean strapEnabled) implements CustomPacketPayload {
         public static final Type<NosePrefsS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_prefs_s2c"));
+                Ids.mod("nose_prefs_s2c"));
         public static final StreamCodec<RegistryFriendlyByteBuf, NosePrefsS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUUID(payload.playerUuid);

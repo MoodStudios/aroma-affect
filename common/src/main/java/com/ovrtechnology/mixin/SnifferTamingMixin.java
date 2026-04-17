@@ -1,5 +1,7 @@
 package com.ovrtechnology.mixin;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferContainer;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
@@ -69,7 +71,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Unique
     private static final TagKey<Block> ENHANCED_SNIFFER_DIGGABLE = TagKey.create(
             Registries.BLOCK,
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "enhanced_sniffer_diggable")
+            Ids.mod("enhanced_sniffer_diggable")
     );
 
     /**
@@ -199,7 +201,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                     // Message to player
                     if (player instanceof Player) {
                         player.displayClientMessage(
-                                Component.literal("§aSuccessfully tamed the Sniffer!"),
+                                Texts.lit("§aSuccessfully tamed the Sniffer!"),
                                 true
                         );
                     }
@@ -214,7 +216,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                     // Progress message
                     if (player instanceof Player) {
                         player.displayClientMessage(
-                                Component.literal("§6Taming progress: §e" + data.tamingProgress + "§6/§e" + torchflowersNeeded),
+                                Texts.lit("§6Taming progress: §e" + data.tamingProgress + "§6/§e" + torchflowersNeeded),
                                 true
                         );
                     }
@@ -597,7 +599,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             if (!mineral.enabled) continue;
 
             int count = mineral.min + random.nextInt(mineral.max - mineral.min + 1);
-            ResourceLocation itemId = ResourceLocation.parse(mineral.item);
+            ResourceLocation itemId = Ids.parse(mineral.item);
             BuiltInRegistries.ITEM.getOptional(itemId).ifPresent(item -> {
                 aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(item, count));
             });
@@ -607,7 +609,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         if (bonanzaConfig.scentBase.enabled) {
             int scentBaseCount = bonanzaConfig.scentBase.min +
                     random.nextInt(bonanzaConfig.scentBase.max - bonanzaConfig.scentBase.min + 1);
-            ResourceLocation scentBaseId = ResourceLocation.parse(bonanzaConfig.scentBase.item);
+            ResourceLocation scentBaseId = Ids.parse(bonanzaConfig.scentBase.item);
             BuiltInRegistries.ITEM.getOptional(scentBaseId).ifPresent(item -> {
                 aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(item, scentBaseCount));
             });
@@ -619,7 +621,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                     random.nextInt(bonanzaConfig.seeds.max - bonanzaConfig.seeds.min + 1);
             // Pick random seed from list
             String seedItemId = bonanzaConfig.seeds.items.get(random.nextInt(bonanzaConfig.seeds.items.size()));
-            ResourceLocation seedId = ResourceLocation.parse(seedItemId);
+            ResourceLocation seedId = Ids.parse(seedItemId);
             BuiltInRegistries.ITEM.getOptional(seedId).ifPresent(item -> {
                 aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(item, seedCount));
             });
@@ -687,17 +689,17 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         var scentsConfig = aromaaffect$getConfig().dimensionalScents;
 
         if (dimension == Level.OVERWORLD && !data.hasOverworldScent && scentsConfig.overworld.enabled) {
-            ResourceLocation itemId = ResourceLocation.parse(scentsConfig.overworld.item);
+            ResourceLocation itemId = Ids.parse(scentsConfig.overworld.item);
             return BuiltInRegistries.ITEM.getOptional(itemId)
                     .map(ItemStack::new)
                     .orElse(ItemStack.EMPTY);
         } else if (dimension == Level.NETHER && !data.hasNetherScent && scentsConfig.nether.enabled) {
-            ResourceLocation itemId = ResourceLocation.parse(scentsConfig.nether.item);
+            ResourceLocation itemId = Ids.parse(scentsConfig.nether.item);
             return BuiltInRegistries.ITEM.getOptional(itemId)
                     .map(ItemStack::new)
                     .orElse(ItemStack.EMPTY);
         } else if (dimension == Level.END && !data.hasEndScent && scentsConfig.end.enabled) {
-            ResourceLocation itemId = ResourceLocation.parse(scentsConfig.end.item);
+            ResourceLocation itemId = Ids.parse(scentsConfig.end.item);
             return BuiltInRegistries.ITEM.getOptional(itemId)
                     .map(ItemStack::new)
                     .orElse(ItemStack.EMPTY);
@@ -757,7 +759,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
     @Unique
     private static final ResourceLocation SNIFFER_JOURNEY_ADVANCEMENT =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniffer_journey");
+            Ids.mod("sniffer_journey");
 
     @Unique
     private void aromaaffect$grantSnifferJourneyAdvancement(Sniffer sniffer, SnifferTamingData data) {

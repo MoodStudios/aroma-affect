@@ -1,5 +1,6 @@
 package com.ovrtechnology.worldgen;
 
+import com.ovrtechnology.util.Ids;
 import com.mojang.datafixers.util.Pair;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.common.LifecycleEvent;
@@ -39,27 +40,27 @@ public final class VillagePoolInjector {
         }
 
         public ResourceLocation townCentersPool() {
-            return ResourceLocation.withDefaultNamespace("village/" + id + "/town_centers");
+            return Ids.vanilla("village/" + id + "/town_centers");
         }
 
         public ResourceLocation streetsPool() {
-            return ResourceLocation.withDefaultNamespace("village/" + id + "/streets");
+            return Ids.vanilla("village/" + id + "/streets");
         }
 
         public ResourceLocation noseSmithHouseTemplate() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/houses/nose_smith_house");
+            return Ids.mod("village/" + id + "/houses/nose_smith_house");
         }
 
         public ResourceLocation noseSmithTownCenterTemplate() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/town_centers/nose_smith_start");
+            return Ids.mod("village/" + id + "/town_centers/nose_smith_start");
         }
 
         public ResourceLocation noseSmithResidentPool() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_resident");
+            return Ids.mod("village/" + id + "/nose_smith_resident");
         }
 
         public ResourceLocation noseSmithHousePool() {
-            return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "village/" + id + "/nose_smith_house");
+            return Ids.mod("village/" + id + "/nose_smith_house");
         }
     }
 

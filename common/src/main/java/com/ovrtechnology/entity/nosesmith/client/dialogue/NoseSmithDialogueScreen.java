@@ -1,5 +1,6 @@
 package com.ovrtechnology.entity.nosesmith.client.dialogue;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.NoseSmithTradeNetworking;
@@ -49,7 +50,7 @@ public final class NoseSmithDialogueScreen extends Screen {
     private ResourceLocation lastFlowerId;
     private boolean lastHasNose;
 
-    private Component dialogue = Component.empty();
+    private Component dialogue = Texts.empty();
     private int[] dialogueCodepoints = new int[0];
     private List<FormattedCharSequence> wrappedLines = List.of();
     private int[] lineCodepointCounts = new int[0];
@@ -86,7 +87,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         int buttonY = bottom - PADDING - buttonHeight;
         int gap = 6;
 
-        shopButton = Button.builder(Component.literal("Shop"), btn -> {
+        shopButton = Button.builder(Texts.lit("Shop"), btn -> {
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.level != null) {
                 NoseSmithTradeNetworking.sendOpenShop(minecraft.level.registryAccess(), noseSmith.getId());
@@ -94,7 +95,7 @@ public final class NoseSmithDialogueScreen extends Screen {
             onClose();
         }).bounds(right - PADDING - buttonWidth, buttonY, buttonWidth, buttonHeight).build();
 
-        closeButton = Button.builder(Component.literal("Close"), btn -> onClose())
+        closeButton = Button.builder(Texts.lit("Close"), btn -> onClose())
                 .bounds(right - PADDING - buttonWidth * 2 - gap, buttonY, buttonWidth, buttonHeight).build();
 
         shopButton.visible = false;
@@ -350,24 +351,24 @@ public final class NoseSmithDialogueScreen extends Screen {
                 int min = seconds / 60;
                 int sec = seconds % 60;
                 String time = String.format("%d:%02d", min, sec);
-                return Component.literal("A deal's a deal. Thanks again. My nose will grow back in ")
-                        .append(Component.literal(time).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
-                        .append(Component.literal("."));
+                return Texts.lit("A deal's a deal. Thanks again. My nose will grow back in ")
+                        .append(Texts.lit(time).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
+                        .append(Texts.lit("."));
             }
-            return Component.literal("A deal's a deal. Thanks again.");
+            return Texts.lit("A deal's a deal. Thanks again.");
         }
 
         Block flower = getRequestedFlowerBlock();
         if (flower == null) {
-            return Component.literal("Hmm... I can't decide which flower I want today.");
+            return Texts.lit("Hmm... I can't decide which flower I want today.");
         }
 
-        Component flowerName = Component.translatable(flower.getDescriptionId())
+        Component flowerName = Texts.tr(flower.getDescriptionId())
                 .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
 
-        return Component.literal("Oh! I'm a flower collector, but I haven't been able to find ")
+        return Texts.lit("Oh! I'm a flower collector, but I haven't been able to find ")
                 .append(flowerName)
-                .append(Component.literal(". Drop one near me and I'll give you my nose!"));
+                .append(Texts.lit(". Drop one near me and I'll give you my nose!"));
     }
 
     @Nullable

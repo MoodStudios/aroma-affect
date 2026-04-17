@@ -1,5 +1,6 @@
 package com.ovrtechnology.command.sub;
 
+import com.ovrtechnology.util.Texts;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -40,10 +41,10 @@ public class PingSubCommand implements SubCommand {
             // Color code based on latency quality
             String color = getLatencyColor(latency);
             
-            source.sendSuccess(() -> Component.literal("§aPong! §7Your latency: " + color + latency + "ms"), false);
+            source.sendSuccess(() -> Texts.lit("§aPong! §7Your latency: " + color + latency + "ms"), false);
         } else {
             // Console or non-player execution
-            source.sendSuccess(() -> Component.literal("§aPong! §7(executed from console)"), false);
+            source.sendSuccess(() -> Texts.lit("§aPong! §7(executed from console)"), false);
         }
         
         return Command.SINGLE_SUCCESS;

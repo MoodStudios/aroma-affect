@@ -1,5 +1,6 @@
 package com.ovrtechnology.entity.nosesmith.client;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,7 +29,7 @@ import net.minecraft.resources.ResourceLocation;
 public class NoseSmithRenderer extends AgeableMobRenderer<NoseSmithEntity, VillagerRenderState, VillagerModel> {
 
     private static final ResourceLocation NOSE_SMITH_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose_smith.png");
+            Ids.mod("textures/entity/nose_smith.png");
 
     private final VillagerModel adultModel;
     private final VillagerModel babyModel;

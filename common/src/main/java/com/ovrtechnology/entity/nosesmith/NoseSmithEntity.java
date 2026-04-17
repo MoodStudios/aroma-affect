@@ -1,5 +1,7 @@
 package com.ovrtechnology.entity.nosesmith;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -112,7 +114,7 @@ public class NoseSmithEntity extends Villager {
 
     public NoseSmithEntity(EntityType<? extends Villager> entityType, Level level) {
         super(entityType, level);
-        this.setCustomName(Component.translatable("entity.aromaaffect.nose_smith"));
+        this.setCustomName(Texts.tr("entity.aromaaffect.nose_smith"));
         this.setCustomNameVisible(true);
         this.setVillagerData(this.getVillagerData().withProfession(BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT)).withLevel(5));
     }
@@ -149,7 +151,7 @@ public class NoseSmithEntity extends Villager {
             return null;
         }
 
-        return ResourceLocation.tryParse(value);
+        return Ids.tryParse(value);
     }
     
     @Override
@@ -215,7 +217,7 @@ public class NoseSmithEntity extends Villager {
     public void restoreNoseSmithData(boolean hadNose, String requestedFlowerStr, boolean wasHouseDecorated, long noseRemovedTime) {
         setHasNose(hadNose);
         if (requestedFlowerStr != null && !requestedFlowerStr.isEmpty()) {
-            this.requestedFlower = ResourceLocation.tryParse(requestedFlowerStr);
+            this.requestedFlower = Ids.tryParse(requestedFlowerStr);
             this.entityData.set(REQUESTED_FLOWER_ID, requestedFlowerStr);
         }
         this.houseDecorated = wasHouseDecorated;
@@ -227,7 +229,7 @@ public class NoseSmithEntity extends Villager {
         super.tick();
 
         if (this.getCustomName() == null) {
-            this.setCustomName(Component.translatable("entity.aromaaffect.nose_smith"));
+            this.setCustomName(Texts.tr("entity.aromaaffect.nose_smith"));
             this.setCustomNameVisible(true);
         }
 

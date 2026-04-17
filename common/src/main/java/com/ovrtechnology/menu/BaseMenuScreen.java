@@ -1,5 +1,6 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -376,6 +377,6 @@ public abstract class BaseMenuScreen extends Screen {
      * Creates a resource location for Aroma Affect assets.
      */
     protected static ResourceLocation aromaLocation(String path) {
-        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, path);
+        return Ids.mod(path);
     }
 }

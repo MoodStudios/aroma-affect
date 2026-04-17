@@ -1,5 +1,6 @@
 package com.ovrtechnology.network;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.history.BlacklistEntry;
 import com.ovrtechnology.history.HistoryEntry;
@@ -36,7 +37,7 @@ public final class PathScentNetworking {
 
     public record PathScentTriggerS2C(String scentName, double intensity, int priorityOrdinal, int durationTicks) implements CustomPacketPayload {
         public static final Type<PathScentTriggerS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_scent_trigger"));
+                Ids.mod("path_scent_trigger"));
         public static final StreamCodec<RegistryFriendlyByteBuf, PathScentTriggerS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUtf(payload.scentName);
@@ -51,7 +52,7 @@ public final class PathScentNetworking {
 
     public record PathDistanceS2C(int distance) implements CustomPacketPayload {
         public static final Type<PathDistanceS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_distance"));
+                Ids.mod("path_distance"));
         public static final StreamCodec<RegistryFriendlyByteBuf, PathDistanceS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> buf.writeVarInt(payload.distance),
                 buf -> new PathDistanceS2C(buf.readVarInt())
@@ -61,7 +62,7 @@ public final class PathScentNetworking {
 
     public record PathStatusFoundS2C(int distance, BlockPos destination) implements CustomPacketPayload {
         public static final Type<PathStatusFoundS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_status_found"));
+                Ids.mod("path_status_found"));
         public static final StreamCodec<RegistryFriendlyByteBuf, PathStatusFoundS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeVarInt(payload.distance);
@@ -74,7 +75,7 @@ public final class PathScentNetworking {
 
     public record PathStatusNotFoundS2C(String reason) implements CustomPacketPayload {
         public static final Type<PathStatusNotFoundS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_status_not_found"));
+                Ids.mod("path_status_not_found"));
         public static final StreamCodec<RegistryFriendlyByteBuf, PathStatusNotFoundS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> buf.writeUtf(payload.reason),
                 buf -> new PathStatusNotFoundS2C(buf.readUtf())
@@ -84,7 +85,7 @@ public final class PathScentNetworking {
 
     public record PathStatusArrivedS2C() implements CustomPacketPayload {
         public static final Type<PathStatusArrivedS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_status_arrived"));
+                Ids.mod("path_status_arrived"));
         public static final StreamCodec<RegistryFriendlyByteBuf, PathStatusArrivedS2C> STREAM_CODEC =
                 StreamCodec.unit(new PathStatusArrivedS2C());
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
@@ -92,7 +93,7 @@ public final class PathScentNetworking {
 
     public record StructureSyncS2C(String structureId) implements CustomPacketPayload {
         public static final Type<StructureSyncS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "structure_sync"));
+                Ids.mod("structure_sync"));
         public static final StreamCodec<RegistryFriendlyByteBuf, StructureSyncS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeBoolean(payload.structureId != null);
@@ -108,7 +109,7 @@ public final class PathScentNetworking {
 
     public record PathBlacklistSyncC2S(List<BlacklistSyncManager.ExcludedPosition> positions) implements CustomPacketPayload {
         public static final Type<PathBlacklistSyncC2S> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_blacklist_sync"));
+                Ids.mod("path_blacklist_sync"));
         public static final StreamCodec<RegistryFriendlyByteBuf, PathBlacklistSyncC2S> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeVarInt(payload.positions.size());

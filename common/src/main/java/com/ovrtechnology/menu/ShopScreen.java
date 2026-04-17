@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,10 +18,8 @@ import java.net.URI;
  */
 public class ShopScreen extends BaseMenuScreen {
 
-    private static final ResourceLocation OMARA_COVER = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/sprites/shop/omara_cover.png");
-    private static final ResourceLocation ICON_BACK = ResourceLocation.fromNamespaceAndPath(
-            AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
+    private static final ResourceLocation OMARA_COVER = Ids.mod("textures/gui/sprites/shop/omara_cover.png");
+    private static final ResourceLocation ICON_BACK = Ids.mod("textures/gui/sprites/radial/icon_back.png");
 
     private static final String BUY_URL = "https://omara.ovrtechnology.com/?ref=aromaaffect-mod";
 
@@ -57,7 +57,7 @@ public class ShopScreen extends BaseMenuScreen {
     private int tickCount = 0;
 
     public ShopScreen() {
-        super(Component.translatable("shop.aromaaffect.title"));
+        super(Texts.tr("shop.aromaaffect.title"));
     }
 
     @Override
@@ -103,11 +103,11 @@ public class ShopScreen extends BaseMenuScreen {
         graphics.fill(panelLeft, panelTop, panelRight, panelTop + 3, MenuRenderUtils.withAlpha(COL_ACCENT, a));
 
         // Title
-        Component title = Component.translatable("shop.aromaaffect.title");
+        Component title = Texts.tr("shop.aromaaffect.title");
         graphics.drawCenteredString(font, title, centerX, panelTop + 10, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         // Subtitle
-        Component subtitle = Component.translatable("shop.aromaaffect.subtitle");
+        Component subtitle = Texts.tr("shop.aromaaffect.subtitle");
         graphics.drawCenteredString(font, subtitle, centerX, panelTop + 24, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
 
         // Content area
@@ -172,7 +172,7 @@ public class ShopScreen extends BaseMenuScreen {
             int infoBg = isHoveringInfo ? MenuRenderUtils.withAlpha(0xDD9A7CFF, btnAlpha) : MenuRenderUtils.withAlpha(0x889A7CFF, btnAlpha);
             graphics.fill(btn1X, btnY, btn1X + btnW, btnY + btnH, infoBg);
             MenuRenderUtils.renderOutline(graphics, btn1X, btnY, btnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, btnAlpha));
-            Component infoLabel = Component.translatable("shop.aromaaffect.view_info");
+            Component infoLabel = Texts.tr("shop.aromaaffect.view_info");
             graphics.drawCenteredString(font, infoLabel, btn1X + btnW / 2, btnY + 7,
                     MenuRenderUtils.withAlpha(COL_TEXT, btnAlpha));
 
@@ -185,7 +185,7 @@ public class ShopScreen extends BaseMenuScreen {
             int buyBg = isHoveringBuy ? MenuRenderUtils.withAlpha(0xDD44DD44, btnAlpha) : MenuRenderUtils.withAlpha(0x9944BB44, btnAlpha);
             graphics.fill(btn2X, btnY, btn2X + btnW, btnY + btnH, buyBg);
             MenuRenderUtils.renderOutline(graphics, btn2X, btnY, btnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, btnAlpha));
-            Component buyLabel = Component.translatable("shop.aromaaffect.buy_now");
+            Component buyLabel = Texts.tr("shop.aromaaffect.buy_now");
             graphics.drawCenteredString(font, buyLabel, btn2X + btnW / 2, btnY + 7,
                     MenuRenderUtils.withAlpha(COL_TEXT, btnAlpha));
         }
@@ -228,7 +228,7 @@ public class ShopScreen extends BaseMenuScreen {
             int buyBg = isHoveringBuy ? MenuRenderUtils.withAlpha(0xDD44DD44, backAlpha) : MenuRenderUtils.withAlpha(0x9944BB44, backAlpha);
             graphics.fill(buyBtnX, buyBtnY, buyBtnX + buyBtnW, buyBtnY + btnH, buyBg);
             MenuRenderUtils.renderOutline(graphics, buyBtnX, buyBtnY, buyBtnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, backAlpha));
-            Component buyLabel = Component.translatable("shop.aromaaffect.buy_now");
+            Component buyLabel = Texts.tr("shop.aromaaffect.buy_now");
             graphics.drawCenteredString(font, buyLabel, buyBtnX + buyBtnW / 2, buyBtnY + 7,
                     MenuRenderUtils.withAlpha(COL_TEXT, backAlpha));
         }
@@ -249,12 +249,12 @@ public class ShopScreen extends BaseMenuScreen {
         int textY = y + 4;
 
         // Product name
-        Component name = Component.translatable("shop.aromaaffect.product_name");
+        Component name = Texts.tr("shop.aromaaffect.product_name");
         graphics.drawString(font, name, textX, textY, accentColor);
         textY += 14;
 
         // Tagline
-        Component tagline = Component.translatable("shop.aromaaffect.tagline");
+        Component tagline = Texts.tr("shop.aromaaffect.tagline");
         graphics.drawString(font, tagline, textX, textY, textColor);
         textY += 16;
 
@@ -269,7 +269,7 @@ public class ShopScreen extends BaseMenuScreen {
         };
 
         for (String key : featureKeys) {
-            Component feature = Component.translatable(key);
+            Component feature = Texts.tr(key);
             // Bullet point
             graphics.drawString(font, "\u2022", textX, textY, accentColor);
             graphics.drawString(font, feature, textX + 10, textY, dimColor);
@@ -279,7 +279,7 @@ public class ShopScreen extends BaseMenuScreen {
         textY += 6;
 
         // Compatible badge
-        Component compatible = Component.translatable("shop.aromaaffect.compatible");
+        Component compatible = Texts.tr("shop.aromaaffect.compatible");
         graphics.drawString(font, compatible, textX, textY, MenuRenderUtils.withAlpha(COL_GREEN, alpha));
     }
 

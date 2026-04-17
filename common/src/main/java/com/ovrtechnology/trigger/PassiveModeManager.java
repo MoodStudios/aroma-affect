@@ -1,5 +1,7 @@
 package com.ovrtechnology.trigger;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
@@ -413,7 +415,7 @@ public final class PassiveModeManager {
         for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
             if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
             try {
-                ResourceLocation loc = ResourceLocation.parse(trigger.getBlockId());
+                ResourceLocation loc = Ids.parse(trigger.getBlockId());
                 level.registryAccess().lookupOrThrow(Registries.BLOCK)
                     .getOptional(loc)
                     .ifPresent(block -> triggersByBlock.put(block, trigger));
@@ -516,7 +518,7 @@ public final class PassiveModeManager {
      */
     private static Optional<Entity> findNearbyMob(Level level, Player player, String entityTypeId, int range) {
         try {
-            ResourceLocation entityLocation = ResourceLocation.parse(entityTypeId);
+            ResourceLocation entityLocation = Ids.parse(entityTypeId);
             Optional<EntityType<?>> entityTypeOpt = level.registryAccess()
                 .lookupOrThrow(Registries.ENTITY_TYPE)
                 .getOptional(entityLocation);
@@ -735,7 +737,7 @@ public final class PassiveModeManager {
             }
 
             // Send chat message to player
-            player.displayClientMessage(Component.literal(message), false);
+            player.displayClientMessage(Texts.lit(message), false);
         }
 
         AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {})",
@@ -750,7 +752,7 @@ public final class PassiveModeManager {
     private static Optional<BlockPos> findNearbyBlock(Level level, BlockPos center,
                                                       String blockId, int range) {
         try {
-            ResourceLocation blockLocation = ResourceLocation.parse(blockId);
+            ResourceLocation blockLocation = Ids.parse(blockId);
             Optional<Block> blockOpt = level.registryAccess()
                 .lookupOrThrow(Registries.BLOCK)
                 .getOptional(blockLocation);
@@ -803,7 +805,7 @@ public final class PassiveModeManager {
      */
     private static String getBlockDisplayName(Level level, String blockId) {
         try {
-            ResourceLocation location = ResourceLocation.parse(blockId);
+            ResourceLocation location = Ids.parse(blockId);
             Optional<Block> blockOpt = level.registryAccess()
                 .lookupOrThrow(Registries.BLOCK)
                 .getOptional(location);
@@ -836,7 +838,7 @@ public final class PassiveModeManager {
      */
     private static String formatResourceId(String resourceId) {
         try {
-            ResourceLocation location = ResourceLocation.parse(resourceId);
+            ResourceLocation location = Ids.parse(resourceId);
             String path = location.getPath();
             return formatResourceName(path);
         } catch (Exception e) {

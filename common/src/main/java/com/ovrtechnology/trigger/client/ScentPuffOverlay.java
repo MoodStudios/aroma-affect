@@ -1,5 +1,6 @@
 package com.ovrtechnology.trigger.client;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import net.minecraft.client.Minecraft;
@@ -151,7 +152,7 @@ public final class ScentPuffOverlay {
     private static void register(String scentName, String maskFileStem) {
         SCENT_MASKS.put(
                 scentName.toLowerCase(Locale.ROOT),
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/masks/" + maskFileStem + ".png")
+                Ids.mod("textures/masks/" + maskFileStem + ".png")
         );
     }
 

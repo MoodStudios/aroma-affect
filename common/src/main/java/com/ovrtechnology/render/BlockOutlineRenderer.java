@@ -1,48 +1,22 @@
 package com.ovrtechnology.render;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.menu.MenuCategory;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.OptionalDouble;
 
 /**
  * Renders an X-ray wireframe outline at the destination block position
  * when tracking blocks or flowers within 32 blocks.
  */
 public final class BlockOutlineRenderer {
-
-    private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipeline.builder()
-            .withLocation("aromaaffect/pipeline/lines_no_depth")
-            .withVertexShader("core/rendertype_lines")
-            .withFragmentShader("core/rendertype_lines")
-            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
-            .withUniform("Globals", UniformType.UNIFORM_BUFFER)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES)
-            .build();
-
-    private static final RenderType LINES_NO_DEPTH = XRayRenderType.createLinesNoDepth();
 
     private BlockOutlineRenderer() {}
 
@@ -83,7 +57,7 @@ public final class BlockOutlineRenderer {
         double dy = dest.getY() - cameraPos.y;
         double dz = dest.getZ() - cameraPos.z;
 
-        VertexConsumer lineConsumer = consumers.getBuffer(LINES_NO_DEPTH);
+        VertexConsumer lineConsumer = consumers.getBuffer(AromaRenderTypes.BLOCK_OUTLINE_LINES);
 
         ShapeRenderer.renderLineBox(
                 poseStack.last(), lineConsumer,
@@ -123,25 +97,4 @@ public final class BlockOutlineRenderer {
         return null;
     }
 
-    /**
-     * Helper class to access protected RenderType.create and RenderStateShard fields.
-     */
-    private abstract static class XRayRenderType extends RenderType {
-        private XRayRenderType() {
-            super("dummy", 0, false, false, () -> {}, () -> {});
-        }
-
-        static RenderType createLinesNoDepth() {
-            return create(
-                    "aromaaffect_lines_no_depth",
-                    1536,
-                    LINES_NO_DEPTH_PIPELINE,
-                    CompositeState.builder()
-                            .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
-                            .setLayeringState(VIEW_OFFSET_Z_LAYERING)
-                            .setOutputState(ITEM_ENTITY_TARGET)
-                            .createCompositeState(false)
-            );
-        }
-    }
 }

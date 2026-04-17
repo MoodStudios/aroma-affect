@@ -1,5 +1,6 @@
 package com.ovrtechnology.network;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.guide.AromaGuideTracker;
@@ -28,7 +29,7 @@ public final class AromaGuideNetworking {
 
     public record GuideRequestC2S() implements CustomPacketPayload {
         public static final Type<GuideRequestC2S> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_request_c2s"));
+                Ids.mod("guide_request_c2s"));
         public static final StreamCodec<RegistryFriendlyByteBuf, GuideRequestC2S> STREAM_CODEC =
                 StreamCodec.unit(new GuideRequestC2S());
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
@@ -36,7 +37,7 @@ public final class AromaGuideNetworking {
 
     public record GuideTargetS2C(@Nullable BlockPos villagePos, @Nullable BlockPos compassTarget) implements CustomPacketPayload {
         public static final Type<GuideTargetS2C> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_target_s2c"));
+                Ids.mod("guide_target_s2c"));
         public static final StreamCodec<RegistryFriendlyByteBuf, GuideTargetS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeBoolean(payload.villagePos != null);

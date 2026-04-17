@@ -1,5 +1,6 @@
 package com.ovrtechnology.entity.sniffer;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.menu.ExtendedMenuProvider;
 import dev.architectury.registry.menu.MenuRegistry;
@@ -45,7 +46,7 @@ public class SnifferMenuRegistry {
 
             @Override
             public Component getDisplayName() {
-                return Component.literal("Sniffer Inventory");
+                return Texts.lit("Sniffer Inventory");
             }
 
             @Override

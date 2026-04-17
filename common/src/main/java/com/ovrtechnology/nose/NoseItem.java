@@ -1,5 +1,6 @@
 package com.ovrtechnology.nose;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 import net.minecraft.core.Holder;
@@ -64,7 +65,7 @@ public class NoseItem extends Item {
         // Set the item ID - REQUIRED in Minecraft 1.21.x
         properties.setId(ResourceKey.create(
                 Registries.ITEM, 
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
+                Ids.mod(itemId)
         ));
         
         // Set durability
@@ -93,7 +94,7 @@ public class NoseItem extends Item {
         // Add Repairable component for anvil repair
         String repairId = definition.getRepair();
         if (repairId != null && !repairId.isEmpty()) {
-            ResourceLocation repairLoc = ResourceLocation.parse(repairId);
+            ResourceLocation repairLoc = Ids.parse(repairId);
             BuiltInRegistries.ITEM.getOptional(repairLoc).ifPresent(repairItem -> {
                 Holder<Item> holder = BuiltInRegistries.ITEM.wrapAsHolder(repairItem);
                 properties.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(holder)));

@@ -1,5 +1,6 @@
 package com.ovrtechnology.registry;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.biome.BiomeDefinition;
 import com.ovrtechnology.biome.BiomeRegistry;
@@ -146,7 +147,7 @@ public final class RegistryValidator {
         for (BlockDefinition block : BlockRegistry.getAllBlocks()) {
             checked++;
             String blockId = block.getBlockId();
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(blockId);
+            ResourceLocation resourceLocation = Ids.tryParse(blockId);
             
             if (resourceLocation == null) {
                 AromaAffect.LOGGER.error("[BlockRegistry] Invalid ResourceLocation format: '{}'", blockId);
@@ -183,7 +184,7 @@ public final class RegistryValidator {
         for (BiomeDefinition biome : BiomeRegistry.getAllBiomes()) {
             checked++;
             String biomeId = biome.getBiomeId();
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(biomeId);
+            ResourceLocation resourceLocation = Ids.tryParse(biomeId);
             
             if (resourceLocation == null) {
                 AromaAffect.LOGGER.error("[BiomeRegistry] Invalid ResourceLocation format: '{}'", biomeId);
@@ -232,7 +233,7 @@ public final class RegistryValidator {
         for (StructureDefinition structure : StructureRegistry.getAllStructures()) {
             checked++;
             String structureId = structure.getStructureId();
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(structureId);
+            ResourceLocation resourceLocation = Ids.tryParse(structureId);
             
             if (resourceLocation == null) {
                 AromaAffect.LOGGER.error("[StructureRegistry] Invalid ResourceLocation format: '{}'", structureId);

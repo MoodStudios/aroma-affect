@@ -1,5 +1,6 @@
 package com.ovrtechnology.omara;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
@@ -39,7 +40,7 @@ public final class OmaraDeviceRegistry {
                     .noOcclusion()
                     .setId(ResourceKey.create(
                             Registries.BLOCK,
-                            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
+                            Ids.mod(OMARA_DEVICE_ID)
                     ))
             ));
 
@@ -51,7 +52,7 @@ public final class OmaraDeviceRegistry {
             () -> new BlockItem(OMARA_DEVICE.get(), new Item.Properties()
                     .setId(ResourceKey.create(
                             Registries.ITEM,
-                            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
+                            Ids.mod(OMARA_DEVICE_ID)
                     ))
             ));
 

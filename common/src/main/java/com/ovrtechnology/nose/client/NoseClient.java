@@ -1,5 +1,6 @@
 package com.ovrtechnology.nose.client;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseIdRemapper;
 import com.ovrtechnology.nose.NoseItem;
@@ -51,23 +52,17 @@ public final class NoseClient {
                 return getAnimatedFrame(resolvedId, frameCount);
             }
 
-            return ResourceLocation.fromNamespaceAndPath(
-                    AromaAffect.MOD_ID,
-                    "textures/entity/nose/" + resolvedId + ".png"
-            );
+            return Ids.mod("textures/entity/nose/" + resolvedId + ".png");
         }
 
-        return ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose/foragers_nose.png");
+        return Ids.mod("textures/entity/nose/foragers_nose.png");
     }
 
     private static ResourceLocation getAnimatedFrame(String noseId, int frameCount) {
         ResourceLocation[] frames = frameCache.computeIfAbsent(noseId, id -> {
             ResourceLocation[] arr = new ResourceLocation[frameCount];
             for (int i = 0; i < frameCount; i++) {
-                arr[i] = ResourceLocation.fromNamespaceAndPath(
-                        AromaAffect.MOD_ID,
-                        "textures/entity/nose/" + id + "_" + i + ".png"
-                );
+                arr[i] = Ids.mod("textures/entity/nose/" + id + "_" + i + ".png");
             }
             return arr;
         });

@@ -1,5 +1,6 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -34,7 +35,7 @@ public class CompassMenuScreen extends BaseMenuScreen {
     private static final int COLOR_TEXT_INACTIVE = 0xFF888888;
     
     public CompassMenuScreen() {
-        super(Component.translatable("menu.aromaaffect.compass.title"));
+        super(Texts.tr("menu.aromaaffect.compass.title"));
     }
     
     @Override
@@ -56,7 +57,7 @@ public class CompassMenuScreen extends BaseMenuScreen {
         
         // Render title
         int titleColor = MenuRenderUtils.withAlpha(COLOR_TEXT_TITLE, alpha);
-        Component title = Component.translatable("menu.aromaaffect.compass.title");
+        Component title = Texts.tr("menu.aromaaffect.compass.title");
         graphics.drawCenteredString(font, title, width / 2, panelY + 12, titleColor);
         
         // Render separator line
@@ -67,11 +68,11 @@ public class CompassMenuScreen extends BaseMenuScreen {
         int inactiveColor = MenuRenderUtils.withAlpha(COLOR_TEXT_INACTIVE, alpha);
         
         // Current target (placeholder)
-        Component targetLabel = Component.translatable("menu.aromaaffect.compass.target");
+        Component targetLabel = Texts.tr("menu.aromaaffect.compass.target");
         graphics.drawString(font, targetLabel, panelX + 15, panelY + 40, infoColor);
         
         // Show "No active target" placeholder
-        Component noTarget = Component.translatable("menu.aromaaffect.compass.no_target");
+        Component noTarget = Texts.tr("menu.aromaaffect.compass.no_target");
         graphics.drawString(font, noTarget, panelX + 15, panelY + 55, inactiveColor);
         
         // Render compass direction placeholder
@@ -89,7 +90,7 @@ public class CompassMenuScreen extends BaseMenuScreen {
         graphics.drawString(font, "E", compassCenterX + compassRadius + 4, compassCenterY - 4, infoColor);
         
         // Hint text at bottom
-        Component hint = Component.translatable("menu.aromaaffect.compass.hint");
+        Component hint = Texts.tr("menu.aromaaffect.compass.hint");
         graphics.drawCenteredString(font, hint, width / 2, panelY + PANEL_HEIGHT - 15, inactiveColor);
     }
     

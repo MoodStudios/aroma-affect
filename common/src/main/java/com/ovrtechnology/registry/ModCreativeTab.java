@@ -1,5 +1,6 @@
 package com.ovrtechnology.registry;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.guide.AromaGuideRegistry;
@@ -52,7 +53,7 @@ public final class ModCreativeTab {
                 });
 
                 // Set the tab title
-                builder.title(Component.translatable("itemGroup.aromaaffect"));
+                builder.title(Texts.tr("itemGroup.aromaaffect"));
 
                 // Add all items from our mod to this tab
                 builder.displayItems((parameters, output) -> {

@@ -1,5 +1,6 @@
 package com.ovrtechnology.command.path;
 
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
@@ -203,7 +204,7 @@ public final class ActivePathManager {
             if (arrived) {
                 // Player has arrived!
                 if (PathSubCommand.isVerbose()) {
-                    player.sendSystemMessage(Component.literal(
+                    player.sendSystemMessage(Texts.lit(
                             "§6[Aroma Affect] §aYou have arrived at your destination!"
                     ));
                 }

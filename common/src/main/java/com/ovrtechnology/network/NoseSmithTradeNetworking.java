@@ -1,5 +1,6 @@
 package com.ovrtechnology.network;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import dev.architectury.networking.NetworkManager;
@@ -16,7 +17,7 @@ public final class NoseSmithTradeNetworking {
 
     public record NoseSmithOpenShopC2S(int entityId) implements CustomPacketPayload {
         public static final Type<NoseSmithOpenShopC2S> TYPE = new Type<>(
-                ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose_smith_open_shop"));
+                Ids.mod("nose_smith_open_shop"));
         public static final StreamCodec<RegistryFriendlyByteBuf, NoseSmithOpenShopC2S> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> buf.writeVarInt(payload.entityId),
                 buf -> new NoseSmithOpenShopC2S(buf.readVarInt())

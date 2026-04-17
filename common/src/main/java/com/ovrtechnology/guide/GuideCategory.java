@@ -1,5 +1,6 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Texts;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +31,7 @@ public final class GuideCategory {
     }
 
     public static Builder builder(String id, String title) {
-        return new Builder(id, Component.literal(title));
+        return new Builder(id, Texts.lit(title));
     }
 
     public static Builder builder(String id, Component title) {

@@ -1,13 +1,8 @@
 package com.ovrtechnology.render;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.ovrtechnology.util.Texts;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.menu.MenuCategory;
@@ -24,7 +19,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -36,7 +30,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalDouble;
 
 /**
  * Client-side X-ray trail renderer that draws a glowing path from the player
@@ -123,29 +116,13 @@ public final class PathTrailRenderer {
     private static final long PARTICLE_SPAWN_INTERVAL_MS = 250;
     private static long lastParticleSpawnTime = 0;
 
-    // ── Pipeline (shared by both glow and core render types) ────────────
-
-    private static final RenderPipeline TRAIL_PIPELINE = RenderPipeline.builder()
-            .withLocation("aromaaffect/pipeline/trail_no_depth")
-            .withVertexShader("core/rendertype_lines")
-            .withFragmentShader("core/rendertype_lines")
-            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
-            .withUniform("Globals", UniformType.UNIFORM_BUFFER)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES)
-            .build();
-
     // ── Render types (different line widths) ─────────────────────────────
 
-    private static final RenderType TRAIL_GLOW = TrailRenderType.create("aromaaffect_trail_glow", 5.0);
-    private static final RenderType TRAIL_CORE = TrailRenderType.create("aromaaffect_trail_core", 1.5);
+    private static final RenderType TRAIL_GLOW = AromaRenderTypes.trail("aromaaffect_trail_glow", 5.0);
+    private static final RenderType TRAIL_CORE = AromaRenderTypes.trail("aromaaffect_trail_core", 1.5);
 
-    private static final RenderType TRAIL_GLOW_POWER = TrailRenderType.create("aromaaffect_trail_glow_power", 8.0);
-    private static final RenderType TRAIL_CORE_POWER = TrailRenderType.create("aromaaffect_trail_core_power", 2.5);
+    private static final RenderType TRAIL_GLOW_POWER = AromaRenderTypes.trail("aromaaffect_trail_glow_power", 8.0);
+    private static final RenderType TRAIL_CORE_POWER = AromaRenderTypes.trail("aromaaffect_trail_core_power", 2.5);
 
     private PathTrailRenderer() {}
 
@@ -617,7 +594,7 @@ public final class PathTrailRenderer {
                     String message = String.format(
                             "§d[Aroma Affect] §7Scent: §e%s §7(§dpath tracking§7) §8[%d%%]",
                             scentName, intensityPercent);
-                    mc.player.displayClientMessage(Component.literal(message), false);
+                    mc.player.displayClientMessage(Texts.lit(message), false);
                 }
             }
         }
@@ -833,24 +810,4 @@ public final class PathTrailRenderer {
         return len;
     }
 
-    // ── Inner RenderType factory ────────────────────────────────────────
-
-    private abstract static class TrailRenderType extends RenderType {
-        private TrailRenderType() {
-            super("dummy", 0, false, false, () -> {}, () -> {});
-        }
-
-        static RenderType create(String name, double lineWidth) {
-            return RenderType.create(
-                    name,
-                    1536,
-                    TRAIL_PIPELINE,
-                    CompositeState.builder()
-                            .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(lineWidth)))
-                            .setLayeringState(VIEW_OFFSET_Z_LAYERING)
-                            .setOutputState(ITEM_ENTITY_TARGET)
-                            .createCompositeState(false)
-            );
-        }
-    }
 }

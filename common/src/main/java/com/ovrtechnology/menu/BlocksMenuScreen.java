@@ -1,5 +1,7 @@
 package com.ovrtechnology.menu;
 
+import com.ovrtechnology.util.Texts;
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.block.BlockDefinition;
 import com.ovrtechnology.block.BlockDefinitionLoader;
@@ -102,7 +104,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
 
         for (String blockId : detectableBlocks) {
-            ResourceLocation resourceLocation = ResourceLocation.parse(blockId);
+            ResourceLocation resourceLocation = Ids.parse(blockId);
             addBlockCard(resourceLocation, true);
         }
 
@@ -130,7 +132,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
 
         Component displayName = block.getName();
-        Component description = Component.translatable("menu.aromaaffect.blocks.card.description", displayName);
+        Component description = Texts.tr("menu.aromaaffect.blocks.card.description", displayName);
 
         SelectionCard card = new SelectionCard(blockId, displayName, icon, isUnlocked, description);
 
@@ -140,7 +142,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             card.trackCost = blockDef.getTrackCost();
             RequiredItem req = blockDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
-                ResourceLocation reqId = ResourceLocation.parse(req.getItemId());
+                ResourceLocation reqId = Ids.parse(req.getItemId());
                 var itemOpt = BuiltInRegistries.ITEM.get(reqId);
                 if (itemOpt.isPresent()) {
                     card.requiredItem = new ItemStack(itemOpt.get().value());
@@ -271,7 +273,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
 
         if (isTracking) {
             int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
-            Component trackingLabel = Component.translatable("menu.aromaaffect.selection.selected");
+            Component trackingLabel = Texts.tr("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
             graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - ROW_PADDING,
                     y + (rowHeight - 8) / 2, indicatorColor);
@@ -296,7 +298,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
 
         public String getDisplayName() {
-            return Component.translatable(translationKey).getString();
+            return Texts.tr(translationKey).getString();
         }
     }
 }

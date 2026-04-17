@@ -1,5 +1,6 @@
 package com.ovrtechnology.mixin;
 
+import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
 import com.ovrtechnology.entity.sniffer.client.TamedSnifferRenderState;
@@ -21,15 +22,15 @@ public class SnifferRendererMixin {
 
     @Unique
     private static final ResourceLocation SNIFFER_WITH_SADDLE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_saddle.png");
+            Ids.mod("textures/entity/sniffer_with_saddle.png");
 
     @Unique
     private static final ResourceLocation SNIFFER_WITH_NOSE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_nose.png");
+            Ids.mod("textures/entity/sniffer_with_nose.png");
 
     @Unique
     private static final ResourceLocation SNIFFER_WITH_SADDLE_AND_NOSE =
-            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/sniffer_with_saddle_and_nose.png");
+            Ids.mod("textures/entity/sniffer_with_saddle_and_nose.png");
 
     @Inject(method = "createRenderState", at = @At("HEAD"), cancellable = true)
     private void aromaaffect$createRenderState(CallbackInfoReturnable<SnifferRenderState> cir) {
