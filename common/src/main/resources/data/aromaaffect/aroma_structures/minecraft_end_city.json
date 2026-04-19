@@ -1,0 +1,17 @@
+{
+  "structure_id": "minecraft:end_city",
+  "image": "structure/end_city",
+  "fallback_name": "End City",
+  "color_html": "#DDA0DD",
+  "scent_id": "floral",
+  "blocks": [
+    "minecraft:purpur_block",
+    "minecraft:purpur_pillar",
+    "minecraft:end_stone_bricks"
+  ],
+  "track_cost": 50,
+  "required_item": {
+    "item_id": "minecraft:ender_pearl",
+    "count": 1
+  }
+}

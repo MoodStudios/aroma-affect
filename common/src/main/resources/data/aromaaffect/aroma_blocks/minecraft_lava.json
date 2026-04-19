@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:lava",
+  "color_html": "#E74C3C",
+  "scent_id": "smoky",
+  "fallback_name": "Lava",
+  "range": 8,
+  "track_cost": 5
+}

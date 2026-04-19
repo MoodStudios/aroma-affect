@@ -33,8 +33,6 @@ import java.util.List;
  */
 public final class PathScentNetworking {
 
-    // ── Payload records ────────────────────────────────────────────────
-
     public record PathScentTriggerS2C(String scentName, double intensity, int priorityOrdinal, int durationTicks) implements CustomPacketPayload {
         public static final Type<PathScentTriggerS2C> TYPE = new Type<>(
                 Ids.mod("path_scent_trigger"));
@@ -135,8 +133,6 @@ public final class PathScentNetworking {
         );
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
-
-    // ── Constants ──────────────────────────────────────────────────────
 
     /**
      * Default duration for path tracking scent triggers (in ticks).

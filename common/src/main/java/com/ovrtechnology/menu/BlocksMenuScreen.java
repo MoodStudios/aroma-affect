@@ -68,8 +68,6 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         super(MenuCategory.BLOCKS);
     }
 
-    // ── SelectionMenuScreen hooks ────────────────────────────────────────
-
     @Override
     protected int getRowHeight() {
         return 32;
@@ -281,8 +279,6 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);
         }
     }
-
-    // ── Block filter enum ────────────────────────────────────────────────
 
     enum BlockFilter {
         ALL("menu.aromaaffect.blocks.filter.all"),

@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:peony",
+  "scent_id": "floral",
+  "fallback_name": "Peony",
+  "color_html": "#EBC0DB",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

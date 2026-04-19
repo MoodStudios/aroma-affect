@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:tropical_fish",
+  "scent_id": "marine",
+  "fallback_name": "Tropical Fish",
+  "color_html": "#EF6915",
+  "range": 3,
+  "priority": "MEDLOW"
+}

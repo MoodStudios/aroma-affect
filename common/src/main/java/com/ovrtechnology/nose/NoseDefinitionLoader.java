@@ -3,19 +3,17 @@ package com.ovrtechnology.nose;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockRegistry;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.data.JsonResources;
 import com.ovrtechnology.structure.StructureRegistry;
 import lombok.Getter;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,17 +52,19 @@ public class NoseDefinitionLoader {
      * This scans for JSON files and parses each one.
      */
     public static List<NoseDefinition> loadAllNoses() {
+        return loadAllNoses(ClasspathDataSource.INSTANCE);
+    }
+
+    public static List<NoseDefinition> loadAllNoses(DataSource dataSource) {
         loadedNoses.clear();
-        
-        // Load the index file that lists all nose definition files
+
         try {
-            NoseDefinition[] noses = loadNosesFromResource("data/aromaaffect/noses/noses.json");
+            NoseDefinition[] noses = loadNosesFromResource(dataSource, "data/aromaaffect/noses/noses.json");
             if (noses != null) {
                 for (NoseDefinition nose : noses) {
                     if (nose != null && nose.isValid()) {
-                        // Validate and apply fallbacks
                         validateAndApplyFallbacks(nose);
-                        
+
                         loadedNoses.add(nose);
                         AromaAffect.LOGGER.info("Loaded nose definition: {}", nose.getId());
                     } else {
@@ -75,9 +75,67 @@ public class NoseDefinitionLoader {
         } catch (Exception e) {
             AromaAffect.LOGGER.error("Failed to load nose definitions", e);
         }
-        
+
         AromaAffect.LOGGER.info("Loaded {} nose definitions", loadedNoses.size());
         return Collections.unmodifiableList(loadedNoses);
+    }
+
+    /**
+     * Reload-friendly variant used by the datapack reload listener. Instead of
+     * replacing {@link NoseDefinition} instances, this mutates the fields of
+     * the existing instances in place — the {@code NoseItem} objects registered
+     * at mod-init hold those references, so mutable fields (abilities, unlock,
+     * image, tier/track_cost for gameplay logic, enabled) propagate to items
+     * immediately. Item properties baked at construction (durability cap,
+     * rarity, model equipment asset, repair component, stack size) remain
+     * fixed — those need a game restart to change.
+     *
+     * <p>Slot entries are reset to their registration defaults BEFORE applying
+     * JSON, so removing a datapack reverts slots to disabled on the next
+     * {@code /reload}. Built-in noses re-read their defaults from the mod's
+     * own {@code noses.json} (classpath layer under any datapack override).</p>
+     *
+     * <p>Entries in JSON with IDs that aren't pre-registered are ignored with
+     * a warning — point modpack makers at {@link com.ovrtechnology.slots.SlotPool}.</p>
+     */
+    public static void reloadInPlace(DataSource dataSource) {
+        NoseDefinition[] newDefs = loadNosesFromResource(dataSource, "data/aromaaffect/noses/noses.json");
+        int mutated = 0;
+        int skipped = 0;
+        for (NoseDefinition src : newDefs) {
+            if (src == null || !src.isValid()) continue;
+            NoseDefinition target = findLoadedById(src.getId());
+            if (target == null) {
+                AromaAffect.LOGGER.warn(
+                        "[Nose reload] ID '{}' is not a built-in nose; custom noses must use the aromaaffect:custom_nose variant system.",
+                        src.getId());
+                skipped++;
+                continue;
+            }
+            copyFields(src, target);
+            validateAndApplyFallbacks(target);
+            mutated++;
+        }
+        AromaAffect.LOGGER.info("Nose reload: mutated {} definitions in place, skipped {} unknown IDs",
+                mutated, skipped);
+    }
+
+    private static NoseDefinition findLoadedById(String id) {
+        for (NoseDefinition d : loadedNoses) {
+            if (id.equals(d.getId())) return d;
+        }
+        return null;
+    }
+
+    private static void copyFields(NoseDefinition src, NoseDefinition dst) {
+        dst.setImage(src.getImage());
+        dst.setModel(src.getModel());
+        dst.setUnlock(src.getUnlock());
+        dst.setDurability(src.getDurability());
+        dst.setRepair(src.getRepair());
+        dst.setTier(src.getTier());
+        dst.setTrackCost(src.getTrackCost());
+        dst.setEnabled(src.isEnabled());
     }
     
     /**
@@ -193,36 +251,13 @@ public class NoseDefinitionLoader {
         }
     }
     
-    /**
-     * Load nose definitions from a specific JSON resource file
-     */
-    private static NoseDefinition[] loadNosesFromResource(String resourcePath) {
-        try (InputStream inputStream = NoseDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Nose definitions file not found: {}", resourcePath);
-                return new NoseDefinition[0];
-            }
-            
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-                
-                // Support both array format and object with "noses" array
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, NoseDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("noses")) {
-                        return GSON.fromJson(jsonObject.get("noses"), NoseDefinition[].class);
-                    }
-                }
-                
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {}", resourcePath);
-                return new NoseDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing nose definitions from: {}", resourcePath, e);
+    private static NoseDefinition[] loadNosesFromResource(DataSource dataSource, String resourcePath) {
+        JsonElement element = dataSource.read(resourcePath);
+        if (element == null) {
+            AromaAffect.LOGGER.warn("Nose definitions file not found: {}", resourcePath);
             return new NoseDefinition[0];
         }
+        return JsonResources.parseArrayOrWrapped(element, "noses", NoseDefinition[].class, GSON, resourcePath);
     }
     
     /**

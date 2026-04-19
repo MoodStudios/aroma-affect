@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:llama",
+  "scent_id": "savory_spice",
+  "fallback_name": "Llama",
+  "color_html": "#C09E7B",
+  "range": 5,
+  "priority": "MEDLOW"
+}

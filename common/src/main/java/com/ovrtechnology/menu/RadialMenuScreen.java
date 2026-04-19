@@ -140,7 +140,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 Texts.tr("menu.aromaaffect.category.structures"),
                 Texts.tr("menu.aromaaffect.category.structures.description"),
                 ICON_STRUCTURES,
-                () -> MenuManager.openStructuresMenu()
+                MenuManager::openStructuresMenu
         ));
 
         entries.add(new RadialEntry(
@@ -148,7 +148,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 Texts.tr("menu.aromaaffect.category.biomes"),
                 Texts.tr("menu.aromaaffect.category.biomes.description"),
                 ICON_BIOMES,
-                () -> MenuManager.openBiomesMenu()
+                MenuManager::openBiomesMenu
         ));
 
         entries.add(new RadialEntry(
@@ -156,7 +156,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 Texts.tr("menu.aromaaffect.category.blocks"),
                 Texts.tr("menu.aromaaffect.category.blocks.description"),
                 ICON_BLOCKS,
-                () -> MenuManager.openBlocksMenu()
+                MenuManager::openBlocksMenu
         ));
 
         // 4th slice: Flowers/Flora
@@ -165,7 +165,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 Texts.tr("menu.aromaaffect.category.flowers"),
                 Texts.tr("menu.aromaaffect.category.flowers.description"),
                 ICON_FLOWERS,
-                () -> MenuManager.openFlowersMenu()
+                MenuManager::openFlowersMenu
         ));
     }
 

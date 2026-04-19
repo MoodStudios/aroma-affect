@@ -1,0 +1,13 @@
+{
+  "structure_id": "minecraft:village_taiga",
+  "image": "structure/village",
+  "fallback_name": "Taiga Village",
+  "color_html": "#228B22",
+  "scent_id": "evergreen",
+  "blocks": [
+    "minecraft:spruce_log",
+    "minecraft:bell",
+    "minecraft:cobblestone"
+  ],
+  "track_cost": 5
+}

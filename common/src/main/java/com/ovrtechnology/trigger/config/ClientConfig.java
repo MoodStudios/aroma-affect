@@ -58,9 +58,7 @@ public final class ClientConfig {
     @Getter @Setter
     private boolean debugScentMessages = false;
 
-    // ========================================
     // Passive mode settings
-    // ========================================
 
     /** Cooldown for block triggers in passive mode (ms) */
     @Getter @Setter

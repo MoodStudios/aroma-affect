@@ -66,8 +66,6 @@ public final class TrackingHistoryData {
         loadedWorldId = null;
     }
 
-    // ── History ──────────────────────────────────────────────────────────
-
     public List<HistoryEntry> getHistory() {
         return history;
     }
@@ -86,8 +84,6 @@ public final class TrackingHistoryData {
             save();
         }
     }
-
-    // ── Saved ────────────────────────────────────────────────────────────
 
     public List<SavedEntry> getSaved() {
         return saved;
@@ -119,8 +115,6 @@ public final class TrackingHistoryData {
             save();
         }
     }
-
-    // ── Blacklist ────────────────────────────────────────────────────────
 
     public List<BlacklistEntry> getBlacklist() {
         return blacklist;
@@ -191,8 +185,6 @@ public final class TrackingHistoryData {
         }
         return false;
     }
-
-    // ── Persistence ──────────────────────────────────────────────────────
 
     private static TrackingHistoryData load() {
         String worldId = WorldIdentifier.getCurrentWorldId();

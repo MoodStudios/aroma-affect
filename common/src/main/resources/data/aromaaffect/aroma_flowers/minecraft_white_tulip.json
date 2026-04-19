@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:white_tulip",
+  "scent_id": "floral",
+  "fallback_name": "White Tulip",
+  "color_html": "#D6E8D6",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:squid",
+  "scent_id": "marine",
+  "fallback_name": "Squid",
+  "color_html": "#223B4D",
+  "range": 4,
+  "priority": "MEDLOW"
+}

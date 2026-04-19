@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:axolotl",
+  "scent_id": "marine",
+  "fallback_name": "Axolotl",
+  "color_html": "#FFC0CB",
+  "range": 4,
+  "priority": "MEDLOW"
+}

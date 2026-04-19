@@ -61,12 +61,8 @@ public class AbilityDefinition {
     @SerializedName("config")
     private Map<String, Object> config;
 
-    // ========== Type Constants ==========
-
     public static final String TYPE_PASSIVE = "passive";
     public static final String TYPE_BLOCK_INTERACTION = "block_interaction";
-
-    // ========== Getters with Defaults ==========
 
     public String getType() {
         return type != null ? type : TYPE_PASSIVE;
@@ -79,8 +75,6 @@ public class AbilityDefinition {
     public Map<String, Object> getConfig() {
         return config != null ? config : Collections.emptyMap();
     }
-
-    // ========== Config Accessors ==========
 
     /**
      * Gets an integer config value with a default.
@@ -156,8 +150,6 @@ public class AbilityDefinition {
         }
         return Collections.emptyList();
     }
-
-    // ========== Validation ==========
 
     /**
      * Validates the ability definition has required fields.

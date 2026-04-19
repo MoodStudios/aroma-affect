@@ -173,8 +173,6 @@ public class NoseItem extends Item {
         }
     }
     
-    // ========== Nose-specific Methods ==========
-    
     /**
      * Get the tier of this nose
      */

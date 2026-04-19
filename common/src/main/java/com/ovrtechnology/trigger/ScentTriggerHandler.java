@@ -64,9 +64,7 @@ public final class ScentTriggerHandler {
         AromaAffect.LOGGER.info("[ScentTriggerHandler] Initialization complete");
     }
     
-    // ========================================
     // Future Event Handlers (Placeholders)
-    // ========================================
     
     /*
      * Future: Biome change handler

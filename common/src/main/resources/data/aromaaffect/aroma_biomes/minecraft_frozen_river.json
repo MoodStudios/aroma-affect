@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:frozen_river",
+  "image": "biome/frozen_river",
+  "fallback_name": "Frozen River",
+  "color_html": "#3938C9",
+  "scent_id": "winter",
+  "track_cost": 10
+}

@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:pitcher_plant",
+  "scent_id": "floral",
+  "fallback_name": "Pitcher Plant",
+  "color_html": "#5B8A3C",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

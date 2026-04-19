@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:hoglin",
+  "scent_id": "barnyard",
+  "fallback_name": "Hoglin",
+  "color_html": "#C29D7A",
+  "range": 6,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

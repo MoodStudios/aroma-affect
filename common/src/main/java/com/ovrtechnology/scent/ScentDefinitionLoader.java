@@ -3,19 +3,17 @@ package com.ovrtechnology.scent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -48,10 +46,7 @@ public class ScentDefinitionLoader {
             .setPrettyPrinting()
             .create();
     
-    /**
-     * Path to the scents JSON file
-     */
-    private static final String SCENTS_RESOURCE_PATH = "data/aromaaffect/scents/scents.json";
+    public static final String SCENTS_DIR = "aroma_scents";
     
     /**
      * Cached list of loaded scent definitions
@@ -74,21 +69,30 @@ public class ScentDefinitionLoader {
      * @return An unmodifiable list of valid scent definitions
      */
     public static List<ScentDefinition> loadAllScents() {
+        return loadAllScents(ClasspathDataSource.INSTANCE);
+    }
+
+    /**
+     * Load all scent definitions from the given {@link DataSource}.
+     * The classpath overload is preserved for mod-init-time loading;
+     * reload listeners pass a {@code ResourceManagerDataSource} so that
+     * installed datapacks and {@code /reload} are honored.
+     */
+    public static List<ScentDefinition> loadAllScents(DataSource dataSource) {
         loadedScents.clear();
         loadedIds.clear();
-        
-        try {
-            ScentDefinition[] scents = loadScentsFromResource(SCENTS_RESOURCE_PATH);
-            if (scents != null) {
-                for (ScentDefinition scent : scents) {
-                    processScent(scent);
-                }
+
+        Map<ResourceLocation, JsonElement> files = dataSource.listJson(SCENTS_DIR);
+        for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
+            try {
+                ScentDefinition scent = GSON.fromJson(entry.getValue(), ScentDefinition.class);
+                processScent(scent);
+            } catch (Exception e) {
+                AromaAffect.LOGGER.error("Failed to parse scent {}: {}", entry.getKey(), e.getMessage());
             }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Failed to load scent definitions", e);
         }
-        
-        AromaAffect.LOGGER.info("Loaded {} scent definitions", loadedScents.size());
+
+        AromaAffect.LOGGER.info("Loaded {} scent definitions from {} file(s)", loadedScents.size(), files.size());
         return Collections.unmodifiableList(loadedScents);
     }
     
@@ -138,40 +142,6 @@ public class ScentDefinitionLoader {
         }
     }
     
-    /**
-     * Load scent definitions from a specific JSON resource file.
-     * 
-     * @param resourcePath Path to the JSON resource
-     * @return Array of scent definitions, or empty array if not found
-     */
-    private static ScentDefinition[] loadScentsFromResource(String resourcePath) {
-        try (InputStream inputStream = ScentDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Scent definitions file not found: {}", resourcePath);
-                return new ScentDefinition[0];
-            }
-            
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-                
-                // Support both array format and object with "scents" array
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, ScentDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("scents")) {
-                        return GSON.fromJson(jsonObject.get("scents"), ScentDefinition[].class);
-                    }
-                }
-                
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'scents' key)", resourcePath);
-                return new ScentDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing scent definitions from: {}", resourcePath, e);
-            return new ScentDefinition[0];
-        }
-    }
     
     /**
      * Parse a single scent definition from a JSON string.

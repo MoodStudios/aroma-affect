@@ -1,0 +1,7 @@
+{
+  "block_id": "minecraft:lapis_ore",
+  "color_html": "#2980B9",
+  "scent_id": "terra_silva",
+  "fallback_name": "Lapis Lazuli Ore",
+  "track_cost": 10
+}

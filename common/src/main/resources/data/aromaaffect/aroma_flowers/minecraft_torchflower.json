@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:torchflower",
+  "scent_id": "floral",
+  "fallback_name": "Torchflower",
+  "color_html": "#FF6B1A",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:trial_chambers",
+  "image": "structure/trial_chambers",
+  "fallback_name": "Trial Chambers",
+  "color_html": "#4682B4",
+  "scent_id": "machina",
+  "range": 40,
+  "blocks": [
+    "minecraft:copper_bulb",
+    "minecraft:trial_spawner",
+    "minecraft:tuff_bricks"
+  ],
+  "track_cost": 25
+}

@@ -35,8 +35,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
     private enum Tab { HISTORY, SAVED, BLACKLIST }
 
-    // ── Layout constants ─────────────────────────────────────────────────
-
     private static final int MAX_LIST_WIDTH = 380;
     private static final int ROW_HEIGHT = 36;
     private static final int ROW_PADDING = 3;
@@ -52,8 +50,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
     private static final ResourceLocation ICON_BACK = Ids.mod("textures/gui/sprites/radial/icon_back.png");
 
-    // ── Tab colors ───────────────────────────────────────────────────────
-
     private static final int TAB_HISTORY_COLOR = 0xFF6B8CFF;
     private static final int TAB_SAVED_COLOR = 0xFFFFCC44;
     private static final int TAB_BLACKLIST_COLOR = 0xFFFF6B6B;
@@ -61,14 +57,10 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private static final int ROW_COLOR = 0xB0222222;
     private static final int ROW_HOVER_COLOR = 0xE0444488;
 
-    // ── Category accent colors ───────────────────────────────────────────
-
     private static final int BADGE_BLOCKS = 0xFF4488CC;
     private static final int BADGE_BIOMES = 0xFF44AA44;
     private static final int BADGE_STRUCTURES = 0xFFCC8844;
     private static final int BADGE_FLOWERS = 0xFFCC44AA;
-
-    // ── State ────────────────────────────────────────────────────────────
 
     private Tab activeTab = Tab.HISTORY;
     private EditBox searchBox;
@@ -98,8 +90,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         super(Texts.tr("history.aromaaffect.title"));
     }
 
-    // ── Lifecycle ────────────────────────────────────────────────────────
-
     @Override
     protected void init() {
         super.init();
@@ -120,8 +110,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         rebuildFilteredList();
     }
-
-    // ── Filtering ────────────────────────────────────────────────────────
 
     private void rebuildFilteredList() {
         filteredIndices.clear();
@@ -162,8 +150,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         if (targetId.toLowerCase(Locale.ROOT).contains(lowerQuery)) return true;
         return displayName != null && displayName.toLowerCase(Locale.ROOT).contains(lowerQuery);
     }
-
-    // ── Rendering ────────────────────────────────────────────────────────
 
     @Override
     protected void renderContent(GuiGraphics g, int mouseX, int mouseY,
@@ -336,8 +322,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.disableScissor();
     }
 
-    // ── History Row ──────────────────────────────────────────────────────
-
     private void renderHistoryRow(GuiGraphics g, int dataIndex, int x, int y, int w,
                                   boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
@@ -421,8 +405,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Saved Row ────────────────────────────────────────────────────────
-
     private void renderSavedRow(GuiGraphics g, int dataIndex, int x, int y, int w,
                                 boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
@@ -484,8 +466,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Blacklist Row ────────────────────────────────────────────────────
-
     private void renderBlacklistRow(GuiGraphics g, int dataIndex, int x, int y, int w,
                                     boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
@@ -526,8 +506,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                     mouseX, mouseY, ap, filteredIdx, 0);
         }
     }
-
-    // ── Go (Re-track) Button ─────────────────────────────────────────────
 
     private void renderGoButton(GuiGraphics g, int x, int y, int w, int h,
                                 String targetId, String categoryId,
@@ -600,8 +578,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Zigzag Torn-Edge Separator ───────────────────────────────────────
-
     private void renderZigzagSeparator(GuiGraphics g, int x, int y, int w, int h, float ap) {
         // Draws a vertical zigzag torn-paper edge
         // Left half: row background bleeds through, right half: Go button color bleeds
@@ -646,8 +622,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             }
         }
     }
-
-    // ── Icon Button Types ────────────────────────────────────────────────
 
     private enum IconType { SAVE, BLACKLIST, DELETE, RENAME, TELEPORT, UNBLOCK }
 
@@ -717,8 +691,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 Texts.tr("history.aromaaffect.action.teleport"),
                 mouseX, mouseY, ap, filteredIdx, actionIdx);
     }
-
-    // ── Procedural Icon Drawing ──────────────────────────────────────────
 
     /** Star (bookmark/save): 5-pointed star outline */
     private static void drawStarIcon(GuiGraphics g, int cx, int cy, int color) {
@@ -811,8 +783,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.fill(cx + 4, cy - 3, cx + 5, cy - 2, color);
     }
 
-    // ── Status Badge ─────────────────────────────────────────────────────
-
     /**
      * Renders the entry icon: category header texture as the main 16x16 icon,
      * with the specific target item as a small overlay badge at the bottom-right.
@@ -867,8 +837,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         return x + pillW + 3;
     }
 
-    // ── Name Popup ───────────────────────────────────────────────────────
-
     private void renderNamePopup(GuiGraphics g, int mouseX, int mouseY,
                                  float partialTick, float ap) {
         g.fill(0, 0, width, height, MenuRenderUtils.withAlpha(0xCC000000, ap));
@@ -922,8 +890,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 cancelX + confirmW / 2, confirmY + 4,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
     }
-
-    // ── Input Handling ───────────────────────────────────────────────────
 
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
@@ -985,8 +951,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         return false;
     }
-
-    // ── Action Handling ──────────────────────────────────────────────────
 
     private void handleActionClick(int filteredIdx, int actionIdx) {
         if (filteredIdx < 0 || filteredIdx >= filteredIndices.size()) return;
@@ -1071,8 +1035,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Re-track ─────────────────────────────────────────────────────────
-
     private boolean canRetrackTarget(String targetId, String categoryId) {
         var player = Minecraft.getInstance().player;
         if (player == null) return false;
@@ -1142,8 +1104,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         MenuManager.returnToRadialMenu();
     }
 
-    // ── Teleport ─────────────────────────────────────────────────────────
-
     private void executeTeleport(int x, int y, int z) {
         var player = Minecraft.getInstance().player;
         if (player == null || !player.isCreative()) return;
@@ -1160,8 +1120,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             minecraft.setScreen(null);
         }
     }
-
-    // ── Name Popup Logic ─────────────────────────────────────────────────
 
     private void openNamePopup(int dataIndex, boolean isRename, String prefill) {
         showNamePopup = true;
@@ -1249,8 +1207,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         // Clicks outside popup: consume to prevent clicking through
         return true;
     }
-
-    // ── Utilities ────────────────────────────────────────────────────────
 
     /**
      * Resolves an item icon for the given target using the same icon maps

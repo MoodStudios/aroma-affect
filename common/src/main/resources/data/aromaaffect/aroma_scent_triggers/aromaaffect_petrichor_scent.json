@@ -1,0 +1,8 @@
+{
+  "item_id": "aromaaffect:petrichor_scent",
+  "scent_name": "Petrichor",
+  "trigger_on": "USE",
+  "duration_ticks": 200,
+  "priority": "HIGH",
+  "cooldown_ms": 5000
+}

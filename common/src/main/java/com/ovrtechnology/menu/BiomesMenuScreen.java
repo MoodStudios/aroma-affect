@@ -138,8 +138,6 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         super(MenuCategory.BIOMES);
     }
 
-    // ── SelectionMenuScreen hooks ────────────────────────────────────────
-
     @Override
     protected int getRowHeight() {
         return 56;

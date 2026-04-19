@@ -1,0 +1,8 @@
+{
+  "item_id": "aromaaffect:winter_scent",
+  "scent_name": "Winter",
+  "trigger_on": "USE",
+  "duration_ticks": 200,
+  "priority": "HIGH",
+  "cooldown_ms": 5000
+}

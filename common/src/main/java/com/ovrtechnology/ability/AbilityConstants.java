@@ -25,23 +25,17 @@ public final class AbilityConstants {
 
     private AbilityConstants() {}
 
-    // ========== Tier 1 Abilities ==========
-
     /**
      * Basic scent detection ability.
      * Allows detection of basic scents like water and lava.
      */
     public static final String BASIC_SCENT = "basic_scent";
 
-    // ========== Tier 2 Abilities ==========
-
     /**
      * Active tracking ability.
      * Enables active tracking mode for enhanced scent detection.
      */
     public static final String ACTIVE_TRACKING = "active_tracking";
-
-    // ========== Tier 3+ Abilities ==========
 
     /**
      * Structure compass ability.

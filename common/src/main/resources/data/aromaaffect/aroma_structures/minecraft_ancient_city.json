@@ -1,0 +1,19 @@
+{
+  "structure_id": "minecraft:ancient_city",
+  "image": "structure/ancient_city",
+  "fallback_name": "Ancient City",
+  "color_html": "#1C1C2A",
+  "scent_id": "machina",
+  "range": 60,
+  "blocks": [
+    "minecraft:sculk",
+    "minecraft:sculk_catalyst",
+    "minecraft:sculk_shrieker",
+    "minecraft:deepslate_tiles"
+  ],
+  "track_cost": 50,
+  "required_item": {
+    "item_id": "minecraft:echo_shard",
+    "count": 1
+  }
+}

@@ -1,5 +1,9 @@
 package com.ovrtechnology.nose;
 
+import com.ovrtechnology.variant.CustomNoseItem;
+import com.ovrtechnology.variant.NoseVariant;
+import com.ovrtechnology.variant.NoseVariantRegistry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -57,24 +61,34 @@ public final class EquippedNoseHelper {
 
     /**
      * Gets the resolved abilities of the equipped nose (including inherited abilities).
-     *
-     * @param player the player to check
-     * @return the resolved abilities, or EMPTY if no nose is equipped
+     * Works for both built-in NoseItem stacks and CustomNoseItem variant stacks.
      */
     public static NoseAbilityResolver.ResolvedAbilities getEquippedAbilities(Player player) {
-        return getEquippedNose(player)
-                .map(NoseItem::getResolvedAbilities)
-                .orElse(NoseAbilityResolver.ResolvedAbilities.EMPTY);
+        if (player == null) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
+        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (head.isEmpty()) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
+
+        if (head.getItem() instanceof NoseItem noseItem) {
+            return noseItem.getResolvedAbilities();
+        }
+        if (head.getItem() instanceof CustomNoseItem) {
+            Optional<ResourceLocation> vid = CustomNoseItem.getVariantId(head);
+            if (vid.isPresent()) {
+                return NoseAbilityResolver.getResolvedAbilities(vid.get().toString());
+            }
+        }
+        return NoseAbilityResolver.ResolvedAbilities.EMPTY;
     }
 
     /**
-     * Checks if the player has any nose equipped.
-     *
-     * @param player the player to check
-     * @return true if a nose is equipped
+     * Checks if the player has any nose equipped (built-in or custom variant).
      */
     public static boolean hasNoseEquipped(Player player) {
-        return getEquippedNose(player).isPresent();
+        if (player == null) return false;
+        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (head.isEmpty()) return false;
+        return head.getItem() instanceof NoseItem
+                || (head.getItem() instanceof CustomNoseItem && CustomNoseItem.getVariantId(head).isPresent());
     }
 
     /**
@@ -122,24 +136,34 @@ public final class EquippedNoseHelper {
     }
 
     /**
-     * Gets the tier of the equipped nose.
-     *
-     * @param player the player to check
-     * @return the nose tier (1-6), or 0 if no nose is equipped
+     * Gets the tier of the equipped nose (built-in or variant).
      */
     public static int getEquippedNoseTier(Player player) {
-        return getEquippedNose(player)
-                .map(NoseItem::getTier)
-                .orElse(0);
+        if (player == null) return 0;
+        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (head.isEmpty()) return 0;
+        if (head.getItem() instanceof NoseItem noseItem) {
+            return noseItem.getTier();
+        }
+        if (head.getItem() instanceof CustomNoseItem) {
+            return CustomNoseItem.getVariant(head).map(NoseVariant::getTier).orElse(0);
+        }
+        return 0;
     }
 
     /**
-     * Gets the ID of the equipped nose.
-     *
-     * @param player the player to check
-     * @return Optional containing the nose ID, or empty if no nose is equipped
+     * Gets the ID of the equipped nose (built-in short id, or full variant resource location).
      */
     public static Optional<String> getEquippedNoseId(Player player) {
-        return getEquippedNoseDefinition(player).map(NoseDefinition::getId);
+        if (player == null) return Optional.empty();
+        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (head.isEmpty()) return Optional.empty();
+        if (head.getItem() instanceof NoseItem noseItem) {
+            return Optional.of(noseItem.getDefinition().getId());
+        }
+        if (head.getItem() instanceof CustomNoseItem) {
+            return CustomNoseItem.getVariantId(head).map(ResourceLocation::toString);
+        }
+        return Optional.empty();
     }
 }

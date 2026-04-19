@@ -68,9 +68,7 @@ public class TriggerSettings {
      */
     public static final long DEFAULT_PATH_TRACKING_COOLDOWN_MS = 20000;
     
-    // ========================================
     // Default intensities by trigger type
-    // ========================================
     
     /**
      * Default intensity for item use triggers (more pronounced).
@@ -97,9 +95,7 @@ public class TriggerSettings {
      */
     public static final double DEFAULT_MOB_INTENSITY = 0.4;
     
-    // ========================================
     // Cooldown settings
-    // ========================================
     
     /**
      * Minimum time between any scent trigger (ms).
@@ -159,9 +155,7 @@ public class TriggerSettings {
     @SerializedName("path_tracking_cooldown_ms")
     private long pathTrackingCooldownMs = DEFAULT_PATH_TRACKING_COOLDOWN_MS;
     
-    // ========================================
     // Intensity settings
-    // ========================================
     
     /**
      * Default intensity for item use triggers.

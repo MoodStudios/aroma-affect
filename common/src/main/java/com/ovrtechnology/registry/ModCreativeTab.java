@@ -10,6 +10,12 @@ import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
+import com.ovrtechnology.variant.CustomNoseItem;
+import com.ovrtechnology.variant.CustomNoseRegistry;
+import com.ovrtechnology.variant.NoseVariant;
+import com.ovrtechnology.variant.NoseVariantRegistry;
+import net.minecraft.resources.ResourceLocation;
+import java.util.Map;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
@@ -55,21 +61,33 @@ public final class ModCreativeTab {
                 // Set the tab title
                 builder.title(Texts.tr("itemGroup.aromaaffect"));
 
-                // Add all items from our mod to this tab
+                // Add all items from our mod to this tab. Slot items whose
+                // definition has enabled=false are hidden until a datapack
+                // flips them on (see SlotPool).
                 builder.displayItems((parameters, output) -> {
-                    // Add all player-equippable nose items sorted by tier
                     NoseRegistry.getAllNosesAsList()
-                            .stream().sorted(Comparator.comparing(NoseItem::getTier))
+                            .stream()
+                            .filter(nose -> nose.getDefinition().isEnabled())
+                            .sorted(Comparator.comparing(NoseItem::getTier))
                             .forEach(nose -> output.accept(new ItemStack(nose)));
-                    
-                    // Add all sniffer nose items sorted by tier
+
                     SnifferNoseRegistry.getAllSnifferNosesAsList()
-                            .stream().sorted(Comparator.comparing(SnifferNoseItem::getTier))
+                            .stream()
+                            .filter(nose -> nose.getDefinition().isEnabled())
+                            .sorted(Comparator.comparing(SnifferNoseItem::getTier))
                             .forEach(snifferNose -> output.accept(new ItemStack(snifferNose)));
-                    
-                    // Add all scent items sorted by priority
+
                     ScentItemRegistry.getScentItemsSortedByPriority()
+                            .stream()
+                            .filter(item -> item.getDefinition().isEnabled())
                             .forEach(scentItem -> output.accept(new ItemStack(scentItem)));
+
+                    if (CustomNoseRegistry.getCUSTOM_NOSE().isPresent()) {
+                        CustomNoseItem item = (CustomNoseItem) CustomNoseRegistry.getCUSTOM_NOSE().get();
+                        for (Map.Entry<ResourceLocation, NoseVariant> e : NoseVariantRegistry.all().entrySet()) {
+                            output.accept(CustomNoseItem.stackFor(item, e.getKey(), e.getValue()));
+                        }
+                    }
                     
                     // Add Aroma Guide
                     if (AromaGuideRegistry.getAROMA_GUIDE().isPresent()) {

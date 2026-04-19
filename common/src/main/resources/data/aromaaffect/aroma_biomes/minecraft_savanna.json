@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:savanna",
+  "image": "biome/savanna",
+  "fallback_name": "Savanna",
+  "color_html": "#BDB25F",
+  "scent_id": "savory_spice",
+  "track_cost": 5
+}

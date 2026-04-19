@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:plains",
+  "image": "biome/plains",
+  "fallback_name": "Plains",
+  "color_html": "#8DB360",
+  "scent_id": "floral",
+  "track_cost": 5
+}

@@ -1,0 +1,7 @@
+{
+  "block_id": "minecraft:chest",
+  "color_html": "#D68910",
+  "scent_id": "timber",
+  "fallback_name": "Chest",
+  "track_cost": 5
+}

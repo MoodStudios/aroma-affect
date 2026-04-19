@@ -31,7 +31,6 @@ import java.util.Set;
  */
 public class GuideScreen extends BaseMenuScreen {
 
-    // ── Layout Constants ───────────────────────────────────────────
     private static final int WINDOW_MARGIN = 16;
     private static final int SIDEBAR_WIDTH = 150;
     private static final int SIDEBAR_ITEM_HEIGHT = 22;
@@ -41,7 +40,6 @@ public class GuideScreen extends BaseMenuScreen {
     private static final int SCROLLBAR_WIDTH = 6;
     private static final int PAGE_TITLE_BAR_HEIGHT = 28;
 
-    // ── Colors ─────────────────────────────────────────────────────
     private static final int COLOR_WINDOW_BG = 0xF0101020;
     private static final int COLOR_SIDEBAR_BG = 0xF0141430;
     private static final int COLOR_HEADER_BG = 0xF01A1A3A;
@@ -72,7 +70,6 @@ public class GuideScreen extends BaseMenuScreen {
     private int closeBtnX, closeBtnY, closeBtnSize;
     private boolean hoveringClose = false;
 
-    // ── State ──────────────────────────────────────────────────────
     private final GuideBook book;
     @Nullable
     private GuidePage currentPage;
@@ -188,8 +185,6 @@ public class GuideScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Rendering ──────────────────────────────────────────────────
-
     @Override
     protected void renderContent(GuiGraphics g, int mouseX, int mouseY,
                                  float partialTick, float animationProgress) {
@@ -292,8 +287,6 @@ public class GuideScreen extends BaseMenuScreen {
         // Bottom border
         g.fill(left, bottom - 1, right, bottom, applyAlpha(COLOR_BORDER, alpha));
     }
-
-    // ── Sidebar ────────────────────────────────────────────────────
 
     private void renderSidebar(GuiGraphics g, int left, int top, int right, int bottom,
                                int mouseX, int mouseY, float alpha) {
@@ -484,8 +477,6 @@ public class GuideScreen extends BaseMenuScreen {
         int textColor = selected ? COLOR_TITLE : COLOR_SIDEBAR_TEXT;
         g.drawString(font, pageTitle, textX, y + 7, applyAlpha(textColor, alpha), selected);
     }
-
-    // ── Content Area ───────────────────────────────────────────────
 
     private void renderContentArea(GuiGraphics g, int left, int top, int right, int bottom,
                                    int mouseX, int mouseY, float alpha) {
@@ -1128,8 +1119,6 @@ public class GuideScreen extends BaseMenuScreen {
         return lineHeight;
     }
 
-    // ── Scrollbar ──────────────────────────────────────────────────
-
     private void renderScrollbar(GuiGraphics g, int x, int y, int w, int h,
                                  double scrollOffset, int totalHeight, int visibleHeight, float alpha) {
         // Track
@@ -1145,8 +1134,6 @@ public class GuideScreen extends BaseMenuScreen {
         g.fill(x + 1, thumbY + 1, x + w - 1, thumbY + thumbH - 1,
                 applyAlpha(COLOR_SCROLLBAR_THUMB, alpha));
     }
-
-    // ── Input ──────────────────────────────────────────────────────
 
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
@@ -1312,8 +1299,6 @@ public class GuideScreen extends BaseMenuScreen {
         return false;
     }
 
-    // ── Navigation ─────────────────────────────────────────────────
-
     private void navigateToPage(GuidePage page) {
         // Save current page scroll position
         if (currentPage != null) {
@@ -1329,8 +1314,6 @@ public class GuideScreen extends BaseMenuScreen {
         contentScrollOffset = savedScroll;
         contentScrollTarget = savedScroll;
     }
-
-    // ── Sounds ─────────────────────────────────────────────────────
 
     private void playClickSound() {
         Minecraft mc = Minecraft.getInstance();
@@ -1348,8 +1331,6 @@ public class GuideScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Sidebar Data ───────────────────────────────────────────────
-
     private void rebuildSidebar() {
         sidebarEntries.clear();
         for (GuideCategory cat : book.getCategories()) {
@@ -1361,8 +1342,6 @@ public class GuideScreen extends BaseMenuScreen {
             }
         }
     }
-
-    // ── Utility ────────────────────────────────────────────────────
 
     private static int applyAlpha(int color, float alpha) {
         int a = (color >> 24) & 0xFF;
@@ -1376,8 +1355,6 @@ public class GuideScreen extends BaseMenuScreen {
         g.fill(left, top, left + 1, bottom, color);
         g.fill(right - 1, top, right, bottom, color);
     }
-
-    // ── Inner Classes ──────────────────────────────────────────────
 
     private static final class SidebarEntry {
         final boolean isCategory;

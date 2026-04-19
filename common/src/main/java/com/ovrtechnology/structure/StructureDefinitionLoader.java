@@ -3,21 +3,19 @@ package com.ovrtechnology.structure;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.block.BlockRegistry;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -57,10 +55,7 @@ public class StructureDefinitionLoader {
             .setPrettyPrinting()
             .create();
     
-    /**
-     * Path to the structures JSON file
-     */
-    private static final String STRUCTURES_RESOURCE_PATH = "data/aromaaffect/structures/structures.json";
+    public static final String STRUCTURES_DIR = "aroma_structures";
     
     /**
      * Cached list of loaded structure definitions
@@ -95,27 +90,30 @@ public class StructureDefinitionLoader {
      * @return An unmodifiable list of valid structure definitions
      */
     public static List<StructureDefinition> loadAllStructures() {
+        return loadAllStructures(ClasspathDataSource.INSTANCE);
+    }
+
+    public static List<StructureDefinition> loadAllStructures(DataSource dataSource) {
         loadedStructures.clear();
         loadedIds.clear();
         validationWarnings.clear();
-        
-        try {
-            StructureDefinition[] structures = loadStructuresFromResource(STRUCTURES_RESOURCE_PATH);
-            if (structures != null) {
-                for (StructureDefinition structure : structures) {
-                    processStructure(structure);
-                }
+
+        Map<ResourceLocation, JsonElement> files = dataSource.listJson(STRUCTURES_DIR);
+        for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
+            try {
+                StructureDefinition structure = GSON.fromJson(entry.getValue(), StructureDefinition.class);
+                processStructure(structure);
+            } catch (Exception e) {
+                AromaAffect.LOGGER.error("Failed to parse structure {}: {}", entry.getKey(), e.getMessage());
             }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Failed to load structure definitions", e);
         }
-        
-        AromaAffect.LOGGER.info("Loaded {} structure definitions", loadedStructures.size());
-        
+
+        AromaAffect.LOGGER.info("Loaded {} structure definitions from {} file(s)", loadedStructures.size(), files.size());
+
         if (!validationWarnings.isEmpty()) {
             AromaAffect.LOGGER.warn("Structure loading completed with {} validation warnings", validationWarnings.size());
         }
-        
+
         return Collections.unmodifiableList(loadedStructures);
     }
     
@@ -233,40 +231,6 @@ public class StructureDefinitionLoader {
         AromaAffect.LOGGER.warn(warning);
     }
     
-    /**
-     * Load structure definitions from a specific JSON resource file.
-     * 
-     * @param resourcePath Path to the JSON resource
-     * @return Array of structure definitions, or empty array if not found
-     */
-    private static StructureDefinition[] loadStructuresFromResource(String resourcePath) {
-        try (InputStream inputStream = StructureDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Structure definitions file not found: {}", resourcePath);
-                return new StructureDefinition[0];
-            }
-            
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-                
-                // Support both array format and object with "structures" array
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, StructureDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("structures")) {
-                        return GSON.fromJson(jsonObject.get("structures"), StructureDefinition[].class);
-                    }
-                }
-                
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'structures' key)", resourcePath);
-                return new StructureDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing structure definitions from: {}", resourcePath, e);
-            return new StructureDefinition[0];
-        }
-    }
     
     /**
      * Parse a single structure definition from a JSON string.

@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:wither",
+  "scent_id": "smoky",
+  "fallback_name": "Wither",
+  "color_html": "#141414",
+  "range": 30,
+  "priority": "MEDIUM",
+  "intensity": 0.8
+}

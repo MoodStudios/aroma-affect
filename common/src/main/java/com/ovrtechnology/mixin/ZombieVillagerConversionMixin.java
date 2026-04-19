@@ -50,8 +50,6 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
         this.aromaaffect$noseSmithNoseRemovedGameTime = noseRemovedGameTime;
     }
 
-    // ── NBT persistence ──────────────────────────────────────────────────
-
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void aromaaffect$saveNoseSmithData(ValueOutput output, CallbackInfo ci) {
         if (aromaaffect$wasNoseSmith) {
@@ -77,8 +75,6 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
                     .orElse(-1L);
         }
     }
-
-    // ── Cure redirect ────────────────────────────────────────────────────
 
     @Redirect(
             method = "finishConversion",

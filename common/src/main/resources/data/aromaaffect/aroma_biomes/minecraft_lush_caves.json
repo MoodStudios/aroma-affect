@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:lush_caves",
+  "image": "biome/lush_caves",
+  "fallback_name": "Lush Caves",
+  "color_html": "#7BA331",
+  "scent_id": "floral",
+  "track_cost": 25
+}

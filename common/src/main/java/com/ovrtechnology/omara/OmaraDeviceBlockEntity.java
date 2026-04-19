@@ -158,9 +158,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         this.statusTicks = input.getIntOr("StatusTicks", 0);
     }
 
-    // ========================================
     // Server Tick
-    // ========================================
 
     private void setStatus(Level level, BlockPos pos, BlockState state, int status, int ticks) {
         statusTicks = ticks;

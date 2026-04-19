@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:glow_squid",
+  "scent_id": "marine",
+  "fallback_name": "Glow Squid",
+  "color_html": "#09999C",
+  "range": 4,
+  "priority": "MEDLOW"
+}

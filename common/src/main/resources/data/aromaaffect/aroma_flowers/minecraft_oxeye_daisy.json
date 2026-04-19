@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:oxeye_daisy",
+  "scent_id": "floral",
+  "fallback_name": "Oxeye Daisy",
+  "color_html": "#D6E8D6",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

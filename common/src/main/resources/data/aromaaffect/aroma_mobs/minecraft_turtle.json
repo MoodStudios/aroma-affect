@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:turtle",
+  "scent_id": "beach",
+  "fallback_name": "Turtle",
+  "color_html": "#41A03E",
+  "range": 4,
+  "priority": "MEDLOW"
+}

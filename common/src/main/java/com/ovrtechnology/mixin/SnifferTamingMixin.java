@@ -82,8 +82,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         return SnifferConfigLoader.getConfig();
     }
 
-
-
     @Shadow
     public abstract Sniffer.State getState();
 
@@ -499,18 +497,14 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
     }
 
-    // ==========================================
     // DIMENSIONAL SCENTS SYSTEM
-    // ==========================================
     // Each scent is obtained:
     // 1. Only once per sniffer
     // 2. In its respective dimension
     // 3. Without needing to be tamed or have a nose
     // 4. With 100% probability if not yet obtained
 
-    // ==========================================
     // BONANZA SYSTEM WITH ENHANCED NOSE
-    // ==========================================
     // When it has the nose equipped, in ONE excavation it drops EVERYTHING together:
     // - 5-15 of EACH mineral (copper, iron, gold, emerald, diamond, netherite)
     // - 1-5 scent_base
@@ -544,9 +538,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
         ResourceKey<Level> dimension = serverLevel.dimension();
 
-        // ========================================
         // STEP 1: Check dimensional scents
-        // ========================================
         ItemStack scentToDrop = aromaaffect$getScentForDimension(dimension, data);
 
         if (!scentToDrop.isEmpty()) {
@@ -569,9 +561,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             return;
         }
 
-        // ========================================
         // STEP 2: Bonanza with Enhanced Nose
-        // ========================================
         SnifferContainer container = new SnifferContainer(self);
 
         // Only if tamed AND has Enhanced Sniffer Nose equipped AND bonanza is enabled
@@ -594,7 +584,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         var random = sniffer.getRandom();
         var bonanzaConfig = aromaaffect$getConfig().bonanza;
 
-        // ========== MINERALS (configurable) ==========
         for (SnifferConfig.MineralEntry mineral : bonanzaConfig.minerals) {
             if (!mineral.enabled) continue;
 
@@ -605,7 +594,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             });
         }
 
-        // ========== SCENT BASE (configurable) ==========
         if (bonanzaConfig.scentBase.enabled) {
             int scentBaseCount = bonanzaConfig.scentBase.min +
                     random.nextInt(bonanzaConfig.scentBase.max - bonanzaConfig.scentBase.min + 1);
@@ -615,7 +603,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             });
         }
 
-        // ========== SEEDS (configurable) ==========
         if (bonanzaConfig.seeds.enabled && !bonanzaConfig.seeds.items.isEmpty()) {
             int seedCount = bonanzaConfig.seeds.min +
                     random.nextInt(bonanzaConfig.seeds.max - bonanzaConfig.seeds.min + 1);
@@ -679,7 +666,6 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         Vec3 headPos = sniffer.position().add(sniffer.getForward().scale(2.25));
         return BlockPos.containing(headPos.x(), sniffer.getY() + 0.2, headPos.z());
     }
-
 
     /**
      * Gets the scent corresponding to the dimension if the sniffer doesn't have it.

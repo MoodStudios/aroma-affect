@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:cave_spider",
+  "scent_id": "terra_silva",
+  "fallback_name": "Cave Spider",
+  "color_html": "#0C424E",
+  "range": 4,
+  "priority": "MEDLOW"
+}

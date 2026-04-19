@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:stony_shore",
+  "image": "biome/stony_shore",
+  "fallback_name": "Stony Shore",
+  "color_html": "#A2A284",
+  "scent_id": "marine",
+  "track_cost": 10
+}

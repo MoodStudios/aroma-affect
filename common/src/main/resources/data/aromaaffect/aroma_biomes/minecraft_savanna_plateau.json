@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:savanna_plateau",
+  "image": "biome/savanna",
+  "fallback_name": "Savanna Plateau",
+  "color_html": "#AEA42A",
+  "scent_id": "savory_spice",
+  "track_cost": 5
+}

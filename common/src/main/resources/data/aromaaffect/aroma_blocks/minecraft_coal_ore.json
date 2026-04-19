@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:coal_ore",
+  "color_html": "#2C3E50",
+  "scent_id": "smoky",
+  "fallback_name": "Coal Ore",
+  "range": 3,
+  "track_cost": 5
+}

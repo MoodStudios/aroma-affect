@@ -3,20 +3,18 @@ package com.ovrtechnology.block;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -54,10 +52,7 @@ public class BlockDefinitionLoader {
             .setPrettyPrinting()
             .create();
     
-    /**
-     * Path to the blocks JSON file
-     */
-    private static final String BLOCKS_RESOURCE_PATH = "data/aromaaffect/blocks/blocks.json";
+    public static final String BLOCKS_DIR = "aroma_blocks";
     
     /**
      * Cached list of loaded block definitions
@@ -90,27 +85,34 @@ public class BlockDefinitionLoader {
      * @return An unmodifiable list of valid block definitions
      */
     public static List<BlockDefinition> loadAllBlocks() {
+        return loadAllBlocks(ClasspathDataSource.INSTANCE);
+    }
+
+    /**
+     * Load all block definitions from the given {@link DataSource}.
+     * Honors datapacks when a {@code ResourceManagerDataSource} is passed.
+     */
+    public static List<BlockDefinition> loadAllBlocks(DataSource dataSource) {
         loadedBlocks.clear();
         loadedIds.clear();
         validationWarnings.clear();
-        
-        try {
-            BlockDefinition[] blocks = loadBlocksFromResource(BLOCKS_RESOURCE_PATH);
-            if (blocks != null) {
-                for (BlockDefinition block : blocks) {
-                    processBlock(block);
-                }
+
+        Map<ResourceLocation, JsonElement> files = dataSource.listJson(BLOCKS_DIR);
+        for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
+            try {
+                BlockDefinition block = GSON.fromJson(entry.getValue(), BlockDefinition.class);
+                processBlock(block);
+            } catch (Exception e) {
+                AromaAffect.LOGGER.error("Failed to parse block {}: {}", entry.getKey(), e.getMessage());
             }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Failed to load block definitions", e);
         }
-        
-        AromaAffect.LOGGER.info("Loaded {} block definitions", loadedBlocks.size());
-        
+
+        AromaAffect.LOGGER.info("Loaded {} block definitions from {} file(s)", loadedBlocks.size(), files.size());
+
         if (!validationWarnings.isEmpty()) {
             AromaAffect.LOGGER.warn("Block loading completed with {} validation warnings", validationWarnings.size());
         }
-        
+
         return Collections.unmodifiableList(loadedBlocks);
     }
     
@@ -189,40 +191,6 @@ public class BlockDefinitionLoader {
         AromaAffect.LOGGER.warn(warning);
     }
     
-    /**
-     * Load block definitions from a specific JSON resource file.
-     * 
-     * @param resourcePath Path to the JSON resource
-     * @return Array of block definitions, or empty array if not found
-     */
-    private static BlockDefinition[] loadBlocksFromResource(String resourcePath) {
-        try (InputStream inputStream = BlockDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Block definitions file not found: {}", resourcePath);
-                return new BlockDefinition[0];
-            }
-            
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-                
-                // Support both array format and object with "blocks" array
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, BlockDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("blocks")) {
-                        return GSON.fromJson(jsonObject.get("blocks"), BlockDefinition[].class);
-                    }
-                }
-                
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'blocks' key)", resourcePath);
-                return new BlockDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing block definitions from: {}", resourcePath, e);
-            return new BlockDefinition[0];
-        }
-    }
     
     /**
      * Parse a single block definition from a JSON string.

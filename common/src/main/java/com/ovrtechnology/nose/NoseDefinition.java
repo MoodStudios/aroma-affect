@@ -67,7 +67,15 @@ public class NoseDefinition {
      */
     @SerializedName("track_cost")
     private int trackCost;
-    
+
+    /**
+     * Whether this nose is visible/functional. Built-in noses default to {@code true}.
+     * Slot entries pre-registered for datapack customization default to {@code false}
+     * and flip to {@code true} when a datapack supplies data.
+     */
+    @SerializedName("enabled")
+    private boolean enabled = true;
+
     // Override getters with defaults
     
     public String getModel() {

@@ -1,0 +1,7 @@
+{
+  "block_id": "minecraft:gold_ore",
+  "color_html": "#F1C40F",
+  "scent_id": "terra_silva",
+  "fallback_name": "Gold Ore",
+  "track_cost": 10
+}
