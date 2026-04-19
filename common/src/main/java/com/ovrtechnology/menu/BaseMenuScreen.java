@@ -50,8 +50,6 @@ public abstract class BaseMenuScreen extends Screen {
      */
     protected int backgroundColor = 0x80000000;
 
-    // ── Notification System ──────────────────────────────────────────────
-
     /**
      * Duration in milliseconds before notifications auto-hide.
      */
@@ -193,8 +191,6 @@ public abstract class BaseMenuScreen extends Screen {
      */
     protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
                                           float partialTick, float animationProgress);
-
-    // ── Notification Methods ─────────────────────────────────────────────
 
     /**
      * Shows an error notification at the top of the screen.

@@ -1,0 +1,15 @@
+{
+  "structure_id": "minecraft:stronghold",
+  "image": "structure/stronghold",
+  "fallback_name": "Stronghold",
+  "color_html": "#4A4A4A",
+  "scent_id": "terra_silva",
+  "range": 40,
+  "blocks": [
+    "minecraft:end_portal_frame",
+    "minecraft:stone_bricks",
+    "minecraft:mossy_stone_bricks",
+    "minecraft:cracked_stone_bricks"
+  ],
+  "track_cost": 25
+}

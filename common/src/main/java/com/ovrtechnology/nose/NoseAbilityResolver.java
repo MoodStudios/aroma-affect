@@ -1,7 +1,10 @@
 package com.ovrtechnology.nose;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.variant.NoseVariant;
+import com.ovrtechnology.variant.NoseVariantRegistry;
 import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 
@@ -34,11 +37,14 @@ public final class NoseAbilityResolver {
         
         AromaAffect.LOGGER.info("Initializing NoseAbilityResolver...");
         
-        // Resolve abilities for each nose
         for (String noseId : NoseRegistry.getAllNoseIds()) {
             resolveAbilitiesForNose(noseId);
         }
-        
+
+        for (ResourceLocation variantId : NoseVariantRegistry.all().keySet()) {
+            resolveAbilitiesForNose(variantId.toString());
+        }
+
         initialized = true;
         AromaAffect.LOGGER.info("NoseAbilityResolver initialized with {} cached entries", ABILITY_CACHE.size());
     }
@@ -105,18 +111,9 @@ public final class NoseAbilityResolver {
 
         visited.add(noseId);
 
-        // Get the nose definition
-        Optional<NoseDefinition> defOpt = NoseRegistry.getDefinition(noseId);
-        if (defOpt.isEmpty()) {
-            AromaAffect.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
-            visited.remove(noseId);
-            return;
-        }
-
-        NoseDefinition definition = defOpt.get();
-        NoseUnlock unlock = definition.getUnlock();
-
+        NoseUnlock unlock = lookupUnlock(noseId);
         if (unlock == null) {
+            AromaAffect.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
             visited.remove(noseId);
             return;
         }
@@ -136,6 +133,21 @@ public final class NoseAbilityResolver {
         visited.remove(noseId);
     }
     
+    private static NoseUnlock lookupUnlock(String noseId) {
+        Optional<NoseDefinition> defOpt = NoseRegistry.getDefinition(noseId);
+        if (defOpt.isPresent()) {
+            return defOpt.get().getUnlock();
+        }
+        ResourceLocation rl = ResourceLocation.tryParse(noseId);
+        if (rl != null) {
+            Optional<NoseVariant> variantOpt = NoseVariantRegistry.get(rl);
+            if (variantOpt.isPresent()) {
+                return variantOpt.get().getUnlock();
+            }
+        }
+        return null;
+    }
+
     /**
      * Get all resolved abilities for a nose (including inherited)
      */

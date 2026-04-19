@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:snowy_taiga",
+  "image": "biome/snowy_taiga",
+  "fallback_name": "Snowy Taiga",
+  "color_html": "#31554A",
+  "scent_id": "winter",
+  "track_cost": 10
+}

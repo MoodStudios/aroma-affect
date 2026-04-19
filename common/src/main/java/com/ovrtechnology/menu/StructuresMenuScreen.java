@@ -86,8 +86,6 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
         super(MenuCategory.STRUCTURES);
     }
 
-    // ── SelectionMenuScreen hooks ────────────────────────────────────────
-
     @Override
     protected int getRowHeight() {
         return 56;

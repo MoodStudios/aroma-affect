@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:taiga",
+  "image": "biome/taiga",
+  "fallback_name": "Taiga",
+  "color_html": "#596651",
+  "scent_id": "evergreen",
+  "track_cost": 5
+}

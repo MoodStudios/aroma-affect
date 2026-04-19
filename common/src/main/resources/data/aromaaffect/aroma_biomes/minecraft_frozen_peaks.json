@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:frozen_peaks",
+  "image": "biome/frozen_peaks",
+  "fallback_name": "Frozen Peaks",
+  "color_html": "#C0D8DF",
+  "scent_id": "winter",
+  "track_cost": 10
+}

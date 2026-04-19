@@ -1,0 +1,7 @@
+{
+  "block_id": "minecraft:nether_gold_ore",
+  "color_html": "#F39C12",
+  "scent_id": "smoky",
+  "fallback_name": "Nether Gold Ore",
+  "track_cost": 10
+}

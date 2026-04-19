@@ -1,0 +1,8 @@
+{
+  "item_id": "aromaaffect:savory_spice_scent",
+  "scent_name": "Savory Spice",
+  "trigger_on": "USE",
+  "duration_ticks": 200,
+  "priority": "HIGH",
+  "cooldown_ms": 5000
+}

@@ -1,0 +1,8 @@
+{
+  "item_id": "aromaaffect:smoky_scent",
+  "scent_name": "Smoky",
+  "trigger_on": "USE",
+  "duration_ticks": 200,
+  "priority": "HIGH",
+  "cooldown_ms": 5000
+}

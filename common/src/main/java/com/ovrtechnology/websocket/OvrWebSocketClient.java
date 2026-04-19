@@ -54,64 +54,48 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     private static final OvrWebSocketClient INSTANCE = new OvrWebSocketClient();
 
-    // ========================================
     // Configuration
-    // ========================================
 
     @Getter
     private volatile WebSocketConfig config = WebSocketConfig.DEFAULT;
 
-    // ========================================
     // Connection state
-    // ========================================
 
     private final AtomicReference<ConnectionState> state = new AtomicReference<>(ConnectionState.DISCONNECTED);
     private volatile WebSocket webSocket;
     private final HttpClient httpClient;
 
-    // ========================================
     // Reconnection tracking
-    // ========================================
 
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private final AtomicLong currentReconnectDelay = new AtomicLong(0);
     private final AtomicBoolean reconnectScheduled = new AtomicBoolean(false);
 
-    // ========================================
     // Threading
-    // ========================================
 
     private final ScheduledExecutorService scheduler;
     private final Queue<Runnable> mainThreadQueue = new ConcurrentLinkedQueue<>();
     private ScheduledFuture<?> healthCheckTask;
     private ScheduledFuture<?> reconnectTask;
 
-    // ========================================
     // Message handling
-    // ========================================
 
     private final List<WebSocketMessageHandler> messageHandlers = new CopyOnWriteArrayList<>();
     private final List<WebSocketConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
     private final StringBuilder messageBuffer = new StringBuilder();
 
-    // ========================================
     // Message history
-    // ========================================
 
     private static final int MAX_MESSAGE_HISTORY = 50;
     private final Deque<WebSocketMessage> messageHistory = new ConcurrentLinkedDeque<>();
 
-    // ========================================
     // Health monitoring
-    // ========================================
 
     private final AtomicLong lastPongTime = new AtomicLong(0);
     private final AtomicBoolean awaitingPong = new AtomicBoolean(false);
     private final AtomicLong lastPingTime = new AtomicLong(0);
 
-    // ========================================
     // Initialization flag
-    // ========================================
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -201,9 +185,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
     }
 
-    // ========================================
     // Connection management
-    // ========================================
 
     /**
      * Initiates an asynchronous connection to the WebSocket server.
@@ -353,9 +335,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         mainThreadQueue.clear();
     }
 
-    // ========================================
     // Message sending
-    // ========================================
 
     /**
      * Sends a message to the WebSocket server.
@@ -408,9 +388,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         return send(new WebSocketMessage("raw", text));
     }
 
-    // ========================================
     // Handler registration
-    // ========================================
 
     /**
      * Adds a message handler.
@@ -450,9 +428,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         connectionListeners.remove(listener);
     }
 
-    // ========================================
     // State accessors
-    // ========================================
 
     /**
      * Gets the current connection state.
@@ -497,9 +473,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
     }
 
-    // ========================================
     // WebSocket.Listener implementation
-    // ========================================
 
     @Override
     public void onOpen(WebSocket webSocket) {
@@ -642,9 +616,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
     }
 
-    // ========================================
     // Reconnection logic
-    // ========================================
 
     private void handleConnectionFailure(Exception e) {
         setState(ConnectionState.CONNECTION_FAILED);
@@ -743,9 +715,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
     }
 
-    // ========================================
     // Health monitoring
-    // ========================================
 
     private void startHealthMonitoring() {
         stopHealthMonitoring();
@@ -815,9 +785,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
     }
 
-    // ========================================
     // Main thread execution
-    // ========================================
 
     /**
      * Queues a task to be executed on Minecraft's main thread.
@@ -846,9 +814,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
     }
 
-    // ========================================
     // State management
-    // ========================================
 
     private void setState(ConnectionState newState) {
         ConnectionState oldState = state.getAndSet(newState);

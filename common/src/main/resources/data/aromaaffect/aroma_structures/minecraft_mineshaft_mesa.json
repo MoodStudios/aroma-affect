@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:mineshaft_mesa",
+  "image": "structure/mineshaft",
+  "fallback_name": "Mesa Mineshaft",
+  "color_html": "#CD853F",
+  "scent_id": "desert",
+  "range": 30,
+  "blocks": [
+    "minecraft:dark_oak_planks",
+    "minecraft:dark_oak_fence",
+    "minecraft:rail"
+  ],
+  "track_cost": 10
+}

@@ -96,8 +96,6 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         super(MenuCategory.FLOWERS);
     }
 
-    // ── SelectionMenuScreen hooks ────────────────────────────────────────
-
     @Override
     protected int getRowHeight() {
         return 32;
@@ -305,8 +303,6 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);
         }
     }
-
-    // ── Flower filter enum ───────────────────────────────────────────────
 
     enum FlowerFilter {
         ALL("menu.aromaaffect.flowers.filter.all"),

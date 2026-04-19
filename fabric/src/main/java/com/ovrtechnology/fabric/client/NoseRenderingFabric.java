@@ -2,6 +2,7 @@ package com.ovrtechnology.fabric.client;
 
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
+import com.ovrtechnology.variant.CustomNoseRegistry;
 import dev.architectury.registry.registries.RegistrySupplier;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 
@@ -15,6 +16,9 @@ public final class NoseRenderingFabric {
         }
         for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getLegacyItems()) {
             ArmorRenderer.register(NoseArmorRenderer::new, supplier.get());
+        }
+        if (CustomNoseRegistry.getCUSTOM_NOSE().isPresent()) {
+            ArmorRenderer.register(NoseArmorRenderer::new, CustomNoseRegistry.getCUSTOM_NOSE().get());
         }
     }
 }

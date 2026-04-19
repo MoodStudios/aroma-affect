@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:nether_quartz_ore",
+  "color_html": "#ECF0F1",
+  "scent_id": "smoky",
+  "fallback_name": "Nether Quartz Ore",
+  "range": 4,
+  "track_cost": 10
+}

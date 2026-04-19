@@ -4,15 +4,13 @@ import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.util.Ids;
 import com.google.gson.*;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Loads guide content from JSON resource files and converts them into
@@ -40,20 +38,31 @@ public final class GuideContentLoader {
      */
     @Nullable
     public static GuideCategory loadCategory(String resourcePath) {
-        try (InputStream is = GuideContentLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (is == null) {
+        return loadCategory(ClasspathDataSource.INSTANCE, resourcePath);
+    }
+
+    /**
+     * Loads a guide category from the given {@link DataSource}. Callers that
+     * want datapack overrides to apply should pass a {@code ResourceManagerDataSource}.
+     */
+    @Nullable
+    public static GuideCategory loadCategory(DataSource dataSource, String resourcePath) {
+        try {
+            JsonElement element = dataSource.read(resourcePath);
+            if (element == null) {
                 AromaAffect.LOGGER.error("[Guide] Resource not found: {}", resourcePath);
                 return null;
             }
-            JsonObject root = GSON.fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonObject.class);
-            return parseCategory(root);
+            if (!element.isJsonObject()) {
+                AromaAffect.LOGGER.error("[Guide] Expected JSON object in {}", resourcePath);
+                return null;
+            }
+            return parseCategory(element.getAsJsonObject());
         } catch (Exception e) {
             AromaAffect.LOGGER.error("[Guide] Failed to load category from {}: {}", resourcePath, e.getMessage());
             return null;
         }
     }
-
-    // ── Category ────────────────────────────────────────────────────
 
     private static GuideCategory parseCategory(JsonObject json) {
         String id = json.get("id").getAsString();
@@ -75,8 +84,6 @@ public final class GuideContentLoader {
         return builder.build();
     }
 
-    // ── Page ────────────────────────────────────────────────────────
-
     private static GuidePage parsePage(JsonObject json) {
         String id = json.get("id").getAsString();
         Component title = resolveText(json);
@@ -96,8 +103,6 @@ public final class GuideContentLoader {
         }
         return builder.build();
     }
-
-    // ── Element ─────────────────────────────────────────────────────
 
     @Nullable
     private static GuideElement parseElement(JsonObject json) {
@@ -180,8 +185,6 @@ public final class GuideContentLoader {
         return GuideElement.craftingGrid(grid, result, label);
     }
 
-    // ── Icon ────────────────────────────────────────────────────────
-
     private static GuideIcon parseIcon(JsonObject json) {
         String type = json.get("type").getAsString();
         switch (type) {
@@ -202,8 +205,6 @@ public final class GuideContentLoader {
         }
     }
 
-    // ── Item Resolution ─────────────────────────────────────────────
-
     /**
      * Resolves a Minecraft item ID string to an ItemStack.
      * Returns {@link ItemStack#EMPTY} for empty strings or {@code minecraft:air}.
@@ -217,8 +218,6 @@ public final class GuideContentLoader {
                 .map(ItemStack::new)
                 .orElse(ItemStack.EMPTY);
     }
-
-    // ── Text Resolution ─────────────────────────────────────────────
 
     /**
      * Resolves text from a JSON object.
@@ -242,8 +241,6 @@ public final class GuideContentLoader {
         }
         return Texts.empty();
     }
-
-    // ── Color Parsing ───────────────────────────────────────────────
 
     /**
      * Parses a hex color string like {@code "#FFE8A838"} to an int.

@@ -2,11 +2,15 @@ package com.ovrtechnology.trigger.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.biome.BiomeDefinition;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinition;
 import com.ovrtechnology.block.BlockDefinitionLoader;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.flower.FlowerDefinition;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.mob.MobDefinition;
@@ -14,10 +18,8 @@ import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.structure.StructureDefinition;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
+import net.minecraft.resources.ResourceLocation;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -28,10 +30,7 @@ import java.util.*;
  */
 public final class ScentTriggerConfigLoader {
 
-    /**
-     * Path to the item triggers configuration file (items remain separate).
-     */
-    private static final String ITEM_TRIGGERS_PATH = "data/aromaaffect/scents/scent_item_triggers.json";
+    public static final String ITEM_TRIGGERS_DIR = "aroma_scent_triggers";
 
     /**
      * Path to the trigger settings file.
@@ -39,14 +38,27 @@ public final class ScentTriggerConfigLoader {
     private static final String SETTINGS_PATH = "data/aromaaffect/scents/trigger_settings.json";
 
     /**
-     * Valid OVR scent names (case-sensitive).
-     * Only these names are supported by the OVR hardware bridge.
+     * Path to the OVR hardware scent catalog.
      */
-    public static final Set<String> VALID_OVR_SCENTS = Set.of(
+    private static final String OVR_CATALOG_PATH = "data/aromaaffect/scents/ovr_catalog.json";
+
+    /**
+     * Fallback catalog used if {@link #OVR_CATALOG_PATH} is missing.
+     * Matches the factory-shipped scents; datapacks may extend the list.
+     */
+    private static final Set<String> DEFAULT_OVR_SCENTS = Set.of(
         "Beach", "Evergreen", "Desert", "Floral", "Barnyard",
         "Smoky", "Winter", "Terra Silva", "Savory Spice", "Timber",
         "Petrichor", "Sweet", "Machina", "Marine", "Kindred", "Citrus"
     );
+
+    /**
+     * Valid OVR scent names. Populated from {@link #OVR_CATALOG_PATH}, with
+     * {@link #DEFAULT_OVR_SCENTS} as fallback. Public for compatibility with
+     * call sites that consume the legacy constant; use {@link #getValidOvrScents()}
+     * if you want to be explicit about the live view.
+     */
+    public static Set<String> VALID_OVR_SCENTS = DEFAULT_OVR_SCENTS;
 
     private static final Gson GSON = new GsonBuilder()
             .setLenient()
@@ -70,6 +82,10 @@ public final class ScentTriggerConfigLoader {
      * Builds trigger maps from per-category definition loaders.
      */
     public static void init() {
+        init(ClasspathDataSource.INSTANCE);
+    }
+
+    public static void init(DataSource dataSource) {
         if (initialized) {
             AromaAffect.LOGGER.warn("ScentTriggerConfigLoader.init() called multiple times!");
             return;
@@ -78,17 +94,16 @@ public final class ScentTriggerConfigLoader {
         AromaAffect.LOGGER.info("Loading scent trigger configuration...");
 
         try {
-            // Load settings
-            settings = loadSettings();
+            loadOvrCatalog(dataSource);
+
+            settings = loadSettings(dataSource);
             if (settings == null) {
                 settings = TriggerSettings.defaults();
             }
             settings.validate();
 
-            // Load item triggers from dedicated file
-            loadItemTriggers();
+            loadItemTriggers(dataSource);
 
-            // Build trigger maps from per-category loaders
             buildBiomeTriggers();
             buildBlockTriggers();
             buildFlowerTriggers();
@@ -117,48 +132,64 @@ public final class ScentTriggerConfigLoader {
     }
 
     /**
-     * Loads trigger settings from the settings JSON file.
+     * Live view of the OVR hardware scent catalog. Prefer this over reading
+     * {@link #VALID_OVR_SCENTS} directly — future callers will be migrated.
      */
-    private static TriggerSettings loadSettings() {
-        try (InputStream is = ScentTriggerConfigLoader.class.getClassLoader()
-                .getResourceAsStream(SETTINGS_PATH)) {
-            if (is == null) {
-                AromaAffect.LOGGER.warn("Trigger settings not found: {}, using defaults", SETTINGS_PATH);
-                return null;
+    public static Set<String> getValidOvrScents() {
+        return VALID_OVR_SCENTS;
+    }
+
+    private static void loadOvrCatalog(DataSource dataSource) {
+        JsonElement element = dataSource.read(OVR_CATALOG_PATH);
+        if (element == null) {
+            VALID_OVR_SCENTS = DEFAULT_OVR_SCENTS;
+            return;
+        }
+        try {
+            Set<String> parsed = new LinkedHashSet<>();
+            if (element.isJsonArray()) {
+                element.getAsJsonArray().forEach(e -> parsed.add(e.getAsString()));
+            } else if (element.isJsonObject()) {
+                JsonObject obj = element.getAsJsonObject();
+                if (obj.has("scents") && obj.get("scents").isJsonArray()) {
+                    obj.getAsJsonArray("scents").forEach(e -> parsed.add(e.getAsString()));
+                }
             }
-            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                return GSON.fromJson(reader, TriggerSettings.class);
-            }
+            VALID_OVR_SCENTS = parsed.isEmpty() ? DEFAULT_OVR_SCENTS : Collections.unmodifiableSet(parsed);
+            AromaAffect.LOGGER.info("Loaded {} OVR catalog entries", VALID_OVR_SCENTS.size());
+        } catch (Exception e) {
+            AromaAffect.LOGGER.error("Failed to parse OVR catalog at {}, using defaults: {}", OVR_CATALOG_PATH, e.getMessage());
+            VALID_OVR_SCENTS = DEFAULT_OVR_SCENTS;
+        }
+    }
+
+    private static TriggerSettings loadSettings(DataSource dataSource) {
+        JsonElement element = dataSource.read(SETTINGS_PATH);
+        if (element == null) {
+            AromaAffect.LOGGER.warn("Trigger settings not found: {}, using defaults", SETTINGS_PATH);
+            return null;
+        }
+        try {
+            return GSON.fromJson(element, TriggerSettings.class);
         } catch (Exception e) {
             AromaAffect.LOGGER.error("Error reading trigger settings: {}", e.getMessage());
             return null;
         }
     }
 
-    /**
-     * Loads item triggers from the scent_items.json file.
-     */
-    private static void loadItemTriggers() {
+    private static void loadItemTriggers(DataSource dataSource) {
         itemTriggerMap.clear();
-        try (InputStream is = ScentTriggerConfigLoader.class.getClassLoader()
-                .getResourceAsStream(ITEM_TRIGGERS_PATH)) {
-            if (is == null) {
-                AromaAffect.LOGGER.warn("Item triggers file not found: {}", ITEM_TRIGGERS_PATH);
-                return;
-            }
-            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                ItemTriggersRoot root = GSON.fromJson(reader, ItemTriggersRoot.class);
-                if (root != null && root.getItemTriggers() != null) {
-                    for (ItemTriggerDefinition trigger : root.getItemTriggers()) {
-                        if (trigger.isValid()) {
-                            validateScentName(trigger.getScentName(), "item", trigger.getItemId());
-                            itemTriggerMap.put(trigger.getItemId(), trigger);
-                        }
-                    }
+        Map<ResourceLocation, JsonElement> files = dataSource.listJson(ITEM_TRIGGERS_DIR);
+        for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
+            try {
+                ItemTriggerDefinition trigger = GSON.fromJson(entry.getValue(), ItemTriggerDefinition.class);
+                if (trigger != null && trigger.isValid()) {
+                    validateScentName(trigger.getScentName(), "item", trigger.getItemId());
+                    itemTriggerMap.put(trigger.getItemId(), trigger);
                 }
+            } catch (Exception e) {
+                AromaAffect.LOGGER.error("Failed to parse scent trigger {}: {}", entry.getKey(), e.getMessage());
             }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error loading item triggers: {}", e.getMessage());
         }
     }
 
@@ -331,9 +362,7 @@ public final class ScentTriggerConfigLoader {
         }
     }
 
-    // ========================================
     // Lookup Methods
-    // ========================================
 
     public static Optional<ItemTriggerDefinition> getItemTrigger(String itemId) {
         return Optional.ofNullable(itemTriggerMap.get(itemId));
@@ -388,20 +417,13 @@ public final class ScentTriggerConfigLoader {
     }
 
     public static void reload() {
+        reload(ClasspathDataSource.INSTANCE);
+    }
+
+    public static void reload(DataSource dataSource) {
         AromaAffect.LOGGER.info("Reloading scent trigger configuration...");
         initialized = false;
-        init();
+        init(dataSource);
     }
 
-    /**
-     * Internal root class for loading item triggers from scent_items.json.
-     */
-    private static class ItemTriggersRoot {
-        @com.google.gson.annotations.SerializedName("item_triggers")
-        private List<ItemTriggerDefinition> itemTriggers = new ArrayList<>();
-
-        public List<ItemTriggerDefinition> getItemTriggers() {
-            return itemTriggers != null ? itemTriggers : new ArrayList<>();
-        }
-    }
 }

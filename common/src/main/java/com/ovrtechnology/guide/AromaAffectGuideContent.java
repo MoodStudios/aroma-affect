@@ -33,15 +33,11 @@ public final class AromaAffectGuideContent {
                 .build();
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────
-
     private static ItemStack noseItem(String id) {
         return NoseRegistry.getNose(id)
                 .map(ItemStack::new)
                 .orElse(new ItemStack(Items.IRON_HELMET));
     }
-
-    // ── Welcome / Getting Started ──────────────────────────────────
 
     private static GuideCategory buildWelcomeCategory() {
         GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/getting_started.json");
@@ -53,8 +49,6 @@ public final class AromaAffectGuideContent {
                 .accentColor(0xFF6D5EF8)
                 .build();
     }
-
-    // ── Noses ───────────────────────────────────────────────────────
 
     private static GuideCategory buildNosesCategory() {
         GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/noses.json");
@@ -69,8 +63,6 @@ public final class AromaAffectGuideContent {
                 .build();
     }
 
-    // ── Sniffer ─────────────────────────────────────────────────────
-
     private static GuideCategory buildSnifferCategory() {
         GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/sniffer.json");
         if (loaded != null) {
@@ -81,8 +73,6 @@ public final class AromaAffectGuideContent {
                 .accentColor(0xFF4EC9B0)
                 .build();
     }
-
-    // ── Endgame ─────────────────────────────────────────────────────
 
     private static GuideCategory buildEndgameCategory() {
         GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/endgame.json");

@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:spore_blossom",
+  "scent_id": "floral",
+  "fallback_name": "Spore Blossom",
+  "color_html": "#DF73AC",
+  "trigger_on": "PROXIMITY",
+  "range": 4,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

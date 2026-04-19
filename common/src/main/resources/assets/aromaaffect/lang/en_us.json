@@ -1,6 +1,11 @@
 {
   "itemGroup.aromaaffect": "Aroma Affect",
-  
+
+  "key.category.aromaaffect.keybinds": "Aroma Affect",
+
+  "item.aromaaffect.custom_nose": "Unconfigured Nose",
+  "nose.aromaaffect.example": "Example Nose",
+
   "entity.aromaaffect.nose_smith": "Nose Smith",
   "item.aromaaffect.nose_smith_spawn_egg": "Nose Smith Spawn Egg",
   "item.aromaaffect.special_rose": "Special Rose",

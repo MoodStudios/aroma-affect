@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:birch_forest",
+  "image": "biome/birch_forest",
+  "fallback_name": "Birch Forest",
+  "color_html": "#589C6C",
+  "scent_id": "evergreen",
+  "track_cost": 5
+}

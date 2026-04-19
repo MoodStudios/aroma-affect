@@ -1,0 +1,13 @@
+{
+  "structure_id": "minecraft:village_snowy",
+  "image": "structure/village",
+  "fallback_name": "Snowy Village",
+  "color_html": "#E0FFFF",
+  "scent_id": "winter",
+  "blocks": [
+    "minecraft:snow_block",
+    "minecraft:bell",
+    "minecraft:spruce_planks"
+  ],
+  "track_cost": 5
+}

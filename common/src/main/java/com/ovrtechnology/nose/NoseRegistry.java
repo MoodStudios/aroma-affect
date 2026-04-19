@@ -31,13 +31,13 @@ public final class NoseRegistry {
      * Map of nose ID to registered item supplier
      */
     @Getter
-    private static final Map<String, RegistrySupplier<NoseItem>> noseItems = new HashMap<>();
-    
+    private static final Map<String, RegistrySupplier<NoseItem>> noseItems = new LinkedHashMap<>();
+
     /**
      * Map of nose ID to its definition
      */
     @Getter
-    private static final Map<String, NoseDefinition> noseDefinitions = new HashMap<>();
+    private static final Map<String, NoseDefinition> noseDefinitions = new LinkedHashMap<>();
     
     /**
      * Legacy alias suppliers (old IDs pointing to equivalent items).
@@ -65,15 +65,12 @@ public final class NoseRegistry {
         
         AromaAffect.LOGGER.info("Initializing NoseRegistry...");
         
-        // Load nose definitions from JSON
         List<NoseDefinition> definitions = NoseDefinitionLoader.loadAllNoses();
-        
-        // Register each nose as an item
+
         for (NoseDefinition definition : definitions) {
             registerNose(definition);
         }
-        
-        // Register legacy aliases so old worlds keep their items
+
         registerLegacyAliases();
 
         // Register the deferred register with Architectury

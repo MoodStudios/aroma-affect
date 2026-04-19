@@ -40,9 +40,7 @@ public final class ScentTriggerManager {
 
     private static final ScentTriggerManager INSTANCE = new ScentTriggerManager();
 
-    // ========================================
     // State
-    // ========================================
 
     /**
      * The currently active scent trigger.
@@ -61,9 +59,7 @@ public final class ScentTriggerManager {
      */
     private int remainingTicks = 0;
 
-    // ========================================
     // Cooldowns
-    // ========================================
 
     /**
      * Map of scent name -> last trigger timestamp (ms).
@@ -75,9 +71,7 @@ public final class ScentTriggerManager {
      */
     private long lastGlobalTriggerTime = 0;
 
-    // ========================================
     // Initialization
-    // ========================================
 
     /**
      * Whether the manager has been initialized.
@@ -112,9 +106,7 @@ public final class ScentTriggerManager {
         AromaAffect.LOGGER.info("ScentTriggerManager initialized");
     }
 
-    // ========================================
     // Cooldown Checking
-    // ========================================
 
     /**
      * Checks if a scent can be triggered (not on cooldown).
@@ -229,9 +221,7 @@ public final class ScentTriggerManager {
         return 0;
     }
 
-    // ========================================
     // Triggering
-    // ========================================
 
     /**
      * Triggers a scent.
@@ -300,9 +290,7 @@ public final class ScentTriggerManager {
         }
     }
 
-    // ========================================
     // Tick Processing
-    // ========================================
 
     /**
      * Processes one game tick.
@@ -326,9 +314,7 @@ public final class ScentTriggerManager {
         }
     }
 
-    // ========================================
     // OVR Communication
-    // ========================================
 
     /**
      * Sends a play command to OVR hardware.
@@ -347,9 +333,7 @@ public final class ScentTriggerManager {
         }
     }
 
-    // ========================================
     // Internal Helpers
-    // ========================================
 
     /**
      * Updates cooldown timestamps after a successful trigger.
@@ -360,9 +344,7 @@ public final class ScentTriggerManager {
         lastTriggerTime.put(scentName, now);
     }
 
-    // ========================================
     // State Accessors
-    // ========================================
 
     /**
      * Gets the currently active scent trigger.

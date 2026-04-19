@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:parrot",
+  "scent_id": "citrus",
+  "fallback_name": "Parrot",
+  "color_html": "#FF0000",
+  "range": 4,
+  "priority": "MEDLOW"
+}

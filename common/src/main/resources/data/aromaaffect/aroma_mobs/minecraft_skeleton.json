@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:skeleton",
+  "scent_id": "smoky",
+  "fallback_name": "Skeleton",
+  "color_html": "#C1C1C1",
+  "range": 6,
+  "priority": "MEDLOW"
+}

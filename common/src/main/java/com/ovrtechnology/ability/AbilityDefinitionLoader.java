@@ -3,15 +3,12 @@ package com.ovrtechnology.ability;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.data.JsonResources;
 import lombok.Getter;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -68,10 +65,14 @@ public class AbilityDefinitionLoader {
      * @return unmodifiable map of ability ID to definition
      */
     public static Map<String, AbilityDefinition> loadAllAbilities() {
+        return loadAllAbilities(ClasspathDataSource.INSTANCE);
+    }
+
+    public static Map<String, AbilityDefinition> loadAllAbilities(DataSource dataSource) {
         loadedAbilities.clear();
 
         try {
-            AbilityDefinition[] abilities = loadAbilitiesFromResource(ABILITIES_RESOURCE_PATH);
+            AbilityDefinition[] abilities = loadAbilitiesFromResource(dataSource, ABILITIES_RESOURCE_PATH);
             if (abilities != null) {
                 for (AbilityDefinition ability : abilities) {
                     if (ability != null && ability.isValid()) {
@@ -92,36 +93,13 @@ public class AbilityDefinitionLoader {
         return Collections.unmodifiableMap(loadedAbilities);
     }
 
-    /**
-     * Load ability definitions from a specific JSON resource file.
-     */
-    private static AbilityDefinition[] loadAbilitiesFromResource(String resourcePath) {
-        try (InputStream inputStream = AbilityDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Ability definitions file not found: {}", resourcePath);
-                return new AbilityDefinition[0];
-            }
-
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-
-                // Support both array format and object with "abilities" array
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, AbilityDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("abilities")) {
-                        return GSON.fromJson(jsonObject.get("abilities"), AbilityDefinition[].class);
-                    }
-                }
-
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {}", resourcePath);
-                return new AbilityDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing ability definitions from: {}", resourcePath, e);
+    private static AbilityDefinition[] loadAbilitiesFromResource(DataSource dataSource, String resourcePath) {
+        JsonElement element = dataSource.read(resourcePath);
+        if (element == null) {
+            AromaAffect.LOGGER.warn("Ability definitions file not found: {}", resourcePath);
             return new AbilityDefinition[0];
         }
+        return JsonResources.parseArrayOrWrapped(element, "abilities", AbilityDefinition[].class, GSON, resourcePath);
     }
 
     /**

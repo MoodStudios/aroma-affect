@@ -1,0 +1,21 @@
+{
+  "comment": "Valid OVR hardware scent names. Only scents in this list are supported by the OVR bridge; anything else triggers a validation warning.",
+  "scents": [
+    "Beach",
+    "Evergreen",
+    "Desert",
+    "Floral",
+    "Barnyard",
+    "Smoky",
+    "Winter",
+    "Terra Silva",
+    "Savory Spice",
+    "Timber",
+    "Petrichor",
+    "Sweet",
+    "Machina",
+    "Marine",
+    "Kindred",
+    "Citrus"
+  ]
+}

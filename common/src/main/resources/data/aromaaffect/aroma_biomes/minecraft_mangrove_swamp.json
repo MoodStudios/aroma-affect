@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:mangrove_swamp",
+  "image": "biome/swamp",
+  "fallback_name": "Mangrove Swamp",
+  "color_html": "#6A7039",
+  "scent_id": "petrichor",
+  "track_cost": 10
+}

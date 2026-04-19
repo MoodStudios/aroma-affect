@@ -59,8 +59,6 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
      */
     public static final PreciseSnifferAbility INSTANCE = new PreciseSnifferAbility();
 
-    // ========== Default Config Values ==========
-
     private static final int DEFAULT_DURATION_TICKS = 40;
     private static final int DEFAULT_COOLDOWN_TICKS = 40;
     private static final int DEFAULT_DURABILITY_COST = 5;
@@ -70,8 +68,6 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
      * Maximum distance player can move before sniffing is cancelled.
      */
     private static final double MAX_MOVEMENT_DISTANCE = 1.5;
-
-    // ========== State Tracking ==========
 
     /**
      * Tracks active sniffing sessions.
@@ -94,8 +90,6 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
      * Private constructor - use {@link #INSTANCE} instead.
      */
     private PreciseSnifferAbility() {}
-
-    // ========== Config Accessors ==========
 
     /**
      * Gets the ability definition from the loader.
@@ -166,8 +160,6 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
         return validBlocks;
     }
 
-    // ========== Ability Interface Implementation ==========
-
     @Override
     public String getId() {
         return AbilityConstants.PRECISE_SNIFFER;
@@ -235,8 +227,6 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
         long remaining = cooldownEnd - player.level().getGameTime();
         return Math.max(0, remaining);
     }
-
-    // ========== Internal Methods ==========
 
     /**
      * Processes a tick of sniffing, starting or continuing a session.
@@ -462,8 +452,6 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
     public void clearCache() {
         validBlocks = null;
     }
-
-    // ========== Data Classes ==========
 
     /**
      * Represents an active sniffing session.

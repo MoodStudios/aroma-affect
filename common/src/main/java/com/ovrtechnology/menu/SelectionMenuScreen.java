@@ -36,8 +36,6 @@ import java.util.Locale;
  */
 public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
-    // ── Shared layout constants ──────────────────────────────────────────
-
     protected static final int ROW_PADDING = 4;
     protected static final int ICON_SIZE = 24;
     protected static final int MAX_LIST_WIDTH = 350;
@@ -48,14 +46,10 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
     protected static final ResourceLocation ICON_BACK = Ids.mod("textures/gui/sprites/radial/icon_back.png");
 
-    // ── Shared row colors ────────────────────────────────────────────────
-
     protected static final int ROW_COLOR = 0xB0222222;
     protected static final int ROW_HOVER_COLOR = 0xE0444488;
     protected static final int ROW_TRACKING_COLOR = 0xC0224422;
     protected static final int ROW_TRACKING_HOVER_COLOR = 0xE0336633;
-
-    // ── Shared state ─────────────────────────────────────────────────────
 
     protected final MenuCategory category;
     protected final List<SelectionCard> cards = new ArrayList<>();
@@ -69,14 +63,10 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
     protected int selectedCardIndex = -1;
 
-    // ── Constructor ──────────────────────────────────────────────────────
-
     protected SelectionMenuScreen(MenuCategory category) {
         super(Texts.tr("menu.aromaaffect." + category.getId() + ".title"));
         this.category = category;
     }
-
-    // ── Abstract / overridable hooks ─────────────────────────────────────
 
     /** Populate {@link #cards} from the equipped nose's abilities. */
     protected abstract void loadCards();
@@ -125,8 +115,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         return 52 + SEARCH_BOX_HEIGHT + 8;
     }
 
-    // ── Lifecycle ────────────────────────────────────────────────────────
-
     @Override
     protected void init() {
         super.init();
@@ -149,8 +137,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         applyFilters();
     }
 
-    // ── Filtering ────────────────────────────────────────────────────────
-
     protected void applyFilters() {
         filteredCards.clear();
         String lowerQuery = searchQuery.toLowerCase(Locale.ROOT);
@@ -171,8 +157,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
         listScrollOffset = 0;
     }
-
-    // ── Rendering ────────────────────────────────────────────────────────
 
     @Override
     protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
@@ -302,8 +286,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         graphics.disableScissor();
     }
 
-    // ── Input handling ───────────────────────────────────────────────────
-
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
         if (button != 0) return false;
@@ -361,8 +343,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         }
         return false;
     }
-
-    // ── Cost rendering helper ─────────────────────────────────────────────
 
     protected void renderCostSection(GuiGraphics graphics, SelectionCard card,
                                       int rowRight, int rowCenterY, float animationProgress) {
@@ -442,8 +422,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         return false;
     }
 
-    // ── Card selection / path commands ────────────────────────────────────
-
     protected void onCardSelected(SelectionCard card, int index) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -502,8 +480,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             Minecraft.getInstance().getConnection().sendCommand("aromatest path stop");
         }
     }
-
-    // ── Inner class ──────────────────────────────────────────────────────
 
     public static class SelectionCard {
         public final ResourceLocation id;

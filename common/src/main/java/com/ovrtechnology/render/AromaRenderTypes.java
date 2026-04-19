@@ -41,8 +41,6 @@ public final class AromaRenderTypes {
                 .build();
     }
 
-    // ── Trail pulse render types ─────────────────────────────────────
-
     private static final RenderPipeline TRAIL_PIPELINE =
             linesNoDepthPipeline("aromaaffect/pipeline/trail_no_depth");
 
@@ -53,8 +51,6 @@ public final class AromaRenderTypes {
     public static RenderType trail(String name, double lineWidth) {
         return Factory.lines(name, TRAIL_PIPELINE, OptionalDouble.of(lineWidth));
     }
-
-    // ── Block outline render type ────────────────────────────────────
 
     private static final RenderPipeline BLOCK_OUTLINE_PIPELINE =
             linesNoDepthPipeline("aromaaffect/pipeline/lines_no_depth");

@@ -1,0 +1,12 @@
+{
+  "structure_id": "minecraft:buried_treasure",
+  "image": "structure/treasure",
+  "fallback_name": "Buried Treasure",
+  "color_html": "#FFD700",
+  "scent_id": "beach",
+  "range": 20,
+  "blocks": [
+    "minecraft:chest"
+  ],
+  "track_cost": 10
+}

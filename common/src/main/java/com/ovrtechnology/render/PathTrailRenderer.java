@@ -41,9 +41,6 @@ import java.util.List;
  */
 public final class PathTrailRenderer {
 
-
-    // ── Trail shape parameters ──────────────────────────────────────────
-
     private static final double SAMPLE_SPACING = 1.5;
     private static final double HEIGHT_OFFSET = 0.6;
     private static final double MAX_RENDER_DISTANCE = 120.0;
@@ -56,8 +53,6 @@ public final class PathTrailRenderer {
     private static final double WAVE2_FREQUENCY = 0.324;
     private static final double WAVE2_PHASE_OFFSET = 1.3;
 
-    // ── Pulse timing ────────────────────────────────────────────────────
-
     /** Pulse duration bounds; actual duration is dynamic based on distance. */
     private static final long PULSE_DURATION_NEAR_MS = 700;
     private static final long PULSE_DURATION_FAR_MS = 2500;
@@ -67,29 +62,21 @@ public final class PathTrailRenderer {
     /** Breathing animation period. */
     private static final long BREATHE_PERIOD_MS = 3000;
 
-    // ── Pulse visibility ────────────────────────────────────────────────
-
     /** How long each trail section stays visible after the pulse passes. */
     private static final long WAKE_VISIBLE_MS = 2500;
     /** How long the fade-out takes after the visible period ends. */
     private static final long WAKE_FADE_MS = 1000;
-
-    // ── Pulse visual parameters (normal) ────────────────────────────────
 
     /** Width (in blocks) of the bright leading-edge flash. */
     private static final double LEADING_EDGE_WIDTH = 6.0;
     /** Width (in blocks) of elevated brightness behind the leading edge. */
     private static final double WAKE_GLOW_WIDTH = 20.0;
 
-    // ── Power pulse parameters ──────────────────────────────────────────
-
     /** Every Nth pulse is a power pulse (configurable). */
     private static final int POWER_PULSE_INTERVAL = 5;
 
     private static final double POWER_LEADING_EDGE_WIDTH = 10.0;
     private static final double POWER_WAKE_GLOW_WIDTH = 35.0;
-
-    // ── Two-path state (stable + incoming revealed by pulse) ────────────
 
     private static List<Vec3> stablePath = new ArrayList<>();
     private static List<Vec3> incomingPath = null;
@@ -106,17 +93,12 @@ public final class PathTrailRenderer {
     private static Vec3 incomingPathOrigin = null;
     private static Vec3 prevPathOrigin = null;
 
-    // ── Power pulse tracking ────────────────────────────────────────────
-
     private static int pulseCount = 0;
     private static boolean currentPulseIsPower = false;
     private static boolean prevPulseIsPower = false;
 
-    // ── Client-side particle spawning ───────────────────────────────────
     private static final long PARTICLE_SPAWN_INTERVAL_MS = 250;
     private static long lastParticleSpawnTime = 0;
-
-    // ── Render types (different line widths) ─────────────────────────────
 
     private static final RenderType TRAIL_GLOW = AromaRenderTypes.trail("aromaaffect_trail_glow", 5.0);
     private static final RenderType TRAIL_CORE = AromaRenderTypes.trail("aromaaffect_trail_core", 1.5);
@@ -134,8 +116,6 @@ public final class PathTrailRenderer {
         // Slightly below eye line feels closer to "nose" than exact eye center.
         return player.getEyePosition().add(0.0, -0.18, 0.0);
     }
-
-    // ── Public entry point ──────────────────────────────────────────────
 
     public static void renderTrail(PoseStack poseStack, Vec3 cameraPos, MultiBufferSource consumers) {
         if (!ActiveTrackingState.isActivelyTracking()) return;
@@ -284,8 +264,6 @@ public final class PathTrailRenderer {
         prevPathOrigin = null;
     }
 
-    // ── Trail point computation ─────────────────────────────────────────
-
     private static List<Vec3> computeTrailPoints(Vec3 playerPos, BlockPos dest, ClientLevel level) {
         double destX = dest.getX() + 0.5;
         double destZ = dest.getZ() + 0.5;
@@ -386,8 +364,6 @@ public final class PathTrailRenderer {
         return state.isAir() || !state.isSolid() || state.is(BlockTags.REPLACEABLE);
     }
 
-    // ── Layer rendering ─────────────────────────────────────────────────
-
     private static void renderLayer(PoseStack.Pose pose, Vec3 cam, VertexConsumer consumer,
                                      List<Vec3> points, float r, float g, float b,
                                      float baseAlpha, long now, long pulseStart,
@@ -453,8 +429,6 @@ public final class PathTrailRenderer {
             accumulated += segLen;
         }
     }
-
-    // ── Time-based pulse alpha ──────────────────────────────────────────
 
     /**
      * Computes alpha for a single pulse given its start time.
@@ -563,8 +537,6 @@ public final class PathTrailRenderer {
         return 0;
     }
 
-    // ── Power pulse puff (client-side scent + overlay) ────────────────
-
     /**
      * Fires the scent trigger and overlay exactly when a power pulse
      * completes its sweep toward the player — zero network latency.
@@ -653,8 +625,6 @@ public final class PathTrailRenderer {
         return settings.getBlockIntensity();
     }
 
-    // ── Color resolution ────────────────────────────────────────────────
-
     private static float[] resolveColor() {
         String targetId = ActiveTrackingState.getTargetId() != null
                 ? ActiveTrackingState.getTargetId().toString() : null;
@@ -703,8 +673,6 @@ public final class PathTrailRenderer {
 
         return new float[]{0.8f, 0.85f, 1.0f};
     }
-
-    // ── Client-side particle spawning ──────────────────────────────────
 
     private static void spawnPulseParticles(ClientLevel level, List<Vec3> points,
                                              double totalLen, long now, long pulseStart, long pulseDurationMs,
@@ -759,8 +727,6 @@ public final class PathTrailRenderer {
         return 1;
     }
 
-    // ── Player-tracking adjustment ──────────────────────────────────────
-
     /** Number of points to blend when adjusting the trail start to the player. */
     private static final int PLAYER_BLEND_POINTS = 10;
 
@@ -799,8 +765,6 @@ public final class PathTrailRenderer {
         long base = pulseDurationMs + 900L;
         return Math.max(PULSE_CYCLE_NEAR_MS, Math.min(PULSE_CYCLE_FAR_MS, base));
     }
-
-    // ── Utility ─────────────────────────────────────────────────────────
 
     private static double totalLength(List<Vec3> points) {
         double len = 0;

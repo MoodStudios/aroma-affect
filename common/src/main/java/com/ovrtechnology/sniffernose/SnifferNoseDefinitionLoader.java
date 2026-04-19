@@ -3,15 +3,13 @@ package com.ovrtechnology.sniffernose;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.data.JsonResources;
 import lombok.Getter;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -57,11 +55,15 @@ public class SnifferNoseDefinitionLoader {
      * @return An unmodifiable list of valid sniffer nose definitions
      */
     public static List<SnifferNoseDefinition> loadAllSnifferNoses() {
+        return loadAllSnifferNoses(ClasspathDataSource.INSTANCE);
+    }
+
+    public static List<SnifferNoseDefinition> loadAllSnifferNoses(DataSource dataSource) {
         loadedSnifferNoses.clear();
         loadedIds.clear();
-        
+
         try {
-            SnifferNoseDefinition[] snifferNoses = loadSnifferNosesFromResource(SNIFFER_NOSES_RESOURCE_PATH);
+            SnifferNoseDefinition[] snifferNoses = loadSnifferNosesFromResource(dataSource, SNIFFER_NOSES_RESOURCE_PATH);
             if (snifferNoses != null) {
                 for (SnifferNoseDefinition snifferNose : snifferNoses) {
                     processSnifferNose(snifferNose);
@@ -70,9 +72,46 @@ public class SnifferNoseDefinitionLoader {
         } catch (Exception e) {
             AromaAffect.LOGGER.error("Failed to load sniffer nose definitions", e);
         }
-        
+
         AromaAffect.LOGGER.info("Loaded {} sniffer nose definitions", loadedSnifferNoses.size());
         return Collections.unmodifiableList(loadedSnifferNoses);
+    }
+
+    public static void reloadInPlace(DataSource dataSource) {
+        SnifferNoseDefinition[] newDefs = loadSnifferNosesFromResource(dataSource, SNIFFER_NOSES_RESOURCE_PATH);
+        int mutated = 0;
+        int skipped = 0;
+        for (SnifferNoseDefinition src : newDefs) {
+            if (src == null || !src.isValid()) continue;
+            SnifferNoseDefinition target = findLoadedById(src.getId());
+            if (target == null) {
+                AromaAffect.LOGGER.warn(
+                        "[SnifferNose reload] ID '{}' is not a built-in; custom sniffer noses must use the variant system.",
+                        src.getId());
+                skipped++;
+                continue;
+            }
+            copyFields(src, target);
+            mutated++;
+        }
+        AromaAffect.LOGGER.info("SnifferNose reload: mutated {} definitions in place, skipped {} unknown IDs",
+                mutated, skipped);
+    }
+
+    private static SnifferNoseDefinition findLoadedById(String id) {
+        for (SnifferNoseDefinition d : loadedSnifferNoses) {
+            if (id.equals(d.getId())) return d;
+        }
+        return null;
+    }
+
+    private static void copyFields(SnifferNoseDefinition src, SnifferNoseDefinition dst) {
+        dst.setImage(src.getImage());
+        dst.setModel(src.getModel());
+        dst.setTier(src.getTier());
+        dst.setDurability(src.getDurability());
+        dst.setRepair(src.getRepair());
+        dst.setEnabled(src.isEnabled());
     }
     
     /**
@@ -140,36 +179,13 @@ public class SnifferNoseDefinitionLoader {
         }
     }
     
-    /**
-     * Load sniffer nose definitions from a specific JSON resource file
-     */
-    private static SnifferNoseDefinition[] loadSnifferNosesFromResource(String resourcePath) {
-        try (InputStream inputStream = SnifferNoseDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Sniffer noses definitions file not found: {}", resourcePath);
-                return new SnifferNoseDefinition[0];
-            }
-            
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-                
-                // Support both array format and object with "sniffer_noses" array
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, SnifferNoseDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("sniffer_noses")) {
-                        return GSON.fromJson(jsonObject.get("sniffer_noses"), SnifferNoseDefinition[].class);
-                    }
-                }
-                
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'sniffer_noses' key)", resourcePath);
-                return new SnifferNoseDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing sniffer nose definitions from: {}", resourcePath, e);
+    private static SnifferNoseDefinition[] loadSnifferNosesFromResource(DataSource dataSource, String resourcePath) {
+        JsonElement element = dataSource.read(resourcePath);
+        if (element == null) {
+            AromaAffect.LOGGER.warn("Sniffer noses definitions file not found: {}", resourcePath);
             return new SnifferNoseDefinition[0];
         }
+        return JsonResources.parseArrayOrWrapped(element, "sniffer_noses", SnifferNoseDefinition[].class, GSON, resourcePath);
     }
     
     /**

@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:ice_spikes",
+  "image": "biome/ice_spikes",
+  "fallback_name": "Ice Spikes",
+  "color_html": "#B4DCDC",
+  "scent_id": "winter",
+  "track_cost": 10
+}

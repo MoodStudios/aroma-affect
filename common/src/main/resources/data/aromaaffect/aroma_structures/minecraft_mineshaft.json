@@ -1,0 +1,15 @@
+{
+  "structure_id": "minecraft:mineshaft",
+  "image": "structure/mineshaft",
+  "fallback_name": "Mineshaft",
+  "color_html": "#6B4423",
+  "scent_id": "terra_silva",
+  "range": 30,
+  "blocks": [
+    "minecraft:oak_planks",
+    "minecraft:oak_fence",
+    "minecraft:rail",
+    "minecraft:cobweb"
+  ],
+  "track_cost": 10
+}

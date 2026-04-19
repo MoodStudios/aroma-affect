@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:frog",
+  "scent_id": "petrichor",
+  "fallback_name": "Frog",
+  "color_html": "#7A9A2D",
+  "range": 3,
+  "priority": "MEDLOW"
+}

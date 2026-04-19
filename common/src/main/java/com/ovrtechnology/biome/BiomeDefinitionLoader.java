@@ -3,20 +3,18 @@ package com.ovrtechnology.biome;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -55,10 +53,7 @@ public class BiomeDefinitionLoader {
             .setPrettyPrinting()
             .create();
     
-    /**
-     * Path to the biomes JSON file
-     */
-    private static final String BIOMES_RESOURCE_PATH = "data/aromaaffect/biomes/biomes.json";
+    public static final String BIOMES_DIR = "aroma_biomes";
     
     /**
      * Cached list of loaded biome definitions
@@ -92,27 +87,34 @@ public class BiomeDefinitionLoader {
      * @return An unmodifiable list of valid biome definitions
      */
     public static List<BiomeDefinition> loadAllBiomes() {
+        return loadAllBiomes(ClasspathDataSource.INSTANCE);
+    }
+
+    /**
+     * Load all biome definitions from the given {@link DataSource}.
+     * Honors datapacks when a {@code ResourceManagerDataSource} is passed.
+     */
+    public static List<BiomeDefinition> loadAllBiomes(DataSource dataSource) {
         loadedBiomes.clear();
         loadedIds.clear();
         validationWarnings.clear();
-        
-        try {
-            BiomeDefinition[] biomes = loadBiomesFromResource(BIOMES_RESOURCE_PATH);
-            if (biomes != null) {
-                for (BiomeDefinition biome : biomes) {
-                    processBiome(biome);
-                }
+
+        Map<ResourceLocation, JsonElement> files = dataSource.listJson(BIOMES_DIR);
+        for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
+            try {
+                BiomeDefinition biome = GSON.fromJson(entry.getValue(), BiomeDefinition.class);
+                processBiome(biome);
+            } catch (Exception e) {
+                AromaAffect.LOGGER.error("Failed to parse biome {}: {}", entry.getKey(), e.getMessage());
             }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Failed to load biome definitions", e);
         }
-        
-        AromaAffect.LOGGER.info("Loaded {} biome definitions", loadedBiomes.size());
-        
+
+        AromaAffect.LOGGER.info("Loaded {} biome definitions from {} file(s)", loadedBiomes.size(), files.size());
+
         if (!validationWarnings.isEmpty()) {
             AromaAffect.LOGGER.warn("Biome loading completed with {} validation warnings", validationWarnings.size());
         }
-        
+
         return Collections.unmodifiableList(loadedBiomes);
     }
     
@@ -197,40 +199,6 @@ public class BiomeDefinitionLoader {
         AromaAffect.LOGGER.warn(warning);
     }
     
-    /**
-     * Load biome definitions from a specific JSON resource file.
-     * 
-     * @param resourcePath Path to the JSON resource
-     * @return Array of biome definitions, or empty array if not found
-     */
-    private static BiomeDefinition[] loadBiomesFromResource(String resourcePath) {
-        try (InputStream inputStream = BiomeDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Biome definitions file not found: {}", resourcePath);
-                return new BiomeDefinition[0];
-            }
-            
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-                
-                // Support both array format and object with "biomes" array
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, BiomeDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("biomes")) {
-                        return GSON.fromJson(jsonObject.get("biomes"), BiomeDefinition[].class);
-                    }
-                }
-                
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'biomes' key)", resourcePath);
-                return new BiomeDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing biome definitions from: {}", resourcePath, e);
-            return new BiomeDefinition[0];
-        }
-    }
     
     /**
      * Parse a single biome definition from a JSON string.

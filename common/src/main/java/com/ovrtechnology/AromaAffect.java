@@ -7,6 +7,7 @@ import com.ovrtechnology.ability.PreciseSnifferAbility;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.data.AromaAffectReloadListener;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.guide.AromaGuideFirstJoinHandler;
@@ -36,8 +37,12 @@ import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.variant.CustomNoseRegistry;
+import com.ovrtechnology.variant.ModDataComponents;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
+import dev.architectury.registry.ReloadListenerRegistry;
 import lombok.experimental.UtilityClass;
+import net.minecraft.server.packs.PackType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,9 +72,13 @@ public final class AromaAffect {
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();
 
+        ModDataComponents.init();
+
         // Initialize the nose registry system (includes ability resolver)
         // Note: This validates ability references against loaded definitions
         NoseRegistry.init();
+
+        CustomNoseRegistry.init();
 
         // Initialize the sniffer nose registry system (items for Sniffer mob)
         SnifferNoseRegistry.init();
@@ -138,6 +147,12 @@ public final class AromaAffect {
 
         // Inject custom pieces into vanilla worldgen (villages, etc.)
         VillagePoolInjector.init();
+
+        ReloadListenerRegistry.register(
+                PackType.SERVER_DATA,
+                new AromaAffectReloadListener(),
+                AromaAffectReloadListener.ID
+        );
 
         LOGGER.info("Aroma Affect initialized successfully!");
     }

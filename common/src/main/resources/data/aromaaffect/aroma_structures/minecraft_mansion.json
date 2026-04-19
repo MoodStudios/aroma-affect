@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:mansion",
+  "image": "structure/mansion",
+  "fallback_name": "Woodland Mansion",
+  "color_html": "#4A3728",
+  "scent_id": "timber",
+  "range": 60,
+  "blocks": [
+    "minecraft:dark_oak_planks",
+    "minecraft:dark_oak_log",
+    "minecraft:cobblestone"
+  ],
+  "track_cost": 50
+}

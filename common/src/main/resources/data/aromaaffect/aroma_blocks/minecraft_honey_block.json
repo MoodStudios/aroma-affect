@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:honey_block",
+  "color_html": "#EB9B0F",
+  "scent_id": "sweet",
+  "fallback_name": "Honey Block",
+  "range": 3,
+  "track_cost": 5
+}

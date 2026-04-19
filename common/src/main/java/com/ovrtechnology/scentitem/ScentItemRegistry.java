@@ -76,15 +76,12 @@ public final class ScentItemRegistry {
         
         AromaAffect.LOGGER.info("Initializing ScentItemRegistry...");
         
-        // Load scent item definitions from JSON
         List<ScentItemDefinition> definitions = ScentItemDefinitionLoader.loadAllScentItems();
-        
-        // Register each scent item
+
         for (ScentItemDefinition definition : definitions) {
             registerScentItem(definition);
         }
-        
-        // Register the deferred register with Architectury
+
         ITEMS.register();
         
         initialized = true;
@@ -115,7 +112,7 @@ public final class ScentItemRegistry {
     
     /**
      * Get a registered scent item by ID.
-     * 
+     *
      * @param id The scent item ID
      * @return Optional containing the scent item if found
      */

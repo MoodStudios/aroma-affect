@@ -67,15 +67,12 @@ public final class SnifferNoseRegistry {
         
         AromaAffect.LOGGER.info("Initializing SnifferNoseRegistry...");
         
-        // Load sniffer nose definitions from JSON
         List<SnifferNoseDefinition> definitions = SnifferNoseDefinitionLoader.loadAllSnifferNoses();
-        
-        // Register each sniffer nose as an item
+
         for (SnifferNoseDefinition definition : definitions) {
             registerSnifferNose(definition);
         }
-        
-        // Register the deferred register with Architectury
+
         ITEMS.register();
         
         initialized = true;

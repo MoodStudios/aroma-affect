@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:lilac",
+  "scent_id": "floral",
+  "fallback_name": "Lilac",
+  "color_html": "#B878ED",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

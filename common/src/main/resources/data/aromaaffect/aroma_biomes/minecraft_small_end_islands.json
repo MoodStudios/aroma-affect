@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:small_end_islands",
+  "image": "biome/small_end_islands",
+  "fallback_name": "Small End Islands",
+  "color_html": "#8080A0",
+  "scent_id": "machina",
+  "track_cost": 50
+}

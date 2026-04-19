@@ -64,7 +64,15 @@ public class SnifferNoseDefinition {
      */
     @SerializedName("repair")
     private String repair;
-    
+
+    /**
+     * Whether this sniffer nose is visible/functional. Built-in entries default to
+     * {@code true}. Slot entries pre-registered for datapack customization default
+     * to {@code false} and flip to {@code true} when a datapack supplies data.
+     */
+    @SerializedName("enabled")
+    private boolean enabled = true;
+
     /**
      * Default constructor for GSON deserialization
      */

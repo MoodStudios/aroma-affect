@@ -9,7 +9,6 @@ import com.ovrtechnology.scentitem.ScentItem;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -30,13 +29,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerProfession;
-import net.minecraft.core.Holder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -54,6 +50,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -147,7 +144,7 @@ public class NoseSmithEntity extends Villager {
     @Nullable
     public ResourceLocation getRequestedFlowerId() {
         String value = this.entityData.get(REQUESTED_FLOWER_ID);
-        if (value == null || value.isBlank()) {
+        if (ObjectUtils.isEmpty(value) || value.isBlank()) {
             return null;
         }
 
@@ -725,11 +722,7 @@ public class NoseSmithEntity extends Villager {
 
     private record FlowerVariant(Block flower, Block pottedFlowerPot) {
     }
-    
-    /**
-     * Create the attribute builder for the Nose Smith.
-     * Based on standard Villager attributes with slightly higher health.
-     */
+
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 40.0D)
@@ -756,7 +749,6 @@ public class NoseSmithEntity extends Villager {
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.35D));
 
-        // Defend when attacked by mobs only — Player.class is the ignore list
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Player.class));
     }
 

@@ -1,0 +1,13 @@
+{
+  "structure_id": "minecraft:village_desert",
+  "image": "structure/village",
+  "fallback_name": "Desert Village",
+  "color_html": "#C2B280",
+  "scent_id": "savory_spice",
+  "blocks": [
+    "minecraft:sandstone",
+    "minecraft:bell",
+    "minecraft:terracotta"
+  ],
+  "track_cost": 5
+}

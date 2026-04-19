@@ -3,20 +3,18 @@ package com.ovrtechnology.flower;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
 import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,7 +26,7 @@ public class FlowerDefinitionLoader {
             .setPrettyPrinting()
             .create();
 
-    private static final String FLOWERS_RESOURCE_PATH = "data/aromaaffect/flowers/flowers.json";
+    public static final String FLOWERS_DIR = "aroma_flowers";
 
     @Getter
     private static List<FlowerDefinition> loadedFlowers = new ArrayList<>();
@@ -39,22 +37,25 @@ public class FlowerDefinitionLoader {
     private static List<String> validationWarnings = new ArrayList<>();
 
     public static List<FlowerDefinition> loadAllFlowers() {
+        return loadAllFlowers(ClasspathDataSource.INSTANCE);
+    }
+
+    public static List<FlowerDefinition> loadAllFlowers(DataSource dataSource) {
         loadedFlowers.clear();
         loadedIds.clear();
         validationWarnings.clear();
 
-        try {
-            FlowerDefinition[] flowers = loadFlowersFromResource(FLOWERS_RESOURCE_PATH);
-            if (flowers != null) {
-                for (FlowerDefinition flower : flowers) {
-                    processFlower(flower);
-                }
+        Map<ResourceLocation, JsonElement> files = dataSource.listJson(FLOWERS_DIR);
+        for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
+            try {
+                FlowerDefinition flower = GSON.fromJson(entry.getValue(), FlowerDefinition.class);
+                processFlower(flower);
+            } catch (Exception e) {
+                AromaAffect.LOGGER.error("Failed to parse flower {}: {}", entry.getKey(), e.getMessage());
             }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Failed to load flower definitions", e);
         }
 
-        AromaAffect.LOGGER.info("Loaded {} flower definitions", loadedFlowers.size());
+        AromaAffect.LOGGER.info("Loaded {} flower definitions from {} file(s)", loadedFlowers.size(), files.size());
 
         if (!validationWarnings.isEmpty()) {
             AromaAffect.LOGGER.warn("Flower loading completed with {} validation warnings", validationWarnings.size());
@@ -107,33 +108,6 @@ public class FlowerDefinitionLoader {
         AromaAffect.LOGGER.warn(warning);
     }
 
-    private static FlowerDefinition[] loadFlowersFromResource(String resourcePath) {
-        try (InputStream inputStream = FlowerDefinitionLoader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
-                AromaAffect.LOGGER.warn("Flower definitions file not found: {}", resourcePath);
-                return new FlowerDefinition[0];
-            }
-
-            try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                JsonElement jsonElement = JsonParser.parseReader(reader);
-
-                if (jsonElement.isJsonArray()) {
-                    return GSON.fromJson(jsonElement, FlowerDefinition[].class);
-                } else if (jsonElement.isJsonObject()) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject.has("flowers")) {
-                        return GSON.fromJson(jsonObject.get("flowers"), FlowerDefinition[].class);
-                    }
-                }
-
-                AromaAffect.LOGGER.warn("Invalid JSON format in: {} (expected array or object with 'flowers' key)", resourcePath);
-                return new FlowerDefinition[0];
-            }
-        } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error parsing flower definitions from: {}", resourcePath, e);
-            return new FlowerDefinition[0];
-        }
-    }
 
     public static FlowerDefinition getFlowerById(String blockId) {
         for (FlowerDefinition flower : loadedFlowers) {

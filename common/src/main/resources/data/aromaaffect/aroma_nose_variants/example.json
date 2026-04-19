@@ -1,0 +1,12 @@
+{
+  "display_name": "Example Nose",
+  "tier": 2,
+  "durability": 500,
+  "rarity": "UNCOMMON",
+  "repair": "minecraft:iron_ingot",
+  "track_cost": 10,
+  "image": "item/noses/example",
+  "unlock": {
+    "biomes": ["minecraft:plains"]
+  }
+}

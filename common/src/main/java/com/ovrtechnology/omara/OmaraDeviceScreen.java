@@ -100,9 +100,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         return super.mouseClicked(event, isValidClickButton);
     }
 
-    // ========================================
     // Info Panel (right of slot)
-    // ========================================
 
     private void renderInfoPanel(GuiGraphics g, int x, int y) {
         ItemStack capsule = this.menu.getSlot(0).getItem();
@@ -182,9 +180,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         }
     }
 
-    // ========================================
     // Buttons (bottom of grid, above "Inventory")
-    // ========================================
 
     private void renderModeButton(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         int bx = x + BTN_X;
@@ -229,9 +225,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         g.fill(bx + w - 1, by, bx + w, by + h, 0xFF222222);   // right shadow
     }
 
-    // ========================================
     // Pixel-art icons
-    // ========================================
 
     private void drawBatteryIcon(GuiGraphics g, int x, int y, int color) {
         int b = 0xFFAAAAAA;
@@ -254,9 +248,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         g.fill(x + 3, y + 2, x + 4, y + 3, 0xFFFFFFFF);
     }
 
-    // ========================================
     // Utility
-    // ========================================
 
     private String trimToWidth(String text, int maxPixels) {
         if (this.font.width(text) <= maxPixels) return text;

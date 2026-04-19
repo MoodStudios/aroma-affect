@@ -2,13 +2,13 @@ package com.ovrtechnology.entity.sniffer.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.ClasspathDataSource;
+import com.ovrtechnology.data.DataSource;
 import lombok.Getter;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,16 +30,24 @@ public final class SnifferConfigLoader {
      * Initializes the config system by loading the configuration file.
      */
     public static void init() {
-        loadConfig();
+        loadConfig(ClasspathDataSource.INSTANCE);
+    }
+
+    public static void init(DataSource dataSource) {
+        loadConfig(dataSource);
+    }
+
+    public static void loadConfig() {
+        loadConfig(ClasspathDataSource.INSTANCE);
     }
 
     /**
      * Loads the configuration from the JSON file.
-     * First tries to load from the game's config directory,
-     * then falls back to the default config in resources.
+     * First tries the game's config directory, then the given {@link DataSource}
+     * (classpath by default, or the live {@code ResourceManager} during reload),
+     * finally hardcoded defaults.
      */
-    public static void loadConfig() {
-        // Try loading from external config first
+    public static void loadConfig(DataSource dataSource) {
         Path externalConfig = getExternalConfigPath();
         if (Files.exists(externalConfig)) {
             try {
@@ -52,29 +60,22 @@ public final class SnifferConfigLoader {
             }
         }
 
-        // Load default config from resources
-        loadDefaultConfig();
-
-        // Save default config to external location for user editing
+        loadDefaultConfig(dataSource);
         saveDefaultConfig(externalConfig);
     }
 
-    /**
-     * Loads the default configuration from mod resources.
-     */
-    private static void loadDefaultConfig() {
-        try (InputStream is = SnifferConfigLoader.class.getClassLoader().getResourceAsStream(CONFIG_PATH)) {
-            if (is != null) {
-                try (Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                    config = GSON.fromJson(reader, SnifferConfig.class);
-                    AromaAffect.LOGGER.info("Loaded default sniffer config from resources");
-                }
-            } else {
-                AromaAffect.LOGGER.warn("Default sniffer config not found in resources, using hardcoded defaults");
-                config = new SnifferConfig();
-            }
-        } catch (IOException e) {
-            AromaAffect.LOGGER.error("Failed to load default sniffer config", e);
+    private static void loadDefaultConfig(DataSource dataSource) {
+        JsonElement element = dataSource.read(CONFIG_PATH);
+        if (element == null) {
+            AromaAffect.LOGGER.warn("Default sniffer config not found at {}, using hardcoded defaults", CONFIG_PATH);
+            config = new SnifferConfig();
+            return;
+        }
+        try {
+            config = GSON.fromJson(element, SnifferConfig.class);
+            AromaAffect.LOGGER.info("Loaded default sniffer config");
+        } catch (Exception e) {
+            AromaAffect.LOGGER.error("Failed to parse default sniffer config: {}", e.getMessage());
             config = new SnifferConfig();
         }
     }
@@ -104,7 +105,11 @@ public final class SnifferConfigLoader {
      * Reloads the configuration from disk.
      */
     public static void reload() {
-        loadConfig();
+        reload(ClasspathDataSource.INSTANCE);
+    }
+
+    public static void reload(DataSource dataSource) {
+        loadConfig(dataSource);
         AromaAffect.LOGGER.info("Sniffer config reloaded");
     }
 }

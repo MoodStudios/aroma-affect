@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:mushroom_fields",
+  "image": "biome/mushroom_fields",
+  "fallback_name": "Mushroom Fields",
+  "color_html": "#FF00FF",
+  "scent_id": "sweet",
+  "track_cost": 25
+}

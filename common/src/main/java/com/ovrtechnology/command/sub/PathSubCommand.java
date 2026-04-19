@@ -541,8 +541,6 @@ public class PathSubCommand implements SubCommand {
         };
     }
 
-    // ── Per-target cost resolution ────────────────────────────────────────
-
     private int resolveTrackCost(LookupType type, String targetId) {
         return switch (type) {
             case BLOCK -> {
@@ -621,8 +619,6 @@ public class PathSubCommand implements SubCommand {
             }
         }
     }
-
-    // ── Recall subcommand (history re-track) ──────────────────────────────
 
     private int executeRecall(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();

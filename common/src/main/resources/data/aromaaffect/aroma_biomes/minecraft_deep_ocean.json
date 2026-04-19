@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:deep_ocean",
+  "image": "biome/ocean",
+  "fallback_name": "Deep Ocean",
+  "color_html": "#000030",
+  "scent_id": "marine",
+  "track_cost": 10
+}
