@@ -61,9 +61,6 @@ public final class ModCreativeTab {
                 // Set the tab title
                 builder.title(Texts.tr("itemGroup.aromaaffect"));
 
-                // Add all items from our mod to this tab. Slot items whose
-                // definition has enabled=false are hidden until a datapack
-                // flips them on (see SlotPool).
                 builder.displayItems((parameters, output) -> {
                     NoseRegistry.getAllNosesAsList()
                             .stream()

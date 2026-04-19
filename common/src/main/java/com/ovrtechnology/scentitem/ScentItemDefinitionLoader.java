@@ -87,9 +87,6 @@ public class ScentItemDefinitionLoader {
         return Collections.unmodifiableList(loadedScentItems);
     }
 
-    /**
-     * In-place reload variant. See {@code NoseDefinitionLoader#reloadInPlace}.
-     */
     public static void reloadInPlace(DataSource dataSource) {
         ScentItemDefinition[] newDefs = loadScentItemsFromResource(dataSource, SCENT_ITEMS_RESOURCE_PATH);
         int mutated = 0;

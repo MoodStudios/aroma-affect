@@ -60,8 +60,6 @@ public final class AromaAffectReloadListener extends SimplePreparableReloadListe
 
             ScentTriggerConfigLoader.reload(ds);
 
-            // Ability inheritance graph depends on nose definitions + ability defs;
-            // clear the cache and re-resolve now that both sides are fresh.
             NoseAbilityResolver.clearCache();
             NoseAbilityResolver.init();
 

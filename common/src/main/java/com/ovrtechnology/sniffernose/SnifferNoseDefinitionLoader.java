@@ -77,12 +77,6 @@ public class SnifferNoseDefinitionLoader {
         return Collections.unmodifiableList(loadedSnifferNoses);
     }
 
-    /**
-     * See {@code NoseDefinitionLoader#reloadInPlace} for the full rationale.
-     * In-place mutation so pre-registered {@code SnifferNoseItem} instances
-     * pick up updated data; baked Item properties (stack size, rarity, etc.)
-     * stay fixed at mod-init values.
-     */
     public static void reloadInPlace(DataSource dataSource) {
         SnifferNoseDefinition[] newDefs = loadSnifferNosesFromResource(dataSource, SNIFFER_NOSES_RESOURCE_PATH);
         int mutated = 0;

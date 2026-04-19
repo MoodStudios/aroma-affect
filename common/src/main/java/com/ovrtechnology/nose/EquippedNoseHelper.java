@@ -59,10 +59,6 @@ public final class EquippedNoseHelper {
         return getEquippedNose(player).map(NoseItem::getDefinition);
     }
 
-    /**
-     * Gets the resolved abilities of the equipped nose (including inherited abilities).
-     * Works for both built-in NoseItem stacks and CustomNoseItem variant stacks.
-     */
     public static NoseAbilityResolver.ResolvedAbilities getEquippedAbilities(Player player) {
         if (player == null) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -80,9 +76,6 @@ public final class EquippedNoseHelper {
         return NoseAbilityResolver.ResolvedAbilities.EMPTY;
     }
 
-    /**
-     * Checks if the player has any nose equipped (built-in or custom variant).
-     */
     public static boolean hasNoseEquipped(Player player) {
         if (player == null) return false;
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -135,9 +128,6 @@ public final class EquippedNoseHelper {
         return getEquippedAbilities(player).canDetectFlower(flowerId);
     }
 
-    /**
-     * Gets the tier of the equipped nose (built-in or variant).
-     */
     public static int getEquippedNoseTier(Player player) {
         if (player == null) return 0;
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -151,9 +141,6 @@ public final class EquippedNoseHelper {
         return 0;
     }
 
-    /**
-     * Gets the ID of the equipped nose (built-in short id, or full variant resource location).
-     */
     public static Optional<String> getEquippedNoseId(Player player) {
         if (player == null) return Optional.empty();
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);

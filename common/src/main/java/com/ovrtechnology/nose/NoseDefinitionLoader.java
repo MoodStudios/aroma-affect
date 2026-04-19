@@ -80,24 +80,6 @@ public class NoseDefinitionLoader {
         return Collections.unmodifiableList(loadedNoses);
     }
 
-    /**
-     * Reload-friendly variant used by the datapack reload listener. Instead of
-     * replacing {@link NoseDefinition} instances, this mutates the fields of
-     * the existing instances in place — the {@code NoseItem} objects registered
-     * at mod-init hold those references, so mutable fields (abilities, unlock,
-     * image, tier/track_cost for gameplay logic, enabled) propagate to items
-     * immediately. Item properties baked at construction (durability cap,
-     * rarity, model equipment asset, repair component, stack size) remain
-     * fixed — those need a game restart to change.
-     *
-     * <p>Slot entries are reset to their registration defaults BEFORE applying
-     * JSON, so removing a datapack reverts slots to disabled on the next
-     * {@code /reload}. Built-in noses re-read their defaults from the mod's
-     * own {@code noses.json} (classpath layer under any datapack override).</p>
-     *
-     * <p>Entries in JSON with IDs that aren't pre-registered are ignored with
-     * a warning — point modpack makers at {@link com.ovrtechnology.slots.SlotPool}.</p>
-     */
     public static void reloadInPlace(DataSource dataSource) {
         NoseDefinition[] newDefs = loadNosesFromResource(dataSource, "data/aromaaffect/noses/noses.json");
         int mutated = 0;
