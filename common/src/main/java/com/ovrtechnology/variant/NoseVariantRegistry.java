@@ -31,14 +31,6 @@ public final class NoseVariantRegistry {
         return Optional.ofNullable(variants.get(id));
     }
 
-    public static boolean has(ResourceLocation id) {
-        return variants.containsKey(id);
-    }
-
-    public static int size() {
-        return variants.size();
-    }
-
     public static void reload(DataSource source) {
         variants.clear();
         Map<ResourceLocation, JsonElement> discovered = source.listJson(VARIANTS_DIR);

@@ -102,9 +102,6 @@ public final class NoseClient {
         return frames[frameIndex];
     }
 
-    public static void invalidateVariantCache() {
-        variantFrameCache.clear();
-    }
 
     private static ResourceLocation getAnimatedFrame(String noseId, int frameCount) {
         ResourceLocation[] frames = frameCache.computeIfAbsent(noseId, id -> {

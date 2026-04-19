@@ -6,6 +6,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferContainer;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
+import com.ovrtechnology.sniffer.loot.SnifferLootResolver;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import net.minecraft.advancements.AdvancementHolder;
@@ -46,6 +47,8 @@ import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfig;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -561,61 +564,24 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
             return;
         }
 
-        // STEP 2: Bonanza with Enhanced Nose
         SnifferContainer container = new SnifferContainer(self);
 
-        // Only if tamed AND has Enhanced Sniffer Nose equipped AND bonanza is enabled
-        if (data.ownerUUID != null && container.hasSnifferNose() && aromaaffect$getConfig().bonanza.enabled) {
-            // BONANZA! Drop all items together
-            aromaaffect$dropBonanza(self, serverLevel);
-            ci.cancel();
-            return;
+        if (data.ownerUUID != null && container.hasSnifferNose()) {
+            Optional<String> noseIdOpt = container.getSnifferNoseId();
+            if (noseIdOpt.isPresent()) {
+                BlockPos headPos = aromaaffect$getHeadBlock(self);
+                List<ItemStack> drops = SnifferLootResolver.resolve(
+                        noseIdOpt.get(), serverLevel, headPos, self.getRandom());
+                if (!drops.isEmpty()) {
+                    for (ItemStack drop : drops) {
+                        aromaaffect$dropItemStackAtHead(self, serverLevel, headPos, drop);
+                    }
+                    self.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
+                    ci.cancel();
+                    return;
+                }
+            }
         }
-        // If no nose or bonanza disabled, vanilla drops normal seed
-    }
-
-    /**
-     * Drops the complete bonanza of items when the nose is equipped.
-     * All values are configurable via sniffer_config.json
-     */
-    @Unique
-    private void aromaaffect$dropBonanza(Sniffer sniffer, ServerLevel serverLevel) {
-        BlockPos headPos = aromaaffect$getHeadBlock(sniffer);
-        var random = sniffer.getRandom();
-        var bonanzaConfig = aromaaffect$getConfig().bonanza;
-
-        for (SnifferConfig.MineralEntry mineral : bonanzaConfig.minerals) {
-            if (!mineral.enabled) continue;
-
-            int count = mineral.min + random.nextInt(mineral.max - mineral.min + 1);
-            ResourceLocation itemId = Ids.parse(mineral.item);
-            BuiltInRegistries.ITEM.getOptional(itemId).ifPresent(item -> {
-                aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(item, count));
-            });
-        }
-
-        if (bonanzaConfig.scentBase.enabled) {
-            int scentBaseCount = bonanzaConfig.scentBase.min +
-                    random.nextInt(bonanzaConfig.scentBase.max - bonanzaConfig.scentBase.min + 1);
-            ResourceLocation scentBaseId = Ids.parse(bonanzaConfig.scentBase.item);
-            BuiltInRegistries.ITEM.getOptional(scentBaseId).ifPresent(item -> {
-                aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(item, scentBaseCount));
-            });
-        }
-
-        if (bonanzaConfig.seeds.enabled && !bonanzaConfig.seeds.items.isEmpty()) {
-            int seedCount = bonanzaConfig.seeds.min +
-                    random.nextInt(bonanzaConfig.seeds.max - bonanzaConfig.seeds.min + 1);
-            // Pick random seed from list
-            String seedItemId = bonanzaConfig.seeds.items.get(random.nextInt(bonanzaConfig.seeds.items.size()));
-            ResourceLocation seedId = Ids.parse(seedItemId);
-            BuiltInRegistries.ITEM.getOptional(seedId).ifPresent(item -> {
-                aromaaffect$dropItemStackAtHead(sniffer, serverLevel, headPos, new ItemStack(item, seedCount));
-            });
-        }
-
-        // Normal drop sound
-        sniffer.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
     }
 
     /**
@@ -673,24 +639,19 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
     @Unique
     private ItemStack aromaaffect$getScentForDimension(ResourceKey<Level> dimension, SnifferTamingData data) {
         var scentsConfig = aromaaffect$getConfig().dimensionalScents;
-
-        if (dimension == Level.OVERWORLD && !data.hasOverworldScent && scentsConfig.overworld.enabled) {
-            ResourceLocation itemId = Ids.parse(scentsConfig.overworld.item);
-            return BuiltInRegistries.ITEM.getOptional(itemId)
-                    .map(ItemStack::new)
-                    .orElse(ItemStack.EMPTY);
-        } else if (dimension == Level.NETHER && !data.hasNetherScent && scentsConfig.nether.enabled) {
-            ResourceLocation itemId = Ids.parse(scentsConfig.nether.item);
-            return BuiltInRegistries.ITEM.getOptional(itemId)
-                    .map(ItemStack::new)
-                    .orElse(ItemStack.EMPTY);
-        } else if (dimension == Level.END && !data.hasEndScent && scentsConfig.end.enabled) {
-            ResourceLocation itemId = Ids.parse(scentsConfig.end.item);
-            return BuiltInRegistries.ITEM.getOptional(itemId)
-                    .map(ItemStack::new)
-                    .orElse(ItemStack.EMPTY);
+        String itemId = null;
+        if (dimension == Level.OVERWORLD && !data.hasOverworldScent) {
+            itemId = scentsConfig.overworld;
+        } else if (dimension == Level.NETHER && !data.hasNetherScent) {
+            itemId = scentsConfig.nether;
+        } else if (dimension == Level.END && !data.hasEndScent) {
+            itemId = scentsConfig.end;
         }
-        return ItemStack.EMPTY;
+        if (itemId == null || itemId.isEmpty()) return ItemStack.EMPTY;
+        ResourceLocation loc = Ids.parse(itemId);
+        return BuiltInRegistries.ITEM.getOptional(loc)
+                .map(ItemStack::new)
+                .orElse(ItemStack.EMPTY);
     }
 
     /**
