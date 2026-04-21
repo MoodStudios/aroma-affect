@@ -70,8 +70,9 @@ public final class AromaTestCommand {
             CommandBuildContext registry,
             Commands.CommandSelection selection
     ) {
-        LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest");
-        
+        LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest")
+                .requires(src -> src.hasPermission(Commands.LEVEL_GAMEMASTERS));
+
         // Add all registered subcommands
         for (SubCommand subCommand : SUB_COMMANDS.values()) {
             builder = builder.then(subCommand.build(literal(subCommand.getName())));
