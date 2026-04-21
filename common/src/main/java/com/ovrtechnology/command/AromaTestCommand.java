@@ -4,6 +4,7 @@ import com.ovrtechnology.util.Texts;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.command.sub.GiveVariantSubCommand;
 import com.ovrtechnology.command.sub.LookupSubCommand;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.command.sub.PingSubCommand;
@@ -38,6 +39,7 @@ public final class AromaTestCommand {
         register(new PingSubCommand());
         register(new LookupSubCommand());
         register(new PathSubCommand());
+        register(new GiveVariantSubCommand());
     }
     
     private AromaTestCommand() {
@@ -68,8 +70,9 @@ public final class AromaTestCommand {
             CommandBuildContext registry,
             Commands.CommandSelection selection
     ) {
-        LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest");
-        
+        LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest")
+                .requires(src -> src.hasPermission(Commands.LEVEL_GAMEMASTERS));
+
         // Add all registered subcommands
         for (SubCommand subCommand : SUB_COMMANDS.values()) {
             builder = builder.then(subCommand.build(literal(subCommand.getName())));

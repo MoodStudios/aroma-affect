@@ -1,11 +1,14 @@
 package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Unit;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -50,6 +53,10 @@ public class SnifferContainer extends SimpleContainer {
         data.saddleItem = super.getItem(SADDLE_SLOT).copy();
         data.decorationItem = super.getItem(DECORATION_SLOT).copy();
 
+        if (hasSnifferNose()) {
+            truncateSniffCooldown();
+        }
+
         // Broadcast equipment change to all tracking players
         if (sniffer.level() instanceof ServerLevel serverLevel) {
             for (ServerPlayer player : serverLevel.players()) {
@@ -73,6 +80,17 @@ public class SnifferContainer extends SimpleContainer {
     public boolean hasSnifferNose() {
         ItemStack nose = super.getItem(DECORATION_SLOT);
         return !nose.isEmpty() && nose.getItem() instanceof SnifferNoseItem;
+    }
+
+    private void truncateSniffCooldown() {
+        long noseCooldown = SnifferConfigLoader.getConfig().digging.sniffCooldownWithNose;
+        if (sniffer.getBrain().hasMemoryValue(MemoryModuleType.SNIFF_COOLDOWN)
+                && sniffer.getBrain().getTimeUntilExpiry(MemoryModuleType.SNIFF_COOLDOWN) > noseCooldown) {
+            sniffer.getBrain().eraseMemory(MemoryModuleType.SNIFF_COOLDOWN);
+            sniffer.getBrain().setMemoryWithExpiry(
+                    MemoryModuleType.SNIFF_COOLDOWN, Unit.INSTANCE, noseCooldown);
+        }
+        sniffer.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
     }
 
     public Optional<String> getSnifferNoseId() {

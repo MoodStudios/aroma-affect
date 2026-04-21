@@ -1,7 +1,8 @@
 package com.ovrtechnology.search;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.nose.NoseItem;
+import com.ovrtechnology.nose.EquippedNoseHelper;
+import com.ovrtechnology.nose.NoseTags;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -131,13 +132,7 @@ public final class SearchManager {
      * Called when search mode is activated.
      */
     private static void onSearchActivated(Player player) {
-        ItemStack noseStack = player.getItemBySlot(EquipmentSlot.HEAD);
-        String noseName = "Unknown";
-        
-        if (noseStack.getItem() instanceof NoseItem noseItem) {
-            noseName = noseItem.getDefinition().getId();
-        }
-        
+        String noseName = EquippedNoseHelper.getEquippedNoseId(player).orElse("Unknown");
         AromaAffect.LOGGER.info("[Aroma Affect Search] Search mode ACTIVATED with: {}", noseName);
         
         // TODO: Future implementation
@@ -165,33 +160,12 @@ public final class SearchManager {
      * @return true if a Nose is equipped
      */
     public static boolean isNoseEquipped(Player player) {
-        if (player == null) {
-            return false;
-        }
-        
+        if (player == null) return false;
         ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
-        return !headStack.isEmpty() && headStack.getItem() instanceof NoseItem;
+        return !headStack.isEmpty() && headStack.is(NoseTags.NOSES);
     }
-    
-    /**
-     * Gets the currently equipped Nose item, if any.
-     * 
-     * @param player The player to check
-     * @return The NoseItem if equipped, or null if no nose is equipped
-     */
-    public static NoseItem getEquippedNose(Player player) {
-        if (player == null) {
-            return null;
-        }
-        
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (!headStack.isEmpty() && headStack.getItem() instanceof NoseItem noseItem) {
-            return noseItem;
-        }
-        
-        return null;
-    }
-    
+
+
     /**
      * Checks if search is currently active and valid.
      * This validates that the player still has a nose equipped.
