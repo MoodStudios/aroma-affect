@@ -21,7 +21,17 @@ subprojects {
     apply plugin: 'com.diffplug.spotless'
 
     spotless {
-        ratchetFrom 'origin/main'
+        def hasOriginMain = false
+        try {
+            def proc = ['git', 'rev-parse', '--verify', '--quiet', 'refs/remotes/origin/main']
+                    .execute(null, rootDir)
+            proc.waitFor()
+            hasOriginMain = proc.exitValue() == 0
+        } catch (Exception ignored) {
+        }
+        if (hasOriginMain) {
+            ratchetFrom 'origin/main'
+        }
         java {
             target 'src/**/*.java'
             targetExclude '**/build/**', '**/generated/**'
