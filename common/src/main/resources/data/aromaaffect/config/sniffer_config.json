@@ -4,7 +4,6 @@
   },
   "riding": {
     "landSpeedMultiplier": 0.8,
-    "waterSpeed": 0.12,
     "mountedStepHeight": 1.0,
     "normalStepHeight": 0.6
   },
@@ -16,44 +15,11 @@
     "buoyancyStrength": 0.1
   },
   "digging": {
-    "sniffCooldownWithNose": 200,
-    "sniffCooldownDefault": 9600
-  },
-  "bonanza": {
-    "enabled": true,
-    "minerals": [
-      { "item": "minecraft:raw_copper", "enabled": true, "min": 5, "max": 15 },
-      { "item": "minecraft:raw_iron", "enabled": true, "min": 5, "max": 15 },
-      { "item": "minecraft:raw_gold", "enabled": true, "min": 5, "max": 15 },
-      { "item": "minecraft:emerald", "enabled": true, "min": 5, "max": 15 },
-      { "item": "minecraft:diamond", "enabled": true, "min": 5, "max": 15 },
-      { "item": "minecraft:netherite_scrap", "enabled": true, "min": 5, "max": 15 }
-    ],
-    "scentBase": {
-      "enabled": true,
-      "item": "aromaaffect:scent_base",
-      "min": 1,
-      "max": 5
-    },
-    "seeds": {
-      "enabled": true,
-      "items": ["minecraft:torchflower_seeds", "minecraft:pitcher_pod"],
-      "min": 1,
-      "max": 2
-    }
+    "sniffCooldownWithNose": 200
   },
   "dimensionalScents": {
-    "overworld": {
-      "enabled": true,
-      "item": "aromaaffect:overworld_scent"
-    },
-    "nether": {
-      "enabled": true,
-      "item": "aromaaffect:nether_scent"
-    },
-    "end": {
-      "enabled": true,
-      "item": "aromaaffect:end_scent"
-    }
+    "overworld": "aromaaffect:overworld_scent",
+    "nether": "aromaaffect:nether_scent",
+    "end": "aromaaffect:end_scent"
   }
 }

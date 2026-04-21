@@ -1,5 +1,6 @@
 package com.ovrtechnology.entity.sniffer;
 
+import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import net.minecraft.server.level.ServerLevel;
@@ -9,6 +10,8 @@ import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
+import java.util.Optional;
 
 public class SnifferContainer extends SimpleContainer {
     private final Sniffer sniffer;
@@ -70,5 +73,13 @@ public class SnifferContainer extends SimpleContainer {
     public boolean hasSnifferNose() {
         ItemStack nose = super.getItem(DECORATION_SLOT);
         return !nose.isEmpty() && nose.getItem() instanceof SnifferNoseItem;
+    }
+
+    public Optional<String> getSnifferNoseId() {
+        ItemStack nose = super.getItem(DECORATION_SLOT);
+        if (nose.isEmpty() || !(nose.getItem() instanceof SnifferNoseItem snifferNose)) {
+            return Optional.empty();
+        }
+        return Optional.of(AromaAffect.MOD_ID + ":" + snifferNose.getItemId());
     }
 }

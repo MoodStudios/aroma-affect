@@ -1,7 +1,6 @@
 package com.ovrtechnology.variant;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.util.Ids;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -111,40 +110,6 @@ public class CustomNoseItem extends Item {
         player.setItemInHand(hand, headStack.copy());
         player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
         return InteractionResult.SUCCESS;
-    }
-
-    public static int getTier(ItemStack stack) {
-        return getVariant(stack).map(NoseVariant::getTier).orElse(0);
-    }
-
-    public static boolean canDetectBlock(ItemStack stack, String blockId) {
-        Optional<ResourceLocation> id = getVariantId(stack);
-        if (id.isEmpty()) return false;
-        return NoseAbilityResolver.canDetectBlock(id.get().toString(), blockId);
-    }
-
-    public static boolean canDetectBiome(ItemStack stack, String biomeId) {
-        Optional<ResourceLocation> id = getVariantId(stack);
-        if (id.isEmpty()) return false;
-        return NoseAbilityResolver.canDetectBiome(id.get().toString(), biomeId);
-    }
-
-    public static boolean canDetectStructure(ItemStack stack, String structureId) {
-        Optional<ResourceLocation> id = getVariantId(stack);
-        if (id.isEmpty()) return false;
-        return NoseAbilityResolver.canDetectStructure(id.get().toString(), structureId);
-    }
-
-    public static boolean canDetectFlower(ItemStack stack, String flowerId) {
-        Optional<ResourceLocation> id = getVariantId(stack);
-        if (id.isEmpty()) return false;
-        return NoseAbilityResolver.canDetectFlower(id.get().toString(), flowerId);
-    }
-
-    public static boolean hasAbility(ItemStack stack, String abilityId) {
-        Optional<ResourceLocation> id = getVariantId(stack);
-        if (id.isEmpty()) return false;
-        return NoseAbilityResolver.hasAbility(id.get().toString(), abilityId);
     }
 
     private static Rarity parseRarity(String name) {

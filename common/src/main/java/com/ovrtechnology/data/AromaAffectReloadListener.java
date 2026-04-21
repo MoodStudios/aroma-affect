@@ -13,6 +13,7 @@ import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentDefinitionLoader;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemDefinitionLoader;
+import com.ovrtechnology.sniffer.loot.SnifferLootRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseDefinitionLoader;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -51,6 +52,7 @@ public final class AromaAffectReloadListener extends SimplePreparableReloadListe
             ScentItemDefinitionLoader.reloadInPlace(ds);
 
             NoseVariantRegistry.reload(ds);
+            SnifferLootRegistry.reload(ds);
 
             BiomeDefinitionLoader.loadAllBiomes(ds);
             BlockDefinitionLoader.loadAllBlocks(ds);
