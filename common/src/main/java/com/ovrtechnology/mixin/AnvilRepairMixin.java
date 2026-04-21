@@ -1,6 +1,6 @@
 package com.ovrtechnology.mixin;
 
-import com.ovrtechnology.nose.NoseItem;
+import com.ovrtechnology.nose.NoseTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -39,7 +39,7 @@ public abstract class AnvilRepairMixin extends ItemCombinerMenu {
         ItemStack result = this.resultSlots.getItem(0);
 
         // Only adjust for NoseItem material repair
-        if (result.isEmpty() || !(left.getItem() instanceof NoseItem)) return;
+        if (result.isEmpty() || !left.is(NoseTags.NOSES)) return;
         if (!left.isDamageableItem() || !left.isValidRepairItem(right)) return;
         if (left.getDamageValue() <= 0) return;
 

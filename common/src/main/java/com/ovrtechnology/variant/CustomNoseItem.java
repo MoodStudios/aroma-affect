@@ -93,6 +93,15 @@ public class CustomNoseItem extends Item {
     }
 
     @Override
+    public Component getName(ItemStack stack) {
+        ResourceLocation variantId = stack.get(ModDataComponents.NOSE_VARIANT.get());
+        if (variantId == null) return super.getName(stack);
+        NoseVariant variant = NoseVariantRegistry.get(variantId).orElse(null);
+        if (variant == null) return super.getName(stack);
+        return resolveVariantName(variantId, variant);
+    }
+
+    @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
         ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);

@@ -2,7 +2,8 @@ package com.ovrtechnology.ability;
 
 import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.nose.NoseItem;
+import com.ovrtechnology.nose.EquippedNoseHelper;
+import com.ovrtechnology.nose.NoseTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -172,13 +173,11 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
             return false;
         }
 
-        // Check if player has a nose with the ability equipped
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (headItem.isEmpty() || !(headItem.getItem() instanceof NoseItem noseItem)) {
+        if (headItem.isEmpty() || !headItem.is(NoseTags.NOSES)) {
             return false;
         }
-
-        return noseItem.hasAbility(AbilityConstants.PRECISE_SNIFFER);
+        return EquippedNoseHelper.getEquippedAbilities(player).hasAbility(AbilityConstants.PRECISE_SNIFFER);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.ovrtechnology.util.Texts;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.command.sub.GiveVariantSubCommand;
 import com.ovrtechnology.command.sub.LookupSubCommand;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.command.sub.PingSubCommand;
@@ -38,6 +39,7 @@ public final class AromaTestCommand {
         register(new PingSubCommand());
         register(new LookupSubCommand());
         register(new PathSubCommand());
+        register(new GiveVariantSubCommand());
     }
     
     private AromaTestCommand() {

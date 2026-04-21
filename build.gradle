@@ -2,6 +2,7 @@ plugins {
     id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.gradleup.shadow' version '8.3.6' apply false
+    id 'com.diffplug.spotless' version '7.2.1' apply false
 }
 
 architectury {
@@ -17,6 +18,19 @@ subprojects {
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        ratchetFrom 'origin/main'
+        java {
+            target 'src/**/*.java'
+            targetExclude '**/build/**', '**/generated/**'
+            googleJavaFormat('1.17.0').aosp()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
 
     base {
         // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
