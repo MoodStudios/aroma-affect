@@ -70,6 +70,17 @@ public final class NoseClient {
                     if (anim != null && anim.isAnimated()) {
                         return getVariantAnimatedFrame(variantId, anim);
                     }
+                    String explicit = variant.getEntityTexture();
+                    if (explicit != null && !explicit.isEmpty()) {
+                        ResourceLocation parsed = ResourceLocation.tryParse(explicit);
+                        if (parsed != null) {
+                            return parsed.getPath().startsWith("textures/")
+                                    ? parsed
+                                    : ResourceLocation.fromNamespaceAndPath(
+                                            parsed.getNamespace(),
+                                            "textures/entity/nose/" + parsed.getPath() + ".png");
+                        }
+                    }
                 }
                 return ResourceLocation.fromNamespaceAndPath(
                         variantId.getNamespace(),

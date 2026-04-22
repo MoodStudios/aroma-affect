@@ -3,6 +3,7 @@ package com.ovrtechnology.entity.nosesmith;
 import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.nose.NoseDefinition;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
 import com.ovrtechnology.scentitem.ScentItem;
@@ -584,9 +585,14 @@ public class NoseSmithEntity extends Villager {
         setHasNose(false);
         this.noseRemovedGameTime = serverLevel.getGameTime();
 
-        ItemStack noseItem = NoseRegistry.getNoseSupplier("foragers_nose")
-                .map(supplier -> new ItemStack(supplier.get()))
-                .orElse(ItemStack.EMPTY);
+        boolean enabled = NoseRegistry.getDefinition("foragers_nose")
+                .map(NoseDefinition::isEnabled)
+                .orElse(false);
+        ItemStack noseItem = enabled
+                ? NoseRegistry.getNoseSupplier("foragers_nose")
+                        .map(supplier -> new ItemStack(supplier.get()))
+                        .orElse(ItemStack.EMPTY)
+                : ItemStack.EMPTY;
 
         if (!noseItem.isEmpty()) {
             double spawnX = this.getX();
