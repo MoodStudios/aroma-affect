@@ -84,7 +84,7 @@ public final class GuideContentLoader {
         return builder.build();
     }
 
-    private static GuidePage parsePage(JsonObject json) {
+    public static GuidePage parsePage(JsonObject json) {
         String id = json.get("id").getAsString();
         Component title = resolveText(json);
 

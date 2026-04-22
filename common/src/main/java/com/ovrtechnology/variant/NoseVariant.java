@@ -1,5 +1,6 @@
 package com.ovrtechnology.variant;
 
+import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 import com.ovrtechnology.nose.NoseUnlock;
 import lombok.Getter;
@@ -39,11 +40,17 @@ public class NoseVariant {
     @SerializedName("display_name")
     private String displayName;
 
+    @SerializedName("description")
+    private String description;
+
     @SerializedName("translation_key")
     private String translationKey;
 
     @SerializedName("image")
     private String image;
+
+    @SerializedName("entity_texture")
+    private String entityTexture;
 
     @SerializedName("rarity")
     private String rarity;
@@ -65,6 +72,9 @@ public class NoseVariant {
 
     @SerializedName("animation")
     private Animation animation;
+
+    @SerializedName("guide_page")
+    private JsonElement guidePage;
 
     public int getDurability() {
         return durability > 0 ? durability : 250;

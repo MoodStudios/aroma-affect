@@ -43,6 +43,9 @@ public final class EquippedNoseHelper {
         }
 
         if (headStack.getItem() instanceof NoseItem noseItem) {
+            if (!noseItem.getDefinition().isEnabled()) {
+                return Optional.empty();
+            }
             return Optional.of(noseItem);
         }
 
@@ -65,6 +68,7 @@ public final class EquippedNoseHelper {
         if (head.isEmpty()) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
 
         if (head.getItem() instanceof NoseItem noseItem) {
+            if (!noseItem.getDefinition().isEnabled()) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
             return noseItem.getResolvedAbilities();
         }
         if (head.getItem() instanceof CustomNoseItem) {
@@ -80,8 +84,10 @@ public final class EquippedNoseHelper {
         if (player == null) return false;
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
         if (head.isEmpty()) return false;
-        return head.getItem() instanceof NoseItem
-                || (head.getItem() instanceof CustomNoseItem && CustomNoseItem.getVariantId(head).isPresent());
+        if (head.getItem() instanceof NoseItem noseItem) {
+            return noseItem.getDefinition().isEnabled();
+        }
+        return head.getItem() instanceof CustomNoseItem && CustomNoseItem.getVariantId(head).isPresent();
     }
 
     /**
@@ -133,6 +139,7 @@ public final class EquippedNoseHelper {
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
         if (head.isEmpty()) return 0;
         if (head.getItem() instanceof NoseItem noseItem) {
+            if (!noseItem.getDefinition().isEnabled()) return 0;
             return noseItem.getTier();
         }
         if (head.getItem() instanceof CustomNoseItem) {
@@ -146,6 +153,7 @@ public final class EquippedNoseHelper {
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
         if (head.isEmpty()) return Optional.empty();
         if (head.getItem() instanceof NoseItem noseItem) {
+            if (!noseItem.getDefinition().isEnabled()) return Optional.empty();
             return Optional.of(noseItem.getDefinition().getId());
         }
         if (head.getItem() instanceof CustomNoseItem) {
