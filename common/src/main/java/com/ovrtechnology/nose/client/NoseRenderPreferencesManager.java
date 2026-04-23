@@ -1,16 +1,10 @@
 package com.ovrtechnology.nose.client;
 
 import com.ovrtechnology.AromaAffect;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Manages per-player nose render preferences for multiplayer sync.
- * <p>Client-side cache stores preferences received via S2C packets.
- * Server-side store holds preferences received via C2S packets.</p>
- */
 public final class NoseRenderPreferencesManager {
 
     public record NosePrefs(boolean noseEnabled, boolean strapEnabled) {
@@ -20,19 +14,8 @@ public final class NoseRenderPreferencesManager {
     private static final Map<UUID, NosePrefs> clientCache = new ConcurrentHashMap<>();
     private static final Map<UUID, NosePrefs> serverStore = new ConcurrentHashMap<>();
 
-    private NoseRenderPreferencesManager() {
-    }
+    private NoseRenderPreferencesManager() {}
 
-    // --- Client-side methods ---
-
-    public static NosePrefs getClientPrefs(UUID playerUuid) {
-        return clientCache.getOrDefault(playerUuid, NosePrefs.DEFAULT);
-    }
-
-    /**
-     * Returns client prefs only if they exist in the cache (i.e., a known remote player).
-     * Returns null if the UUID is not in the cache.
-     */
     public static NosePrefs getClientPrefsIfPresent(UUID playerUuid) {
         return clientCache.get(playerUuid);
     }
@@ -42,19 +25,16 @@ public final class NoseRenderPreferencesManager {
         NosePrefs newPrefs = new NosePrefs(noseEnabled, strapEnabled);
         clientCache.put(playerUuid, newPrefs);
         if (oldPrefs == null || !oldPrefs.equals(newPrefs)) {
-            AromaAffect.LOGGER.debug("[NOSE-CACHE] CLIENT set uuid={} nose={} strap={}",
-                    shortUuid(playerUuid), noseEnabled, strapEnabled);
+            AromaAffect.LOGGER.debug(
+                    "[NOSE-CACHE] CLIENT set uuid={} nose={} strap={}",
+                    shortUuid(playerUuid),
+                    noseEnabled,
+                    strapEnabled);
         }
     }
 
     public static void clearClientCache() {
         clientCache.clear();
-    }
-
-    // --- Server-side methods ---
-
-    public static NosePrefs getServerPrefs(UUID playerUuid) {
-        return serverStore.getOrDefault(playerUuid, NosePrefs.DEFAULT);
     }
 
     public static void setServerPrefs(UUID playerUuid, boolean noseEnabled, boolean strapEnabled) {

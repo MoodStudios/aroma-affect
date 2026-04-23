@@ -27,26 +27,34 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
         int k = (this.width - this.imageWidth) / 2;
         int l = (this.height - this.imageHeight) / 2;
 
-        // Fondo principal (igual que HorseInventoryScreen)
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, k, l, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        guiGraphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                HORSE_INVENTORY_LOCATION,
+                k,
+                l,
+                0.0F,
+                0.0F,
+                this.imageWidth,
+                this.imageHeight,
+                256,
+                256);
 
-        // Slot de silla (saddle) - posición k+7, l+17
         drawSlot(guiGraphics, k + 7, l + 35 - 18);
 
-        // Slot de decoración (armor) - posición k+7, l+35
         drawSlot(guiGraphics, k + 7, l + 35);
 
-        // Renderizar el Sniffer en la pantalla
         if (this.menu.getSniffer() != null) {
             InventoryScreen.renderEntityInInventoryFollowsMouse(
                     guiGraphics,
-                    k + 26, l + 18,
-                    k + 78, l + 70,
+                    k + 26,
+                    l + 18,
+                    k + 78,
+                    l + 70,
                     17,
                     0.25F,
-                    this.xMouse, this.yMouse,
-                    this.menu.getSniffer()
-            );
+                    this.xMouse,
+                    this.yMouse,
+                    this.menu.getSniffer());
         }
     }
 

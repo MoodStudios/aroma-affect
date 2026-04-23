@@ -1,14 +1,12 @@
 package com.ovrtechnology.nose.client;
 
-import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.util.Ids;
-import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.Texts;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public final class NoseStrapToggleButton extends ImageButton {
@@ -26,8 +24,7 @@ public final class NoseStrapToggleButton extends ImageButton {
                 SIZE,
                 PLACEHOLDER_SPRITES,
                 onPress,
-                Texts.tr("gui.aromaaffect.nose_strap.tooltip")
-        );
+                Texts.tr("gui.aromaaffect.nose_strap.tooltip"));
         setTooltip(Tooltip.create(Texts.tr("gui.aromaaffect.nose_strap.tooltip")));
     }
 

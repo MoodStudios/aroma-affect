@@ -16,16 +16,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Mixin to change nose repair amount from vanilla's 1/4 (25%) to 1/3 (33%) per material.
- * This applies only to NoseItem items; all other items use vanilla behavior.
- */
 @Mixin(AnvilMenu.class)
 public abstract class AnvilRepairMixin extends ItemCombinerMenu {
 
-    // Dummy constructor required by Java (never called — this is a mixin)
-    protected AnvilRepairMixin(MenuType<?> menuType, int containerId, Inventory playerInventory,
-                               ContainerLevelAccess access, ItemCombinerMenuSlotDefinition slotDef) {
+    protected AnvilRepairMixin(
+            MenuType<?> menuType,
+            int containerId,
+            Inventory playerInventory,
+            ContainerLevelAccess access,
+            ItemCombinerMenuSlotDefinition slotDef) {
         super(menuType, containerId, playerInventory, access, slotDef);
     }
 
@@ -38,12 +37,10 @@ public abstract class AnvilRepairMixin extends ItemCombinerMenu {
         ItemStack right = this.inputSlots.getItem(1);
         ItemStack result = this.resultSlots.getItem(0);
 
-        // Only adjust for NoseItem material repair
         if (result.isEmpty() || !left.is(NoseTags.NOSES)) return;
         if (!left.isDamageableItem() || !left.isValidRepairItem(right)) return;
         if (left.getDamageValue() <= 0) return;
 
-        // Recalculate repair with 1/3 per material instead of vanilla's 1/4
         int repairPerUnit = Math.max(left.getMaxDamage() / 3, 1);
         int oldMaterialCount = this.repairItemCountCost;
 
@@ -58,7 +55,6 @@ public abstract class AnvilRepairMixin extends ItemCombinerMenu {
         result.setDamageValue(damage);
         this.repairItemCountCost = materialsUsed;
 
-        // Adjust XP cost: vanilla added 1 per material, correct for difference
         int costDiff = materialsUsed - oldMaterialCount;
         if (costDiff != 0) {
             this.cost.set(Math.max(1, this.cost.get() + costDiff));

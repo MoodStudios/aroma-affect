@@ -1,12 +1,13 @@
 package com.ovrtechnology.omara;
 
-import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.OmaraDeviceNetworking;
 import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItem;
+import com.ovrtechnology.util.Texts;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -28,59 +29,56 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Optional;
-
 public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
 
     private static final int CONTAINER_SIZE = 1;
 
-    /** Mode 0 = automatic, Mode 1 = redstone pulse */
     public static final int MODE_AUTO = 0;
+
     public static final int MODE_REDSTONE = 1;
 
-    /** Interval presets for automatic mode (in ticks) */
-    public static final int[] INTERVAL_TICKS = {1200, 6000}; // 60s, 5min
+    public static final int[] INTERVAL_TICKS = {1200, 6000};
 
-    /** Minimum cooldown between puffs in redstone mode (2 seconds) */
     public static final int REDSTONE_COOLDOWN = 40;
 
-    /** Duration of status indicator in ticks (3 seconds) */
     public static final int STATUS_DURATION = 60;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     private int cooldownTicks = 0;
     private int mode = MODE_AUTO;
-    private int intervalIndex = 0; // 0 = 60s, 1 = 5min
+    private int intervalIndex = 0;
     private boolean wasPowered = false;
     private int statusTicks = 0;
 
-    private final ContainerData dataAccess = new ContainerData() {
-        @Override
-        public int get(int index) {
-            return switch (index) {
-                case 0 -> cooldownTicks;
-                case 1 -> getMaxCooldownForCurrentMode();
-                case 2 -> mode;
-                case 3 -> intervalIndex;
-                default -> 0;
+    private final ContainerData dataAccess =
+            new ContainerData() {
+                @Override
+                public int get(int index) {
+                    return switch (index) {
+                        case 0 -> cooldownTicks;
+                        case 1 -> getMaxCooldownForCurrentMode();
+                        case 2 -> mode;
+                        case 3 -> intervalIndex;
+                        default -> 0;
+                    };
+                }
+
+                @Override
+                public void set(int index, int value) {
+                    switch (index) {
+                        case 0 -> cooldownTicks = value;
+                        case 2 -> mode = Math.max(0, Math.min(1, value));
+                        case 3 -> intervalIndex =
+                                Math.max(0, Math.min(INTERVAL_TICKS.length - 1, value));
+                    }
+                    setChanged();
+                }
+
+                @Override
+                public int getCount() {
+                    return 4;
+                }
             };
-        }
-
-        @Override
-        public void set(int index, int value) {
-            switch (index) {
-                case 0 -> cooldownTicks = value;
-                case 2 -> mode = Math.max(0, Math.min(1, value));
-                case 3 -> intervalIndex = Math.max(0, Math.min(INTERVAL_TICKS.length - 1, value));
-            }
-            setChanged();
-        }
-
-        @Override
-        public int getCount() {
-            return 4;
-        }
-    };
 
     public OmaraDeviceBlockEntity(BlockPos pos, BlockState state) {
         super(OmaraDeviceRegistry.OMARA_DEVICE_BLOCK_ENTITY.get(), pos, state);
@@ -125,9 +123,21 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         if (level != null && !level.isClientSide()) {
             boolean isNowEmpty = stack.isEmpty();
             if (wasEmpty && !isNowEmpty) {
-                level.playSound(null, getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1.0F, 1.2F);
+                level.playSound(
+                        null,
+                        getBlockPos(),
+                        SoundEvents.ITEM_FRAME_ADD_ITEM,
+                        SoundSource.BLOCKS,
+                        1.0F,
+                        1.2F);
             } else if (!wasEmpty && isNowEmpty) {
-                level.playSound(null, getBlockPos(), SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 1.0F, 0.9F);
+                level.playSound(
+                        null,
+                        getBlockPos(),
+                        SoundEvents.ITEM_FRAME_REMOVE_ITEM,
+                        SoundSource.BLOCKS,
+                        1.0F,
+                        0.9F);
             }
         }
     }
@@ -158,8 +168,6 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         this.statusTicks = input.getIntOr("StatusTicks", 0);
     }
 
-    // Server Tick
-
     private void setStatus(Level level, BlockPos pos, BlockState state, int status, int ticks) {
         statusTicks = ticks;
         BlockState newState = state.setValue(OmaraDeviceBlock.STATUS, status);
@@ -167,39 +175,40 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         setChanged();
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, OmaraDeviceBlockEntity be) {
+    public static void serverTick(
+            Level level, BlockPos pos, BlockState state, OmaraDeviceBlockEntity be) {
         if (level.isClientSide()) return;
 
-        // Status indicator timer
         if (be.statusTicks > 0) {
             be.statusTicks--;
             if (be.statusTicks <= 0) {
                 be.setStatus(level, pos, state, 0, 0);
-                state = level.getBlockState(pos); // refresh after state change
+                state = level.getBlockState(pos);
             }
         } else if (state.getValue(OmaraDeviceBlock.STATUS) != 0) {
-            // Crash recovery: status is non-zero but timer expired
+
             be.setStatus(level, pos, state, 0, 0);
             state = level.getBlockState(pos);
         }
 
         ItemStack capsule = be.getItem(0);
-        boolean hasCapsule = !capsule.isEmpty()
-                && capsule.getItem() instanceof ScentItem si
-                && si.getDefinition().isCapsule();
+        boolean hasCapsule =
+                !capsule.isEmpty()
+                        && capsule.getItem() instanceof ScentItem si
+                        && si.getDefinition().isCapsule();
 
         if (!hasCapsule) {
             if (be.cooldownTicks != 0) {
                 be.cooldownTicks = 0;
                 be.setChanged();
             }
-            // Flash red on redstone rising edge with no capsule loaded
+
             boolean powered = level.hasNeighborSignal(pos);
             if (be.mode == MODE_REDSTONE && powered && !be.wasPowered) {
                 be.setStatus(level, pos, state, 2, STATUS_DURATION);
                 state = level.getBlockState(pos);
             }
-            // Keep wasPowered in sync so inserting a capsule while powered doesn't trigger an immediate puff
+
             be.wasPowered = powered;
             return;
         }
@@ -207,7 +216,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         ScentItem si = (ScentItem) capsule.getItem();
 
         if (be.mode == MODE_AUTO) {
-            // Automatic mode: when cooldownTicks is 0, start a new countdown (no immediate puff)
+
             if (be.cooldownTicks <= 0) {
                 be.cooldownTicks = be.getMaxCooldownForCurrentMode();
                 be.setChanged();
@@ -219,7 +228,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
                 be.puff(level, pos, state, capsule, si);
             }
         } else {
-            // Redstone mode: puff on rising edge when cooldown is 0
+
             boolean powered = level.hasNeighborSignal(pos);
 
             if (be.cooldownTicks > 0) {
@@ -235,12 +244,12 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         }
     }
 
-    private void puff(Level level, BlockPos pos, BlockState state, ItemStack capsule, ScentItem scentItem) {
+    private void puff(
+            Level level, BlockPos pos, BlockState state, ItemStack capsule, ScentItem scentItem) {
         if (!(level instanceof ServerLevel serverLevel)) return;
 
         String scentName = scentItem.getDefinition().getScent();
 
-        // Consume 1 durability
         if (capsule.isDamageableItem()) {
             int newDamage = capsule.getDamageValue() + 1;
             if (newDamage >= capsule.getMaxDamage()) {
@@ -251,26 +260,27 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
             }
         }
 
-        // Reset cooldown based on current mode
         cooldownTicks = getMaxCooldownForCurrentMode();
 
-        // Flash green status indicator
         setStatus(level, pos, state, 1, STATUS_DURATION);
         state = level.getBlockState(pos);
 
-        // Play puff sound (3D spatial, audible nearby)
-        serverLevel.playSound(null, pos, ModSounds.OMARA_PUFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        serverLevel.playSound(
+                null, pos, ModSounds.OMARA_PUFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 
-        // Spawn particles
         spawnPuffParticles(serverLevel, pos, state, scentName);
 
-        // Broadcast scent trigger to all players within a 3x3 block area
         OmaraDeviceNetworking.broadcastPuff(serverLevel, pos, scentName);
 
-        AromaAffect.LOGGER.debug("Omara Device puffed scent '{}' at {} (mode={})", scentName, pos, mode == MODE_AUTO ? "auto" : "redstone");
+        AromaAffect.LOGGER.debug(
+                "Omara Device puffed scent '{}' at {} (mode={})",
+                scentName,
+                pos,
+                mode == MODE_AUTO ? "auto" : "redstone");
     }
 
-    private void spawnPuffParticles(ServerLevel serverLevel, BlockPos pos, BlockState state, String scentName) {
+    private void spawnPuffParticles(
+            ServerLevel serverLevel, BlockPos pos, BlockState state, String scentName) {
         int[] rgb = {255, 255, 255};
         Optional<ScentDefinition> scentOpt = ScentRegistry.getScentByName(scentName);
         if (scentOpt.isPresent()) {
@@ -298,12 +308,21 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
             Vec3 perp2 = dir.cross(perp1).normalize();
             double angle = random.nextDouble() * Math.PI * 2;
 
-            double px = center.x + perp1.x * Math.cos(angle) * spread + perp2.x * Math.sin(angle) * spread;
-            double py = center.y + perp1.y * Math.cos(angle) * spread + perp2.y * Math.sin(angle) * spread;
-            double pz = center.z + perp1.z * Math.cos(angle) * spread + perp2.z * Math.sin(angle) * spread;
+            double px =
+                    center.x
+                            + perp1.x * Math.cos(angle) * spread
+                            + perp2.x * Math.sin(angle) * spread;
+            double py =
+                    center.y
+                            + perp1.y * Math.cos(angle) * spread
+                            + perp2.y * Math.sin(angle) * spread;
+            double pz =
+                    center.z
+                            + perp1.z * Math.cos(angle) * spread
+                            + perp2.z * Math.sin(angle) * spread;
 
-            serverLevel.sendParticles(particle, px, py, pz, 1,
-                    dir.x * 0.05, dir.y * 0.05, dir.z * 0.05, 0.02);
+            serverLevel.sendParticles(
+                    particle, px, py, pz, 1, dir.x * 0.05, dir.y * 0.05, dir.z * 0.05, 0.02);
         }
     }
 

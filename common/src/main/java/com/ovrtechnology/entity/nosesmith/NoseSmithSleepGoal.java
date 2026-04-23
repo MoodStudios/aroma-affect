@@ -1,13 +1,12 @@
 package com.ovrtechnology.entity.nosesmith;
 
+import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
-
-import java.util.EnumSet;
 
 public class NoseSmithSleepGoal extends Goal {
 
@@ -18,6 +17,7 @@ public class NoseSmithSleepGoal extends Goal {
     private BlockPos bedPos;
     private boolean isSleeping;
 
+    @SuppressWarnings("this-escape")
     public NoseSmithSleepGoal(NoseSmithEntity noseSmith) {
         this.noseSmith = noseSmith;
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
@@ -45,7 +45,8 @@ public class NoseSmithSleepGoal extends Goal {
         if (noseSmith.isInDialogue()) {
             return false;
         }
-        if (noseSmith.getLastHurtByMob() != null && noseSmith.getLastHurtByMobTimestamp() > noseSmith.tickCount - 40) {
+        if (noseSmith.getLastHurtByMob() != null
+                && noseSmith.getLastHurtByMobTimestamp() > noseSmith.tickCount - 40) {
             return false;
         }
         return true;
@@ -55,7 +56,9 @@ public class NoseSmithSleepGoal extends Goal {
     public void start() {
         isSleeping = false;
         if (bedPos != null) {
-            noseSmith.getNavigation().moveTo(bedPos.getX() + 0.5, bedPos.getY(), bedPos.getZ() + 0.5, 0.5D);
+            noseSmith
+                    .getNavigation()
+                    .moveTo(bedPos.getX() + 0.5, bedPos.getY(), bedPos.getZ() + 0.5, 0.5D);
         }
     }
 
@@ -73,7 +76,9 @@ public class NoseSmithSleepGoal extends Goal {
             noseSmith.startSleeping(bedPos);
             isSleeping = true;
         } else if (noseSmith.getNavigation().isDone()) {
-            noseSmith.getNavigation().moveTo(bedPos.getX() + 0.5, bedPos.getY(), bedPos.getZ() + 0.5, 0.5D);
+            noseSmith
+                    .getNavigation()
+                    .moveTo(bedPos.getX() + 0.5, bedPos.getY(), bedPos.getZ() + 0.5, 0.5D);
         }
     }
 

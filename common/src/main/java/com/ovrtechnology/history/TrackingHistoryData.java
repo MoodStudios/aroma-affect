@@ -4,17 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.platform.Platform;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 
-/**
- * Singleton persistence manager for tracking history, saved entries, and blacklist.
- * Data is stored per-world in {@code config/aromaaffect/history_<worldId>.json}.
- */
 public final class TrackingHistoryData {
 
     private static final String LEGACY_CONFIG_FILE_NAME = "aromaaffect_history.json";
@@ -23,26 +19,22 @@ public final class TrackingHistoryData {
 
     private static TrackingHistoryData instance;
 
-    /**
-     * The world ID that the current instance was loaded for.
-     * Used to detect when the world changes (e.g. "unknown" → real world).
-     */
     private static String loadedWorldId;
 
-    private List<HistoryEntry> history = new ArrayList<>();
-    private List<SavedEntry> saved = new ArrayList<>();
-    private List<BlacklistEntry> blacklist = new ArrayList<>();
+    @Getter private List<HistoryEntry> history = new ArrayList<>();
+    @Getter private List<SavedEntry> saved = new ArrayList<>();
+    @Getter private List<BlacklistEntry> blacklist = new ArrayList<>();
 
     private TrackingHistoryData() {}
 
     public static TrackingHistoryData getInstance() {
         String currentWorldId = WorldIdentifier.getCurrentWorldId();
 
-        // If the instance was loaded for a different world (e.g. loaded as "unknown"
-        // before the server was ready, now the real world ID is available), reload.
         if (instance != null && !currentWorldId.equals(loadedWorldId)) {
-            AromaAffect.LOGGER.info("World ID changed from '{}' to '{}', reloading tracking history",
-                    loadedWorldId, currentWorldId);
+            AromaAffect.LOGGER.info(
+                    "World ID changed from '{}' to '{}', reloading tracking history",
+                    loadedWorldId,
+                    currentWorldId);
             instance = null;
         }
 
@@ -53,21 +45,12 @@ public final class TrackingHistoryData {
         return instance;
     }
 
-    /**
-     * Saves current data and clears the singleton so the next {@link #getInstance()}
-     * call loads the file for the (potentially different) current world.
-     * Call this when the player disconnects from a world/server.
-     */
     public static void invalidate() {
         if (instance != null) {
             instance.save();
         }
         instance = null;
         loadedWorldId = null;
-    }
-
-    public List<HistoryEntry> getHistory() {
-        return history;
     }
 
     public void addHistoryEntry(HistoryEntry entry) {
@@ -85,19 +68,17 @@ public final class TrackingHistoryData {
         }
     }
 
-    public List<SavedEntry> getSaved() {
-        return saved;
-    }
-
     public void saveEntry(HistoryEntry source, String customName) {
-        SavedEntry entry = new SavedEntry(
-                source.targetId,
-                customName,
-                source.categoryId,
-                source.x, source.y, source.z,
-                source.dimension,
-                System.currentTimeMillis()
-        );
+        SavedEntry entry =
+                new SavedEntry(
+                        source.targetId,
+                        customName,
+                        source.categoryId,
+                        source.x,
+                        source.y,
+                        source.z,
+                        source.dimension,
+                        System.currentTimeMillis());
         saved.addFirst(entry);
         save();
     }
@@ -116,26 +97,26 @@ public final class TrackingHistoryData {
         }
     }
 
-    public List<BlacklistEntry> getBlacklist() {
-        return blacklist;
-    }
-
     public void addToBlacklist(HistoryEntry source) {
-        // Avoid duplicates
+
         for (BlacklistEntry existing : blacklist) {
             if (existing.targetId.equals(source.targetId)
-                    && existing.x == source.x && existing.y == source.y && existing.z == source.z) {
+                    && existing.x == source.x
+                    && existing.y == source.y
+                    && existing.z == source.z) {
                 return;
             }
         }
-        BlacklistEntry entry = new BlacklistEntry(
-                source.targetId,
-                source.displayName,
-                source.categoryId,
-                source.x, source.y, source.z,
-                source.dimension,
-                System.currentTimeMillis()
-        );
+        BlacklistEntry entry =
+                new BlacklistEntry(
+                        source.targetId,
+                        source.displayName,
+                        source.categoryId,
+                        source.x,
+                        source.y,
+                        source.z,
+                        source.dimension,
+                        System.currentTimeMillis());
         blacklist.addFirst(entry);
         save();
     }
@@ -143,18 +124,22 @@ public final class TrackingHistoryData {
     public void addToBlacklist(SavedEntry source) {
         for (BlacklistEntry existing : blacklist) {
             if (existing.targetId.equals(source.targetId)
-                    && existing.x == source.x && existing.y == source.y && existing.z == source.z) {
+                    && existing.x == source.x
+                    && existing.y == source.y
+                    && existing.z == source.z) {
                 return;
             }
         }
-        BlacklistEntry entry = new BlacklistEntry(
-                source.targetId,
-                source.customName,
-                source.categoryId,
-                source.x, source.y, source.z,
-                source.dimension,
-                System.currentTimeMillis()
-        );
+        BlacklistEntry entry =
+                new BlacklistEntry(
+                        source.targetId,
+                        source.customName,
+                        source.categoryId,
+                        source.x,
+                        source.y,
+                        source.z,
+                        source.dimension,
+                        System.currentTimeMillis());
         blacklist.addFirst(entry);
         save();
     }
@@ -168,8 +153,7 @@ public final class TrackingHistoryData {
 
     public boolean isBlacklisted(String targetId, int x, int y, int z) {
         for (BlacklistEntry entry : blacklist) {
-            if (entry.targetId.equals(targetId)
-                    && entry.x == x && entry.y == y && entry.z == z) {
+            if (entry.targetId.equals(targetId) && entry.x == x && entry.y == y && entry.z == z) {
                 return true;
             }
         }
@@ -178,8 +162,7 @@ public final class TrackingHistoryData {
 
     public boolean isSaved(String targetId, int x, int y, int z) {
         for (SavedEntry entry : saved) {
-            if (entry.targetId.equals(targetId)
-                    && entry.x == x && entry.y == y && entry.z == z) {
+            if (entry.targetId.equals(targetId) && entry.x == x && entry.y == y && entry.z == z) {
                 return true;
             }
         }
@@ -189,8 +172,6 @@ public final class TrackingHistoryData {
     private static TrackingHistoryData load() {
         String worldId = WorldIdentifier.getCurrentWorldId();
 
-        // World not ready yet — return empty, non-persisted instance.
-        // getInstance() will detect the world ID change and reload once it's available.
         if ("unknown".equals(worldId)) {
             AromaAffect.LOGGER.debug("World not ready yet, returning empty tracking history");
             return new TrackingHistoryData();
@@ -203,22 +184,25 @@ public final class TrackingHistoryData {
             if (data != null) return data;
         }
 
-        // Migrate legacy global file once (rename it after migration so it never repeats)
         Path legacyPath = Platform.getConfigFolder().resolve(LEGACY_CONFIG_FILE_NAME);
         if (Files.exists(legacyPath)) {
             TrackingHistoryData data = loadFrom(legacyPath);
             if (data != null) {
-                data.save(); // persist into the new per-world path
+                data.save();
                 try {
-                    Path migratedPath = legacyPath.resolveSibling(LEGACY_CONFIG_FILE_NAME + ".migrated");
+                    Path migratedPath =
+                            legacyPath.resolveSibling(LEGACY_CONFIG_FILE_NAME + ".migrated");
                     Files.move(legacyPath, migratedPath);
-                    AromaAffect.LOGGER.info("Migrated legacy tracking history to per-world file and renamed legacy file");
+                    AromaAffect.LOGGER.info(
+                            "Migrated legacy tracking history to per-world file and renamed legacy file");
                 } catch (IOException e) {
-                    // If rename fails, delete to prevent repeated migration
+
                     try {
                         Files.delete(legacyPath);
-                    } catch (IOException ignored) {}
-                    AromaAffect.LOGGER.warn("Could not rename legacy history file, deleted it instead");
+                    } catch (IOException ignored) {
+                    }
+                    AromaAffect.LOGGER.warn(
+                            "Could not rename legacy history file, deleted it instead");
                 }
                 return data;
             }
@@ -238,18 +222,23 @@ public final class TrackingHistoryData {
                 if (data.history == null) data.history = new ArrayList<>();
                 if (data.saved == null) data.saved = new ArrayList<>();
                 if (data.blacklist == null) data.blacklist = new ArrayList<>();
-                AromaAffect.LOGGER.info("Loaded tracking history from {} ({} history, {} saved, {} blacklisted)",
-                        path.getFileName(), data.history.size(), data.saved.size(), data.blacklist.size());
+                AromaAffect.LOGGER.info(
+                        "Loaded tracking history from {} ({} history, {} saved, {} blacklisted)",
+                        path.getFileName(),
+                        data.history.size(),
+                        data.saved.size(),
+                        data.blacklist.size());
                 return data;
             }
         } catch (Exception e) {
-            AromaAffect.LOGGER.warn("Failed to load tracking history from {}: {}", path, e.getMessage());
+            AromaAffect.LOGGER.warn(
+                    "Failed to load tracking history from {}: {}", path, e.getMessage());
         }
         return null;
     }
 
     public void save() {
-        // Never persist when the world is not identified yet.
+
         if ("unknown".equals(WorldIdentifier.getCurrentWorldId())) {
             return;
         }

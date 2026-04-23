@@ -4,8 +4,7 @@ public final class NoseRenderToggles {
     private static boolean strapEnabled = false;
     private static boolean noseEnabled = true;
 
-    private NoseRenderToggles() {
-    }
+    private NoseRenderToggles() {}
 
     public static boolean isStrapEnabled() {
         return strapEnabled;

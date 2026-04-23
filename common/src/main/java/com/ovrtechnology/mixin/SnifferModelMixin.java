@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SnifferModel.class)
 public class SnifferModelMixin {
 
-    @Shadow
-    @Final
-    private ModelPart head;
+    @Shadow @Final private ModelPart head;
 
-    @Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;)V", at = @At("TAIL"))
+    @Inject(
+            method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;)V",
+            at = @At("TAIL"))
     private void aromaaffect$resetHeadWhenSwimming(SnifferRenderState state, CallbackInfo ci) {
         if (state instanceof TamedSnifferRenderState tamedState && tamedState.isSwimmingMode) {
-            // Reset head to follow player look direction instead of digging motion
+
             this.head.xRot = state.xRot * ((float) Math.PI / 180F);
             this.head.yRot = state.yRot * ((float) Math.PI / 180F);
         }

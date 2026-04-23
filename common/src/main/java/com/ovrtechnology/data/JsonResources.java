@@ -4,13 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ovrtechnology.AromaAffect;
-
 import java.lang.reflect.Array;
 
 public final class JsonResources {
 
-    private JsonResources() {
-    }
+    private JsonResources() {}
 
     @SuppressWarnings("unchecked")
     public static <T> T[] parseArrayOrWrapped(
@@ -18,8 +16,7 @@ public final class JsonResources {
             String wrapperKey,
             Class<T[]> arrayClass,
             Gson gson,
-            String sourceLabel
-    ) {
+            String sourceLabel) {
         T[] empty = (T[]) Array.newInstance(arrayClass.getComponentType(), 0);
         if (element == null) {
             return empty;
@@ -35,8 +32,10 @@ public final class JsonResources {
                 return result != null ? result : empty;
             }
         }
-        AromaAffect.LOGGER.warn("Invalid JSON format in {} (expected array or object with '{}' key)",
-                sourceLabel, wrapperKey);
+        AromaAffect.LOGGER.warn(
+                "Invalid JSON format in {} (expected array or object with '{}' key)",
+                sourceLabel,
+                wrapperKey);
         return empty;
     }
 }

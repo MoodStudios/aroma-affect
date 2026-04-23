@@ -1,6 +1,7 @@
 package com.ovrtechnology.command;
 
-import com.ovrtechnology.util.Texts;
+import static net.minecraft.commands.Commands.literal;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ovrtechnology.AromaAffect;
@@ -8,93 +9,69 @@ import com.ovrtechnology.command.sub.GiveVariantSubCommand;
 import com.ovrtechnology.command.sub.LookupSubCommand;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.command.sub.PingSubCommand;
+import com.ovrtechnology.util.Texts;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static net.minecraft.commands.Commands.literal;
-
-/**
- * Main command handler for /aromatest command.
- * <p>
- * This provides a testing/debug interface for Aroma Affect functionality.
- * Subcommands can be easily added by implementing {@link SubCommand}
- * and registering them in {@link #SUB_COMMANDS}.
- */
 public final class AromaTestCommand {
-    
-    /**
-     * Registry of all subcommands.
-     * Add new subcommands here to make them available under /aromatest.
-     */
+
     private static final Map<String, SubCommand> SUB_COMMANDS = new LinkedHashMap<>();
-    
+
     static {
-        // Register all subcommands here
         register(new PingSubCommand());
         register(new LookupSubCommand());
         register(new PathSubCommand());
         register(new GiveVariantSubCommand());
     }
-    
-    private AromaTestCommand() {
-        // Utility class
-    }
-    
-    /**
-     * Registers a subcommand.
-     */
+
+    private AromaTestCommand() {}
+
     private static void register(SubCommand subCommand) {
         SUB_COMMANDS.put(subCommand.getName(), subCommand);
     }
-    
-    /**
-     * Initializes the command registration listener.
-     * Should be called during mod initialization.
-     */
+
     public static void init() {
         CommandRegistrationEvent.EVENT.register(AromaTestCommand::registerCommands);
         AromaAffect.LOGGER.info("Aroma Affect test commands initialized");
     }
-    
-    /**
-     * Registers the /aromatest command with all subcommands.
-     */
+
     private static void registerCommands(
             CommandDispatcher<CommandSourceStack> dispatcher,
             CommandBuildContext registry,
-            Commands.CommandSelection selection
-    ) {
-        LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest")
-                .requires(src -> src.hasPermission(Commands.LEVEL_GAMEMASTERS));
+            Commands.CommandSelection selection) {
+        LiteralArgumentBuilder<CommandSourceStack> builder =
+                literal("aromatest").requires(src -> src.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
-        // Add all registered subcommands
         for (SubCommand subCommand : SUB_COMMANDS.values()) {
             builder = builder.then(subCommand.build(literal(subCommand.getName())));
         }
-        
-        // Default execution (no subcommand) shows available subcommands
-        builder.executes(context -> {
-            context.getSource().sendSuccess(
-                    () -> Texts.lit("§6[Aroma Affect] §7Available subcommands:"),
-                    false
-            );
-            for (SubCommand subCommand : SUB_COMMANDS.values()) {
-                context.getSource().sendSuccess(
-                        () -> Texts.lit("§7  - §e/aromatest " + subCommand.getName() + " §8- " + subCommand.getDescription()),
-                        false
-                );
-            }
-            return SUB_COMMANDS.size();
-        });
-        
+
+        builder.executes(
+                context -> {
+                    context.getSource()
+                            .sendSuccess(
+                                    () -> Texts.lit("§6[Aroma Affect] §7Available subcommands:"),
+                                    false);
+                    for (SubCommand subCommand : SUB_COMMANDS.values()) {
+                        context.getSource()
+                                .sendSuccess(
+                                        () ->
+                                                Texts.lit(
+                                                        "§7  - §e/aromatest "
+                                                                + subCommand.getName()
+                                                                + " §8- "
+                                                                + subCommand.getDescription()),
+                                        false);
+                    }
+                    return SUB_COMMANDS.size();
+                });
+
         dispatcher.register(builder);
-        AromaAffect.LOGGER.debug("Registered /aromatest command with {} subcommands", SUB_COMMANDS.size());
+        AromaAffect.LOGGER.debug(
+                "Registered /aromatest command with {} subcommands", SUB_COMMANDS.size());
     }
 }
-

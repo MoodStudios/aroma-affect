@@ -8,9 +8,6 @@ import lombok.experimental.UtilityClass;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 
-/**
- * Registers the Aroma Guide item.
- */
 @UtilityClass
 public final class AromaGuideRegistry {
 

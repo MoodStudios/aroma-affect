@@ -5,10 +5,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 
-/**
- * Pixel indicator used by tracking toasts/panels.
- * Avoids variable-width unicode arrows and supports smart vertical guidance.
- */
 public final class TrackingDirectionIndicator {
 
     private static final int ICON_SIZE = 5;
@@ -20,12 +16,20 @@ public final class TrackingDirectionIndicator {
     private static final double ON_TARGET_Y = 2.0;
 
     public enum Kind {
-        N, NE, E, SE, S, SW, W, NW,
-        UP, DOWN, ON_TARGET
+        N,
+        NE,
+        E,
+        SE,
+        S,
+        SW,
+        W,
+        NW,
+        UP,
+        DOWN,
+        ON_TARGET
     }
 
-    private TrackingDirectionIndicator() {
-    }
+    private TrackingDirectionIndicator() {}
 
     public static int getColumnWidth() {
         return COLUMN_WIDTH;
@@ -96,50 +100,82 @@ public final class TrackingDirectionIndicator {
 
     private static void drawN(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x + 2, y, c);
-        fillPx(g, x + 1, y + 1, c); fillPx(g, x + 2, y + 1, c); fillPx(g, x + 3, y + 1, c);
-        fillPx(g, x + 2, y + 2, c); fillPx(g, x + 2, y + 3, c); fillPx(g, x + 2, y + 4, c);
+        fillPx(g, x + 1, y + 1, c);
+        fillPx(g, x + 2, y + 1, c);
+        fillPx(g, x + 3, y + 1, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 2, y + 3, c);
+        fillPx(g, x + 2, y + 4, c);
     }
 
     private static void drawS(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x + 2, y + 4, c);
-        fillPx(g, x + 1, y + 3, c); fillPx(g, x + 2, y + 3, c); fillPx(g, x + 3, y + 3, c);
-        fillPx(g, x + 2, y + 2, c); fillPx(g, x + 2, y + 1, c); fillPx(g, x + 2, y, c);
+        fillPx(g, x + 1, y + 3, c);
+        fillPx(g, x + 2, y + 3, c);
+        fillPx(g, x + 3, y + 3, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 2, y + 1, c);
+        fillPx(g, x + 2, y, c);
     }
 
     private static void drawE(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x + 4, y + 2, c);
-        fillPx(g, x + 3, y + 1, c); fillPx(g, x + 3, y + 2, c); fillPx(g, x + 3, y + 3, c);
-        fillPx(g, x + 2, y + 2, c); fillPx(g, x + 1, y + 2, c); fillPx(g, x, y + 2, c);
+        fillPx(g, x + 3, y + 1, c);
+        fillPx(g, x + 3, y + 2, c);
+        fillPx(g, x + 3, y + 3, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 1, y + 2, c);
+        fillPx(g, x, y + 2, c);
     }
 
     private static void drawW(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x, y + 2, c);
-        fillPx(g, x + 1, y + 1, c); fillPx(g, x + 1, y + 2, c); fillPx(g, x + 1, y + 3, c);
-        fillPx(g, x + 2, y + 2, c); fillPx(g, x + 3, y + 2, c); fillPx(g, x + 4, y + 2, c);
+        fillPx(g, x + 1, y + 1, c);
+        fillPx(g, x + 1, y + 2, c);
+        fillPx(g, x + 1, y + 3, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 3, y + 2, c);
+        fillPx(g, x + 4, y + 2, c);
     }
 
     private static void drawNE(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x + 4, y, c);
-        fillPx(g, x + 3, y, c); fillPx(g, x + 4, y + 1, c);
-        fillPx(g, x + 3, y + 1, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 1, y + 3, c); fillPx(g, x, y + 4, c);
+        fillPx(g, x + 3, y, c);
+        fillPx(g, x + 4, y + 1, c);
+        fillPx(g, x + 3, y + 1, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 1, y + 3, c);
+        fillPx(g, x, y + 4, c);
     }
 
     private static void drawNW(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x, y, c);
-        fillPx(g, x + 1, y, c); fillPx(g, x, y + 1, c);
-        fillPx(g, x + 1, y + 1, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 3, y + 3, c); fillPx(g, x + 4, y + 4, c);
+        fillPx(g, x + 1, y, c);
+        fillPx(g, x, y + 1, c);
+        fillPx(g, x + 1, y + 1, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 3, y + 3, c);
+        fillPx(g, x + 4, y + 4, c);
     }
 
     private static void drawSE(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x + 4, y + 4, c);
-        fillPx(g, x + 3, y + 4, c); fillPx(g, x + 4, y + 3, c);
-        fillPx(g, x + 3, y + 3, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 1, y + 1, c); fillPx(g, x, y, c);
+        fillPx(g, x + 3, y + 4, c);
+        fillPx(g, x + 4, y + 3, c);
+        fillPx(g, x + 3, y + 3, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 1, y + 1, c);
+        fillPx(g, x, y, c);
     }
 
     private static void drawSW(GuiGraphics g, int x, int y, int c) {
         fillPx(g, x, y + 4, c);
-        fillPx(g, x + 1, y + 4, c); fillPx(g, x, y + 3, c);
-        fillPx(g, x + 1, y + 3, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 3, y + 1, c); fillPx(g, x + 4, y, c);
+        fillPx(g, x + 1, y + 4, c);
+        fillPx(g, x, y + 3, c);
+        fillPx(g, x + 1, y + 3, c);
+        fillPx(g, x + 2, y + 2, c);
+        fillPx(g, x + 3, y + 1, c);
+        fillPx(g, x + 4, y, c);
     }
 
     private static void drawUp(GuiGraphics g, int x, int y, int c) {

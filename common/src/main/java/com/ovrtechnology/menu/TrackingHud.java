@@ -1,40 +1,30 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.trigger.config.ClientConfig;
+import com.ovrtechnology.util.Colors;
+import com.ovrtechnology.util.Texts;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
-import com.ovrtechnology.trigger.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 
-/**
- * HUD overlay that shows tracking status notifications (Arrived!, Not Found, etc.)
- * even when the radial menu is not open. Also ticks {@link ActiveTrackingState}
- * globally so auto-clear works regardless of which screen is open.
- */
 public final class TrackingHud {
 
     private static boolean initialized = false;
 
-    /** Whether a sound has already been played for the current ARRIVED state. */
     private static boolean arrivedSoundPlayed = false;
 
-    /** Timestamp when the current notification started (for fade animation). */
     private static long notificationStart = 0;
 
-    /** The status we're currently showing a notification for. */
-    private static ActiveTrackingState.TrackingStatus lastNotifiedStatus = ActiveTrackingState.TrackingStatus.IDLE;
+    private static ActiveTrackingState.TrackingStatus lastNotifiedStatus =
+            ActiveTrackingState.TrackingStatus.IDLE;
 
-    /** How long the notification is visible (matches auto-clear). */
     private static final long NOTIFICATION_DURATION_MS = 3000;
 
-    /** Fade-out starts this many ms before the notification ends. */
     private static final long FADE_OUT_MS = 600;
 
     private TrackingHud() {}
@@ -44,16 +34,16 @@ public final class TrackingHud {
             return;
         }
 
-        // Tick ActiveTrackingState globally
-        ClientTickEvent.CLIENT_POST.register(instance -> {
-            ActiveTrackingState.tick();
-            tickNotification();
-        });
+        ClientTickEvent.CLIENT_POST.register(
+                instance -> {
+                    ActiveTrackingState.tick();
+                    tickNotification();
+                });
 
-        // Render HUD overlay
-        ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> {
-            render(graphics);
-        });
+        ClientGuiEvent.RENDER_HUD.register(
+                (graphics, tickDelta) -> {
+                    render(graphics);
+                });
 
         initialized = true;
         AromaAffect.LOGGER.info("TrackingHud initialized");
@@ -62,7 +52,6 @@ public final class TrackingHud {
     private static void tickNotification() {
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
 
-        // Detect new terminal state
         if (status == ActiveTrackingState.TrackingStatus.ARRIVED
                 || status == ActiveTrackingState.TrackingStatus.NOT_FOUND
                 || status == ActiveTrackingState.TrackingStatus.ERROR) {
@@ -77,7 +66,7 @@ public final class TrackingHud {
                 }
             }
         } else {
-            // Reset when back to idle/searching/tracking
+
             if (lastNotifiedStatus != status) {
                 lastNotifiedStatus = status;
                 arrivedSoundPlayed = false;
@@ -98,7 +87,6 @@ public final class TrackingHud {
             return;
         }
 
-        // Don't render if radial menu (or any BaseMenuScreen) is open — it has its own panel
         if (mc.screen instanceof BaseMenuScreen) {
             return;
         }
@@ -106,7 +94,7 @@ public final class TrackingHud {
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
         if (ClientConfig.getInstance().isTrackingToastPersistent()
                 && (status == ActiveTrackingState.TrackingStatus.SEARCHING
-                || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
+                        || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
             renderPersistentTrackingToast(graphics, mc, status);
         }
 
@@ -121,10 +109,9 @@ public final class TrackingHud {
             return;
         }
 
-        // Calculate alpha with fade-in and fade-out
         float alpha;
         if (elapsed < 200) {
-            alpha = elapsed / 200f; // fade in
+            alpha = elapsed / 200f;
         } else if (elapsed > NOTIFICATION_DURATION_MS - FADE_OUT_MS) {
             alpha = (float) (NOTIFICATION_DURATION_MS - elapsed) / FADE_OUT_MS;
         } else {
@@ -134,13 +121,12 @@ public final class TrackingHud {
         int a = (int) (alpha * 255) & 0xFF;
         if (a < 4) return;
 
-        // Determine text and color
         String text;
         int accentColor;
         switch (status) {
             case ARRIVED -> {
                 text = Texts.tr("tracking.aromaaffect.status.arrived").getString();
-                accentColor = 0x44FF44;
+                accentColor = Colors.SUCCESS_GREEN_RGB;
             }
             case NOT_FOUND -> {
                 text = Texts.tr("tracking.aromaaffect.status.not_found").getString();
@@ -148,12 +134,13 @@ public final class TrackingHud {
             }
             case ERROR -> {
                 text = Texts.tr("tracking.aromaaffect.status.error").getString();
-                accentColor = 0xFF4444;
+                accentColor = Colors.ERROR_RED_RGB;
             }
-            default -> { return; }
+            default -> {
+                return;
+            }
         }
 
-        // Display name of target
         Component displayName = ActiveTrackingState.getDisplayName();
         String targetText = displayName != null ? displayName.getString() : "";
 
@@ -166,20 +153,16 @@ public final class TrackingHud {
         int boxX = (screenW - boxW) / 2;
         int boxY = 10;
 
-        // Background
         int bgColor = (a * 3 / 4) << 24 | 0x111111;
         graphics.fill(boxX, boxY, boxX + boxW, boxY + boxH, bgColor);
 
-        // Accent bar on left
         int barColor = (a << 24) | accentColor;
         graphics.fill(boxX, boxY, boxX + 3, boxY + boxH, barColor);
 
-        // Main text
         int textColor = (a << 24) | accentColor;
         int textX = boxX + 10;
         graphics.drawString(font, text, textX, boxY + 6, textColor, false);
 
-        // Target name (smaller, white)
         if (!targetText.isEmpty()) {
             int nameColor = (a << 24) | 0xCCCCCC;
             graphics.drawString(font, targetText, textX, boxY + 20, nameColor, false);
@@ -187,18 +170,21 @@ public final class TrackingHud {
     }
 
     private static void renderPersistentTrackingToast(
-            GuiGraphics graphics,
-            Minecraft mc,
-            ActiveTrackingState.TrackingStatus status
-    ) {
+            GuiGraphics graphics, Minecraft mc, ActiveTrackingState.TrackingStatus status) {
         int screenW = mc.getWindow().getGuiScaledWidth();
         int panelTop = 4;
         int panelRight = screenW - 4;
         int pad = 6;
         int iconSpace = 20;
 
-        int accentArgb = (status == ActiveTrackingState.TrackingStatus.SEARCHING) ? 0xDDFFCC44 : 0xDD44FF44;
-        int borderArgb = (status == ActiveTrackingState.TrackingStatus.SEARCHING) ? 0xAAAA8833 : 0xAA44AA44;
+        int accentArgb =
+                (status == ActiveTrackingState.TrackingStatus.SEARCHING)
+                        ? Colors.WARNING_YELLOW_ALPHA
+                        : Colors.TRACK_GREEN_BUTTON_STRONG;
+        int borderArgb =
+                (status == ActiveTrackingState.TrackingStatus.SEARCHING)
+                        ? Colors.TRACK_YELLOW_ALPHA
+                        : Colors.TRACK_GREEN_BUTTON;
 
         String headerText;
         if (status == ActiveTrackingState.TrackingStatus.SEARCHING) {
@@ -212,14 +198,20 @@ public final class TrackingHud {
         }
 
         Component targetName = ActiveTrackingState.getDisplayName();
-        String targetIdStr = ActiveTrackingState.getTargetId() != null ? ActiveTrackingState.getTargetId().toString() : null;
+        String targetIdStr =
+                ActiveTrackingState.getTargetId() != null
+                        ? ActiveTrackingState.getTargetId().toString()
+                        : null;
         int dist = ActiveTrackingState.getDistance();
-        String distText = (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
-                ? dist + " blocks away"
-                : null;
-        TrackingDirectionIndicator.Kind dirKind = (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
-                ? TrackingDirectionIndicator.resolve(mc, ActiveTrackingState.getDestination())
-                : null;
+        String distText =
+                (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
+                        ? dist + " blocks away"
+                        : null;
+        TrackingDirectionIndicator.Kind dirKind =
+                (status == ActiveTrackingState.TrackingStatus.TRACKING && dist >= 0)
+                        ? TrackingDirectionIndicator.resolve(
+                                mc, ActiveTrackingState.getDestination())
+                        : null;
 
         var font = mc.font;
         int maxText = font.width(headerText);
@@ -230,20 +222,26 @@ public final class TrackingHud {
             maxText = Math.max(maxText, font.width(targetIdStr));
         }
         if (distText != null) {
-            maxText = Math.max(maxText, TrackingDirectionIndicator.getColumnWidth() + font.width(distText));
+            maxText =
+                    Math.max(
+                            maxText,
+                            TrackingDirectionIndicator.getColumnWidth() + font.width(distText));
         }
 
         int lineCount = 1;
         if (targetName != null) lineCount++;
-        if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) lineCount++;
+        if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING)
+            lineCount++;
         if (distText != null) lineCount++;
 
         int panelWidth = maxText + iconSpace + pad * 2;
         int panelHeight = 10 + lineCount * 11;
         int panelLeft = panelRight - panelWidth;
 
-        graphics.fill(panelLeft, panelTop, panelRight, panelTop + panelHeight, 0xDD1A1A2E);
-        MenuRenderUtils.renderOutline(graphics, panelLeft, panelTop, panelWidth, panelHeight, borderArgb);
+        graphics.fill(
+                panelLeft, panelTop, panelRight, panelTop + panelHeight, Colors.BG_MENU_BACKDROP);
+        MenuRenderUtils.renderOutline(
+                graphics, panelLeft, panelTop, panelWidth, panelHeight, borderArgb);
         graphics.fill(panelLeft, panelTop, panelLeft + 2, panelTop + panelHeight, accentArgb);
 
         int iconX = panelLeft + pad + 1;
@@ -255,20 +253,23 @@ public final class TrackingHud {
         int textX = iconX + iconSpace;
         int currentY = panelTop + 5;
 
-        int labelColor = (status == ActiveTrackingState.TrackingStatus.SEARCHING) ? 0xFFFFCC44 : 0xFF88CC88;
+        int labelColor =
+                (status == ActiveTrackingState.TrackingStatus.SEARCHING)
+                        ? Colors.WARNING_YELLOW
+                        : Colors.SUCCESS_GREEN_SOFT;
         graphics.drawString(font, headerText, textX, currentY, labelColor);
         currentY += 11;
 
         if (targetName != null) {
-            graphics.drawString(font, targetName, textX, currentY, 0xFFFFFFFF);
+            graphics.drawString(font, targetName, textX, currentY, Colors.WHITE);
             currentY += 11;
         }
         if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
-            graphics.drawString(font, targetIdStr, textX, currentY, 0xFF777777);
+            graphics.drawString(font, targetIdStr, textX, currentY, Colors.TEXT_SUBTLE);
             currentY += 11;
         }
         if (distText != null && dirKind != null) {
-            drawDistanceLine(graphics, textX, currentY, dirKind, distText, 0xFF44CCFF);
+            drawDistanceLine(graphics, textX, currentY, dirKind, distText, Colors.ACCENT_CYAN);
         }
     }
 
@@ -278,11 +279,16 @@ public final class TrackingHud {
             int y,
             TrackingDirectionIndicator.Kind directionKind,
             String distanceText,
-            int color
-    ) {
+            int color) {
         Minecraft mc = Minecraft.getInstance();
         int indicatorColor = TrackingDirectionIndicator.colorForKind(directionKind, color);
         TrackingDirectionIndicator.draw(graphics, x, y, directionKind, indicatorColor);
-        graphics.drawString(mc.font, distanceText, x + TrackingDirectionIndicator.getColumnWidth(), y, indicatorColor, false);
+        graphics.drawString(
+                mc.font,
+                distanceText,
+                x + TrackingDirectionIndicator.getColumnWidth(),
+                y,
+                indicatorColor,
+                false);
     }
 }

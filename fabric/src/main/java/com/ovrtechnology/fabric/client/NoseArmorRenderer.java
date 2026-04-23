@@ -9,8 +9,8 @@ import com.ovrtechnology.nose.client.NoseModelLayers;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
 import java.util.UUID;
-import net.minecraft.client.Minecraft;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -22,12 +22,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * Fabric-specific armor renderer for the Nose item.
- *
- * <p>Uses three pre-configured immutable model instances to avoid shared
- * mutable state that corrupts deferred renders in multiplayer.</p>
- */
 public final class NoseArmorRenderer implements ArmorRenderer {
     private final NoseMaskModel hiddenModel;
     private final NoseMaskModel visibleNoStrapModel;
@@ -65,49 +59,46 @@ public final class NoseArmorRenderer implements ArmorRenderer {
             HumanoidRenderState bipedEntityRenderState,
             EquipmentSlot slot,
             int light,
-            HumanoidModel<HumanoidRenderState> contextModel
-    ) {
+            HumanoidModel<HumanoidRenderState> contextModel) {
         if (slot != EquipmentSlot.HEAD) {
             return;
         }
 
-        // Read UUID from the render state (set by EntityRendererMixin during submit).
-        // This is more reliable than the global NoseRenderContext because it survives
-        // MC 1.21's batched extractRenderState pipeline.
         UUID entityUuid = null;
         if (bipedEntityRenderState instanceof EntityRenderStateAccess access) {
             entityUuid = access.aromaaffect$getEntityUuid();
         }
 
-        UUID localUuid = Minecraft.getInstance().player != null
-                ? Minecraft.getInstance().player.getUUID() : null;
+        UUID localUuid =
+                Minecraft.getInstance().player != null
+                        ? Minecraft.getInstance().player.getUUID()
+                        : null;
 
         boolean noseEnabled;
         boolean strapEnabled;
 
         if (entityUuid != null && entityUuid.equals(localUuid)) {
-            // Local player — use direct toggle state
+
             noseEnabled = NoseRenderToggles.isNoseEnabled();
             strapEnabled = noseEnabled && NoseRenderToggles.isStrapEnabled();
         } else if (entityUuid != null) {
-            // Remote player — use server-synced preferences cache
+
             NoseRenderPreferencesManager.NosePrefs remotePrefs =
                     NoseRenderPreferencesManager.getClientPrefsIfPresent(entityUuid);
             if (remotePrefs != null) {
                 noseEnabled = remotePrefs.noseEnabled();
                 strapEnabled = remotePrefs.strapEnabled();
             } else {
-                // Unknown entity — default to visible
+
                 noseEnabled = true;
                 strapEnabled = false;
             }
         } else {
-            // No UUID available — default to visible
+
             noseEnabled = true;
             strapEnabled = false;
         }
 
-        // Select the appropriate pre-configured immutable model
         NoseMaskModel model;
         if (!noseEnabled) {
             model = hiddenModel;
@@ -134,7 +125,6 @@ public final class NoseArmorRenderer implements ArmorRenderer {
                 light,
                 OverlayTexture.NO_OVERLAY,
                 bipedEntityRenderState.outlineColor,
-                (ModelFeatureRenderer.CrumblingOverlay) null
-        );
+                (ModelFeatureRenderer.CrumblingOverlay) null);
     }
 }

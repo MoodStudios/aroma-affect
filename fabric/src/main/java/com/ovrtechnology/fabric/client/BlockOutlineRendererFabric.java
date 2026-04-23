@@ -9,17 +9,16 @@ public final class BlockOutlineRendererFabric {
     private BlockOutlineRendererFabric() {}
 
     public static void init() {
-        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> {
-            PathTrailRenderer.renderTrail(
-                    context.matrices(),
-                    context.worldState().cameraRenderState.pos,
-                    context.consumers()
-            );
-            BlockOutlineRenderer.renderOutline(
-                    context.matrices(),
-                    context.worldState().cameraRenderState.pos,
-                    context.consumers()
-            );
-        });
+        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
+                context -> {
+                    PathTrailRenderer.renderTrail(
+                            context.matrices(),
+                            context.worldState().cameraRenderState.pos,
+                            context.consumers());
+                    BlockOutlineRenderer.renderOutline(
+                            context.matrices(),
+                            context.worldState().cameraRenderState.pos,
+                            context.consumers());
+                });
     }
 }

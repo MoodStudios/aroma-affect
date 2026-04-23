@@ -13,13 +13,15 @@ public final class ModDataComponents {
             DeferredRegister.create(AromaAffect.MOD_ID, Registries.DATA_COMPONENT_TYPE);
 
     public static final RegistrySupplier<DataComponentType<ResourceLocation>> NOSE_VARIANT =
-            COMPONENTS.register("nose_variant", () -> DataComponentType.<ResourceLocation>builder()
-                    .persistent(ResourceLocation.CODEC)
-                    .networkSynchronized(ResourceLocation.STREAM_CODEC)
-                    .build());
+            COMPONENTS.register(
+                    "nose_variant",
+                    () ->
+                            DataComponentType.<ResourceLocation>builder()
+                                    .persistent(ResourceLocation.CODEC)
+                                    .networkSynchronized(ResourceLocation.STREAM_CODEC)
+                                    .build());
 
-    private ModDataComponents() {
-    }
+    private ModDataComponents() {}
 
     public static void init() {
         COMPONENTS.register();

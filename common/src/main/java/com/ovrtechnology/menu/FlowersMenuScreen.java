@@ -1,13 +1,15 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.util.Texts;
-import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.flower.FlowerDefinition;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.tracking.RequiredItem;
+import com.ovrtechnology.util.Colors;
+import com.ovrtechnology.util.Ids;
+import com.ovrtechnology.util.Texts;
+import java.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,28 +19,19 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.*;
-
-/**
- * Menu screen for selecting flowers/flora to track.
- *
- * @see MenuManager#openFlowersMenu()
- * @see SelectionMenuScreen
- */
 public class FlowersMenuScreen extends SelectionMenuScreen {
 
     private static final int FILTER_CHIP_HEIGHT = 18;
     private static final int FILTER_CHIP_GAP = 6;
 
-    private static final int CHIP_COLOR = 0xB0333333;
-    private static final int CHIP_ACTIVE_COLOR = 0xE0446644;
-    private static final int CHIP_HOVER_COLOR = 0xE0444466;
+    private static final int CHIP_COLOR = Colors.HUD_OVERLAY_PANEL;
+    private static final int CHIP_ACTIVE_COLOR = Colors.BORDER_PANEL_GREEN;
+    private static final int CHIP_HOVER_COLOR = Colors.BORDER_PANEL;
 
     static final Map<String, ItemStack> FLOWER_ICONS = new HashMap<>();
     private static final Map<String, FlowerFilter> FLOWER_CATEGORIES = new HashMap<>();
 
     static {
-        // Common flowers
         FLOWER_ICONS.put("minecraft:dandelion", Items.DANDELION.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:poppy", Items.POPPY.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:blue_orchid", Items.BLUE_ORCHID.getDefaultInstance());
@@ -50,38 +43,54 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         FLOWER_ICONS.put("minecraft:pink_tulip", Items.PINK_TULIP.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:oxeye_daisy", Items.OXEYE_DAISY.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:cornflower", Items.CORNFLOWER.getDefaultInstance());
-        FLOWER_ICONS.put("minecraft:lily_of_the_valley", Items.LILY_OF_THE_VALLEY.getDefaultInstance());
+        FLOWER_ICONS.put(
+                "minecraft:lily_of_the_valley", Items.LILY_OF_THE_VALLEY.getDefaultInstance());
 
-        // Tall flowers
         FLOWER_ICONS.put("minecraft:sunflower", Items.SUNFLOWER.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:lilac", Items.LILAC.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:rose_bush", Items.ROSE_BUSH.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:peony", Items.PEONY.getDefaultInstance());
 
-        // Special flowers
         FLOWER_ICONS.put("minecraft:wither_rose", Items.WITHER_ROSE.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:torchflower", Items.TORCHFLOWER.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:pitcher_plant", Items.PITCHER_PLANT.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:pink_petals", Items.PINK_PETALS.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:spore_blossom", Items.SPORE_BLOSSOM.getDefaultInstance());
 
-        // Nether flora
         FLOWER_ICONS.put("minecraft:crimson_fungus", Items.CRIMSON_FUNGUS.getDefaultInstance());
         FLOWER_ICONS.put("minecraft:warped_fungus", Items.WARPED_FUNGUS.getDefaultInstance());
 
-        // Category mappings
-        for (String id : List.of("minecraft:dandelion", "minecraft:poppy", "minecraft:blue_orchid",
-                "minecraft:allium", "minecraft:azure_bluet", "minecraft:red_tulip",
-                "minecraft:orange_tulip", "minecraft:white_tulip", "minecraft:pink_tulip",
-                "minecraft:oxeye_daisy", "minecraft:cornflower", "minecraft:lily_of_the_valley")) {
+        for (String id :
+                List.of(
+                        "minecraft:dandelion",
+                        "minecraft:poppy",
+                        "minecraft:blue_orchid",
+                        "minecraft:allium",
+                        "minecraft:azure_bluet",
+                        "minecraft:red_tulip",
+                        "minecraft:orange_tulip",
+                        "minecraft:white_tulip",
+                        "minecraft:pink_tulip",
+                        "minecraft:oxeye_daisy",
+                        "minecraft:cornflower",
+                        "minecraft:lily_of_the_valley")) {
             FLOWER_CATEGORIES.put(id, FlowerFilter.COMMON);
         }
-        for (String id : List.of("minecraft:sunflower", "minecraft:lilac",
-                "minecraft:rose_bush", "minecraft:peony")) {
+        for (String id :
+                List.of(
+                        "minecraft:sunflower",
+                        "minecraft:lilac",
+                        "minecraft:rose_bush",
+                        "minecraft:peony")) {
             FLOWER_CATEGORIES.put(id, FlowerFilter.TALL);
         }
-        for (String id : List.of("minecraft:wither_rose", "minecraft:torchflower",
-                "minecraft:pitcher_plant", "minecraft:pink_petals", "minecraft:spore_blossom")) {
+        for (String id :
+                List.of(
+                        "minecraft:wither_rose",
+                        "minecraft:torchflower",
+                        "minecraft:pitcher_plant",
+                        "minecraft:pink_petals",
+                        "minecraft:spore_blossom")) {
             FLOWER_CATEGORIES.put(id, FlowerFilter.SPECIAL);
         }
         for (String id : List.of("minecraft:crimson_fungus", "minecraft:warped_fungus")) {
@@ -121,7 +130,8 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             return;
         }
 
-        NoseAbilityResolver.ResolvedAbilities abilities = EquippedNoseHelper.getEquippedAbilities(player);
+        NoseAbilityResolver.ResolvedAbilities abilities =
+                EquippedNoseHelper.getEquippedAbilities(player);
         Set<String> detectableFlowers = abilities.getFlowers();
 
         if (detectableFlowers.isEmpty()) {
@@ -156,9 +166,9 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         Component displayName = Texts.lit(flowerName);
         Component description = Texts.tr("menu.aromaaffect.flowers.card.description", displayName);
 
-        SelectionCard card = new SelectionCard(flowerId, displayName, icon, isUnlocked, description);
+        SelectionCard card =
+                new SelectionCard(flowerId, displayName, icon, isUnlocked, description);
 
-        // Populate cost data from FlowerDefinitionLoader
         FlowerDefinition flowerDef = FlowerDefinitionLoader.getFlowerById(flowerId.toString());
         if (flowerDef != null) {
             card.trackCost = flowerDef.getTrackCost();
@@ -179,7 +189,8 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
     @Override
     protected boolean passesFilter(SelectionCard card) {
         if (activeFilter == FlowerFilter.ALL) return true;
-        FlowerFilter cardCategory = FLOWER_CATEGORIES.getOrDefault(card.id.toString(), FlowerFilter.COMMON);
+        FlowerFilter cardCategory =
+                FLOWER_CATEGORIES.getOrDefault(card.id.toString(), FlowerFilter.COMMON);
         return cardCategory == activeFilter;
     }
 
@@ -195,8 +206,14 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected int renderBelowSearch(GuiGraphics graphics, int startX, int y, int availableWidth,
-                                     int mouseX, int mouseY, float animationProgress) {
+    protected int renderBelowSearch(
+            GuiGraphics graphics,
+            int startX,
+            int y,
+            int availableWidth,
+            int mouseX,
+            int mouseY,
+            float animationProgress) {
         hoveredFilterIndex = -1;
         FlowerFilter[] filters = FlowerFilter.values();
 
@@ -216,8 +233,11 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             FlowerFilter filter = filters[i];
             int cw = chipWidths[i];
             boolean isActive = filter == activeFilter;
-            boolean isHovered = mouseX >= chipX && mouseX < chipX + cw
-                    && mouseY >= y && mouseY < y + FILTER_CHIP_HEIGHT;
+            boolean isHovered =
+                    mouseX >= chipX
+                            && mouseX < chipX + cw
+                            && mouseY >= y
+                            && mouseY < y + FILTER_CHIP_HEIGHT;
 
             if (isHovered) {
                 hoveredFilterIndex = i;
@@ -232,17 +252,21 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
                 bgColor = CHIP_COLOR;
             }
             int a = (int) (((bgColor >> 24) & 0xFF) * alpha);
-            bgColor = (a << 24) | (bgColor & 0x00FFFFFF);
+            bgColor = (a << 24) | (bgColor & Colors.TRANSPARENT);
 
             graphics.fill(chipX, y, chipX + cw, y + FILTER_CHIP_HEIGHT, bgColor);
 
-            int borderColor = isActive ? 0xFF66AA66 : 0xFF555555;
-            borderColor = (int) (255 * alpha) << 24 | (borderColor & 0x00FFFFFF);
+            int borderColor = isActive ? Colors.SUCCESS_GREEN_MUTED : Colors.BG_ROW;
+            borderColor = (int) (255 * alpha) << 24 | (borderColor & Colors.TRANSPARENT);
             MenuRenderUtils.renderOutline(graphics, chipX, y, cw, FILTER_CHIP_HEIGHT, borderColor);
 
             int textColor = (int) (255 * alpha) << 24 | 0xFFFFFF;
-            graphics.drawCenteredString(font, filter.getDisplayName(), chipX + cw / 2,
-                    y + (FILTER_CHIP_HEIGHT - 8) / 2, textColor);
+            graphics.drawCenteredString(
+                    font,
+                    filter.getDisplayName(),
+                    chipX + cw / 2,
+                    y + (FILTER_CHIP_HEIGHT - 8) / 2,
+                    textColor);
 
             chipX += cw + FILTER_CHIP_GAP;
         }
@@ -251,9 +275,15 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected void renderRow(GuiGraphics graphics, SelectionCard card, int x, int y,
-                              int rowWidth, boolean isHovered, boolean isTracking,
-                              float animationProgress) {
+    protected void renderRow(
+            GuiGraphics graphics,
+            SelectionCard card,
+            int x,
+            int y,
+            int rowWidth,
+            boolean isHovered,
+            boolean isTracking,
+            float animationProgress) {
         int rowHeight = getRowHeight();
         int bgColor;
         if (isTracking) {
@@ -262,14 +292,14 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             bgColor = isHovered ? ROW_HOVER_COLOR : ROW_COLOR;
         }
         int a = (int) (((bgColor >> 24) & 0xFF) * animationProgress);
-        bgColor = (a << 24) | (bgColor & 0x00FFFFFF);
+        bgColor = (a << 24) | (bgColor & Colors.TRANSPARENT);
         graphics.fill(x, y, x + rowWidth, y + rowHeight, bgColor);
 
         if (isTracking) {
-            int borderColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
+            int borderColor = (int) (255 * animationProgress) << 24 | Colors.SUCCESS_GREEN_RGB;
             MenuRenderUtils.renderOutline(graphics, x, y, rowWidth, rowHeight, borderColor);
         } else if (isHovered) {
-            int borderColor = (int) (255 * animationProgress) << 24 | 0xAAAAFF;
+            int borderColor = (int) (255 * animationProgress) << 24 | Colors.BLUE_ICON;
             MenuRenderUtils.renderOutline(graphics, x, y, rowWidth, rowHeight, borderColor);
         }
 
@@ -285,20 +315,25 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         }
 
         int textX = iconX + ICON_SIZE + 8;
-        int nameColor = isTracking
-                ? (int) (255 * animationProgress) << 24 | 0x66FF66
-                : (int) (255 * animationProgress) << 24 | 0xFFFFFF;
+        int nameColor =
+                isTracking
+                        ? (int) (255 * animationProgress) << 24 | Colors.SUCCESS_GREEN_RGB_BRIGHT
+                        : (int) (255 * animationProgress) << 24 | 0xFFFFFF;
         graphics.drawString(font, card.displayName, textX, y + 6, nameColor);
 
         int idColor = (int) (180 * animationProgress) << 24 | 0x888888;
         graphics.drawString(font, card.id.toString(), textX, y + 18, idColor);
 
         if (isTracking) {
-            int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
+            int indicatorColor = (int) (255 * animationProgress) << 24 | Colors.SUCCESS_GREEN_RGB;
             Component trackingLabel = Texts.tr("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
-            graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - ROW_PADDING,
-                    y + (rowHeight - 8) / 2, indicatorColor);
+            graphics.drawString(
+                    font,
+                    trackingLabel,
+                    x + rowWidth - labelWidth - ROW_PADDING,
+                    y + (rowHeight - 8) / 2,
+                    indicatorColor);
         } else {
             renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);
         }

@@ -1,26 +1,14 @@
 package com.ovrtechnology.guide;
 
 import com.ovrtechnology.util.Texts;
-import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
+import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
-/**
- * The top-level guide book. Contains categories which contain pages.
- * This is the root object for the entire guide system.
- *
- * <p>Example usage:</p>
- * <pre>
- *   GuideBook book = GuideBook.builder("AromaCraft Guide")
- *       .category(gettingStartedCategory)
- *       .category(nosesCategory)
- *       .category(scentsCategory)
- *       .build();
- * </pre>
- */
+@Getter
 public final class GuideBook {
 
     private final Component title;
@@ -37,27 +25,11 @@ public final class GuideBook {
         return new Builder(Texts.lit(title));
     }
 
-    public static Builder builder(Component title) {
-        return new Builder(title);
-    }
-
-    public Component getTitle() {
-        return title;
-    }
-
-    public Component getSubtitle() {
-        return subtitle;
-    }
-
-    public List<GuideCategory> getCategories() {
-        return categories;
-    }
-
     @Nullable
     public GuidePage getFirstPage() {
         for (GuideCategory category : categories) {
             if (!category.getPages().isEmpty()) {
-                return category.getPages().get(0);
+                return category.getPages().getFirst();
             }
         }
         return null;
@@ -96,11 +68,6 @@ public final class GuideBook {
 
         public Builder subtitle(String subtitle) {
             this.subtitle = Texts.lit(subtitle);
-            return this;
-        }
-
-        public Builder subtitle(Component subtitle) {
-            this.subtitle = subtitle;
             return this;
         }
 

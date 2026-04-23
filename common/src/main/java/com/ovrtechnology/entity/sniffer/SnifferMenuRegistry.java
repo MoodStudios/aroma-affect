@@ -1,7 +1,7 @@
 package com.ovrtechnology.entity.sniffer;
 
-import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.Texts;
 import dev.architectury.registry.menu.ExtendedMenuProvider;
 import dev.architectury.registry.menu.MenuRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
@@ -17,42 +17,58 @@ import net.minecraft.world.inventory.MenuType;
 
 public class SnifferMenuRegistry {
 
-    private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(AromaAffect.MOD_ID, Registries.MENU);
+    private static final DeferredRegister<MenuType<?>> MENUS =
+            DeferredRegister.create(AromaAffect.MOD_ID, Registries.MENU);
 
-    public static final RegistrySupplier<MenuType<SnifferMenu>> SNIFFER_MENU = MENUS.register("sniffer_menu",
-            () -> MenuRegistry.ofExtended((containerId, inventory, buf) -> {
-                int snifferId = buf.readInt();
-                Sniffer sniffer = (Sniffer) inventory.player.level().getEntity(snifferId);
-                if (sniffer == null) {
-                    throw new IllegalStateException("Sniffer not found with id: " + snifferId);
-                }
-                return new SnifferMenu(containerId, inventory, new SnifferContainer(sniffer), sniffer);
-            }));
+    public static final RegistrySupplier<MenuType<SnifferMenu>> SNIFFER_MENU =
+            MENUS.register(
+                    "sniffer_menu",
+                    () ->
+                            MenuRegistry.ofExtended(
+                                    (containerId, inventory, buf) -> {
+                                        int snifferId = buf.readInt();
+                                        Sniffer sniffer =
+                                                (Sniffer)
+                                                        inventory
+                                                                .player
+                                                                .level()
+                                                                .getEntity(snifferId);
+                                        if (sniffer == null) {
+                                            throw new IllegalStateException(
+                                                    "Sniffer not found with id: " + snifferId);
+                                        }
+                                        return new SnifferMenu(
+                                                containerId,
+                                                inventory,
+                                                new SnifferContainer(sniffer),
+                                                sniffer);
+                                    }));
 
     public static void init() {
         MENUS.register();
     }
 
-    public static void initClient() {
-        // Screen registration is done per-platform in Fabric/NeoForge modules
-    }
+    public static void initClient() {}
 
     public static void openSnifferMenu(ServerPlayer player, Sniffer sniffer) {
-        MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
-            @Override
-            public void saveExtraData(FriendlyByteBuf buf) {
-                buf.writeInt(sniffer.getId());
-            }
+        MenuRegistry.openExtendedMenu(
+                player,
+                new ExtendedMenuProvider() {
+                    @Override
+                    public void saveExtraData(FriendlyByteBuf buf) {
+                        buf.writeInt(sniffer.getId());
+                    }
 
-            @Override
-            public Component getDisplayName() {
-                return Texts.lit("Sniffer Inventory");
-            }
+                    @Override
+                    public Component getDisplayName() {
+                        return Texts.lit("Sniffer Inventory");
+                    }
 
-            @Override
-            public SnifferMenu createMenu(int containerId, Inventory inventory, Player p) {
-                return new SnifferMenu(containerId, inventory, new SnifferContainer(sniffer), sniffer);
-            }
-        });
+                    @Override
+                    public SnifferMenu createMenu(int containerId, Inventory inventory, Player p) {
+                        return new SnifferMenu(
+                                containerId, inventory, new SnifferContainer(sniffer), sniffer);
+                    }
+                });
     }
 }

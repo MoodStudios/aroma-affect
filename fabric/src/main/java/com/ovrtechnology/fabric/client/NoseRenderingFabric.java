@@ -7,8 +7,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 
 public final class NoseRenderingFabric {
-    private NoseRenderingFabric() {
-    }
+    private NoseRenderingFabric() {}
 
     public static void init() {
         for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getAllNoses()) {
@@ -18,8 +17,8 @@ public final class NoseRenderingFabric {
             ArmorRenderer.register(NoseArmorRenderer::new, supplier.get());
         }
         if (CustomNoseRegistry.getCUSTOM_NOSE().isPresent()) {
-            ArmorRenderer.register(NoseArmorRenderer::new, CustomNoseRegistry.getCUSTOM_NOSE().get());
+            ArmorRenderer.register(
+                    NoseArmorRenderer::new, CustomNoseRegistry.getCUSTOM_NOSE().get());
         }
     }
 }
-

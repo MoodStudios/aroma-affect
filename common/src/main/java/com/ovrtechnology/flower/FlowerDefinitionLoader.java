@@ -7,34 +7,26 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
-import lombok.Getter;
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
-/**
- * Loads flower definitions from JSON files.
- */
 public class FlowerDefinitionLoader {
 
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static final String FLOWERS_DIR = "aroma_flowers";
 
-    @Getter
-    private static List<FlowerDefinition> loadedFlowers = new ArrayList<>();
+    @Getter private static List<FlowerDefinition> loadedFlowers = new ArrayList<>();
 
     private static Set<String> loadedIds = new HashSet<>();
 
-    @Getter
-    private static List<String> validationWarnings = new ArrayList<>();
+    @Getter private static List<String> validationWarnings = new ArrayList<>();
 
     public static List<FlowerDefinition> loadAllFlowers() {
         return loadAllFlowers(ClasspathDataSource.INSTANCE);
@@ -51,14 +43,18 @@ public class FlowerDefinitionLoader {
                 FlowerDefinition flower = GSON.fromJson(entry.getValue(), FlowerDefinition.class);
                 processFlower(flower);
             } catch (Exception e) {
-                AromaAffect.LOGGER.error("Failed to parse flower {}: {}", entry.getKey(), e.getMessage());
+                AromaAffect.LOGGER.error(
+                        "Failed to parse flower {}: {}", entry.getKey(), e.getMessage());
             }
         }
 
-        AromaAffect.LOGGER.info("Loaded {} flower definitions from {} file(s)", loadedFlowers.size(), files.size());
+        AromaAffect.LOGGER.info(
+                "Loaded {} flower definitions from {} file(s)", loadedFlowers.size(), files.size());
 
         if (!validationWarnings.isEmpty()) {
-            AromaAffect.LOGGER.warn("Flower loading completed with {} validation warnings", validationWarnings.size());
+            AromaAffect.LOGGER.warn(
+                    "Flower loading completed with {} validation warnings",
+                    validationWarnings.size());
         }
 
         return Collections.unmodifiableList(loadedFlowers);
@@ -86,8 +82,8 @@ public class FlowerDefinitionLoader {
 
         loadedIds.add(blockId);
         loadedFlowers.add(flower);
-        AromaAffect.LOGGER.debug("Loaded flower definition: {} (scent: {})",
-                blockId, flower.getScentId());
+        AromaAffect.LOGGER.debug(
+                "Loaded flower definition: {} (scent: {})", blockId, flower.getScentId());
     }
 
     private static void validateFlower(FlowerDefinition flower) {
@@ -96,10 +92,16 @@ public class FlowerDefinitionLoader {
         if (flower.hasScentId()) {
             String scentId = flower.getScentId();
             if (ScentRegistry.isInitialized() && !ScentRegistry.hasScent(scentId)) {
-                addWarning("[" + blockId + "] Referenced scent_id '" + scentId + "' does not exist in ScentRegistry");
+                addWarning(
+                        "["
+                                + blockId
+                                + "] Referenced scent_id '"
+                                + scentId
+                                + "' does not exist in ScentRegistry");
             }
         } else {
-            addWarning("[" + blockId + "] No scent_id defined, flower will have no associated scent");
+            addWarning(
+                    "[" + blockId + "] No scent_id defined, flower will have no associated scent");
         }
     }
 
@@ -108,7 +110,6 @@ public class FlowerDefinitionLoader {
         AromaAffect.LOGGER.warn(warning);
     }
 
-
     public static FlowerDefinition getFlowerById(String blockId) {
         for (FlowerDefinition flower : loadedFlowers) {
             if (flower.getBlockId().equals(blockId)) {
@@ -116,10 +117,6 @@ public class FlowerDefinitionLoader {
             }
         }
         return null;
-    }
-
-    public static boolean hasFlowerId(String blockId) {
-        return loadedIds.contains(blockId);
     }
 
     public static List<FlowerDefinition> reload() {

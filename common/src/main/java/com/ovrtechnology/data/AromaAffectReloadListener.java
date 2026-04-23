@@ -20,12 +20,11 @@ import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.variant.NoseVariantRegistry;
 import com.ovrtechnology.variant.VariantRecipeIndex;
+import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-
-import java.util.List;
 
 public final class AromaAffectReloadListener extends SimplePreparableReloadListener<Void> {
 

@@ -3,11 +3,10 @@ package com.ovrtechnology.variant;
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 import com.ovrtechnology.nose.NoseUnlock;
+import java.util.Locale;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.Locale;
 
 @Getter
 @Setter
@@ -32,7 +31,6 @@ public class NoseVariant {
             return frames > 1;
         }
     }
-
 
     @SerializedName("id")
     private String id;

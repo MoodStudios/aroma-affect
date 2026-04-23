@@ -1,27 +1,15 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Colors;
 import com.ovrtechnology.util.Texts;
+import lombok.Getter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * A single renderable element within a guide page.
- * Elements are stacked vertically within a page and support various content types.
- *
- * <p>Use the static factory methods to create elements:</p>
- * <pre>
- *   GuideElement.header("Getting Started")
- *   GuideElement.text("Welcome to AromaCraft!")
- *   GuideElement.item(new ItemStack(Items.DIAMOND), "Diamond Nose")
- *   GuideElement.image(ResourceLocation.of("aromacraft:textures/gui/guide/banner.png"), 200, 60)
- *   GuideElement.separator()
- *   GuideElement.spacer(8)
- *   GuideElement.craftingGrid(grid, result, "Recipe Name")
- * </pre>
- */
+@Getter
 public final class GuideElement {
 
     public enum Type {
@@ -40,28 +28,29 @@ public final class GuideElement {
     }
 
     private final Type type;
-    @Nullable
-    private final Component text;
-    @Nullable
-    private final ItemStack itemStack;
-    @Nullable
-    private final ResourceLocation imageTexture;
+    @Nullable private final Component text;
+    @Nullable private final ItemStack itemStack;
+    @Nullable private final ResourceLocation imageTexture;
     private final int imageWidth;
     private final int imageHeight;
     private final int spacerHeight;
     private final int color;
-    @Nullable
-    private final ItemStack[] craftingGrid;
-    @Nullable
-    private final ItemStack craftingResult;
-    @Nullable
-    private final String targetPageId;
+    @Nullable private final ItemStack[] craftingGrid;
+    @Nullable private final ItemStack craftingResult;
+    @Nullable private final String targetPageId;
 
-    private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
-                         @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
-                         int spacerHeight, int color,
-                         @Nullable ItemStack[] craftingGrid, @Nullable ItemStack craftingResult,
-                         @Nullable String targetPageId) {
+    private GuideElement(
+            Type type,
+            @Nullable Component text,
+            @Nullable ItemStack itemStack,
+            @Nullable ResourceLocation imageTexture,
+            int imageWidth,
+            int imageHeight,
+            int spacerHeight,
+            int color,
+            @Nullable ItemStack[] craftingGrid,
+            @Nullable ItemStack craftingResult,
+            @Nullable String targetPageId) {
         this.type = type;
         this.text = text;
         this.itemStack = itemStack;
@@ -75,38 +64,39 @@ public final class GuideElement {
         this.targetPageId = targetPageId;
     }
 
-    private GuideElement(Type type, @Nullable Component text, @Nullable ItemStack itemStack,
-                         @Nullable ResourceLocation imageTexture, int imageWidth, int imageHeight,
-                         int spacerHeight, int color) {
-        this(type, text, itemStack, imageTexture, imageWidth, imageHeight, spacerHeight, color, null, null, null);
-    }
-
-    public static GuideElement header(String text) {
-        return header(Texts.lit(text));
+    private GuideElement(
+            Type type,
+            @Nullable Component text,
+            @Nullable ItemStack itemStack,
+            @Nullable ResourceLocation imageTexture,
+            int imageWidth,
+            int imageHeight,
+            int spacerHeight,
+            int color) {
+        this(
+                type,
+                text,
+                itemStack,
+                imageTexture,
+                imageWidth,
+                imageHeight,
+                spacerHeight,
+                color,
+                null,
+                null,
+                null);
     }
 
     public static GuideElement header(Component text) {
-        return new GuideElement(Type.HEADER, text, null, null, 0, 0, 0, 0xFFFFFFFF);
-    }
-
-    public static GuideElement subheader(String text) {
-        return subheader(Texts.lit(text));
+        return new GuideElement(Type.HEADER, text, null, null, 0, 0, 0, Colors.WHITE);
     }
 
     public static GuideElement subheader(Component text) {
-        return new GuideElement(Type.SUBHEADER, text, null, null, 0, 0, 0, 0xFFCCCCCC);
-    }
-
-    public static GuideElement text(String text) {
-        return text(Texts.lit(text));
+        return new GuideElement(Type.SUBHEADER, text, null, null, 0, 0, 0, Colors.TEXT_SECONDARY);
     }
 
     public static GuideElement text(Component text) {
-        return new GuideElement(Type.TEXT, text, null, null, 0, 0, 0, 0xFFD0D0D0);
-    }
-
-    public static GuideElement coloredText(String text, int color) {
-        return new GuideElement(Type.TEXT, Texts.lit(text), null, null, 0, 0, 0, color);
+        return new GuideElement(Type.TEXT, text, null, null, 0, 0, 0, Colors.TEXT_PRIMARY);
     }
 
     public static GuideElement coloredText(Component text, int color) {
@@ -114,206 +104,111 @@ public final class GuideElement {
     }
 
     public static GuideElement itemShowcase(ItemStack stack, Component description) {
-        return new GuideElement(Type.ITEM_SHOWCASE, description, stack, null, 0, 0, 0, 0xFFD0D0D0);
+        return new GuideElement(
+                Type.ITEM_SHOWCASE, description, stack, null, 0, 0, 0, Colors.TEXT_PRIMARY);
     }
 
     public static GuideElement image(ResourceLocation texture, int width, int height) {
-        return new GuideElement(Type.IMAGE, null, null, texture, width, height, 0, 0xFFFFFFFF);
+        return new GuideElement(Type.IMAGE, null, null, texture, width, height, 0, Colors.WHITE);
     }
 
     public static GuideElement separator() {
-        return new GuideElement(Type.SEPARATOR, null, null, null, 0, 0, 0, 0xFF444466);
+        return new GuideElement(Type.SEPARATOR, null, null, null, 0, 0, 0, Colors.SEPARATOR);
     }
 
     public static GuideElement spacer(int height) {
         return new GuideElement(Type.SPACER, null, null, null, 0, 0, height, 0);
     }
 
-    public static GuideElement tip(String text) {
-        return tip(Texts.lit(text));
-    }
-
     public static GuideElement tip(Component text) {
-        return new GuideElement(Type.TIP, text, null, null, 0, 0, 0, 0xFF7BD48A);
+        return new GuideElement(Type.TIP, text, null, null, 0, 0, 0, Colors.ACCENT_GREEN);
     }
 
-    /**
-     * Creates a crafting grid element showing a 3x3 grid with a result.
-     *
-     * @param grid   9-element array (row-major, left-to-right top-to-bottom). Use {@link ItemStack#EMPTY} for empty slots.
-     * @param result the output item
-     * @param label  display label shown above the grid (e.g. "Aroma Guide")
-     */
-    public static GuideElement craftingGrid(ItemStack[] grid, ItemStack result, String label) {
-        if (grid.length != 9) throw new IllegalArgumentException("Crafting grid must have exactly 9 slots");
-        return new GuideElement(Type.CRAFTING_GRID, Texts.lit(label), null, null,
-                0, 0, 0, 0xFFFFFFFF, grid.clone(), result.copy(), null);
-    }
-
-    /**
-     * Creates an ability link element that shows as "• AbilityName (inherited) →"
-     * and navigates to the specified page when clicked.
-     */
-    public static GuideElement abilityLink(String abilityName, String targetPageId) {
-        return new GuideElement(Type.ABILITY_LINK, Texts.lit(abilityName), null, null,
-                0, 0, 0, 0xFFD0D0D0, null, null, targetPageId);
-    }
-
-    /**
-     * Creates an ability link element using a translatable component.
-     */
     public static GuideElement abilityLink(Component abilityName, String targetPageId) {
-        return new GuideElement(Type.ABILITY_LINK, abilityName, null, null,
-                0, 0, 0, 0xFFD0D0D0, null, null, targetPageId);
+        return new GuideElement(
+                Type.ABILITY_LINK,
+                abilityName,
+                null,
+                null,
+                0,
+                0,
+                0,
+                Colors.TEXT_PRIMARY,
+                null,
+                null,
+                targetPageId);
     }
 
-    /**
-     * Creates a bold label for detection sub-categories (e.g. "Blocks", "Structures").
-     * Renders with an accent-colored dash prefix to visually separate from items below.
-     */
-    public static GuideElement detectionLabel(String text) {
-        return new GuideElement(Type.TEXT, Texts.lit("\u25B8 " + text).withStyle(ChatFormatting.BOLD),
-                null, null, 0, 0, 0, 0xFFAAAACC);
-    }
-
-    /**
-     * Creates a detection label using a translatable component with the accent-colored prefix.
-     */
     public static GuideElement detectionLabel(Component text) {
-        return new GuideElement(Type.TEXT, Texts.lit("\u25B8 ").withStyle(ChatFormatting.BOLD).append(text),
-                null, null, 0, 0, 0, 0xFFAAAACC);
+        return new GuideElement(
+                Type.TEXT,
+                Texts.lit("\u25B8 ").withStyle(ChatFormatting.BOLD).append(text),
+                null,
+                null,
+                0,
+                0,
+                0,
+                Colors.TEXT_LABEL);
     }
 
-    /**
-     * Creates a compact element with a small item icon followed by text on the same line.
-     * Used for detection lists (blocks, structures, biomes, flowers).
-     */
-    public static GuideElement iconText(ItemStack icon, String text) {
-        return new GuideElement(Type.ICON_TEXT, Texts.lit(text), icon.copy(), null,
-                0, 0, 0, 0xFFD0D0D0);
-    }
-
-    /**
-     * Creates a compact element with a small item icon followed by a translatable text.
-     */
     public static GuideElement iconText(ItemStack icon, Component text) {
-        return new GuideElement(Type.ICON_TEXT, text, icon.copy(), null,
-                0, 0, 0, 0xFFD0D0D0);
+        return new GuideElement(
+                Type.ICON_TEXT, text, icon.copy(), null, 0, 0, 0, Colors.TEXT_PRIMARY);
     }
 
-    /**
-     * Creates a compact element with cycling item icons followed by text.
-     * The icon animates through the provided items in sequence.
-     */
-    public static GuideElement iconText(String text, ItemStack... icons) {
-        ItemStack[] copies = new ItemStack[icons.length];
-        for (int i = 0; i < icons.length; i++) copies[i] = icons[i].copy();
-        return new GuideElement(Type.ICON_TEXT, Texts.lit(text), copies[0], null,
-                0, 0, 0, 0xFFD0D0D0, copies, null, null);
-    }
-
-    /**
-     * Creates a compact element with cycling item icons followed by translatable text.
-     */
     public static GuideElement iconText(Component text, ItemStack... icons) {
         ItemStack[] copies = new ItemStack[icons.length];
         for (int i = 0; i < icons.length; i++) copies[i] = icons[i].copy();
-        return new GuideElement(Type.ICON_TEXT, text, copies[0], null,
-                0, 0, 0, 0xFFD0D0D0, copies, null, null);
+        return new GuideElement(
+                Type.ICON_TEXT,
+                text,
+                copies[0],
+                null,
+                0,
+                0,
+                0,
+                Colors.TEXT_PRIMARY,
+                copies,
+                null,
+                null);
     }
 
-    /**
-     * Creates a clickable URL link element that opens an external URL in the system browser.
-     * Renders as underlined text with a link icon.
-     *
-     * @param label the display text for the link
-     * @param url   the URL to open when clicked
-     */
-    public static GuideElement urlLink(String label, String url) {
-        return new GuideElement(Type.URL_LINK, Texts.lit(label), null, null,
-                0, 0, 0, 0xFF6D9EF8, null, null, url);
-    }
-
-    /**
-     * Creates a clickable URL link element using a translatable label.
-     */
     public static GuideElement urlLink(Component label, String url) {
-        return new GuideElement(Type.URL_LINK, label, null, null,
-                0, 0, 0, 0xFF6D9EF8, null, null, url);
+        return new GuideElement(
+                Type.URL_LINK, label, null, null, 0, 0, 0, Colors.ACCENT_BLUE, null, null, url);
     }
 
-    /**
-     * Creates a non-linked ability element that shows as "• AbilityName — description".
-     */
     public static GuideElement ability(String text) {
-        return new GuideElement(Type.TEXT, Texts.lit("\u2022 " + text), null, null,
-                0, 0, 0, 0xFFD0D0D0);
+        return new GuideElement(
+                Type.TEXT, Texts.lit("\u2022 " + text), null, null, 0, 0, 0, Colors.TEXT_PRIMARY);
     }
 
-    /**
-     * Creates a non-linked ability element using a translatable component.
-     */
     public static GuideElement ability(Component text) {
-        return new GuideElement(Type.TEXT, Texts.lit("\u2022 ").append(text), null, null,
-                0, 0, 0, 0xFFD0D0D0);
+        return new GuideElement(
+                Type.TEXT,
+                Texts.lit("\u2022 ").append(text),
+                null,
+                null,
+                0,
+                0,
+                0,
+                Colors.TEXT_PRIMARY);
     }
 
-    /**
-     * Creates a crafting grid element using a translatable label component.
-     */
     public static GuideElement craftingGrid(ItemStack[] grid, ItemStack result, Component label) {
-        if (grid.length != 9) throw new IllegalArgumentException("Crafting grid must have exactly 9 slots");
-        return new GuideElement(Type.CRAFTING_GRID, label, null, null,
-                0, 0, 0, 0xFFFFFFFF, grid.clone(), result.copy(), null);
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    @Nullable
-    public Component getText() {
-        return text;
-    }
-
-    @Nullable
-    public ItemStack getItemStack() {
-        return itemStack;
-    }
-
-    @Nullable
-    public ResourceLocation getImageTexture() {
-        return imageTexture;
-    }
-
-    public int getImageWidth() {
-        return imageWidth;
-    }
-
-    public int getImageHeight() {
-        return imageHeight;
-    }
-
-    public int getSpacerHeight() {
-        return spacerHeight;
-    }
-
-    public int getColor() {
-        return color;
-    }
-
-    @Nullable
-    public ItemStack[] getCraftingGrid() {
-        return craftingGrid;
-    }
-
-    @Nullable
-    public ItemStack getCraftingResult() {
-        return craftingResult;
-    }
-
-    @Nullable
-    public String getTargetPageId() {
-        return targetPageId;
+        if (grid.length != 9)
+            throw new IllegalArgumentException("Crafting grid must have exactly 9 slots");
+        return new GuideElement(
+                Type.CRAFTING_GRID,
+                label,
+                null,
+                null,
+                0,
+                0,
+                0,
+                Colors.WHITE,
+                grid.clone(),
+                result.copy(),
+                null);
     }
 }

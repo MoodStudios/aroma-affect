@@ -5,12 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.DataSource;
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
 
 public final class NoseVariantRegistry {
 
@@ -20,8 +19,7 @@ public final class NoseVariantRegistry {
 
     private static final Map<ResourceLocation, NoseVariant> variants = new LinkedHashMap<>();
 
-    private NoseVariantRegistry() {
-    }
+    private NoseVariantRegistry() {}
 
     public static Map<ResourceLocation, NoseVariant> all() {
         return Collections.unmodifiableMap(variants);

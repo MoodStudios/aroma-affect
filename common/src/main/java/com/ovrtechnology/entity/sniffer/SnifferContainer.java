@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
+import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
@@ -14,8 +15,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.Optional;
-
 public class SnifferContainer extends SimpleContainer {
     private final Sniffer sniffer;
     private final SnifferTamingData data;
@@ -25,12 +24,12 @@ public class SnifferContainer extends SimpleContainer {
     public static final int DECORATION_SLOT = 1;
     public static final int CONTAINER_SIZE = 2;
 
+    @SuppressWarnings("this-escape")
     public SnifferContainer(Sniffer sniffer) {
         super(CONTAINER_SIZE);
         this.sniffer = sniffer;
         this.data = SnifferTamingData.get(sniffer.getUUID());
 
-        // Cargar items guardados en el data (sin triggear setChanged)
         if (!data.saddleItem.isEmpty()) {
             super.setItem(SADDLE_SLOT, data.saddleItem.copy());
         }
@@ -44,12 +43,10 @@ public class SnifferContainer extends SimpleContainer {
     public void setChanged() {
         super.setChanged();
 
-        // No sincronizar durante la inicialización para evitar sobrescribir datos
         if (initializing) {
             return;
         }
 
-        // Sincronizar con SnifferTamingData
         data.saddleItem = super.getItem(SADDLE_SLOT).copy();
         data.decorationItem = super.getItem(DECORATION_SLOT).copy();
 
@@ -57,7 +54,6 @@ public class SnifferContainer extends SimpleContainer {
             truncateSniffCooldown();
         }
 
-        // Broadcast equipment change to all tracking players
         if (sniffer.level() instanceof ServerLevel serverLevel) {
             for (ServerPlayer player : serverLevel.players()) {
                 if (player.distanceToSqr(sniffer) <= 128 * 128) {
@@ -85,10 +81,12 @@ public class SnifferContainer extends SimpleContainer {
     private void truncateSniffCooldown() {
         long noseCooldown = SnifferConfigLoader.getConfig().digging.sniffCooldownWithNose;
         if (sniffer.getBrain().hasMemoryValue(MemoryModuleType.SNIFF_COOLDOWN)
-                && sniffer.getBrain().getTimeUntilExpiry(MemoryModuleType.SNIFF_COOLDOWN) > noseCooldown) {
+                && sniffer.getBrain().getTimeUntilExpiry(MemoryModuleType.SNIFF_COOLDOWN)
+                        > noseCooldown) {
             sniffer.getBrain().eraseMemory(MemoryModuleType.SNIFF_COOLDOWN);
-            sniffer.getBrain().setMemoryWithExpiry(
-                    MemoryModuleType.SNIFF_COOLDOWN, Unit.INSTANCE, noseCooldown);
+            sniffer.getBrain()
+                    .setMemoryWithExpiry(
+                            MemoryModuleType.SNIFF_COOLDOWN, Unit.INSTANCE, noseCooldown);
         }
         sniffer.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
     }

@@ -3,12 +3,11 @@ package com.ovrtechnology.data;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.ovrtechnology.AromaAffect;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import org.jetbrains.annotations.Nullable;
 
 public enum ClasspathDataSource implements DataSource {
     INSTANCE;

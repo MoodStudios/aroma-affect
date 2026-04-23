@@ -6,11 +6,10 @@ import com.google.gson.JsonObject;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.util.Ids;
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
 
 public final class VariantRecipeIndex {
 
@@ -18,8 +17,7 @@ public final class VariantRecipeIndex {
 
     private static final Map<ResourceLocation, Entry> BY_VARIANT = new HashMap<>();
 
-    private VariantRecipeIndex() {
-    }
+    private VariantRecipeIndex() {}
 
     public static Optional<Entry> get(ResourceLocation variantId) {
         return Optional.ofNullable(BY_VARIANT.get(variantId));
@@ -55,7 +53,8 @@ public final class VariantRecipeIndex {
 
                 BY_VARIANT.put(variantId, new Entry(grid, resultId));
             } catch (Exception e) {
-                AromaAffect.LOGGER.debug("Skipped recipe {} for variant index: {}", entry.getKey(), e.getMessage());
+                AromaAffect.LOGGER.debug(
+                        "Skipped recipe {} for variant index: {}", entry.getKey(), e.getMessage());
             }
         }
         AromaAffect.LOGGER.info("VariantRecipeIndex loaded {} variant recipes", BY_VARIANT.size());

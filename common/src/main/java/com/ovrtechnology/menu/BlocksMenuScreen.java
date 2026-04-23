@@ -1,13 +1,15 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.util.Texts;
-import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.block.BlockDefinition;
 import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.tracking.RequiredItem;
+import com.ovrtechnology.util.Colors;
+import com.ovrtechnology.util.Ids;
+import com.ovrtechnology.util.Texts;
+import java.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,37 +19,39 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.*;
-
-/**
- * Menu screen for selecting blocks to track.
- *
- * @see MenuManager#openBlocksMenu()
- * @see SelectionMenuScreen
- */
 public class BlocksMenuScreen extends SelectionMenuScreen {
 
     private static final int FILTER_CHIP_HEIGHT = 18;
     private static final int FILTER_CHIP_GAP = 6;
 
-    private static final int CHIP_COLOR = 0xB0333333;
-    private static final int CHIP_ACTIVE_COLOR = 0xE0446644;
-    private static final int CHIP_HOVER_COLOR = 0xE0444466;
+    private static final int CHIP_COLOR = Colors.HUD_OVERLAY_PANEL;
+    private static final int CHIP_ACTIVE_COLOR = Colors.BORDER_PANEL_GREEN;
+    private static final int CHIP_HOVER_COLOR = Colors.BORDER_PANEL;
 
     private static final Map<String, BlockFilter> BLOCK_CATEGORIES = new HashMap<>();
 
     static {
-        for (String id : List.of(
-                "minecraft:coal_ore", "minecraft:deepslate_coal_ore",
-                "minecraft:iron_ore", "minecraft:deepslate_iron_ore",
-                "minecraft:copper_ore", "minecraft:deepslate_copper_ore",
-                "minecraft:gold_ore", "minecraft:deepslate_gold_ore",
-                "minecraft:redstone_ore", "minecraft:deepslate_redstone_ore",
-                "minecraft:lapis_ore", "minecraft:deepslate_lapis_ore",
-                "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore",
-                "minecraft:emerald_ore", "minecraft:deepslate_emerald_ore",
-                "minecraft:nether_gold_ore", "minecraft:nether_quartz_ore",
-                "minecraft:ancient_debris")) {
+        for (String id :
+                List.of(
+                        "minecraft:coal_ore",
+                        "minecraft:deepslate_coal_ore",
+                        "minecraft:iron_ore",
+                        "minecraft:deepslate_iron_ore",
+                        "minecraft:copper_ore",
+                        "minecraft:deepslate_copper_ore",
+                        "minecraft:gold_ore",
+                        "minecraft:deepslate_gold_ore",
+                        "minecraft:redstone_ore",
+                        "minecraft:deepslate_redstone_ore",
+                        "minecraft:lapis_ore",
+                        "minecraft:deepslate_lapis_ore",
+                        "minecraft:diamond_ore",
+                        "minecraft:deepslate_diamond_ore",
+                        "minecraft:emerald_ore",
+                        "minecraft:deepslate_emerald_ore",
+                        "minecraft:nether_gold_ore",
+                        "minecraft:nether_quartz_ore",
+                        "minecraft:ancient_debris")) {
             BLOCK_CATEGORIES.put(id, BlockFilter.ORES);
         }
         for (String id : List.of("minecraft:water", "minecraft:lava")) {
@@ -93,7 +97,8 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             return;
         }
 
-        NoseAbilityResolver.ResolvedAbilities abilities = EquippedNoseHelper.getEquippedAbilities(player);
+        NoseAbilityResolver.ResolvedAbilities abilities =
+                EquippedNoseHelper.getEquippedAbilities(player);
         Set<String> detectableBlocks = abilities.getBlocks();
 
         if (detectableBlocks.isEmpty()) {
@@ -134,7 +139,6 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
 
         SelectionCard card = new SelectionCard(blockId, displayName, icon, isUnlocked, description);
 
-        // Populate cost data from BlockDefinitionLoader
         BlockDefinition blockDef = BlockDefinitionLoader.getBlockById(blockId.toString());
         if (blockDef != null) {
             card.trackCost = blockDef.getTrackCost();
@@ -155,7 +159,8 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     @Override
     protected boolean passesFilter(SelectionCard card) {
         if (activeFilter == BlockFilter.ALL) return true;
-        BlockFilter cardCategory = BLOCK_CATEGORIES.getOrDefault(card.id.toString(), BlockFilter.ORES);
+        BlockFilter cardCategory =
+                BLOCK_CATEGORIES.getOrDefault(card.id.toString(), BlockFilter.ORES);
         return cardCategory == activeFilter;
     }
 
@@ -171,8 +176,14 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected int renderBelowSearch(GuiGraphics graphics, int startX, int y, int availableWidth,
-                                     int mouseX, int mouseY, float animationProgress) {
+    protected int renderBelowSearch(
+            GuiGraphics graphics,
+            int startX,
+            int y,
+            int availableWidth,
+            int mouseX,
+            int mouseY,
+            float animationProgress) {
         hoveredFilterIndex = -1;
         BlockFilter[] filters = BlockFilter.values();
 
@@ -192,8 +203,11 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             BlockFilter filter = filters[i];
             int cw = chipWidths[i];
             boolean isActive = filter == activeFilter;
-            boolean isHovered = mouseX >= chipX && mouseX < chipX + cw
-                    && mouseY >= y && mouseY < y + FILTER_CHIP_HEIGHT;
+            boolean isHovered =
+                    mouseX >= chipX
+                            && mouseX < chipX + cw
+                            && mouseY >= y
+                            && mouseY < y + FILTER_CHIP_HEIGHT;
 
             if (isHovered) {
                 hoveredFilterIndex = i;
@@ -208,17 +222,21 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
                 bgColor = CHIP_COLOR;
             }
             int a = (int) (((bgColor >> 24) & 0xFF) * alpha);
-            bgColor = (a << 24) | (bgColor & 0x00FFFFFF);
+            bgColor = (a << 24) | (bgColor & Colors.TRANSPARENT);
 
             graphics.fill(chipX, y, chipX + cw, y + FILTER_CHIP_HEIGHT, bgColor);
 
-            int borderColor = isActive ? 0xFF66AA66 : 0xFF555555;
-            borderColor = (int) (255 * alpha) << 24 | (borderColor & 0x00FFFFFF);
+            int borderColor = isActive ? Colors.SUCCESS_GREEN_MUTED : Colors.BG_ROW;
+            borderColor = (int) (255 * alpha) << 24 | (borderColor & Colors.TRANSPARENT);
             MenuRenderUtils.renderOutline(graphics, chipX, y, cw, FILTER_CHIP_HEIGHT, borderColor);
 
             int textColor = (int) (255 * alpha) << 24 | 0xFFFFFF;
-            graphics.drawCenteredString(font, filter.getDisplayName(), chipX + cw / 2,
-                    y + (FILTER_CHIP_HEIGHT - 8) / 2, textColor);
+            graphics.drawCenteredString(
+                    font,
+                    filter.getDisplayName(),
+                    chipX + cw / 2,
+                    y + (FILTER_CHIP_HEIGHT - 8) / 2,
+                    textColor);
 
             chipX += cw + FILTER_CHIP_GAP;
         }
@@ -227,9 +245,15 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected void renderRow(GuiGraphics graphics, SelectionCard card, int x, int y,
-                              int rowWidth, boolean isHovered, boolean isTracking,
-                              float animationProgress) {
+    protected void renderRow(
+            GuiGraphics graphics,
+            SelectionCard card,
+            int x,
+            int y,
+            int rowWidth,
+            boolean isHovered,
+            boolean isTracking,
+            float animationProgress) {
         int rowHeight = getRowHeight();
         int bgColor;
         if (isTracking) {
@@ -238,14 +262,14 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             bgColor = isHovered ? ROW_HOVER_COLOR : ROW_COLOR;
         }
         int a = (int) (((bgColor >> 24) & 0xFF) * animationProgress);
-        bgColor = (a << 24) | (bgColor & 0x00FFFFFF);
+        bgColor = (a << 24) | (bgColor & Colors.TRANSPARENT);
         graphics.fill(x, y, x + rowWidth, y + rowHeight, bgColor);
 
         if (isTracking) {
-            int borderColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
+            int borderColor = (int) (255 * animationProgress) << 24 | Colors.SUCCESS_GREEN_RGB;
             MenuRenderUtils.renderOutline(graphics, x, y, rowWidth, rowHeight, borderColor);
         } else if (isHovered) {
-            int borderColor = (int) (255 * animationProgress) << 24 | 0xAAAAFF;
+            int borderColor = (int) (255 * animationProgress) << 24 | Colors.BLUE_ICON;
             MenuRenderUtils.renderOutline(graphics, x, y, rowWidth, rowHeight, borderColor);
         }
 
@@ -261,20 +285,25 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
 
         int textX = iconX + ICON_SIZE + 8;
-        int nameColor = isTracking
-                ? (int) (255 * animationProgress) << 24 | 0x66FF66
-                : (int) (255 * animationProgress) << 24 | 0xFFFFFF;
+        int nameColor =
+                isTracking
+                        ? (int) (255 * animationProgress) << 24 | Colors.SUCCESS_GREEN_RGB_BRIGHT
+                        : (int) (255 * animationProgress) << 24 | 0xFFFFFF;
         graphics.drawString(font, card.displayName, textX, y + 6, nameColor);
 
         int idColor = (int) (180 * animationProgress) << 24 | 0x888888;
         graphics.drawString(font, card.id.toString(), textX, y + 18, idColor);
 
         if (isTracking) {
-            int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
+            int indicatorColor = (int) (255 * animationProgress) << 24 | Colors.SUCCESS_GREEN_RGB;
             Component trackingLabel = Texts.tr("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
-            graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - ROW_PADDING,
-                    y + (rowHeight - 8) / 2, indicatorColor);
+            graphics.drawString(
+                    font,
+                    trackingLabel,
+                    x + rowWidth - labelWidth - ROW_PADDING,
+                    y + (rowHeight - 8) / 2,
+                    indicatorColor);
         } else {
             renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);
         }

@@ -7,22 +7,24 @@ import com.ovrtechnology.ability.PreciseSnifferAbility;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.command.AromaTestCommand;
+import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.data.AromaAffectReloadListener;
+import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
+import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
+import com.ovrtechnology.entity.sniffer.SnifferSyncHandler;
+import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
-import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.guide.AromaGuideFirstJoinHandler;
 import com.ovrtechnology.guide.AromaGuideRegistry;
-import com.ovrtechnology.command.path.ActivePathManager;
-import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.lookup.LookupManager;
 import com.ovrtechnology.mob.MobDefinitionLoader;
+import com.ovrtechnology.network.AromaGuideNetworking;
+import com.ovrtechnology.network.IronGolemNoseNetworking;
 import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.NoseSmithTradeNetworking;
-import com.ovrtechnology.network.PathScentNetworking;
-import com.ovrtechnology.network.AromaGuideNetworking;
-import com.ovrtechnology.network.IronGolemNoseNetworking;
 import com.ovrtechnology.network.OmaraDeviceNetworking;
+import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -30,10 +32,8 @@ import com.ovrtechnology.registry.ModCreativeTab;
 import com.ovrtechnology.registry.ModSounds;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItemRegistry;
-import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
-import com.ovrtechnology.entity.sniffer.SnifferSyncHandler;
-import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
+import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -46,11 +46,6 @@ import net.minecraft.server.packs.PackType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Main entry point for the Aroma Affect mod.
- * This mod integrates OVR's scent hardware into Minecraft through the "Nose"
- * system.
- */
 @UtilityClass
 public final class AromaAffect {
     public static final String MOD_ID = "aromaaffect";
@@ -59,7 +54,6 @@ public final class AromaAffect {
     public static void init() {
         LOGGER.info("Initializing Aroma Affect...");
 
-        // Common networking (C2S/S2C packets)
         NoseSmithDialogueNetworking.init();
         NoseSmithTradeNetworking.init();
         PathScentNetworking.init();
@@ -69,90 +63,65 @@ public final class AromaAffect {
         AromaGuideNetworking.init();
         OmaraDeviceNetworking.init();
 
-        // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();
 
         ModDataComponents.init();
 
-        // Initialize the nose registry system (includes ability resolver)
-        // Note: This validates ability references against loaded definitions
         NoseRegistry.init();
 
         CustomNoseRegistry.init();
 
-        // Initialize the sniffer nose registry system (items for Sniffer mob)
         SnifferNoseRegistry.init();
 
-        // Initialize scent definitions (needed for particle colors, display names, etc.)
         ScentRegistry.init();
 
-        // Initialize the scent item registry system
         ScentItemRegistry.init();
 
-        // Initialize the Aroma Guide (village compass)
         AromaGuideRegistry.init();
 
-        // Initialize the Nose Smith entity registry
         NoseSmithRegistry.init();
 
-        // Initialize Sniffer config (load before other sniffer systems)
         SnifferConfigLoader.init();
 
-        // Initialize Sniffer menu registry
         SnifferMenuRegistry.init();
 
-        // Initialize Sniffer sync handler (syncs taming data to clients on join)
         SnifferSyncHandler.init();
 
-        // Initialize Omara Device block
         OmaraDeviceRegistry.init();
 
-        // Initialize custom sounds
         ModSounds.init();
 
-        // Initialize creative tab
         ModCreativeTab.init();
 
-        // Initialize lookup system
         LookupManager.init();
 
-        // Initialize active path manager for persistent particle paths
         ActivePathManager.init();
 
-        // Initialize ability system
-        // Register ability implementations and initialize handler
         AbilityRegistry.register(PreciseSnifferAbility.INSTANCE);
         AbilityRegistry.init();
         AbilityHandler.init();
 
-        // Load definition files (needed by trigger system)
         BiomeDefinitionLoader.loadAllBiomes();
         BlockDefinitionLoader.loadAllBlocks();
         FlowerDefinitionLoader.loadAllFlowers();
         StructureDefinitionLoader.loadAllStructures();
         MobDefinitionLoader.loadAllMobs();
 
-        // Initialize scent trigger system
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
 
-        // Initialize server-side structure sync for multiplayer passive-mode
         StructureSyncHandler.init();
 
-        // Initialize commands
         AromaTestCommand.init();
 
-        // Give Aroma Guide on first join
         AromaGuideFirstJoinHandler.init();
 
-        // Inject custom pieces into vanilla worldgen (villages, etc.)
         VillagePoolInjector.init();
 
         ReloadListenerRegistry.register(
                 PackType.SERVER_DATA,
                 new AromaAffectReloadListener(),
-                AromaAffectReloadListener.ID
-        );
+                AromaAffectReloadListener.ID);
 
         LOGGER.info("Aroma Affect initialized successfully!");
     }

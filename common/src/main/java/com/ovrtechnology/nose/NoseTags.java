@@ -9,6 +9,5 @@ public final class NoseTags {
 
     public static final TagKey<Item> NOSES = TagKey.create(Registries.ITEM, Ids.mod("noses"));
 
-    private NoseTags() {
-    }
+    private NoseTags() {}
 }

@@ -1,33 +1,21 @@
 package com.ovrtechnology.command.path;
 
-import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
+import com.ovrtechnology.util.Texts;
 import dev.architectury.event.events.common.TickEvent;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
-
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
-/**
- * Manages active paths for players (server-side).
- * <p>
- * Handles path lifecycle: creation, arrival detection (3D), distance updates,
- * and scent triggers. All visual effects (trail rendering, particles, pulse
- * animations) are handled entirely client-side by {@code PathTrailRenderer}.
- */
 public final class ActivePathManager {
 
-    /**
-     * Types of targets that can be tracked.
-     */
     public enum TargetType {
         BLOCK,
         BIOME,
@@ -36,22 +24,10 @@ public final class ActivePathManager {
 
     private static final ActivePathManager INSTANCE = new ActivePathManager();
 
-    /**
-     * Distance threshold to consider the player has arrived (in blocks).
-     */
     private static final double ARRIVAL_THRESHOLD = 5.0;
 
-    /**
-     * Distance threshold for biome arrival (in blocks).
-     * Player must be within this distance of the destination AND in the correct biome.
-     * Larger than ARRIVAL_THRESHOLD because the destination is an approximate point
-     * inside a biome region, not an exact target.
-     */
     private static final double BIOME_ARRIVAL_THRESHOLD = 100.0;
 
-    /**
-     * How often to process paths (in ticks). Every 5 ticks = 4 times per second.
-     */
     private static final int TICK_INTERVAL = 5;
 
     private final Map<UUID, ActivePath> activePaths = new ConcurrentHashMap<>();
@@ -64,10 +40,6 @@ public final class ActivePathManager {
         return INSTANCE;
     }
 
-    /**
-     * Initializes the path manager.
-     * Should be called during mod initialization.
-     */
     public static void init() {
         if (INSTANCE.initialized) {
             return;
@@ -78,60 +50,40 @@ public final class ActivePathManager {
         AromaAffect.LOGGER.info("Active path manager initialized");
     }
 
-    /**
-     * Creates a new active path for a player without target info (legacy support).
-     * If the player already has an active path, it will be replaced.
-     *
-     * @param player      the player to create the path for
-     * @param level       the server level
-     * @param destination the destination position
-     */
-    public void createPath(ServerPlayer player, net.minecraft.server.level.ServerLevel level, BlockPos destination) {
+    public void createPath(
+            ServerPlayer player,
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos destination) {
         createPath(player, level, destination, null, null);
     }
 
-    /**
-     * Creates a new active path for a player with target tracking information.
-     * If the player already has an active path, it will be replaced.
-     *
-     * @param player      the player to create the path for
-     * @param level       the server level
-     * @param destination the destination position
-     * @param targetType  the type of target being tracked (can be null)
-     * @param targetId    the ID of the target (e.g., "minecraft:diamond_ore", can be null)
-     */
-    public void createPath(ServerPlayer player, net.minecraft.server.level.ServerLevel level, BlockPos destination,
-                           TargetType targetType, String targetId) {
+    public void createPath(
+            ServerPlayer player,
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos destination,
+            TargetType targetType,
+            String targetId) {
         UUID playerId = player.getUUID();
 
-        // Remove any existing path for this player
         activePaths.remove(playerId);
 
-        // Create new active path
-        ActivePath path = new ActivePath(playerId, level.dimension().location(), destination, targetType, targetId);
+        ActivePath path =
+                new ActivePath(
+                        playerId, level.dimension().location(), destination, targetType, targetId);
         activePaths.put(playerId, path);
 
-        AromaAffect.LOGGER.debug("Created active path for player {} to {} (target: {} {})",
-                player.getName().getString(), destination,
+        AromaAffect.LOGGER.debug(
+                "Created active path for player {} to {} (target: {} {})",
+                player.getName().getString(),
+                destination,
                 targetType != null ? targetType : "none",
                 targetId != null ? targetId : "");
     }
 
-    /**
-     * Removes the active path for a player.
-     *
-     * @param playerId the player's UUID
-     */
     public void removePath(UUID playerId) {
         activePaths.remove(playerId);
     }
 
-    /**
-     * Checks if a player has an active path.
-     *
-     * @param playerId the player's UUID
-     * @return true if the player has an active path
-     */
     public boolean hasActivePath(UUID playerId) {
         return activePaths.containsKey(playerId);
     }
@@ -150,24 +102,21 @@ public final class ActivePathManager {
             UUID playerId = entry.getKey();
             ActivePath path = entry.getValue();
 
-            // Get the player
             ServerPlayer player = server.getPlayerList().getPlayer(playerId);
             if (player == null) {
-                // Player disconnected, remove path
+
                 iterator.remove();
                 continue;
             }
 
-            // Check if player still has a nose equipped
             if (!EquippedNoseHelper.hasNoseEquipped(player)) {
                 PathScentNetworking.sendPathNotFound(player, "Nose unequipped");
                 iterator.remove();
                 continue;
             }
 
-            // Check if player is in the same dimension
             if (!player.level().dimension().location().equals(path.dimension())) {
-                // Player changed dimension, remove path
+
                 iterator.remove();
                 continue;
             }
@@ -175,25 +124,22 @@ public final class ActivePathManager {
             BlockPos playerPos = player.blockPosition();
             BlockPos destination = path.destination();
 
-            // Check if player has arrived (3D distance — prevents false arrival above underground targets)
-            double distanceToDestination = Math.sqrt(
-                    Math.pow(playerPos.getX() - destination.getX(), 2) +
-                    Math.pow(playerPos.getY() - destination.getY(), 2) +
-                    Math.pow(playerPos.getZ() - destination.getZ(), 2)
-            );
+            double distanceToDestination =
+                    Math.sqrt(
+                            Math.pow(playerPos.getX() - destination.getX(), 2)
+                                    + Math.pow(playerPos.getY() - destination.getY(), 2)
+                                    + Math.pow(playerPos.getZ() - destination.getZ(), 2));
 
-            // Send distance update to client
             PathScentNetworking.sendDistanceUpdate(player, (int) distanceToDestination);
 
-            // Biome tracking: arrived when player is near the destination AND in the correct biome.
-            // Distance check prevents false arrival when the player is already standing in
-            // a blacklisted instance of the same biome type far from the actual destination.
             boolean arrived;
             if (path.targetType() == TargetType.BIOME && path.targetId() != null) {
                 if (distanceToDestination <= BIOME_ARRIVAL_THRESHOLD) {
                     var currentBiome = player.level().getBiome(playerPos);
                     var biomeKey = currentBiome.unwrapKey().orElse(null);
-                    arrived = biomeKey != null && biomeKey.location().toString().equals(path.targetId());
+                    arrived =
+                            biomeKey != null
+                                    && biomeKey.location().toString().equals(path.targetId());
                 } else {
                     arrived = false;
                 }
@@ -202,51 +148,30 @@ public final class ActivePathManager {
             }
 
             if (arrived) {
-                // Player has arrived!
+
                 if (PathSubCommand.isVerbose()) {
-                    player.sendSystemMessage(Texts.lit(
-                            "§6[Aroma Affect] §aYou have arrived at your destination!"
-                    ));
+                    player.sendSystemMessage(
+                            Texts.lit("§6[Aroma Affect] §aYou have arrived at your destination!"));
                 }
                 PathScentNetworking.sendPathArrived(player);
                 iterator.remove();
                 continue;
             }
-
         }
     }
 
-    /**
-     * Gets the number of active paths.
-     *
-     * @return the number of active paths
-     */
     public int getActivePathCount() {
         return activePaths.size();
     }
 
-    /**
-     * Clears all active paths.
-     * Used when server is stopping.
-     */
     public void clearAll() {
         activePaths.clear();
     }
 
-    /**
-     * Represents an active particle path.
-     *
-     * @param playerId    the player's UUID
-     * @param dimension   the dimension resource location
-     * @param destination the destination block position
-     * @param targetType  the type of target being tracked (can be null)
-     * @param targetId    the ID of the target (can be null)
-     */
     public record ActivePath(
             UUID playerId,
             net.minecraft.resources.ResourceLocation dimension,
             BlockPos destination,
             TargetType targetType,
-            String targetId
-    ) {}
+            String targetId) {}
 }

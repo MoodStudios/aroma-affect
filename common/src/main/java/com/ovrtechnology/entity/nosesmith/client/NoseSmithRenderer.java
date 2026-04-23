@@ -1,9 +1,8 @@
 package com.ovrtechnology.entity.nosesmith.client;
 
-import com.ovrtechnology.util.Ids;
-import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
+import com.ovrtechnology.util.Ids;
 import net.minecraft.client.model.VillagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -17,16 +16,8 @@ import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * Renderer for the Nose Smith entity.
- *
- * <p>Built on the vanilla villager model, but:</p>
- * <ul>
- *   <li>Uses a single custom skin (no profession/type overlays)</li>
- *   <li>Can toggle the villager "nose" model part on/off (test feature)</li>
- * </ul>
- */
-public class NoseSmithRenderer extends AgeableMobRenderer<NoseSmithEntity, VillagerRenderState, VillagerModel> {
+public class NoseSmithRenderer
+        extends AgeableMobRenderer<NoseSmithEntity, VillagerRenderState, VillagerModel> {
 
     private static final ResourceLocation NOSE_SMITH_TEXTURE =
             Ids.mod("textures/entity/nose_smith.png");
@@ -38,18 +29,21 @@ public class NoseSmithRenderer extends AgeableMobRenderer<NoseSmithEntity, Villa
         this(context, createAdultModel(context), createBabyModel(context));
     }
 
-    private NoseSmithRenderer(EntityRendererProvider.Context context, VillagerModel adultModel, VillagerModel babyModel) {
+    @SuppressWarnings("this-escape")
+    private NoseSmithRenderer(
+            EntityRendererProvider.Context context,
+            VillagerModel adultModel,
+            VillagerModel babyModel) {
         super(context, adultModel, babyModel, 0.5F);
         this.adultModel = adultModel;
         this.babyModel = babyModel;
 
-        // Match vanilla VillagerRenderer layers, except profession/type overlays.
-        this.addLayer(new CustomHeadLayer<>(
-                this,
-                context.getModelSet(),
-                context.getPlayerSkinRenderCache(),
-                VillagerRenderer.CUSTOM_HEAD_TRANSFORMS
-        ));
+        this.addLayer(
+                new CustomHeadLayer<>(
+                        this,
+                        context.getModelSet(),
+                        context.getPlayerSkinRenderCache(),
+                        VillagerRenderer.CUSTOM_HEAD_TRANSFORMS));
         this.addLayer(new CrossedArmsItemLayer<>(this));
     }
 
@@ -67,10 +61,12 @@ public class NoseSmithRenderer extends AgeableMobRenderer<NoseSmithEntity, Villa
     }
 
     @Override
-    public void extractRenderState(NoseSmithEntity entity, VillagerRenderState state, float partialTick) {
+    public void extractRenderState(
+            NoseSmithEntity entity, VillagerRenderState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
 
-        HoldingEntityRenderState.extractHoldingEntityRenderState(entity, state, this.itemModelResolver);
+        HoldingEntityRenderState.extractHoldingEntityRenderState(
+                entity, state, this.itemModelResolver);
         state.isUnhappy = entity.getUnhappyCounter() > 0;
         state.villagerData = entity.getVillagerData();
         if (state instanceof NoseSmithRenderState noseSmithRenderState) {
@@ -88,8 +84,7 @@ public class NoseSmithRenderer extends AgeableMobRenderer<NoseSmithEntity, Villa
             VillagerRenderState state,
             PoseStack poseStack,
             SubmitNodeCollector collector,
-            CameraRenderState cameraRenderState
-    ) {
+            CameraRenderState cameraRenderState) {
         boolean hasNose = true;
         if (state instanceof NoseSmithRenderState noseSmithRenderState) {
             hasNose = noseSmithRenderState.hasNose;

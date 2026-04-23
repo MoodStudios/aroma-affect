@@ -1,10 +1,15 @@
 package com.ovrtechnology.worldgen;
 
-import com.ovrtechnology.util.Ids;
 import com.mojang.datafixers.util.Pair;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.Ids;
 import dev.architectury.event.events.common.LifecycleEvent;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -12,18 +17,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-
-/**
- * Runtime injection into vanilla village template pools.
- *
- * <p>This is intentionally runtime-driven (instead of datapack overriding vanilla pools) to be
- * modpack-friendly and avoid hard conflicts with other mods/datapacks that also patch villages.</p>
- */
 public final class VillagePoolInjector {
 
     private enum VillageBiome {
@@ -43,24 +36,8 @@ public final class VillagePoolInjector {
             return Ids.vanilla("village/" + id + "/town_centers");
         }
 
-        public ResourceLocation streetsPool() {
-            return Ids.vanilla("village/" + id + "/streets");
-        }
-
-        public ResourceLocation noseSmithHouseTemplate() {
-            return Ids.mod("village/" + id + "/houses/nose_smith_house");
-        }
-
         public ResourceLocation noseSmithTownCenterTemplate() {
             return Ids.mod("village/" + id + "/town_centers/nose_smith_start");
-        }
-
-        public ResourceLocation noseSmithResidentPool() {
-            return Ids.mod("village/" + id + "/nose_smith_resident");
-        }
-
-        public ResourceLocation noseSmithHousePool() {
-            return Ids.mod("village/" + id + "/nose_smith_house");
         }
     }
 
@@ -70,8 +47,7 @@ public final class VillagePoolInjector {
     private static Field templatesField;
     private static Field rawTemplatesField;
 
-    private VillagePoolInjector() {
-    }
+    private VillagePoolInjector() {}
 
     public static void init() {
         if (initialized) {
@@ -79,7 +55,6 @@ public final class VillagePoolInjector {
             return;
         }
 
-        // Must happen before any chunks generate; otherwise spawn-area villages may generate without our changes.
         LifecycleEvent.SERVER_BEFORE_START.register(VillagePoolInjector::inject);
 
         initialized = true;
@@ -94,25 +69,28 @@ public final class VillagePoolInjector {
         try {
             var registryAccess = server.registryAccess();
 
-            Registry<StructureTemplatePool> pools = registryAccess.lookupOrThrow(Registries.TEMPLATE_POOL);
+            Registry<StructureTemplatePool> pools =
+                    registryAccess.lookupOrThrow(Registries.TEMPLATE_POOL);
 
-            // Requirement: every village must contain the Nose Smith house, without replacing vanilla houses.
-            //
-            // Approach:
-            // - Override each biome's town-centers pool to always start from a custom, vanilla-derived meeting point.
-            // - That meeting point contains a jigsaw connector that *always* spawns the Nose Smith house via a custom pool.
             for (VillageBiome biome : EnumSet.allOf(VillageBiome.class)) {
-                StructureTemplatePool townCenters = pools
-                        .get(biome.townCentersPool())
-                        .orElseThrow(() -> new IllegalStateException("Missing template pool: " + biome.townCentersPool()))
-                        .value();
+                StructureTemplatePool townCenters =
+                        pools.get(biome.townCentersPool())
+                                .orElseThrow(
+                                        () ->
+                                                new IllegalStateException(
+                                                        "Missing template pool: "
+                                                                + biome.townCentersPool()))
+                                .value();
 
-                StructurePoolElement startElement = StructurePoolElement
-                        .legacy(biome.noseSmithTownCenterTemplate().toString())
-                        .apply(StructureTemplatePool.Projection.RIGID);
+                StructurePoolElement startElement =
+                        StructurePoolElement.legacy(biome.noseSmithTownCenterTemplate().toString())
+                                .apply(StructureTemplatePool.Projection.RIGID);
 
                 forcePoolToOnly(townCenters, startElement);
-                AromaAffect.LOGGER.info("Forced village start pool {} -> {}", biome.townCentersPool(), biome.noseSmithTownCenterTemplate());
+                AromaAffect.LOGGER.info(
+                        "Forced village start pool {} -> {}",
+                        biome.townCentersPool(),
+                        biome.noseSmithTownCenterTemplate());
             }
         } catch (Exception e) {
             AromaAffect.LOGGER.error("Failed to inject village pools", e);
@@ -125,8 +103,7 @@ public final class VillagePoolInjector {
         }
 
         try {
-            // Find fields by type instead of by name, because field names differ between
-            // Mojang mappings (dev/NeoForge) and intermediary mappings (Fabric runtime).
+
             for (Field field : StructureTemplatePool.class.getDeclaredFields()) {
                 field.setAccessible(true);
                 if (field.getType() == ObjectArrayList.class) {
@@ -137,10 +114,12 @@ public final class VillagePoolInjector {
             }
 
             if (templatesField == null) {
-                throw new NoSuchFieldException("Could not find ObjectArrayList<StructurePoolElement> field in StructureTemplatePool");
+                throw new NoSuchFieldException(
+                        "Could not find ObjectArrayList<StructurePoolElement> field in StructureTemplatePool");
             }
             if (rawTemplatesField == null) {
-                throw new NoSuchFieldException("Could not find List<Pair<StructurePoolElement, Integer>> field in StructureTemplatePool");
+                throw new NoSuchFieldException(
+                        "Could not find List<Pair<StructurePoolElement, Integer>> field in StructureTemplatePool");
             }
 
             reflectionReady = true;
@@ -152,28 +131,27 @@ public final class VillagePoolInjector {
     }
 
     @SuppressWarnings("unchecked")
-    private static void forcePoolToOnly(StructureTemplatePool pool, StructurePoolElement onlyElement)
+    private static void forcePoolToOnly(
+            StructureTemplatePool pool, StructurePoolElement onlyElement)
             throws ReflectiveOperationException {
-        // Update the flattened templates list (used by getShuffledTemplates during jigsaw assembly).
+
         ObjectArrayList<StructurePoolElement> templates = getMutableTemplates(pool);
         templates.clear();
         templates.add(onlyElement);
 
-        // Also update rawTemplates so nothing can reconstruct the original list.
         List<Pair<StructurePoolElement, Integer>> rawTemplates = new ArrayList<>();
         rawTemplates.add(Pair.of(onlyElement, 1));
         rawTemplatesField.set(pool, rawTemplates);
     }
 
     @SuppressWarnings("unchecked")
-    private static ObjectArrayList<StructurePoolElement> getMutableTemplates(StructureTemplatePool pool)
-            throws ReflectiveOperationException {
+    private static ObjectArrayList<StructurePoolElement> getMutableTemplates(
+            StructureTemplatePool pool) throws ReflectiveOperationException {
         Object templatesObj = templatesField.get(pool);
         if (templatesObj instanceof ObjectArrayList<?> templates) {
             return (ObjectArrayList<StructurePoolElement>) templates;
         }
 
-        // Extremely defensive: if some environment swaps this to an immutable list, replace it.
         ObjectArrayList<StructurePoolElement> replacement = new ObjectArrayList<>();
         if (templatesObj instanceof Collection<?> existing) {
             for (Object o : existing) {
