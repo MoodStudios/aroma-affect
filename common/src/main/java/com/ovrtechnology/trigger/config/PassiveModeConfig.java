@@ -4,17 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.platform.Platform;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * Persistent configuration for passive mode settings.
- * Saves and loads from a JSON file in the config directory.
- */
 public final class PassiveModeConfig {
 
     private static final String CONFIG_FILE_NAME = "aromaaffect_passive_mode.json";
@@ -22,19 +17,10 @@ public final class PassiveModeConfig {
 
     private static PassiveModeConfig instance;
 
-    /**
-     * Whether passive mode is enabled.
-     */
-    @Getter
-    @Setter
-    private boolean passiveModeEnabled = true;
+    @Getter @Setter private boolean passiveModeEnabled = false;
 
-    private PassiveModeConfig() {
-    }
+    private PassiveModeConfig() {}
 
-    /**
-     * Gets the singleton instance, loading from disk if not already loaded.
-     */
     public static PassiveModeConfig getInstance() {
         if (instance == null) {
             instance = load();
@@ -42,9 +28,6 @@ public final class PassiveModeConfig {
         return instance;
     }
 
-    /**
-     * Loads the configuration from disk, or returns defaults if not found.
-     */
     private static PassiveModeConfig load() {
         Path configPath = getConfigPath();
 
@@ -53,11 +36,13 @@ public final class PassiveModeConfig {
                 String json = Files.readString(configPath);
                 PassiveModeConfig config = GSON.fromJson(json, PassiveModeConfig.class);
                 if (config != null) {
-                    AromaAffect.LOGGER.info("Loaded passive mode config: enabled={}", config.passiveModeEnabled);
+                    AromaAffect.LOGGER.info(
+                            "Loaded passive mode config: enabled={}", config.passiveModeEnabled);
                     return config;
                 }
             } catch (IOException e) {
-                AromaAffect.LOGGER.warn("Failed to load passive mode config, using defaults: {}", e.getMessage());
+                AromaAffect.LOGGER.warn(
+                        "Failed to load passive mode config, using defaults: {}", e.getMessage());
             }
         }
 
@@ -65,14 +50,11 @@ public final class PassiveModeConfig {
         return new PassiveModeConfig();
     }
 
-    /**
-     * Saves the current configuration to disk.
-     */
     public void save() {
         Path configPath = getConfigPath();
 
         try {
-            // Ensure parent directory exists
+
             Files.createDirectories(configPath.getParent());
 
             String json = GSON.toJson(this);
@@ -83,9 +65,6 @@ public final class PassiveModeConfig {
         }
     }
 
-    /**
-     * Gets the path to the config file.
-     */
     private static Path getConfigPath() {
         return Platform.getConfigFolder().resolve(CONFIG_FILE_NAME);
     }

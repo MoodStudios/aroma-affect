@@ -6,32 +6,28 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.ovrtechnology.command.SubCommand;
 import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.variant.CustomNoseItem;
 import com.ovrtechnology.variant.CustomNoseRegistry;
 import com.ovrtechnology.variant.NoseVariant;
 import com.ovrtechnology.variant.NoseVariantRegistry;
+import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
 public class GiveVariantSubCommand implements SubCommand {
 
-    private static final SuggestionProvider<CommandSourceStack> VARIANT_SUGGESTIONS = (ctx, builder) -> {
-        for (ResourceLocation id : NoseVariantRegistry.all().keySet()) {
-            builder.suggest(id.toString());
-        }
-        return builder.buildFuture();
-    };
+    private static final SuggestionProvider<CommandSourceStack> VARIANT_SUGGESTIONS =
+            (ctx, builder) -> {
+                for (ResourceLocation id : NoseVariantRegistry.all().keySet()) {
+                    builder.suggest(id.toString());
+                }
+                return builder.buildFuture();
+            };
 
     @Override
     public String getName() {
@@ -44,12 +40,12 @@ public class GiveVariantSubCommand implements SubCommand {
     }
 
     @Override
-    public ArgumentBuilder<CommandSourceStack, ?> build(LiteralArgumentBuilder<CommandSourceStack> builder) {
+    public ArgumentBuilder<CommandSourceStack, ?> build(
+            LiteralArgumentBuilder<CommandSourceStack> builder) {
         return builder.then(
                 Commands.argument("variant_id", StringArgumentType.string())
                         .suggests(VARIANT_SUGGESTIONS)
-                        .executes(this::execute)
-        );
+                        .executes(this::execute));
     }
 
     private int execute(CommandContext<CommandSourceStack> context) {
@@ -73,8 +69,9 @@ public class GiveVariantSubCommand implements SubCommand {
             source.sendFailure(Texts.lit("§cCustomNoseItem not registered"));
             return 0;
         }
-        ItemStack stack = CustomNoseItem.stackFor(
-                CustomNoseRegistry.getCUSTOM_NOSE().get(), id, variantOpt.get());
+        ItemStack stack =
+                CustomNoseItem.stackFor(
+                        CustomNoseRegistry.getCUSTOM_NOSE().get(), id, variantOpt.get());
         if (!player.getInventory().add(stack)) {
             player.drop(stack, false);
         }

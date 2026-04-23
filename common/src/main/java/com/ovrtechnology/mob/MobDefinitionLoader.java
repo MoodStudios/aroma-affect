@@ -7,34 +7,26 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
-import lombok.Getter;
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.Getter;
+import net.minecraft.resources.ResourceLocation;
 
-/**
- * Loads mob definitions from JSON files.
- */
 public class MobDefinitionLoader {
 
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static final String MOBS_DIR = "aroma_mobs";
 
-    @Getter
-    private static List<MobDefinition> loadedMobs = new ArrayList<>();
+    @Getter private static List<MobDefinition> loadedMobs = new ArrayList<>();
 
     private static Set<String> loadedIds = new HashSet<>();
 
-    @Getter
-    private static List<String> validationWarnings = new ArrayList<>();
+    @Getter private static List<String> validationWarnings = new ArrayList<>();
 
     public static List<MobDefinition> loadAllMobs() {
         return loadAllMobs(ClasspathDataSource.INSTANCE);
@@ -51,14 +43,17 @@ public class MobDefinitionLoader {
                 MobDefinition mob = GSON.fromJson(entry.getValue(), MobDefinition.class);
                 processMob(mob);
             } catch (Exception e) {
-                AromaAffect.LOGGER.error("Failed to parse mob {}: {}", entry.getKey(), e.getMessage());
+                AromaAffect.LOGGER.error(
+                        "Failed to parse mob {}: {}", entry.getKey(), e.getMessage());
             }
         }
 
-        AromaAffect.LOGGER.info("Loaded {} mob definitions from {} file(s)", loadedMobs.size(), files.size());
+        AromaAffect.LOGGER.info(
+                "Loaded {} mob definitions from {} file(s)", loadedMobs.size(), files.size());
 
         if (!validationWarnings.isEmpty()) {
-            AromaAffect.LOGGER.warn("Mob loading completed with {} validation warnings", validationWarnings.size());
+            AromaAffect.LOGGER.warn(
+                    "Mob loading completed with {} validation warnings", validationWarnings.size());
         }
 
         return Collections.unmodifiableList(loadedMobs);
@@ -86,8 +81,8 @@ public class MobDefinitionLoader {
 
         loadedIds.add(entityType);
         loadedMobs.add(mob);
-        AromaAffect.LOGGER.debug("Loaded mob definition: {} (scent: {})",
-                entityType, mob.getScentId());
+        AromaAffect.LOGGER.debug(
+                "Loaded mob definition: {} (scent: {})", entityType, mob.getScentId());
     }
 
     private static void validateMob(MobDefinition mob) {
@@ -96,30 +91,22 @@ public class MobDefinitionLoader {
         if (mob.hasScentId()) {
             String scentId = mob.getScentId();
             if (ScentRegistry.isInitialized() && !ScentRegistry.hasScent(scentId)) {
-                addWarning("[" + entityType + "] Referenced scent_id '" + scentId + "' does not exist in ScentRegistry");
+                addWarning(
+                        "["
+                                + entityType
+                                + "] Referenced scent_id '"
+                                + scentId
+                                + "' does not exist in ScentRegistry");
             }
         } else {
-            addWarning("[" + entityType + "] No scent_id defined, mob will have no associated scent");
+            addWarning(
+                    "[" + entityType + "] No scent_id defined, mob will have no associated scent");
         }
     }
 
     private static void addWarning(String warning) {
         validationWarnings.add(warning);
         AromaAffect.LOGGER.warn(warning);
-    }
-
-
-    public static MobDefinition getMobByEntityType(String entityType) {
-        for (MobDefinition mob : loadedMobs) {
-            if (mob.getEntityType().equals(entityType)) {
-                return mob;
-            }
-        }
-        return null;
-    }
-
-    public static boolean hasMobEntityType(String entityType) {
-        return loadedIds.contains(entityType);
     }
 
     public static List<MobDefinition> reload() {

@@ -13,28 +13,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Sets the current entity UUID in {@link NoseRenderContext} at the HEAD of
- * {@code LivingEntityRenderer.submit()}, BEFORE render layers (including
- * equipment/armor) are processed.
- *
- * <p>This is critical because {@code LivingEntityRenderer.submit()} renders
- * all layers first, then calls {@code super.submit()} (EntityRenderer).
- * NeoForge's {@code IClientItemExtensions.getHumanoidArmorModel()} is called
- * DURING layer rendering, so the UUID must be set before that point.</p>
- */
 @Mixin(LivingEntityRenderer.class)
 public class LivingEntityRendererMixin {
 
     @Inject(
-            method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
-            at = @At("HEAD")
-    )
-    private void aromaaffect$setUuidBeforeLayers(LivingEntityRenderState state,
-                                                   PoseStack poseStack,
-                                                   SubmitNodeCollector collector,
-                                                   CameraRenderState camera,
-                                                   CallbackInfo ci) {
+            method =
+                    "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+            at = @At("HEAD"))
+    private void aromaaffect$setUuidBeforeLayers(
+            LivingEntityRenderState state,
+            PoseStack poseStack,
+            SubmitNodeCollector collector,
+            CameraRenderState camera,
+            CallbackInfo ci) {
         if (state instanceof EntityRenderStateAccess access) {
             UUID uuid = access.aromaaffect$getEntityUuid();
             if (uuid != null) {

@@ -1,23 +1,18 @@
 package com.ovrtechnology.trigger.client;
 
-import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.ActiveTrackingState;
+import com.ovrtechnology.util.Ids;
 import dev.architectury.event.events.client.ClientGuiEvent;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-/**
- * Fullscreen scent mask overlay for active path tracking.
- * Triggered once per path scent puff (initial + recurring pulses).
- */
 public final class PathTrackingMaskOverlay {
 
     private static final Map<String, ResourceLocation> SCENT_MASKS = new HashMap<>();
@@ -52,8 +47,7 @@ public final class PathTrackingMaskOverlay {
         register("machina", "diesellayermask");
     }
 
-    private PathTrackingMaskOverlay() {
-    }
+    private PathTrackingMaskOverlay() {}
 
     public static void init() {
         if (initialized) {
@@ -128,8 +122,7 @@ public final class PathTrackingMaskOverlay {
                 height,
                 width,
                 height,
-                tint
-        );
+                tint);
     }
 
     private static float computePulseAlpha(long elapsedMs) {
@@ -143,10 +136,6 @@ public final class PathTrackingMaskOverlay {
         return 1.0f;
     }
 
-    /**
-     * Distance-based opacity for active tracking:
-     * closer = stronger visual hint.
-     */
     private static float computeDistanceAlpha(int distance) {
         if (distance < 0) return 0.70f;
         if (distance <= 12) return 1.00f;
@@ -165,8 +154,7 @@ public final class PathTrackingMaskOverlay {
     private static void register(String scentName, String maskFileStem) {
         SCENT_MASKS.put(
                 scentName.toLowerCase(Locale.ROOT),
-                Ids.mod("textures/masks/" + maskFileStem + ".png")
-        );
+                Ids.mod("textures/masks/" + maskFileStem + ".png"));
     }
 
     private static double clamp01(double value) {

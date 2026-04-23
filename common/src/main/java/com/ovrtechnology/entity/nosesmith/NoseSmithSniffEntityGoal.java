@@ -1,6 +1,9 @@
 package com.ovrtechnology.entity.nosesmith;
 
 import com.ovrtechnology.registry.ModSounds;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -11,10 +14,6 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
 
 public class NoseSmithSniffEntityGoal extends Goal {
 
@@ -32,6 +31,7 @@ public class NoseSmithSniffEntityGoal extends Goal {
     private boolean hasSniffed;
     private boolean hasReacted;
 
+    @SuppressWarnings("this-escape")
     public NoseSmithSniffEntityGoal(NoseSmithEntity noseSmith) {
         this.noseSmith = noseSmith;
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
@@ -39,7 +39,9 @@ public class NoseSmithSniffEntityGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!noseSmith.hasNose() || noseSmith.isInDialogue() || noseSmith.sniffEntityCooldownTicks > 0) {
+        if (!noseSmith.hasNose()
+                || noseSmith.isInDialogue()
+                || noseSmith.sniffEntityCooldownTicks > 0) {
             return false;
         }
         target = findRandomTarget();
@@ -78,7 +80,6 @@ public class NoseSmithSniffEntityGoal extends Goal {
             return;
         }
 
-        // Arrived — stop and look at target
         noseSmith.getNavigation().stop();
         noseSmith.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
@@ -89,7 +90,13 @@ public class NoseSmithSniffEntityGoal extends Goal {
 
         if (ticksRemaining == SNIFF_DURATION - SNIFF_TICK) {
             Level level = noseSmith.level();
-            level.playSound(null, noseSmith.blockPosition(), ModSounds.SNIFF.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            level.playSound(
+                    null,
+                    noseSmith.blockPosition(),
+                    ModSounds.SNIFF.get(),
+                    SoundSource.NEUTRAL,
+                    1.0F,
+                    1.0F);
         }
 
         if (!hasReacted && ticksRemaining == SNIFF_DURATION - REACTION_TICK) {
@@ -97,22 +104,44 @@ public class NoseSmithSniffEntityGoal extends Goal {
             Level level = noseSmith.level();
             boolean approve = noseSmith.getRandom().nextBoolean();
             if (approve) {
-                level.playSound(null, noseSmith.blockPosition(), SoundEvents.VILLAGER_YES, SoundSource.NEUTRAL, 1.0F, 1.0F);
+                level.playSound(
+                        null,
+                        noseSmith.blockPosition(),
+                        SoundEvents.VILLAGER_YES,
+                        SoundSource.NEUTRAL,
+                        1.0F,
+                        1.0F);
                 if (level instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                             ParticleTypes.HAPPY_VILLAGER,
-                            noseSmith.getX(), noseSmith.getEyeY() + 0.2, noseSmith.getZ(),
-                            8, 0.3, 0.3, 0.3, 0.05
-                    );
+                            noseSmith.getX(),
+                            noseSmith.getEyeY() + 0.2,
+                            noseSmith.getZ(),
+                            8,
+                            0.3,
+                            0.3,
+                            0.3,
+                            0.05);
                 }
             } else {
-                level.playSound(null, noseSmith.blockPosition(), SoundEvents.VILLAGER_NO, SoundSource.NEUTRAL, 1.0F, 1.0F);
+                level.playSound(
+                        null,
+                        noseSmith.blockPosition(),
+                        SoundEvents.VILLAGER_NO,
+                        SoundSource.NEUTRAL,
+                        1.0F,
+                        1.0F);
                 if (level instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                             ParticleTypes.ANGRY_VILLAGER,
-                            noseSmith.getX(), noseSmith.getEyeY() + 0.2, noseSmith.getZ(),
-                            6, 0.3, 0.3, 0.3, 0.05
-                    );
+                            noseSmith.getX(),
+                            noseSmith.getEyeY() + 0.2,
+                            noseSmith.getZ(),
+                            6,
+                            0.3,
+                            0.3,
+                            0.3,
+                            0.05);
                 }
             }
         }
@@ -125,7 +154,8 @@ public class NoseSmithSniffEntityGoal extends Goal {
 
     @Override
     public void stop() {
-        int cooldown = COOLDOWN_MIN + noseSmith.getRandom().nextInt(COOLDOWN_MAX - COOLDOWN_MIN + 1);
+        int cooldown =
+                COOLDOWN_MIN + noseSmith.getRandom().nextInt(COOLDOWN_MAX - COOLDOWN_MIN + 1);
         noseSmith.sniffEntityCooldownTicks = cooldown;
         target = null;
         ticksRemaining = 0;

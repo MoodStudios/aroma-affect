@@ -3,27 +3,21 @@ package com.ovrtechnology.flower;
 import com.google.gson.annotations.SerializedName;
 import com.ovrtechnology.tracking.RequiredItem;
 import com.ovrtechnology.trigger.ScentPriority;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
-import java.util.regex.Pattern;
-
-/**
- * Represents a trackable flower definition loaded from JSON.
- *
- * <p>Each flower definition maps a Minecraft flower block to a scent and provides
- * display properties and trigger configuration.</p>
- */
 @Getter
 @Setter
 @Accessors(chain = true)
 @ToString
 public class FlowerDefinition {
 
-    private static final Pattern HTML_COLOR_PATTERN = Pattern.compile("^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$");
+    private static final Pattern HTML_COLOR_PATTERN =
+            Pattern.compile("^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$");
 
     public static final String DEFAULT_COLOR = "#FF69B4";
 
@@ -59,9 +53,6 @@ public class FlowerDefinition {
     @SerializedName("required_item")
     private RequiredItem requiredItem;
 
-    public FlowerDefinition() {
-    }
-
     public int getTrackCost() {
         return trackCost != null && trackCost > 0 ? trackCost : 10;
     }
@@ -95,7 +86,7 @@ public class FlowerDefinition {
                 return Integer.parseInt(hex.substring(0, 6), 16);
             }
         } catch (Exception e) {
-            // Fall through to default
+
         }
         return 0xFF69B4;
     }

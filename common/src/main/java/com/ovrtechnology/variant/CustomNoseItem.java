@@ -2,6 +2,7 @@ package com.ovrtechnology.variant;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.util.Ids;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
@@ -24,8 +25,6 @@ import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 
-import java.util.Optional;
-
 public class CustomNoseItem extends Item {
 
     public static final String ITEM_ID = "custom_nose";
@@ -41,12 +40,14 @@ public class CustomNoseItem extends Item {
         properties.stacksTo(1);
         properties.durability(DEFAULT_DURABILITY);
         properties.rarity(Rarity.COMMON);
-        properties.component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD)
-                .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
-                .setAsset(EquipmentAssets.IRON)
-                .setSwappable(true)
-                .setDamageOnHurt(true)
-                .build());
+        properties.component(
+                DataComponents.EQUIPPABLE,
+                Equippable.builder(EquipmentSlot.HEAD)
+                        .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
+                        .setAsset(EquipmentAssets.IRON)
+                        .setSwappable(true)
+                        .setDamageOnHurt(true)
+                        .build());
         return properties;
     }
 
@@ -61,10 +62,16 @@ public class CustomNoseItem extends Item {
         String repairId = variant.getRepair();
         if (repairId != null && !repairId.isEmpty()) {
             ResourceLocation repairLoc = Ids.parse(repairId);
-            BuiltInRegistries.ITEM.getOptional(repairLoc).ifPresent(repairItem -> {
-                Holder<Item> holder = BuiltInRegistries.ITEM.wrapAsHolder(repairItem);
-                stack.set(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(holder)));
-            });
+            BuiltInRegistries.ITEM
+                    .getOptional(repairLoc)
+                    .ifPresent(
+                            repairItem -> {
+                                Holder<Item> holder =
+                                        BuiltInRegistries.ITEM.wrapAsHolder(repairItem);
+                                stack.set(
+                                        DataComponents.REPAIRABLE,
+                                        new Repairable(HolderSet.direct(holder)));
+                            });
         }
 
         return stack;
@@ -79,7 +86,8 @@ public class CustomNoseItem extends Item {
         if (display != null && !display.isEmpty() && !display.equals(variantId.toString())) {
             return Component.literal(display);
         }
-        return Component.translatable("nose." + variantId.getNamespace() + "." + variantId.getPath());
+        return Component.translatable(
+                "nose." + variantId.getNamespace() + "." + variantId.getPath());
     }
 
     public static Optional<NoseVariant> getVariant(ItemStack stack) {

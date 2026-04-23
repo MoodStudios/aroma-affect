@@ -16,8 +16,7 @@ public final class CustomNoseRegistry {
     private static final RegistrySupplier<CustomNoseItem> CUSTOM_NOSE =
             ITEMS.register(CustomNoseItem.ITEM_ID, CustomNoseItem::new);
 
-    private CustomNoseRegistry() {
-    }
+    private CustomNoseRegistry() {}
 
     public static void init() {
         AromaAffect.LOGGER.info("Initializing CustomNoseRegistry...");

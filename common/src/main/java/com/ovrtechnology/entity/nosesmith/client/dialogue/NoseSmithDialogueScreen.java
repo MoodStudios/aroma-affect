@@ -1,9 +1,12 @@
 package com.ovrtechnology.entity.nosesmith.client.dialogue;
 
-import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.NoseSmithTradeNetworking;
+import com.ovrtechnology.util.Colors;
+import com.ovrtechnology.util.Texts;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,9 +27,6 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class NoseSmithDialogueScreen extends Screen {
     private static final int KEEPALIVE_INTERVAL_TICKS = 20;
     private static final int BOX_MARGIN = 18;
@@ -38,7 +38,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
     private static final int COLOR_BOX_BG = 0xCC0B0D12;
     private static final int COLOR_HEADER_BG = 0xE0141620;
-    private static final int COLOR_BORDER = 0xFF6D5EF8;
+    private static final int COLOR_BORDER = Colors.ACCENT_PURPLE;
     private static final int COLOR_TEXT = 0xFFE8E8E8;
 
     private static final float CHARACTERS_PER_SECOND = 30.0F;
@@ -46,8 +46,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
     private final NoseSmithEntity noseSmith;
 
-    @Nullable
-    private ResourceLocation lastFlowerId;
+    @Nullable private ResourceLocation lastFlowerId;
     private boolean lastHasNose;
 
     private Component dialogue = Texts.empty();
@@ -62,10 +61,8 @@ public final class NoseSmithDialogueScreen extends Screen {
 
     private int keepAliveTicks = 0;
 
-    @Nullable
-    private Button closeButton;
-    @Nullable
-    private Button shopButton;
+    @Nullable private Button closeButton;
+    @Nullable private Button shopButton;
     private boolean buttonsVisible = false;
 
     public NoseSmithDialogueScreen(NoseSmithEntity noseSmith) {
@@ -87,16 +84,29 @@ public final class NoseSmithDialogueScreen extends Screen {
         int buttonY = bottom - PADDING - buttonHeight;
         int gap = 6;
 
-        shopButton = Button.builder(Texts.lit("Shop"), btn -> {
-            Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.level != null) {
-                NoseSmithTradeNetworking.sendOpenShop(minecraft.level.registryAccess(), noseSmith.getId());
-            }
-            onClose();
-        }).bounds(right - PADDING - buttonWidth, buttonY, buttonWidth, buttonHeight).build();
+        shopButton =
+                Button.builder(
+                                Texts.lit("Shop"),
+                                btn -> {
+                                    Minecraft minecraft = Minecraft.getInstance();
+                                    if (minecraft.level != null) {
+                                        NoseSmithTradeNetworking.sendOpenShop(
+                                                minecraft.level.registryAccess(),
+                                                noseSmith.getId());
+                                    }
+                                    onClose();
+                                })
+                        .bounds(right - PADDING - buttonWidth, buttonY, buttonWidth, buttonHeight)
+                        .build();
 
-        closeButton = Button.builder(Texts.lit("Close"), btn -> onClose())
-                .bounds(right - PADDING - buttonWidth * 2 - gap, buttonY, buttonWidth, buttonHeight).build();
+        closeButton =
+                Button.builder(Texts.lit("Close"), btn -> onClose())
+                        .bounds(
+                                right - PADDING - buttonWidth * 2 - gap,
+                                buttonY,
+                                buttonWidth,
+                                buttonHeight)
+                        .build();
 
         shopButton.visible = false;
         closeButton.visible = false;
@@ -124,7 +134,6 @@ public final class NoseSmithDialogueScreen extends Screen {
             sendTalkingState(true);
         }
 
-        // Live timer refresh: update dialogue text every second while noseless with active timer
         if (!lastHasNose && noseSmith.getRegrowthSecondsRemaining() > 0 && keepAliveTicks == 0) {
             rebuildDialogue(false);
         }
@@ -188,7 +197,8 @@ public final class NoseSmithDialogueScreen extends Screen {
         int portraitRight = portraitLeft + PORTRAIT_WIDTH;
         int portraitBottom = bottom - PADDING;
 
-        int portraitScale = Math.min(portraitRight - portraitLeft, portraitBottom - portraitTop) - 8;
+        int portraitScale =
+                Math.min(portraitRight - portraitLeft, portraitBottom - portraitTop) - 8;
         InventoryScreen.renderEntityInInventoryFollowsMouse(
                 guiGraphics,
                 portraitLeft,
@@ -199,8 +209,7 @@ public final class NoseSmithDialogueScreen extends Screen {
                 PORTRAIT_Y_OFFSET,
                 (float) mouseX,
                 (float) mouseY,
-                noseSmith
-        );
+                noseSmith);
 
         int textLeft = portraitRight + PADDING;
         int textTop = portraitTop;
@@ -217,7 +226,8 @@ public final class NoseSmithDialogueScreen extends Screen {
             return;
         }
 
-        NoseSmithDialogueNetworking.sendDialogueState(minecraft.level.registryAccess(), noseSmith.getId(), talking);
+        NoseSmithDialogueNetworking.sendDialogueState(
+                minecraft.level.registryAccess(), noseSmith.getId(), talking);
     }
 
     private void drawTypewriterText(GuiGraphics guiGraphics, int x, int y, int width) {
@@ -243,8 +253,6 @@ public final class NoseSmithDialogueScreen extends Screen {
                 break;
             }
         }
-
-        // Buttons handle close/shop actions when typing is finished
     }
 
     @Override
@@ -338,7 +346,7 @@ public final class NoseSmithDialogueScreen extends Screen {
             this.typedCodepoints = 0;
             this.finished = false;
         } else if (finished) {
-            // Snap to new total so updated text displays fully
+
             this.typedCodepoints = this.totalCodepoints;
             this.typeProgress = this.totalCodepoints;
         }
@@ -352,7 +360,10 @@ public final class NoseSmithDialogueScreen extends Screen {
                 int sec = seconds % 60;
                 String time = String.format("%d:%02d", min, sec);
                 return Texts.lit("A deal's a deal. Thanks again. My nose will grow back in ")
-                        .append(Texts.lit(time).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
+                        .append(
+                                Texts.lit(time)
+                                        .withStyle(
+                                                ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                         .append(Texts.lit("."));
             }
             return Texts.lit("A deal's a deal. Thanks again.");
@@ -363,8 +374,9 @@ public final class NoseSmithDialogueScreen extends Screen {
             return Texts.lit("Hmm... I can't decide which flower I want today.");
         }
 
-        Component flowerName = Texts.tr(flower.getDescriptionId())
-                .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
+        Component flowerName =
+                Texts.tr(flower.getDescriptionId())
+                        .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
 
         return Texts.lit("Oh! I'm a flower collector, but I haven't been able to find ")
                 .append(flowerName)
@@ -391,17 +403,23 @@ public final class NoseSmithDialogueScreen extends Screen {
             return;
         }
 
-        RandomSource random = minecraft.player != null ? minecraft.player.getRandom() : RandomSource.create();
+        RandomSource random =
+                minecraft.player != null ? minecraft.player.getRandom() : RandomSource.create();
 
         int octaveRoll = random.nextInt(10);
         int octaveShift = octaveRoll == 0 ? -12 : (octaveRoll <= 2 ? 12 : 0);
         int semitone = HARMONY_SEMITONES[random.nextInt(HARMONY_SEMITONES.length)] + octaveShift;
         float pitch = (float) Math.pow(2.0D, semitone / 12.0D);
 
-        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
+        minecraft
+                .getSoundManager()
+                .play(
+                        SimpleSoundInstance.forUI(
+                                SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
     }
 
-    private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
+    private static void drawBorder(
+            GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
         guiGraphics.fill(left, top, right, top + 1, color);
         guiGraphics.fill(left, bottom - 1, right, bottom, color);
         guiGraphics.fill(left, top, left + 1, bottom, color);
@@ -410,10 +428,11 @@ public final class NoseSmithDialogueScreen extends Screen {
 
     private static int countCodepoints(FormattedCharSequence sequence) {
         int[] count = {0};
-        sequence.accept((i, style, codePoint) -> {
-            count[0]++;
-            return true;
-        });
+        sequence.accept(
+                (i, style, codePoint) -> {
+                    count[0]++;
+                    return true;
+                });
         return count[0];
     }
 
@@ -424,13 +443,14 @@ public final class NoseSmithDialogueScreen extends Screen {
 
         return sink -> {
             int[] count = {0};
-            return sequence.accept((i, style, codePoint) -> {
-                if (count[0] >= codepoints) {
-                    return false;
-                }
-                count[0]++;
-                return sink.accept(i, style, codePoint);
-            });
+            return sequence.accept(
+                    (i, style, codePoint) -> {
+                        if (count[0] >= codepoints) {
+                            return false;
+                        }
+                        count[0]++;
+                        return sink.accept(i, style, codePoint);
+                    });
         };
     }
 

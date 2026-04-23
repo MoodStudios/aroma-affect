@@ -4,17 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.platform.Platform;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * Persistent client configuration for Aroma Affect settings.
- * Saves and loads from aromaaffect_client.json in the config directory.
- */
 public final class ClientConfig {
 
     private static final String CONFIG_FILE_NAME = "aromaaffect_client.json";
@@ -22,66 +17,35 @@ public final class ClientConfig {
 
     private static ClientConfig instance;
 
-    /** "automatic" or "manual" */
-    @Getter @Setter
-    private String puffMode = "automatic";
+    @Getter @Setter private String puffMode = "automatic";
 
-    /** GLFW key name for manual puff */
-    @Getter @Setter
-    private String manualPuffKey = "G";
+    @Getter @Setter private String manualPuffKey = "G";
 
-    /** Global intensity multiplier 0.0-1.0 */
-    @Getter @Setter
-    private double globalIntensityMultiplier = 1.0;
+    @Getter @Setter private double globalIntensityMultiplier = 1.0;
 
-    /** Global cooldown in milliseconds */
-    @Getter @Setter
-    private long globalCooldownMs = 3000;
+    @Getter @Setter private long globalCooldownMs = 3000;
 
-    /** Whether 3D nose rendering is enabled */
-    @Getter @Setter
-    private boolean noseRenderEnabled = true;
+    @Getter @Setter private boolean noseRenderEnabled = true;
 
-    /** Whether nose strap rendering is enabled */
-    @Getter @Setter
-    private boolean strapEnabled = false;
+    @Getter @Setter private boolean strapEnabled = false;
 
-    /** Whether to show persistent tracking toast while actively tracking */
-    @Getter @Setter
-    private boolean trackingToastPersistent = false;
+    @Getter @Setter private boolean trackingToastPersistent = false;
 
-    /** Whether to show the scent border overlay when passive mode triggers a puff */
-    @Getter @Setter
-    private boolean passivePuffOverlay = true;
+    @Getter @Setter private boolean passivePuffOverlay = true;
 
-    /** Whether to show debug chat messages when scents are triggered */
-    @Getter @Setter
-    private boolean debugScentMessages = false;
+    @Getter @Setter private boolean debugScentMessages = false;
 
-    // Passive mode settings
+    @Getter @Setter private long passiveBlockCooldownMs = 5000;
 
-    /** Cooldown for block triggers in passive mode (ms) */
-    @Getter @Setter
-    private long passiveBlockCooldownMs = 5000;
+    @Getter @Setter private long passiveMobCooldownMs = 8000;
 
-    /** Cooldown for hostile mob triggers in passive mode (ms) */
-    @Getter @Setter
-    private long passiveMobCooldownMs = 8000;
+    @Getter @Setter private long passivePassiveMobCooldownMs = 8000;
 
-    /** Cooldown for non-hostile mob triggers in passive mode (ms) */
-    @Getter @Setter
-    private long passivePassiveMobCooldownMs = 8000;
+    @Getter @Setter private double passiveBlockRange = 2.5;
 
-    /** Activation range for block triggers in passive mode (blocks) */
-    @Getter @Setter
-    private double passiveBlockRange = 2.5;
+    @Getter @Setter private double passiveMobRange = 5.0;
 
-    /** Activation range for mob triggers in passive mode (blocks) */
-    @Getter @Setter
-    private double passiveMobRange = 5.0;
-
-    private ClientConfig() {
-    }
+    private ClientConfig() {}
 
     public static ClientConfig getInstance() {
         if (instance == null) {
@@ -102,7 +66,8 @@ public final class ClientConfig {
                     return config;
                 }
             } catch (IOException e) {
-                AromaAffect.LOGGER.warn("Failed to load client config, using defaults: {}", e.getMessage());
+                AromaAffect.LOGGER.warn(
+                        "Failed to load client config, using defaults: {}", e.getMessage());
             }
         }
 

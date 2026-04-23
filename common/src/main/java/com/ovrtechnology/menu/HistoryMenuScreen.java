@@ -1,16 +1,19 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.util.Texts;
-import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.history.BlacklistEntry;
 import com.ovrtechnology.history.HistoryEntry;
 import com.ovrtechnology.history.SavedEntry;
 import com.ovrtechnology.history.TrackingHistoryData;
-import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.tracking.TrackingConfig;
 import com.ovrtechnology.trigger.PassiveModeManager;
+import com.ovrtechnology.util.Colors;
+import com.ovrtechnology.util.Ids;
+import com.ovrtechnology.util.Texts;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -23,17 +26,13 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
-/**
- * History screen with 3 tabs: History, Saved, Blacklist.
- * Allows reviewing past tracking results, saving favorites, and blacklisting positions.
- */
 public class HistoryMenuScreen extends BaseMenuScreen {
 
-    private enum Tab { HISTORY, SAVED, BLACKLIST }
+    private enum Tab {
+        HISTORY,
+        SAVED,
+        BLACKLIST
+    }
 
     private static final int MAX_LIST_WIDTH = 380;
     private static final int ROW_HEIGHT = 36;
@@ -48,14 +47,15 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private static final int BACK_BUTTON_SIZE = 24;
     private static final int BACK_BUTTON_PADDING = 8;
 
-    private static final ResourceLocation ICON_BACK = Ids.mod("textures/gui/sprites/radial/icon_back.png");
+    private static final ResourceLocation ICON_BACK =
+            Ids.mod("textures/gui/sprites/radial/icon_back.png");
 
     private static final int TAB_HISTORY_COLOR = 0xFF6B8CFF;
-    private static final int TAB_SAVED_COLOR = 0xFFFFCC44;
-    private static final int TAB_BLACKLIST_COLOR = 0xFFFF6B6B;
+    private static final int TAB_SAVED_COLOR = Colors.WARNING_YELLOW;
+    private static final int TAB_BLACKLIST_COLOR = Colors.ERROR_RED_PASTEL;
 
-    private static final int ROW_COLOR = 0xB0222222;
-    private static final int ROW_HOVER_COLOR = 0xE0444488;
+    private static final int ROW_COLOR = Colors.HUD_OVERLAY_DARK;
+    private static final int ROW_HOVER_COLOR = Colors.BORDER_PANEL_BLUE;
 
     private static final int BADGE_BLOCKS = 0xFF4488CC;
     private static final int BADGE_BIOMES = 0xFF44AA44;
@@ -70,20 +70,16 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private int hoveredActionIndex = -1;
     private boolean isHoveringBackButton = false;
 
-    // Tab button hover states
     private int hoveredTabIndex = -1;
 
-    // Name popup state
     private boolean showNamePopup = false;
     private EditBox nameEditBox;
     private int namePopupSourceIndex = -1;
     private boolean namePopupIsRename = false;
 
-    // Tooltip state (deferred rendering after scissor)
     private Component pendingTooltip = null;
     private int pendingTooltipX, pendingTooltipY;
 
-    // Filtered display lists (rebuilt on tab switch / search change)
     private final List<Integer> filteredIndices = new ArrayList<>();
 
     public HistoryMenuScreen() {
@@ -98,14 +94,21 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int searchX = (width - listWidth) / 2;
         int searchY = 56;
 
-        searchBox = new EditBox(font, searchX, searchY, listWidth, SEARCH_BOX_HEIGHT,
-                Texts.tr("history.aromaaffect.search"));
+        searchBox =
+                new EditBox(
+                        font,
+                        searchX,
+                        searchY,
+                        listWidth,
+                        SEARCH_BOX_HEIGHT,
+                        Texts.tr("history.aromaaffect.search"));
         searchBox.setHint(Texts.tr("history.aromaaffect.search"));
         searchBox.setMaxLength(50);
-        searchBox.setResponder(query -> {
-            searchQuery = query;
-            rebuildFilteredList();
-        });
+        searchBox.setResponder(
+                query -> {
+                    searchQuery = query;
+                    rebuildFilteredList();
+                });
         addWidget(searchBox);
 
         rebuildFilteredList();
@@ -152,42 +155,35 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     @Override
-    protected void renderContent(GuiGraphics g, int mouseX, int mouseY,
-                                  float partialTick, float animationProgress) {
+    protected void renderContent(
+            GuiGraphics g, int mouseX, int mouseY, float partialTick, float animationProgress) {
         int centerX = width / 2;
         int listWidth = Math.min(MAX_LIST_WIDTH, width - 40);
         int listX = (width - listWidth) / 2;
 
-        // Title
-        int titleColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, animationProgress);
+        int titleColor = MenuRenderUtils.withAlpha(Colors.WHITE, animationProgress);
         g.drawCenteredString(font, getTitle(), centerX, 10, titleColor);
 
-        // Back button
         renderBackButton(g, mouseX, mouseY, animationProgress);
 
-        // Tab bar
         int tabY = 26;
         renderTabs(g, listX, tabY, listWidth, mouseX, mouseY, animationProgress);
 
-        // Search box
         int searchY = 56;
         searchBox.setX(listX);
         searchBox.setY(searchY);
         searchBox.setWidth(listWidth);
         searchBox.render(g, mouseX, mouseY, partialTick);
 
-        // List
         int listTop = searchY + SEARCH_BOX_HEIGHT + 6;
         int listBottom = height - 10;
         pendingTooltip = null;
         renderList(g, listX, listTop, listWidth, listBottom, mouseX, mouseY, animationProgress);
 
-        // Deferred tooltip rendering (outside scissor)
         if (pendingTooltip != null) {
             renderTooltip(g, pendingTooltip, pendingTooltipX, pendingTooltipY, animationProgress);
         }
 
-        // Name popup overlay
         if (showNamePopup) {
             renderNamePopup(g, mouseX, mouseY, partialTick, animationProgress);
         }
@@ -196,13 +192,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private void renderTooltip(GuiGraphics g, Component text, int x, int y, float ap) {
         int tw = font.width(text) + 8;
         int th = 14;
-        // Ensure tooltip stays on screen
+
         int tx = Math.max(2, Math.min(x, width - tw - 2));
         int ty = y - th - 2;
         if (ty < 2) ty = y + 16;
 
         g.fill(tx, ty, tx + tw, ty + th, MenuRenderUtils.withAlpha(0xF0181820, ap));
-        MenuRenderUtils.renderOutline(g, tx, ty, tw, th, MenuRenderUtils.withAlpha(0x889A7CFF, ap));
+        MenuRenderUtils.renderOutline(
+                g, tx, ty, tw, th, MenuRenderUtils.withAlpha(Colors.TRACK_PURPLE_TOOLTIP, ap));
         g.drawString(font, text, tx + 4, ty + 3, MenuRenderUtils.withAlpha(0xFFDDDDDD, ap));
     }
 
@@ -214,35 +211,51 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int by = BACK_BUTTON_PADDING;
         int bSize = BACK_BUTTON_SIZE + 8;
 
-        isHoveringBackButton = !showNamePopup
-                && mouseX >= bx && mouseX < bx + bSize
-                && mouseY >= by && mouseY < by + bSize;
+        isHoveringBackButton =
+                !showNamePopup
+                        && mouseX >= bx
+                        && mouseX < bx + bSize
+                        && mouseY >= by
+                        && mouseY < by + bSize;
 
         if (isHoveringBackButton) {
-            int bgColor = MenuRenderUtils.withAlpha(0x809A7CFF, appear);
+            int bgColor = MenuRenderUtils.withAlpha(Colors.TRACK_PURPLE_FADE, appear);
             g.fill(bx, by, bx + bSize, by + bSize, bgColor);
-            MenuRenderUtils.renderOutline(g, bx, by, bSize, bSize,
-                    MenuRenderUtils.withAlpha(0x88FFFFFF, appear));
+            MenuRenderUtils.renderOutline(
+                    g,
+                    bx,
+                    by,
+                    bSize,
+                    bSize,
+                    MenuRenderUtils.withAlpha(Colors.OVERLAY_WHITE_TOOLTIP, appear));
         }
 
         float scale = isHoveringBackButton ? 1.1f : 1.0f;
         int iconSize = (int) (BACK_BUTTON_SIZE * scale * appear);
         int iconOffset = (bSize - iconSize) / 2;
-        g.blit(RenderPipelines.GUI_TEXTURED, ICON_BACK,
-                bx + iconOffset, by + iconOffset,
-                0.0f, 0.0f, iconSize, iconSize, iconSize, iconSize);
+        g.blit(
+                RenderPipelines.GUI_TEXTURED,
+                ICON_BACK,
+                bx + iconOffset,
+                by + iconOffset,
+                0.0f,
+                0.0f,
+                iconSize,
+                iconSize,
+                iconSize,
+                iconSize);
     }
 
-    private void renderTabs(GuiGraphics g, int listX, int tabY, int listWidth,
-                            int mouseX, int mouseY, float ap) {
+    private void renderTabs(
+            GuiGraphics g, int listX, int tabY, int listWidth, int mouseX, int mouseY, float ap) {
         hoveredTabIndex = -1;
         Tab[] tabs = Tab.values();
         String[] labels = {
-                Texts.tr("history.aromaaffect.tab.history").getString(),
-                Texts.tr("history.aromaaffect.tab.saved").getString(),
-                Texts.tr("history.aromaaffect.tab.blacklist").getString()
+            Texts.tr("history.aromaaffect.tab.history").getString(),
+            Texts.tr("history.aromaaffect.tab.saved").getString(),
+            Texts.tr("history.aromaaffect.tab.blacklist").getString()
         };
-        int[] colors = { TAB_HISTORY_COLOR, TAB_SAVED_COLOR, TAB_BLACKLIST_COLOR };
+        int[] colors = {TAB_HISTORY_COLOR, TAB_SAVED_COLOR, TAB_BLACKLIST_COLOR};
 
         int totalGaps = (tabs.length - 1) * TAB_GAP;
         int tabWidth = (listWidth - totalGaps) / tabs.length;
@@ -250,9 +263,12 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         for (int i = 0; i < tabs.length; i++) {
             int tx = listX + i * (tabWidth + TAB_GAP);
             boolean active = tabs[i] == activeTab;
-            boolean hovered = !showNamePopup
-                    && mouseX >= tx && mouseX < tx + tabWidth
-                    && mouseY >= tabY && mouseY < tabY + TAB_HEIGHT;
+            boolean hovered =
+                    !showNamePopup
+                            && mouseX >= tx
+                            && mouseX < tx + tabWidth
+                            && mouseY >= tabY
+                            && mouseY < tabY + TAB_HEIGHT;
             if (hovered) hoveredTabIndex = i;
 
             int bgColor;
@@ -266,30 +282,44 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             g.fill(tx, tabY, tx + tabWidth, tabY + TAB_HEIGHT, bgColor);
 
             if (active) {
-                MenuRenderUtils.renderOutline(g, tx, tabY, tabWidth, TAB_HEIGHT,
+                MenuRenderUtils.renderOutline(
+                        g,
+                        tx,
+                        tabY,
+                        tabWidth,
+                        TAB_HEIGHT,
                         MenuRenderUtils.withAlpha(0xAAFFFFFF, ap));
             }
 
-            int textColor = active
-                    ? MenuRenderUtils.withAlpha(0xFFFFFFFF, ap)
-                    : MenuRenderUtils.withAlpha(0xFFAAAAAA, ap);
-            g.drawCenteredString(font, labels[i],
-                    tx + tabWidth / 2, tabY + (TAB_HEIGHT - 8) / 2, textColor);
+            int textColor =
+                    active
+                            ? MenuRenderUtils.withAlpha(Colors.WHITE, ap)
+                            : MenuRenderUtils.withAlpha(Colors.TEXT_MUTED, ap);
+            g.drawCenteredString(
+                    font, labels[i], tx + tabWidth / 2, tabY + (TAB_HEIGHT - 8) / 2, textColor);
         }
     }
 
-    private void renderList(GuiGraphics g, int listX, int listTop, int listWidth,
-                            int listBottom, int mouseX, int mouseY, float ap) {
+    private void renderList(
+            GuiGraphics g,
+            int listX,
+            int listTop,
+            int listWidth,
+            int listBottom,
+            int mouseX,
+            int mouseY,
+            float ap) {
         hoveredRowIndex = -1;
         hoveredActionIndex = -1;
 
         if (filteredIndices.isEmpty()) {
-            int textColor = MenuRenderUtils.withAlpha(0xFFAAAAAA, ap);
-            Component emptyMsg = switch (activeTab) {
-                case HISTORY -> Texts.tr("history.aromaaffect.empty.history");
-                case SAVED -> Texts.tr("history.aromaaffect.empty.saved");
-                case BLACKLIST -> Texts.tr("history.aromaaffect.empty.blacklist");
-            };
+            int textColor = MenuRenderUtils.withAlpha(Colors.TEXT_MUTED, ap);
+            Component emptyMsg =
+                    switch (activeTab) {
+                        case HISTORY -> Texts.tr("history.aromaaffect.empty.history");
+                        case SAVED -> Texts.tr("history.aromaaffect.empty.saved");
+                        case BLACKLIST -> Texts.tr("history.aromaaffect.empty.blacklist");
+                    };
             g.drawCenteredString(font, emptyMsg, width / 2, listTop + 20, textColor);
             return;
         }
@@ -300,178 +330,292 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             int rowY = listTop + i * (ROW_HEIGHT + ROW_PADDING) - listScrollOffset;
             if (rowY + ROW_HEIGHT < listTop || rowY > listBottom) continue;
 
-            boolean hovered = !showNamePopup
-                    && mouseX >= listX && mouseX < listX + listWidth
-                    && mouseY >= rowY && mouseY < rowY + ROW_HEIGHT
-                    && mouseY >= listTop && mouseY < listBottom;
+            boolean hovered =
+                    !showNamePopup
+                            && mouseX >= listX
+                            && mouseX < listX + listWidth
+                            && mouseY >= rowY
+                            && mouseY < rowY + ROW_HEIGHT
+                            && mouseY >= listTop
+                            && mouseY < listBottom;
             if (hovered) hoveredRowIndex = i;
 
-            int rowBg = hovered ? MenuRenderUtils.withAlpha(ROW_HOVER_COLOR, ap)
-                    : MenuRenderUtils.withAlpha(ROW_COLOR, ap);
+            int rowBg =
+                    hovered
+                            ? MenuRenderUtils.withAlpha(ROW_HOVER_COLOR, ap)
+                            : MenuRenderUtils.withAlpha(ROW_COLOR, ap);
             g.fill(listX, rowY, listX + listWidth, rowY + ROW_HEIGHT, rowBg);
 
             int dataIndex = filteredIndices.get(i);
 
             switch (activeTab) {
-                case HISTORY -> renderHistoryRow(g, dataIndex, listX, rowY, listWidth, hovered, ap, mouseX, mouseY, i);
-                case SAVED -> renderSavedRow(g, dataIndex, listX, rowY, listWidth, hovered, ap, mouseX, mouseY, i);
-                case BLACKLIST -> renderBlacklistRow(g, dataIndex, listX, rowY, listWidth, hovered, ap, mouseX, mouseY, i);
+                case HISTORY -> renderHistoryRow(
+                        g, dataIndex, listX, rowY, listWidth, hovered, ap, mouseX, mouseY, i);
+                case SAVED -> renderSavedRow(
+                        g, dataIndex, listX, rowY, listWidth, hovered, ap, mouseX, mouseY, i);
+                case BLACKLIST -> renderBlacklistRow(
+                        g, dataIndex, listX, rowY, listWidth, hovered, ap, mouseX, mouseY, i);
             }
         }
 
         g.disableScissor();
     }
 
-    private void renderHistoryRow(GuiGraphics g, int dataIndex, int x, int y, int w,
-                                  boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
+    private void renderHistoryRow(
+            GuiGraphics g,
+            int dataIndex,
+            int x,
+            int y,
+            int w,
+            boolean hovered,
+            float ap,
+            int mouseX,
+            int mouseY,
+            int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
         HistoryEntry entry = data.getHistory().get(dataIndex);
 
         boolean isSaved = data.isSaved(entry.targetId, entry.x, entry.y, entry.z);
         boolean isBlacklisted = data.isBlacklisted(entry.targetId, entry.x, entry.y, entry.z);
 
-        // Icon: category header as main, specific item as badge overlay
         int iconX = x + 4;
         int iconY = y + (ROW_HEIGHT - 16) / 2;
         ItemStack icon = getItemForTarget(entry.targetId, entry.categoryId);
         renderEntryIcon(g, iconX, iconY, icon, entry.categoryId, ap);
 
-        // Name
         int textX = x + 28;
-        g.drawString(font, entry.displayName, textX, y + 4,
-                MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
+        g.drawString(
+                font, entry.displayName, textX, y + 4, MenuRenderUtils.withAlpha(Colors.WHITE, ap));
 
-        // Category badge + coords
         int badgeColor = getCategoryBadgeColor(entry.categoryId);
         String catLabel = MenuRenderUtils.capitalizeWords(entry.categoryId);
-        g.drawString(font, catLabel, textX, y + 15,
-                MenuRenderUtils.withAlpha(badgeColor, ap));
+        g.drawString(font, catLabel, textX, y + 15, MenuRenderUtils.withAlpha(badgeColor, ap));
 
         String coords = String.format("(%d, %d, %d)", entry.x, entry.y, entry.z);
         int coordsX = textX + font.width(catLabel) + 4;
-        g.drawString(font, coords, coordsX, y + 15,
-                MenuRenderUtils.withAlpha(0xFF888888, ap));
+        g.drawString(
+                font, coords, coordsX, y + 15, MenuRenderUtils.withAlpha(Colors.TEXT_HINT, ap));
 
-        // Dimension label after coords
         String dimLabel = formatDimension(entry.dimension);
         int dimColor = getDimensionColor(entry.dimension);
         int dimX = coordsX + font.width(coords) + 4;
-        g.drawString(font, dimLabel, dimX, y + 15,
-                MenuRenderUtils.withAlpha(dimColor, ap));
+        g.drawString(font, dimLabel, dimX, y + 15, MenuRenderUtils.withAlpha(dimColor, ap));
 
-        // Status badges after dimension
         int statusX = dimX + font.width(dimLabel) + 4;
         if (isSaved) {
-            statusX = renderBadge(g, statusX, y + 14, "SAVED", 0xFFFFCC44, 0x60FFCC44, ap);
+            statusX =
+                    renderBadge(g, statusX, y + 14, "SAVED", Colors.WARNING_YELLOW, 0x60FFCC44, ap);
         }
         if (isBlacklisted) {
-            renderBadge(g, statusX, y + 14, "BLOCKED", 0xFFFF6B6B, 0x60FF4444, ap);
+            renderBadge(
+                    g,
+                    statusX,
+                    y + 14,
+                    "BLOCKED",
+                    Colors.ERROR_RED_PASTEL,
+                    Colors.ERROR_RED_FADE,
+                    ap);
         }
 
-        // Time ago
-        g.drawString(font, formatTimeAgo(entry.timestamp), textX, y + 26,
-                MenuRenderUtils.withAlpha(0xFF666666, ap));
+        g.drawString(
+                font,
+                formatTimeAgo(entry.timestamp),
+                textX,
+                y + 26,
+                MenuRenderUtils.withAlpha(Colors.TEXT_DISABLED, ap));
 
-        // Action buttons when hovered
         if (hovered) {
-            // Cross-dimension check: disable Go button if player is in wrong dimension
-            boolean wrongDimension = entry.dimension != null
-                    && !entry.dimension.equals(getCurrentDimension());
 
-            // Go button (far right, with zigzag separator)
+            boolean wrongDimension =
+                    entry.dimension != null && !entry.dimension.equals(getCurrentDimension());
+
             int goRight = x + w;
-            renderGoButton(g, goRight - GO_BTN_W, y, GO_BTN_W, ROW_HEIGHT,
-                    entry.targetId, entry.categoryId, mouseX, mouseY, ap, filteredIdx, 2, wrongDimension);
+            renderGoButton(
+                    g,
+                    goRight - GO_BTN_W,
+                    y,
+                    GO_BTN_W,
+                    ROW_HEIGHT,
+                    entry.targetId,
+                    entry.categoryId,
+                    mouseX,
+                    mouseY,
+                    ap,
+                    filteredIdx,
+                    2,
+                    wrongDimension);
             renderZigzagSeparator(g, goRight - GO_BTN_W - ZIGZAG_W, y, ZIGZAG_W, ROW_HEIGHT, ap);
 
-            // Icon buttons (left of zigzag): Delete, TP, and conditionally Blacklist/Save
             int btnX = goRight - GO_BTN_W - ZIGZAG_W - 4;
             int btnY = y + (ROW_HEIGHT - ICON_BTN_SIZE) / 2;
 
-            btnX = renderIconButton(g, btnX, btnY, IconType.DELETE, 0xFFFF4444,
-                    Texts.tr("history.aromaaffect.action.delete"),
-                    mouseX, mouseY, ap, filteredIdx, 4);
+            btnX =
+                    renderIconButton(
+                            g,
+                            btnX,
+                            btnY,
+                            IconType.DELETE,
+                            Colors.ERROR_RED,
+                            Texts.tr("history.aromaaffect.action.delete"),
+                            mouseX,
+                            mouseY,
+                            ap,
+                            filteredIdx,
+                            4);
             btnX = renderTeleportIconButton(g, btnX, btnY, mouseX, mouseY, ap, filteredIdx, 3);
             if (!isBlacklisted) {
-                btnX = renderIconButton(g, btnX, btnY, IconType.BLACKLIST, 0xFFFF6B6B,
-                        Texts.tr("history.aromaaffect.action.blacklist"),
-                        mouseX, mouseY, ap, filteredIdx, 1);
+                btnX =
+                        renderIconButton(
+                                g,
+                                btnX,
+                                btnY,
+                                IconType.BLACKLIST,
+                                Colors.ERROR_RED_PASTEL,
+                                Texts.tr("history.aromaaffect.action.blacklist"),
+                                mouseX,
+                                mouseY,
+                                ap,
+                                filteredIdx,
+                                1);
             }
             if (!isSaved) {
-                renderIconButton(g, btnX, btnY, IconType.SAVE, 0xFFFFCC44,
+                renderIconButton(
+                        g,
+                        btnX,
+                        btnY,
+                        IconType.SAVE,
+                        Colors.WARNING_YELLOW,
                         Texts.tr("history.aromaaffect.action.save"),
-                        mouseX, mouseY, ap, filteredIdx, 0);
+                        mouseX,
+                        mouseY,
+                        ap,
+                        filteredIdx,
+                        0);
             }
         }
     }
 
-    private void renderSavedRow(GuiGraphics g, int dataIndex, int x, int y, int w,
-                                boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
+    private void renderSavedRow(
+            GuiGraphics g,
+            int dataIndex,
+            int x,
+            int y,
+            int w,
+            boolean hovered,
+            float ap,
+            int mouseX,
+            int mouseY,
+            int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
         SavedEntry entry = data.getSaved().get(dataIndex);
         boolean isBlacklisted = data.isBlacklisted(entry.targetId, entry.x, entry.y, entry.z);
 
-        // Icon: category header as main, specific item as badge overlay
         int iconX = x + 4;
         int iconY = y + (ROW_HEIGHT - 16) / 2;
         ItemStack icon = getItemForTarget(entry.targetId, entry.categoryId);
         renderEntryIcon(g, iconX, iconY, icon, entry.categoryId, ap);
 
         int textX = x + 28;
-        g.drawString(font, entry.customName, textX, y + 4,
-                MenuRenderUtils.withAlpha(0xFFFFCC44, ap));
+        g.drawString(
+                font,
+                entry.customName,
+                textX,
+                y + 4,
+                MenuRenderUtils.withAlpha(Colors.WARNING_YELLOW, ap));
 
         int badgeColor = getCategoryBadgeColor(entry.categoryId);
         String catLabel = MenuRenderUtils.capitalizeWords(entry.categoryId);
-        g.drawString(font, catLabel, textX, y + 15,
-                MenuRenderUtils.withAlpha(badgeColor, ap));
+        g.drawString(font, catLabel, textX, y + 15, MenuRenderUtils.withAlpha(badgeColor, ap));
 
         String coords = String.format("(%d, %d, %d)", entry.x, entry.y, entry.z);
         int coordsX = textX + font.width(catLabel) + 4;
-        g.drawString(font, coords, coordsX, y + 15,
-                MenuRenderUtils.withAlpha(0xFF888888, ap));
+        g.drawString(
+                font, coords, coordsX, y + 15, MenuRenderUtils.withAlpha(Colors.TEXT_HINT, ap));
 
-        // Dimension label after coords
         String dimLabel = formatDimension(entry.dimension);
         int dimColor = getDimensionColor(entry.dimension);
         int dimX = coordsX + font.width(coords) + 4;
-        g.drawString(font, dimLabel, dimX, y + 15,
-                MenuRenderUtils.withAlpha(dimColor, ap));
+        g.drawString(font, dimLabel, dimX, y + 15, MenuRenderUtils.withAlpha(dimColor, ap));
 
-        // Status badge if blacklisted
         if (isBlacklisted) {
-            renderBadge(g, dimX + font.width(dimLabel) + 4, y + 14,
-                    "BLOCKED", 0xFFFF6B6B, 0x60FF4444, ap);
+            renderBadge(
+                    g,
+                    dimX + font.width(dimLabel) + 4,
+                    y + 14,
+                    "BLOCKED",
+                    Colors.ERROR_RED_PASTEL,
+                    Colors.ERROR_RED_FADE,
+                    ap);
         }
 
         if (hovered) {
-            boolean wrongDimension = entry.dimension != null
-                    && !entry.dimension.equals(getCurrentDimension());
+            boolean wrongDimension =
+                    entry.dimension != null && !entry.dimension.equals(getCurrentDimension());
 
             int goRight = x + w;
-            renderGoButton(g, goRight - GO_BTN_W, y, GO_BTN_W, ROW_HEIGHT,
-                    entry.targetId, entry.categoryId, mouseX, mouseY, ap, filteredIdx, 0, wrongDimension);
+            renderGoButton(
+                    g,
+                    goRight - GO_BTN_W,
+                    y,
+                    GO_BTN_W,
+                    ROW_HEIGHT,
+                    entry.targetId,
+                    entry.categoryId,
+                    mouseX,
+                    mouseY,
+                    ap,
+                    filteredIdx,
+                    0,
+                    wrongDimension);
             renderZigzagSeparator(g, goRight - GO_BTN_W - ZIGZAG_W, y, ZIGZAG_W, ROW_HEIGHT, ap);
 
             int btnX = goRight - GO_BTN_W - ZIGZAG_W - 4;
             int btnY = y + (ROW_HEIGHT - ICON_BTN_SIZE) / 2;
 
-            btnX = renderIconButton(g, btnX, btnY, IconType.DELETE, 0xFFFF4444,
-                    Texts.tr("history.aromaaffect.action.delete"),
-                    mouseX, mouseY, ap, filteredIdx, 3);
-            btnX = renderIconButton(g, btnX, btnY, IconType.RENAME, 0xFF44AAFF,
-                    Texts.tr("history.aromaaffect.action.rename"),
-                    mouseX, mouseY, ap, filteredIdx, 2);
+            btnX =
+                    renderIconButton(
+                            g,
+                            btnX,
+                            btnY,
+                            IconType.DELETE,
+                            Colors.ERROR_RED,
+                            Texts.tr("history.aromaaffect.action.delete"),
+                            mouseX,
+                            mouseY,
+                            ap,
+                            filteredIdx,
+                            3);
+            btnX =
+                    renderIconButton(
+                            g,
+                            btnX,
+                            btnY,
+                            IconType.RENAME,
+                            Colors.ACCENT_ICE_BLUE,
+                            Texts.tr("history.aromaaffect.action.rename"),
+                            mouseX,
+                            mouseY,
+                            ap,
+                            filteredIdx,
+                            2);
             renderTeleportIconButton(g, btnX, btnY, mouseX, mouseY, ap, filteredIdx, 1);
         }
     }
 
-    private void renderBlacklistRow(GuiGraphics g, int dataIndex, int x, int y, int w,
-                                    boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
+    private void renderBlacklistRow(
+            GuiGraphics g,
+            int dataIndex,
+            int x,
+            int y,
+            int w,
+            boolean hovered,
+            float ap,
+            int mouseX,
+            int mouseY,
+            int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
         BlacklistEntry entry = data.getBlacklist().get(dataIndex);
 
-        // Icon: category header as main, specific item as badge overlay
         int iconX = x + 4;
         int iconY = y + (ROW_HEIGHT - 16) / 2;
         ItemStack icon = getItemForTarget(entry.targetId, entry.categoryId);
@@ -479,67 +623,82 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         int textX = x + 28;
         String name = entry.displayName != null ? entry.displayName : entry.targetId;
-        g.drawString(font, name, textX, y + 4,
-                MenuRenderUtils.withAlpha(0xFFFF8888, ap));
+        g.drawString(font, name, textX, y + 4, MenuRenderUtils.withAlpha(0xFFFF8888, ap));
 
         int badgeColor = getCategoryBadgeColor(entry.categoryId);
         String catLabel = MenuRenderUtils.capitalizeWords(entry.categoryId);
-        g.drawString(font, catLabel, textX, y + 15,
-                MenuRenderUtils.withAlpha(badgeColor, ap));
+        g.drawString(font, catLabel, textX, y + 15, MenuRenderUtils.withAlpha(badgeColor, ap));
 
         String coords = String.format("(%d, %d, %d)", entry.x, entry.y, entry.z);
         int coordsX = textX + font.width(catLabel) + 4;
-        g.drawString(font, coords, coordsX, y + 15,
-                MenuRenderUtils.withAlpha(0xFF888888, ap));
+        g.drawString(
+                font, coords, coordsX, y + 15, MenuRenderUtils.withAlpha(Colors.TEXT_HINT, ap));
 
-        // Dimension label after coords
         String dimLabel = formatDimension(entry.dimension);
         int dimColor = getDimensionColor(entry.dimension);
-        g.drawString(font, dimLabel, coordsX + font.width(coords) + 4, y + 15,
+        g.drawString(
+                font,
+                dimLabel,
+                coordsX + font.width(coords) + 4,
+                y + 15,
                 MenuRenderUtils.withAlpha(dimColor, ap));
 
         if (hovered) {
             int btnX = x + w - 4;
             int btnY = y + (ROW_HEIGHT - ICON_BTN_SIZE) / 2;
-            renderIconButton(g, btnX, btnY, IconType.UNBLOCK, 0xFF44CC44,
+            renderIconButton(
+                    g,
+                    btnX,
+                    btnY,
+                    IconType.UNBLOCK,
+                    0xFF44CC44,
                     Texts.tr("history.aromaaffect.action.unblacklist"),
-                    mouseX, mouseY, ap, filteredIdx, 0);
+                    mouseX,
+                    mouseY,
+                    ap,
+                    filteredIdx,
+                    0);
         }
     }
 
-    private void renderGoButton(GuiGraphics g, int x, int y, int w, int h,
-                                String targetId, String categoryId,
-                                int mouseX, int mouseY, float ap,
-                                int filteredIdx, int actionIdx, boolean forceDisabled) {
+    private void renderGoButton(
+            GuiGraphics g,
+            int x,
+            int y,
+            int w,
+            int h,
+            String targetId,
+            String categoryId,
+            int mouseX,
+            int mouseY,
+            float ap,
+            int filteredIdx,
+            int actionIdx,
+            boolean forceDisabled) {
         boolean canRetrack = !forceDisabled && canRetrackTarget(targetId, categoryId);
 
-        boolean hov = mouseX >= x && mouseX < x + w
-                && mouseY >= y && mouseY < y + h;
+        boolean hov = mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
         if (hov) {
             hoveredRowIndex = filteredIdx;
             hoveredActionIndex = actionIdx;
         }
 
-        // Background — vibrant green when available, muted gray when disabled
-        int baseColor = canRetrack ? 0xFF2D8B2D : 0xFF3A3A3A;
+        int baseColor = canRetrack ? 0xFF2D8B2D : Colors.BG_ROW_ALT;
         int hoverColor = canRetrack ? 0xFF3DAF3D : 0xFF4A4A4A;
         int bg = MenuRenderUtils.withAlpha(hov ? hoverColor : baseColor, ap);
         g.fill(x, y, x + w, y + h, bg);
 
-        // Bright edge highlight on left when hovered
         if (hov && canRetrack) {
             g.fill(x, y, x + 1, y + h, MenuRenderUtils.withAlpha(0xFF66FF66, ap));
         }
 
-        // Arrow icon ▶ (triangle pointing right)
         int cx = x + w / 2;
         int cy = y + h / 2;
-        int arrowColor = canRetrack
-                ? MenuRenderUtils.withAlpha(hov ? 0xFFFFFFFF : 0xFFCCFFCC, ap)
-                : MenuRenderUtils.withAlpha(0xFF666666, ap);
+        int arrowColor =
+                canRetrack
+                        ? MenuRenderUtils.withAlpha(hov ? Colors.WHITE : 0xFFCCFFCC, ap)
+                        : MenuRenderUtils.withAlpha(Colors.TEXT_DISABLED, ap);
 
-        // Draw a right-pointing triangle with fill calls (stepped approximation)
-        // 8px tall, 6px wide
         int arrowH = 8;
         int arrowW = 6;
         int aTop = cy - arrowH / 2;
@@ -552,16 +711,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             g.fill(px, py, px + pw, py + 1, arrowColor);
         }
 
-        // Retrack cost number below arrow
         if (canRetrack) {
             int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
             String costStr = String.valueOf(retrackCost);
             int costW = font.width(costStr);
-            int costColor = MenuRenderUtils.withAlpha(0xFFFFAA00, ap);
+            int costColor = MenuRenderUtils.withAlpha(Colors.WARNING_ORANGE, ap);
             g.drawString(font, costStr, cx - costW / 2, cy + 6, costColor);
         }
 
-        // Tooltip
         if (hov) {
             Component tip;
             if (forceDisabled) {
@@ -579,39 +736,34 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     private void renderZigzagSeparator(GuiGraphics g, int x, int y, int w, int h, float ap) {
-        // Draws a vertical zigzag torn-paper edge
-        // Left half: row background bleeds through, right half: Go button color bleeds
-        // Creates triangular teeth alternating left/right
 
-        int toothH = 4; // height of each zigzag tooth
+        int toothH = 4;
         int teethCount = h / toothH;
 
-        int colorA = MenuRenderUtils.withAlpha(0xCC1A1A2E, ap); // dark "shadow" on tear
-        int colorB = MenuRenderUtils.withAlpha(0x882D8B2D, ap); // green tint from Go side
-        int edgeColor = MenuRenderUtils.withAlpha(0x66AAAAAA, ap); // subtle edge highlight
+        int colorA = MenuRenderUtils.withAlpha(Colors.BG_MENU_BACKDROP_STRONG, ap);
+        int colorB = MenuRenderUtils.withAlpha(0x882D8B2D, ap);
+        int edgeColor = MenuRenderUtils.withAlpha(0x66AAAAAA, ap);
 
         for (int i = 0; i < teethCount; i++) {
             int ty = y + i * toothH;
             boolean pointsRight = (i % 2 == 0);
 
-            // Each tooth: a triangle approximated by 1px-tall rows narrowing to a point
             for (int row = 0; row < toothH; row++) {
                 int progress = pointsRight ? row : (toothH - 1 - row);
                 int indent = (progress * w) / toothH;
 
                 if (pointsRight) {
-                    // Triangle pointing right: left side is dark, right grows
+
                     g.fill(x, ty + row, x + indent, ty + row + 1, colorA);
                     g.fill(x + indent, ty + row, x + w, ty + row + 1, colorB);
                 } else {
-                    // Triangle pointing left
+
                     g.fill(x, ty + row, x + (w - indent), ty + row + 1, colorB);
                     g.fill(x + (w - indent), ty + row, x + w, ty + row + 1, colorA);
                 }
             }
         }
 
-        // Subtle edge line along the zigzag path
         for (int i = 0; i < teethCount; i++) {
             int ty = y + i * toothH;
             boolean pointsRight = (i % 2 == 0);
@@ -623,41 +775,55 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    private enum IconType { SAVE, BLACKLIST, DELETE, RENAME, TELEPORT, UNBLOCK }
+    private enum IconType {
+        SAVE,
+        BLACKLIST,
+        DELETE,
+        RENAME,
+        TELEPORT,
+        UNBLOCK
+    }
 
-    /**
-     * Renders a square icon button with a procedural icon and hover tooltip.
-     * Returns the X position for the next button to the left.
-     */
-    private int renderIconButton(GuiGraphics g, int rightEdge, int y,
-                                 IconType type, int accentColor, Component tooltip,
-                                 int mouseX, int mouseY, float ap,
-                                 int filteredIdx, int actionIdx) {
+    private int renderIconButton(
+            GuiGraphics g,
+            int rightEdge,
+            int y,
+            IconType type,
+            int accentColor,
+            Component tooltip,
+            int mouseX,
+            int mouseY,
+            float ap,
+            int filteredIdx,
+            int actionIdx) {
         int bx = rightEdge - ICON_BTN_SIZE;
-        boolean hov = mouseX >= bx && mouseX < bx + ICON_BTN_SIZE
-                && mouseY >= y && mouseY < y + ICON_BTN_SIZE;
+        boolean hov =
+                mouseX >= bx
+                        && mouseX < bx + ICON_BTN_SIZE
+                        && mouseY >= y
+                        && mouseY < y + ICON_BTN_SIZE;
 
         if (hov) {
             hoveredRowIndex = filteredIdx;
             hoveredActionIndex = actionIdx;
         }
 
-        // Background
-        int bg = hov
-                ? MenuRenderUtils.withAlpha(accentColor, ap * 0.6f)
-                : MenuRenderUtils.withAlpha(0xFF333333, ap * 0.7f);
+        int bg =
+                hov
+                        ? MenuRenderUtils.withAlpha(accentColor, ap * 0.6f)
+                        : MenuRenderUtils.withAlpha(Colors.BG_DARK_PANEL, ap * 0.7f);
         g.fill(bx, y, bx + ICON_BTN_SIZE, y + ICON_BTN_SIZE, bg);
 
-        // Border (accent on hover, subtle otherwise)
-        int border = hov
-                ? MenuRenderUtils.withAlpha(accentColor, ap * 0.9f)
-                : MenuRenderUtils.withAlpha(0xFF555555, ap * 0.5f);
+        int border =
+                hov
+                        ? MenuRenderUtils.withAlpha(accentColor, ap * 0.9f)
+                        : MenuRenderUtils.withAlpha(Colors.BG_ROW, ap * 0.5f);
         MenuRenderUtils.renderOutline(g, bx, y, ICON_BTN_SIZE, ICON_BTN_SIZE, border);
 
-        // Draw procedural icon
-        int iconColor = hov
-                ? MenuRenderUtils.withAlpha(0xFFFFFFFF, ap)
-                : MenuRenderUtils.withAlpha(accentColor, ap * 0.9f);
+        int iconColor =
+                hov
+                        ? MenuRenderUtils.withAlpha(Colors.WHITE, ap)
+                        : MenuRenderUtils.withAlpha(accentColor, ap * 0.9f);
         int cx = bx + ICON_BTN_SIZE / 2;
         int cy = y + ICON_BTN_SIZE / 2;
 
@@ -670,7 +836,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             case UNBLOCK -> drawCheckIcon(g, cx, cy, iconColor);
         }
 
-        // Tooltip on hover
         if (hov) {
             pendingTooltip = tooltip;
             pendingTooltipX = mouseX;
@@ -680,46 +845,59 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         return bx - ICON_BTN_GAP;
     }
 
-    private int renderTeleportIconButton(GuiGraphics g, int rightEdge, int y,
-                                         int mouseX, int mouseY, float ap,
-                                         int filteredIdx, int actionIdx) {
+    private int renderTeleportIconButton(
+            GuiGraphics g,
+            int rightEdge,
+            int y,
+            int mouseX,
+            int mouseY,
+            float ap,
+            int filteredIdx,
+            int actionIdx) {
         var player = Minecraft.getInstance().player;
         if (player == null || !player.isCreative()) {
             return rightEdge;
         }
-        return renderIconButton(g, rightEdge, y, IconType.TELEPORT, 0xFF44AAFF,
+        return renderIconButton(
+                g,
+                rightEdge,
+                y,
+                IconType.TELEPORT,
+                Colors.ACCENT_ICE_BLUE,
                 Texts.tr("history.aromaaffect.action.teleport"),
-                mouseX, mouseY, ap, filteredIdx, actionIdx);
+                mouseX,
+                mouseY,
+                ap,
+                filteredIdx,
+                actionIdx);
     }
 
-    /** Star (bookmark/save): 5-pointed star outline */
     private static void drawStarIcon(GuiGraphics g, int cx, int cy, int color) {
-        // Simple star: center dot + 4 points
-        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, color);  // center
-        g.fill(cx, cy - 4, cx + 1, cy - 1, color);        // top spike
-        g.fill(cx, cy + 2, cx + 1, cy + 5, color);        // bottom spike
-        g.fill(cx - 4, cy, cx - 1, cy + 1, color);        // left spike
-        g.fill(cx + 2, cy, cx + 5, cy + 1, color);        // right spike
-        // Diagonal accents
+
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, color);
+        g.fill(cx, cy - 4, cx + 1, cy - 1, color);
+        g.fill(cx, cy + 2, cx + 1, cy + 5, color);
+        g.fill(cx - 4, cy, cx - 1, cy + 1, color);
+        g.fill(cx + 2, cy, cx + 5, cy + 1, color);
+
         g.fill(cx - 2, cy - 2, cx - 1, cy - 1, color);
         g.fill(cx + 2, cy - 2, cx + 3, cy - 1, color);
         g.fill(cx - 2, cy + 2, cx - 1, cy + 3, color);
         g.fill(cx + 2, cy + 2, cx + 3, cy + 3, color);
     }
 
-    /** Ban/blacklist: circle with diagonal slash */
     private static void drawBanIcon(GuiGraphics g, int cx, int cy, int color) {
-        // Circle approximation (octagon-ish)
-        g.fill(cx - 2, cy - 4, cx + 3, cy - 3, color); // top
-        g.fill(cx - 2, cy + 4, cx + 3, cy + 5, color); // bottom
-        g.fill(cx - 4, cy - 2, cx - 3, cy + 3, color); // left
-        g.fill(cx + 4, cy - 2, cx + 5, cy + 3, color); // right
-        // Corner fills
+
+        g.fill(cx - 2, cy - 4, cx + 3, cy - 3, color);
+        g.fill(cx - 2, cy + 4, cx + 3, cy + 5, color);
+        g.fill(cx - 4, cy - 2, cx - 3, cy + 3, color);
+        g.fill(cx + 4, cy - 2, cx + 5, cy + 3, color);
+
         g.fill(cx - 3, cy - 3, cx - 2, cy - 2, color);
         g.fill(cx + 3, cy - 3, cx + 4, cy - 2, color);
         g.fill(cx - 3, cy + 3, cx - 2, cy + 4, color);
         g.fill(cx + 3, cy + 3, cx + 4, cy + 4, color);
-        // Diagonal slash
+
         g.fill(cx - 3, cy - 2, cx - 2, cy - 1, color);
         g.fill(cx - 2, cy - 1, cx - 1, cy, color);
         g.fill(cx - 1, cy, cx, cy + 1, color);
@@ -728,40 +906,37 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.fill(cx + 2, cy + 3, cx + 3, cy + 4, color);
     }
 
-    /** Trash can icon */
     private static void drawTrashIcon(GuiGraphics g, int cx, int cy, int color) {
-        // Lid
+
         g.fill(cx - 3, cy - 4, cx + 4, cy - 3, color);
-        g.fill(cx - 1, cy - 5, cx + 2, cy - 4, color); // handle
-        // Body
-        g.fill(cx - 3, cy - 2, cx - 2, cy + 4, color); // left wall
-        g.fill(cx + 3, cy - 2, cx + 4, cy + 4, color);  // right wall
-        g.fill(cx - 3, cy + 4, cx + 4, cy + 5, color);  // bottom
-        // Inner lines
+        g.fill(cx - 1, cy - 5, cx + 2, cy - 4, color);
+
+        g.fill(cx - 3, cy - 2, cx - 2, cy + 4, color);
+        g.fill(cx + 3, cy - 2, cx + 4, cy + 4, color);
+        g.fill(cx - 3, cy + 4, cx + 4, cy + 5, color);
+
         g.fill(cx - 1, cy - 1, cx, cy + 3, color);
         g.fill(cx + 1, cy - 1, cx + 2, cy + 3, color);
     }
 
-    /** Pencil/edit icon */
     private static void drawPencilIcon(GuiGraphics g, int cx, int cy, int color) {
-        // Pencil body (diagonal)
-        g.fill(cx - 3, cy + 2, cx - 2, cy + 4, color);   // tip
+
+        g.fill(cx - 3, cy + 2, cx - 2, cy + 4, color);
         g.fill(cx - 2, cy + 1, cx - 1, cy + 3, color);
         g.fill(cx - 1, cy, cx, cy + 2, color);
         g.fill(cx, cy - 1, cx + 1, cy + 1, color);
         g.fill(cx + 1, cy - 2, cx + 2, cy, color);
         g.fill(cx + 2, cy - 3, cx + 3, cy - 1, color);
-        g.fill(cx + 3, cy - 4, cx + 4, cy - 2, color);   // eraser end
-        // Tip accent
+        g.fill(cx + 3, cy - 4, cx + 4, cy - 2, color);
+
         g.fill(cx - 4, cy + 3, cx - 3, cy + 5, color);
     }
 
-    /** Lightning bolt (teleport) */
     private static void drawLightningIcon(GuiGraphics g, int cx, int cy, int color) {
         g.fill(cx, cy - 5, cx + 3, cy - 4, color);
         g.fill(cx - 1, cy - 4, cx + 2, cy - 3, color);
         g.fill(cx - 1, cy - 3, cx + 1, cy - 2, color);
-        g.fill(cx - 2, cy - 2, cx + 2, cy - 1, color);  // wide part
+        g.fill(cx - 2, cy - 2, cx + 2, cy - 1, color);
         g.fill(cx - 1, cy - 1, cx + 1, cy, color);
         g.fill(cx - 1, cy, cx, cy + 1, color);
         g.fill(cx - 2, cy + 1, cx, cy + 2, color);
@@ -769,13 +944,12 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.fill(cx - 3, cy + 3, cx - 2, cy + 5, color);
     }
 
-    /** Checkmark (un-blacklist) */
     private static void drawCheckIcon(GuiGraphics g, int cx, int cy, int color) {
-        // Short leg (going down-right)
+
         g.fill(cx - 3, cy, cx - 2, cy + 1, color);
         g.fill(cx - 2, cy + 1, cx - 1, cy + 2, color);
         g.fill(cx - 1, cy + 2, cx, cy + 3, color);
-        // Long leg (going up-right)
+
         g.fill(cx, cy + 1, cx + 1, cy + 2, color);
         g.fill(cx + 1, cy, cx + 2, cy + 1, color);
         g.fill(cx + 2, cy - 1, cx + 3, cy, color);
@@ -783,36 +957,47 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.fill(cx + 4, cy - 3, cx + 5, cy - 2, color);
     }
 
-    /**
-     * Renders the entry icon: category header texture as the main 16x16 icon,
-     * with the specific target item as a small overlay badge at the bottom-right.
-     */
-    private void renderEntryIcon(GuiGraphics g, int iconX, int iconY,
-                                  ItemStack specificIcon, String categoryId, float ap) {
-        // Big icon: category header texture at 16x16
+    private void renderEntryIcon(
+            GuiGraphics g,
+            int iconX,
+            int iconY,
+            ItemStack specificIcon,
+            String categoryId,
+            float ap) {
+
         MenuCategory cat = MenuCategory.fromId(categoryId);
         if (cat != null) {
-            g.blit(RenderPipelines.GUI_TEXTURED, cat.getHeaderIcon(),
-                    iconX, iconY, 0.0f, 0.0f, 16, 16, 16, 16);
+            g.blit(
+                    RenderPipelines.GUI_TEXTURED,
+                    cat.getHeaderIcon(),
+                    iconX,
+                    iconY,
+                    0.0f,
+                    0.0f,
+                    16,
+                    16,
+                    16,
+                    16);
         }
 
-        // Small badge: specific item at bottom-right
         if (specificIcon != null && !specificIcon.isEmpty()) {
             int badgeSize = 10;
             int pad = 1;
             int bx = iconX + 16 - badgeSize + 3;
             int by = iconY + 16 - badgeSize + 3;
 
-            // Dark background
-            g.fill(bx - pad, by - pad, bx + badgeSize + pad, by + badgeSize + pad,
+            g.fill(
+                    bx - pad,
+                    by - pad,
+                    bx + badgeSize + pad,
+                    by + badgeSize + pad,
                     MenuRenderUtils.withAlpha(0xEE111122, ap));
 
-            // Colored border matching category accent
-            int borderColor = MenuRenderUtils.withAlpha(getCategoryBadgeColor(categoryId), ap * 0.7f);
-            MenuRenderUtils.renderOutline(g, bx - pad, by - pad,
-                    badgeSize + pad * 2, badgeSize + pad * 2, borderColor);
+            int borderColor =
+                    MenuRenderUtils.withAlpha(getCategoryBadgeColor(categoryId), ap * 0.7f);
+            MenuRenderUtils.renderOutline(
+                    g, bx - pad, by - pad, badgeSize + pad * 2, badgeSize + pad * 2, borderColor);
 
-            // Render the specific item small, centered within the badge
             g.pose().pushMatrix();
             float itemSize = badgeSize - 2;
             float offset = (badgeSize - itemSize) / 2.0f;
@@ -824,21 +1009,20 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    /** Renders a small pill-shaped badge. Returns the X position after the badge for chaining. */
-    private int renderBadge(GuiGraphics g, int x, int y, String label, int textColor, int bgColor, float ap) {
+    private int renderBadge(
+            GuiGraphics g, int x, int y, String label, int textColor, int bgColor, float ap) {
         int tw = font.width(label);
         int pillW = tw + 6;
         int pillH = 10;
         g.fill(x, y, x + pillW, y + pillH, MenuRenderUtils.withAlpha(bgColor, ap));
-        MenuRenderUtils.renderOutline(g, x, y, pillW, pillH,
-                MenuRenderUtils.withAlpha(textColor, ap * 0.4f));
-        g.drawString(font, label, x + 3, y + 1,
-                MenuRenderUtils.withAlpha(textColor, ap));
+        MenuRenderUtils.renderOutline(
+                g, x, y, pillW, pillH, MenuRenderUtils.withAlpha(textColor, ap * 0.4f));
+        g.drawString(font, label, x + 3, y + 1, MenuRenderUtils.withAlpha(textColor, ap));
         return x + pillW + 3;
     }
 
-    private void renderNamePopup(GuiGraphics g, int mouseX, int mouseY,
-                                 float partialTick, float ap) {
+    private void renderNamePopup(
+            GuiGraphics g, int mouseX, int mouseY, float partialTick, float ap) {
         g.fill(0, 0, width, height, MenuRenderUtils.withAlpha(0xCC000000, ap));
 
         int popupW = 220;
@@ -847,14 +1031,19 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int py = (height - popupH) / 2;
 
         g.fill(px, py, px + popupW, py + popupH, MenuRenderUtils.withAlpha(0xEE1A1A2E, ap));
-        MenuRenderUtils.renderOutline(g, px, py, popupW, popupH,
-                MenuRenderUtils.withAlpha(0xAA9A7CFF, ap));
+        MenuRenderUtils.renderOutline(
+                g, px, py, popupW, popupH, MenuRenderUtils.withAlpha(0xAA9A7CFF, ap));
 
-        Component popupTitle = namePopupIsRename
-                ? Texts.tr("history.aromaaffect.popup.rename")
-                : Texts.tr("history.aromaaffect.popup.save");
-        g.drawCenteredString(font, popupTitle, px + popupW / 2, py + 6,
-                MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
+        Component popupTitle =
+                namePopupIsRename
+                        ? Texts.tr("history.aromaaffect.popup.rename")
+                        : Texts.tr("history.aromaaffect.popup.save");
+        g.drawCenteredString(
+                font,
+                popupTitle,
+                px + popupW / 2,
+                py + 6,
+                MenuRenderUtils.withAlpha(Colors.WHITE, ap));
 
         if (nameEditBox != null) {
             nameEditBox.setX(px + 10);
@@ -867,28 +1056,60 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int confirmY = py + popupH - 22;
         int confirmW = (popupW - 30) / 2;
         int confirmH = 16;
-        boolean hovConfirm = mouseX >= confirmX && mouseX < confirmX + confirmW
-                && mouseY >= confirmY && mouseY < confirmY + confirmH;
-        g.fill(confirmX, confirmY, confirmX + confirmW, confirmY + confirmH,
-                hovConfirm ? MenuRenderUtils.withAlpha(0xCC44CC44, ap)
-                        : MenuRenderUtils.withAlpha(0x8833AA33, ap));
-        MenuRenderUtils.renderOutline(g, confirmX, confirmY, confirmW, confirmH,
-                MenuRenderUtils.withAlpha(0x8844FF44, ap));
-        g.drawCenteredString(font, Texts.tr("history.aromaaffect.popup.confirm"),
-                confirmX + confirmW / 2, confirmY + 4,
-                MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
+        boolean hovConfirm =
+                mouseX >= confirmX
+                        && mouseX < confirmX + confirmW
+                        && mouseY >= confirmY
+                        && mouseY < confirmY + confirmH;
+        g.fill(
+                confirmX,
+                confirmY,
+                confirmX + confirmW,
+                confirmY + confirmH,
+                hovConfirm
+                        ? MenuRenderUtils.withAlpha(0xCC44CC44, ap)
+                        : MenuRenderUtils.withAlpha(Colors.TRACK_GREEN_ALPHA, ap));
+        MenuRenderUtils.renderOutline(
+                g,
+                confirmX,
+                confirmY,
+                confirmW,
+                confirmH,
+                MenuRenderUtils.withAlpha(Colors.TRACK_GREEN_BADGE, ap));
+        g.drawCenteredString(
+                font,
+                Texts.tr("history.aromaaffect.popup.confirm"),
+                confirmX + confirmW / 2,
+                confirmY + 4,
+                MenuRenderUtils.withAlpha(Colors.WHITE, ap));
 
         int cancelX = px + popupW - 10 - confirmW;
-        boolean hovCancel = mouseX >= cancelX && mouseX < cancelX + confirmW
-                && mouseY >= confirmY && mouseY < confirmY + confirmH;
-        g.fill(cancelX, confirmY, cancelX + confirmW, confirmY + confirmH,
-                hovCancel ? MenuRenderUtils.withAlpha(0xCCCC4444, ap)
+        boolean hovCancel =
+                mouseX >= cancelX
+                        && mouseX < cancelX + confirmW
+                        && mouseY >= confirmY
+                        && mouseY < confirmY + confirmH;
+        g.fill(
+                cancelX,
+                confirmY,
+                cancelX + confirmW,
+                confirmY + confirmH,
+                hovCancel
+                        ? MenuRenderUtils.withAlpha(0xCCCC4444, ap)
                         : MenuRenderUtils.withAlpha(0x80AA3333, ap));
-        MenuRenderUtils.renderOutline(g, cancelX, confirmY, confirmW, confirmH,
+        MenuRenderUtils.renderOutline(
+                g,
+                cancelX,
+                confirmY,
+                confirmW,
+                confirmH,
                 MenuRenderUtils.withAlpha(0x88FF4444, ap));
-        g.drawCenteredString(font, Texts.tr("history.aromaaffect.popup.cancel"),
-                cancelX + confirmW / 2, confirmY + 4,
-                MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
+        g.drawCenteredString(
+                font,
+                Texts.tr("history.aromaaffect.popup.cancel"),
+                cancelX + confirmW / 2,
+                confirmY + 4,
+                MenuRenderUtils.withAlpha(Colors.WHITE, ap));
     }
 
     @Override
@@ -926,10 +1147,13 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     @Override
-    protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
+    protected boolean handleMouseScroll(
+            double mouseX, double mouseY, double scrollX, double scrollY) {
         if (showNamePopup) return true;
-        int maxScroll = Math.max(0, filteredIndices.size() * (ROW_HEIGHT + ROW_PADDING) - (height - 92));
-        listScrollOffset = Math.max(0, Math.min(maxScroll, listScrollOffset - (int) (scrollY * 20)));
+        int maxScroll =
+                Math.max(0, filteredIndices.size() * (ROW_HEIGHT + ROW_PADDING) - (height - 92));
+        listScrollOffset =
+                Math.max(0, Math.min(maxScroll, listScrollOffset - (int) (scrollY * 20)));
         return true;
     }
 
@@ -965,7 +1189,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     private void handleHistoryAction(TrackingHistoryData data, int dataIndex, int actionIdx) {
-        // Actions: 0=Save, 1=Blacklist, 2=Re-track, 3=Teleport, 4=Delete
+
         if (dataIndex >= data.getHistory().size()) return;
         HistoryEntry entry = data.getHistory().get(dataIndex);
 
@@ -984,8 +1208,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             case 2 -> {
                 if (canRetrackTarget(entry.targetId, entry.categoryId)) {
                     MenuRenderUtils.playClickSound();
-                    executeRetrack(entry.targetId, entry.categoryId, entry.displayName,
-                            entry.x, entry.y, entry.z, entry.dimension);
+                    executeRetrack(
+                            entry.targetId,
+                            entry.categoryId,
+                            entry.displayName,
+                            entry.x,
+                            entry.y,
+                            entry.z,
+                            entry.dimension);
                 } else {
                     MenuRenderUtils.playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
                 }
@@ -1000,7 +1230,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     private void handleSavedAction(TrackingHistoryData data, int dataIndex, int actionIdx) {
-        // Actions: 0=Re-track, 1=Teleport, 2=Rename, 3=Delete
+
         if (dataIndex >= data.getSaved().size()) return;
         SavedEntry entry = data.getSaved().get(dataIndex);
 
@@ -1008,8 +1238,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             case 0 -> {
                 if (canRetrackTarget(entry.targetId, entry.categoryId)) {
                     MenuRenderUtils.playClickSound();
-                    executeRetrack(entry.targetId, entry.categoryId, entry.customName,
-                            entry.x, entry.y, entry.z, entry.dimension);
+                    executeRetrack(
+                            entry.targetId,
+                            entry.categoryId,
+                            entry.customName,
+                            entry.x,
+                            entry.y,
+                            entry.z,
+                            entry.dimension);
                 } else {
                     MenuRenderUtils.playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
                 }
@@ -1048,14 +1284,19 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         };
     }
 
-    private void executeRetrack(String targetId, String categoryId, String displayName,
-                                int x, int y, int z, String dimension) {
+    private void executeRetrack(
+            String targetId,
+            String categoryId,
+            String displayName,
+            int x,
+            int y,
+            int z,
+            String dimension) {
         MenuCategory cat = MenuCategory.fromId(categoryId);
         if (cat == null) return;
 
         var player = Minecraft.getInstance().player;
 
-        // Check if passive mode is active - cannot use active tracking while passive mode is enabled
         if (PassiveModeManager.isPassiveModeEnabled()) {
             showErrorNotification(Texts.tr("message.aromaaffect.tracking.passive_mode_active"));
             if (player != null) {
@@ -1065,15 +1306,15 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             return;
         }
 
-        // Block re-tracking from wrong dimension
         if (player != null && dimension != null && !dimension.equals(getCurrentDimension())) {
             player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
-            AromaAffect.LOGGER.info("Cannot re-track from wrong dimension: entry is in {}, player is in {}",
-                    dimension, getCurrentDimension());
+            AromaAffect.LOGGER.info(
+                    "Cannot re-track from wrong dimension: entry is in {}, player is in {}",
+                    dimension,
+                    getCurrentDimension());
             return;
         }
 
-        // Pre-validate durability for recall cost
         if (player != null) {
             int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
             ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -1081,8 +1322,10 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
                 if (remaining < retrackCost) {
                     player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
-                    AromaAffect.LOGGER.info("Not enough nose durability for recall: need {}, have {}",
-                            retrackCost, remaining);
+                    AromaAffect.LOGGER.info(
+                            "Not enough nose durability for recall: need {}, have {}",
+                            retrackCost,
+                            remaining);
                     return;
                 }
             }
@@ -1092,9 +1335,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         ItemStack icon = getItemForTarget(targetId, categoryId);
         ActiveTrackingState.set(targetLoc, Texts.lit(displayName), icon, cat);
 
-        // Use recall command to go directly to known coordinates (no search needed)
         String dimArg = dimension != null ? dimension : "minecraft:overworld";
-        String command = String.format("aromatest path recall %s %d %d %d %s", targetId, x, y, z, dimArg);
+        String command =
+                String.format("aromatest path recall %s %d %d %d %s", targetId, x, y, z, dimArg);
         AromaAffect.LOGGER.debug("Re-tracking via recall: {}", command);
 
         if (Minecraft.getInstance().getConnection() != null) {
@@ -1130,8 +1373,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int px = (width - popupW) / 2;
         int py = (height - 80) / 2;
 
-        nameEditBox = new EditBox(font, px + 10, py + 22, popupW - 20, 18,
-                Texts.lit("Name"));
+        nameEditBox = new EditBox(font, px + 10, py + 22, popupW - 20, 18, Texts.lit("Name"));
         nameEditBox.setMaxLength(64);
         nameEditBox.setValue(prefill != null ? prefill : "");
         nameEditBox.setFocused(true);
@@ -1182,39 +1424,34 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int btnW = (popupW - 30) / 2;
         int btnH = 16;
 
-        // Confirm button
-        if (mouseX >= confirmX && mouseX < confirmX + btnW
-                && mouseY >= confirmY && mouseY < confirmY + btnH) {
+        if (mouseX >= confirmX
+                && mouseX < confirmX + btnW
+                && mouseY >= confirmY
+                && mouseY < confirmY + btnH) {
             MenuRenderUtils.playClickSound();
             confirmNamePopup();
             return true;
         }
 
-        // Cancel button
         int cancelX = px + popupW - 10 - btnW;
-        if (mouseX >= cancelX && mouseX < cancelX + btnW
-                && mouseY >= confirmY && mouseY < confirmY + btnH) {
+        if (mouseX >= cancelX
+                && mouseX < cancelX + btnW
+                && mouseY >= confirmY
+                && mouseY < confirmY + btnH) {
             MenuRenderUtils.playClickSound();
             closeNamePopup();
             return true;
         }
 
-        // Clicks inside popup: let them propagate so EditBox receives them
         if (mouseX >= px && mouseX < px + popupW && mouseY >= py && mouseY < py + popupH) {
             return false;
         }
 
-        // Clicks outside popup: consume to prevent clicking through
         return true;
     }
 
-    /**
-     * Resolves an item icon for the given target using the same icon maps
-     * as the selection menus. Falls back to registry lookups and finally
-     * the category's default icon.
-     */
     private ItemStack getItemForTarget(String targetId, String categoryId) {
-        // Check category-specific maps first (most accurate icons)
+
         switch (categoryId) {
             case "structures" -> {
                 var info = StructuresMenuScreen.STRUCTURE_INFO.get(targetId);
@@ -1230,7 +1467,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             }
         }
 
-        // Try as registered item (works for most blocks)
         try {
             ResourceLocation loc = Ids.parse(targetId);
             var optItem = BuiltInRegistries.ITEM.getOptional(loc);
@@ -1238,9 +1474,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 ItemStack stack = new ItemStack(optItem.get());
                 if (!stack.isEmpty()) return stack;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
-        // Fallback: use the category's representative icon
         MenuCategory cat = MenuCategory.fromId(categoryId);
         if (cat != null) return cat.getIconItem();
         return new ItemStack(Items.BARRIER);
@@ -1263,12 +1499,12 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     private static int getDimensionColor(String dimension) {
-        if (dimension == null) return 0xFF888888;
+        if (dimension == null) return Colors.TEXT_HINT;
         return switch (dimension) {
-            case "minecraft:overworld" -> 0xFF55FF55;
-            case "minecraft:the_nether" -> 0xFFFF5555;
+            case "minecraft:overworld" -> Colors.SUCCESS_GREEN_LIGHT;
+            case "minecraft:the_nether" -> Colors.ERROR_RED_LIGHT;
             case "minecraft:the_end" -> 0xFFDD88FF;
-            default -> 0xFF888888;
+            default -> Colors.TEXT_HINT;
         };
     }
 
@@ -1278,7 +1514,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             case "biomes" -> BADGE_BIOMES;
             case "structures" -> BADGE_STRUCTURES;
             case "flowers" -> BADGE_FLOWERS;
-            default -> 0xFF888888;
+            default -> Colors.TEXT_HINT;
         };
     }
 

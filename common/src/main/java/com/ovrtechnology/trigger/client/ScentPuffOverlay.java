@@ -1,25 +1,17 @@
 package com.ovrtechnology.trigger.client;
 
-import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.Ids;
 import dev.architectury.event.events.client.ClientGuiEvent;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-/**
- * Fullscreen scent mask overlay for non-tracking puffs (Omara Device, etc.).
- *
- * <p>Shows the scent's border/corner image for ~2 seconds with fade-in/fade-out.
- * This is independent of the path tracking system and does not require an active
- * tracking session.</p>
- */
 public final class ScentPuffOverlay {
 
     private static final Map<String, ResourceLocation> SCENT_MASKS = new HashMap<>();
@@ -54,8 +46,7 @@ public final class ScentPuffOverlay {
         register("machina", "diesellayermask");
     }
 
-    private ScentPuffOverlay() {
-    }
+    private ScentPuffOverlay() {}
 
     public static void init() {
         if (initialized) {
@@ -67,19 +58,14 @@ public final class ScentPuffOverlay {
         AromaAffect.LOGGER.info("ScentPuffOverlay initialized");
     }
 
-    /**
-     * Triggers the scent overlay for a general puff (Omara Device, etc.).
-     *
-     * @param scentName the scent name (used to resolve the mask texture)
-     * @param intensity the scent intensity (0.0 to 1.0)
-     */
     public static void onScentPuff(String scentName, double intensity) {
         if (scentName == null || scentName.isBlank()) {
             return;
         }
         ResourceLocation mask = resolveMask(scentName);
         if (mask == null) {
-            AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
+            AromaAffect.LOGGER.debug(
+                    "No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
             return;
         }
 
@@ -129,8 +115,7 @@ public final class ScentPuffOverlay {
                 height,
                 width,
                 height,
-                tint
-        );
+                tint);
     }
 
     private static float computePulseAlpha(long elapsedMs) {
@@ -152,8 +137,7 @@ public final class ScentPuffOverlay {
     private static void register(String scentName, String maskFileStem) {
         SCENT_MASKS.put(
                 scentName.toLowerCase(Locale.ROOT),
-                Ids.mod("textures/masks/" + maskFileStem + ".png")
-        );
+                Ids.mod("textures/masks/" + maskFileStem + ".png"));
     }
 
     private static double clamp01(double value) {

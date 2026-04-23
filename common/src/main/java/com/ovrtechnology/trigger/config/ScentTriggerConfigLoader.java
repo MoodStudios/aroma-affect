@@ -18,51 +18,39 @@ import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.structure.StructureDefinition;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
+import java.util.*;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.*;
-
-/**
- * Loads and provides access to scent trigger configurations.
- *
- * <p>This class builds trigger lookup maps from per-category definition loaders
- * (biomes, blocks, flowers, structures, mobs) and a separate item triggers file.</p>
- */
 public final class ScentTriggerConfigLoader {
 
     public static final String ITEM_TRIGGERS_DIR = "aroma_scent_triggers";
 
-    /**
-     * Path to the trigger settings file.
-     */
     private static final String SETTINGS_PATH = "data/aromaaffect/scents/trigger_settings.json";
 
-    /**
-     * Path to the OVR hardware scent catalog.
-     */
     private static final String OVR_CATALOG_PATH = "data/aromaaffect/scents/ovr_catalog.json";
 
-    /**
-     * Fallback catalog used if {@link #OVR_CATALOG_PATH} is missing.
-     * Matches the factory-shipped scents; datapacks may extend the list.
-     */
-    private static final Set<String> DEFAULT_OVR_SCENTS = Set.of(
-        "Beach", "Evergreen", "Desert", "Floral", "Barnyard",
-        "Smoky", "Winter", "Terra Silva", "Savory Spice", "Timber",
-        "Petrichor", "Sweet", "Machina", "Marine", "Kindred", "Citrus"
-    );
+    private static final Set<String> DEFAULT_OVR_SCENTS =
+            Set.of(
+                    "Beach",
+                    "Evergreen",
+                    "Desert",
+                    "Floral",
+                    "Barnyard",
+                    "Smoky",
+                    "Winter",
+                    "Terra Silva",
+                    "Savory Spice",
+                    "Timber",
+                    "Petrichor",
+                    "Sweet",
+                    "Machina",
+                    "Marine",
+                    "Kindred",
+                    "Citrus");
 
-    /**
-     * Valid OVR scent names. Populated from {@link #OVR_CATALOG_PATH}, with
-     * {@link #DEFAULT_OVR_SCENTS} as fallback. Public for compatibility with
-     * call sites that consume the legacy constant; use {@link #getValidOvrScents()}
-     * if you want to be explicit about the live view.
-     */
     public static Set<String> VALID_OVR_SCENTS = DEFAULT_OVR_SCENTS;
 
-    private static final Gson GSON = new GsonBuilder()
-            .setLenient()
-            .create();
+    private static final Gson GSON = new GsonBuilder().setLenient().create();
 
     private static TriggerSettings settings;
 
@@ -70,17 +58,13 @@ public final class ScentTriggerConfigLoader {
     private static final Map<String, BiomeTriggerDefinition> biomeTriggerMap = new HashMap<>();
     private static final Map<String, BlockTriggerDefinition> blockTriggerMap = new HashMap<>();
     private static final Map<String, MobTriggerDefinition> mobTriggerMap = new HashMap<>();
-    private static final Map<String, StructureTriggerDefinition> structureTriggerMap = new HashMap<>();
+    private static final Map<String, StructureTriggerDefinition> structureTriggerMap =
+            new HashMap<>();
 
     private static boolean initialized = false;
 
-    private ScentTriggerConfigLoader() {
-    }
+    private ScentTriggerConfigLoader() {}
 
-    /**
-     * Initializes the trigger configuration loader.
-     * Builds trigger maps from per-category definition loaders.
-     */
     public static void init() {
         init(ClasspathDataSource.INSTANCE);
     }
@@ -110,11 +94,15 @@ public final class ScentTriggerConfigLoader {
             buildStructureTriggers();
             buildMobTriggers();
 
-            int total = itemTriggerMap.size() + biomeTriggerMap.size()
-                    + blockTriggerMap.size() + mobTriggerMap.size()
-                    + structureTriggerMap.size();
+            int total =
+                    itemTriggerMap.size()
+                            + biomeTriggerMap.size()
+                            + blockTriggerMap.size()
+                            + mobTriggerMap.size()
+                            + structureTriggerMap.size();
 
-            AromaAffect.LOGGER.info("Loaded {} scent triggers ({} item, {} biome, {} block, {} mob, {} structure)",
+            AromaAffect.LOGGER.info(
+                    "Loaded {} scent triggers ({} item, {} biome, {} block, {} mob, {} structure)",
                     total,
                     itemTriggerMap.size(),
                     biomeTriggerMap.size(),
@@ -129,14 +117,6 @@ public final class ScentTriggerConfigLoader {
         }
 
         initialized = true;
-    }
-
-    /**
-     * Live view of the OVR hardware scent catalog. Prefer this over reading
-     * {@link #VALID_OVR_SCENTS} directly — future callers will be migrated.
-     */
-    public static Set<String> getValidOvrScents() {
-        return VALID_OVR_SCENTS;
     }
 
     private static void loadOvrCatalog(DataSource dataSource) {
@@ -155,10 +135,14 @@ public final class ScentTriggerConfigLoader {
                     obj.getAsJsonArray("scents").forEach(e -> parsed.add(e.getAsString()));
                 }
             }
-            VALID_OVR_SCENTS = parsed.isEmpty() ? DEFAULT_OVR_SCENTS : Collections.unmodifiableSet(parsed);
+            VALID_OVR_SCENTS =
+                    parsed.isEmpty() ? DEFAULT_OVR_SCENTS : Collections.unmodifiableSet(parsed);
             AromaAffect.LOGGER.info("Loaded {} OVR catalog entries", VALID_OVR_SCENTS.size());
         } catch (Exception e) {
-            AromaAffect.LOGGER.error("Failed to parse OVR catalog at {}, using defaults: {}", OVR_CATALOG_PATH, e.getMessage());
+            AromaAffect.LOGGER.error(
+                    "Failed to parse OVR catalog at {}, using defaults: {}",
+                    OVR_CATALOG_PATH,
+                    e.getMessage());
             VALID_OVR_SCENTS = DEFAULT_OVR_SCENTS;
         }
     }
@@ -166,7 +150,8 @@ public final class ScentTriggerConfigLoader {
     private static TriggerSettings loadSettings(DataSource dataSource) {
         JsonElement element = dataSource.read(SETTINGS_PATH);
         if (element == null) {
-            AromaAffect.LOGGER.warn("Trigger settings not found: {}, using defaults", SETTINGS_PATH);
+            AromaAffect.LOGGER.warn(
+                    "Trigger settings not found: {}, using defaults", SETTINGS_PATH);
             return null;
         }
         try {
@@ -182,20 +167,19 @@ public final class ScentTriggerConfigLoader {
         Map<ResourceLocation, JsonElement> files = dataSource.listJson(ITEM_TRIGGERS_DIR);
         for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
             try {
-                ItemTriggerDefinition trigger = GSON.fromJson(entry.getValue(), ItemTriggerDefinition.class);
+                ItemTriggerDefinition trigger =
+                        GSON.fromJson(entry.getValue(), ItemTriggerDefinition.class);
                 if (trigger != null && trigger.isValid()) {
                     validateScentName(trigger.getScentName(), "item", trigger.getItemId());
                     itemTriggerMap.put(trigger.getItemId(), trigger);
                 }
             } catch (Exception e) {
-                AromaAffect.LOGGER.error("Failed to parse scent trigger {}: {}", entry.getKey(), e.getMessage());
+                AromaAffect.LOGGER.error(
+                        "Failed to parse scent trigger {}: {}", entry.getKey(), e.getMessage());
             }
         }
     }
 
-    /**
-     * Resolves a scent_id (lowercase) to the OVR display name via ScentRegistry.
-     */
     private static String resolveScentName(String scentId) {
         if (scentId == null || scentId.isEmpty()) {
             return null;
@@ -203,9 +187,6 @@ public final class ScentTriggerConfigLoader {
         return ScentRegistry.getDisplayName(scentId);
     }
 
-    /**
-     * Builds biome trigger map from BiomeDefinitionLoader.
-     */
     private static void buildBiomeTriggers() {
         biomeTriggerMap.clear();
         for (BiomeDefinition biome : BiomeDefinitionLoader.getLoadedBiomes()) {
@@ -213,8 +194,10 @@ public final class ScentTriggerConfigLoader {
 
             String scentName = resolveScentName(biome.getScentId());
             if (scentName == null || "Unknown Scent".equals(scentName)) {
-                AromaAffect.LOGGER.warn("Could not resolve scent_id '{}' for biome '{}'",
-                        biome.getScentId(), biome.getBiomeId());
+                AromaAffect.LOGGER.warn(
+                        "Could not resolve scent_id '{}' for biome '{}'",
+                        biome.getScentId(),
+                        biome.getBiomeId());
                 continue;
             }
 
@@ -227,14 +210,11 @@ public final class ScentTriggerConfigLoader {
 
             validateScentName(scentName, "biome", biome.getBiomeId());
             biomeTriggerMap.put(biome.getBiomeId(), trigger);
-            AromaAffect.LOGGER.debug("Registered biome trigger: {} -> {}",
-                    biome.getBiomeId(), scentName);
+            AromaAffect.LOGGER.debug(
+                    "Registered biome trigger: {} -> {}", biome.getBiomeId(), scentName);
         }
     }
 
-    /**
-     * Builds block trigger map from BlockDefinitionLoader.
-     */
     private static void buildBlockTriggers() {
         blockTriggerMap.clear();
         for (BlockDefinition block : BlockDefinitionLoader.getLoadedBlocks()) {
@@ -242,8 +222,10 @@ public final class ScentTriggerConfigLoader {
 
             String scentName = resolveScentName(block.getScentId());
             if (scentName == null || "Unknown Scent".equals(scentName)) {
-                AromaAffect.LOGGER.warn("Could not resolve scent_id '{}' for block '{}'",
-                        block.getScentId(), block.getBlockId());
+                AromaAffect.LOGGER.warn(
+                        "Could not resolve scent_id '{}' for block '{}'",
+                        block.getScentId(),
+                        block.getBlockId());
                 continue;
             }
 
@@ -257,26 +239,24 @@ public final class ScentTriggerConfigLoader {
 
             validateScentName(scentName, "block", block.getBlockId());
             blockTriggerMap.put(block.getBlockId(), trigger);
-            AromaAffect.LOGGER.debug("Registered block trigger: {} -> {}",
-                    block.getBlockId(), scentName);
+            AromaAffect.LOGGER.debug(
+                    "Registered block trigger: {} -> {}", block.getBlockId(), scentName);
         }
     }
 
-    /**
-     * Builds flower triggers (as block triggers) from FlowerDefinitionLoader.
-     */
     private static void buildFlowerTriggers() {
         for (FlowerDefinition flower : FlowerDefinitionLoader.getLoadedFlowers()) {
             if (!flower.hasScentId()) continue;
 
             String scentName = resolveScentName(flower.getScentId());
             if (scentName == null || "Unknown Scent".equals(scentName)) {
-                AromaAffect.LOGGER.warn("Could not resolve scent_id '{}' for flower '{}'",
-                        flower.getScentId(), flower.getBlockId());
+                AromaAffect.LOGGER.warn(
+                        "Could not resolve scent_id '{}' for flower '{}'",
+                        flower.getScentId(),
+                        flower.getBlockId());
                 continue;
             }
 
-            // Flowers are blocks at runtime
             BlockTriggerDefinition trigger = new BlockTriggerDefinition();
             trigger.setBlockId(flower.getBlockId());
             trigger.setScentName(scentName);
@@ -287,14 +267,11 @@ public final class ScentTriggerConfigLoader {
 
             validateScentName(scentName, "flower", flower.getBlockId());
             blockTriggerMap.put(flower.getBlockId(), trigger);
-            AromaAffect.LOGGER.debug("Registered flower trigger: {} -> {}",
-                    flower.getBlockId(), scentName);
+            AromaAffect.LOGGER.debug(
+                    "Registered flower trigger: {} -> {}", flower.getBlockId(), scentName);
         }
     }
 
-    /**
-     * Builds structure trigger map from StructureDefinitionLoader.
-     */
     private static void buildStructureTriggers() {
         structureTriggerMap.clear();
         for (StructureDefinition structure : StructureDefinitionLoader.getLoadedStructures()) {
@@ -302,8 +279,10 @@ public final class ScentTriggerConfigLoader {
 
             String scentName = resolveScentName(structure.getScentId());
             if (scentName == null || "Unknown Scent".equals(scentName)) {
-                AromaAffect.LOGGER.warn("Could not resolve scent_id '{}' for structure '{}'",
-                        structure.getScentId(), structure.getStructureId());
+                AromaAffect.LOGGER.warn(
+                        "Could not resolve scent_id '{}' for structure '{}'",
+                        structure.getScentId(),
+                        structure.getStructureId());
                 continue;
             }
 
@@ -317,14 +296,13 @@ public final class ScentTriggerConfigLoader {
 
             validateScentName(scentName, "structure", structure.getStructureId());
             structureTriggerMap.put(structure.getStructureId(), trigger);
-            AromaAffect.LOGGER.debug("Registered structure trigger: {} -> {}",
-                    structure.getStructureId(), scentName);
+            AromaAffect.LOGGER.debug(
+                    "Registered structure trigger: {} -> {}",
+                    structure.getStructureId(),
+                    scentName);
         }
     }
 
-    /**
-     * Builds mob trigger map from MobDefinitionLoader.
-     */
     private static void buildMobTriggers() {
         mobTriggerMap.clear();
         for (MobDefinition mob : MobDefinitionLoader.getLoadedMobs()) {
@@ -332,8 +310,10 @@ public final class ScentTriggerConfigLoader {
 
             String scentName = resolveScentName(mob.getScentId());
             if (scentName == null || "Unknown Scent".equals(scentName)) {
-                AromaAffect.LOGGER.warn("Could not resolve scent_id '{}' for mob '{}'",
-                        mob.getScentId(), mob.getEntityType());
+                AromaAffect.LOGGER.warn(
+                        "Could not resolve scent_id '{}' for mob '{}'",
+                        mob.getScentId(),
+                        mob.getEntityType());
                 continue;
             }
 
@@ -346,23 +326,21 @@ public final class ScentTriggerConfigLoader {
 
             validateScentName(scentName, "mob", mob.getEntityType());
             mobTriggerMap.put(mob.getEntityType(), trigger);
-            AromaAffect.LOGGER.debug("Registered mob trigger: {} -> {}",
-                    mob.getEntityType(), scentName);
+            AromaAffect.LOGGER.debug(
+                    "Registered mob trigger: {} -> {}", mob.getEntityType(), scentName);
         }
     }
 
-    /**
-     * Validates that a scent name is in the list of valid OVR scents.
-     */
     private static void validateScentName(String scentName, String triggerType, String triggerId) {
         if (!VALID_OVR_SCENTS.contains(scentName)) {
-            AromaAffect.LOGGER.warn("Unknown OVR scent '{}' in {} trigger '{}'. " +
-                    "This scent may not be supported by the hardware.",
-                    scentName, triggerType, triggerId);
+            AromaAffect.LOGGER.warn(
+                    "Unknown OVR scent '{}' in {} trigger '{}'. "
+                            + "This scent may not be supported by the hardware.",
+                    scentName,
+                    triggerType,
+                    triggerId);
         }
     }
-
-    // Lookup Methods
 
     public static Optional<ItemTriggerDefinition> getItemTrigger(String itemId) {
         return Optional.ofNullable(itemTriggerMap.get(itemId));
@@ -374,18 +352,6 @@ public final class ScentTriggerConfigLoader {
 
     public static Optional<BlockTriggerDefinition> getBlockTrigger(String blockId) {
         return Optional.ofNullable(blockTriggerMap.get(blockId));
-    }
-
-    public static Optional<MobTriggerDefinition> getMobTrigger(String entityType) {
-        return Optional.ofNullable(mobTriggerMap.get(entityType));
-    }
-
-    public static boolean hasItemTrigger(String itemId) {
-        return itemTriggerMap.containsKey(itemId);
-    }
-
-    public static Collection<ItemTriggerDefinition> getAllItemTriggers() {
-        return Collections.unmodifiableCollection(itemTriggerMap.values());
     }
 
     public static Collection<BlockTriggerDefinition> getAllBlockTriggers() {
@@ -425,5 +391,4 @@ public final class ScentTriggerConfigLoader {
         initialized = false;
         init(dataSource);
     }
-
 }

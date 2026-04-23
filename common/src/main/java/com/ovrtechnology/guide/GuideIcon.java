@@ -1,28 +1,27 @@
 package com.ovrtechnology.guide;
 
+import lombok.Getter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Represents an icon that can be displayed in the guide.
- * Can be an item stack, a texture resource location, or a Unicode symbol.
- */
+@Getter
 public final class GuideIcon {
 
-    @Nullable
-    private final ItemStack itemStack;
-    @Nullable
-    private final ResourceLocation texture;
+    @Nullable private final ItemStack itemStack;
+    @Nullable private final ResourceLocation texture;
     private final int textureWidth;
     private final int textureHeight;
-    @Nullable
-    private final String symbol;
+    @Nullable private final String symbol;
     private final int symbolColor;
 
-    private GuideIcon(@Nullable ItemStack itemStack, @Nullable ResourceLocation texture,
-                      int textureWidth, int textureHeight,
-                      @Nullable String symbol, int symbolColor) {
+    private GuideIcon(
+            @Nullable ItemStack itemStack,
+            @Nullable ResourceLocation texture,
+            int textureWidth,
+            int textureHeight,
+            @Nullable String symbol,
+            int symbolColor) {
         this.itemStack = itemStack;
         this.texture = texture;
         this.textureWidth = textureWidth;
@@ -53,32 +52,5 @@ public final class GuideIcon {
 
     public boolean isSymbol() {
         return symbol != null;
-    }
-
-    @Nullable
-    public ItemStack getItemStack() {
-        return itemStack;
-    }
-
-    @Nullable
-    public ResourceLocation getTexture() {
-        return texture;
-    }
-
-    public int getTextureWidth() {
-        return textureWidth;
-    }
-
-    public int getTextureHeight() {
-        return textureHeight;
-    }
-
-    @Nullable
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public int getSymbolColor() {
-        return symbolColor;
     }
 }

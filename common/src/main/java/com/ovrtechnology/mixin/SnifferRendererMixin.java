@@ -1,10 +1,9 @@
 package com.ovrtechnology.mixin;
 
-import com.ovrtechnology.util.Ids;
-import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
 import com.ovrtechnology.entity.sniffer.client.TamedSnifferRenderState;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
+import com.ovrtechnology.util.Ids;
 import net.minecraft.client.renderer.entity.SnifferRenderer;
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;
 import net.minecraft.resources.ResourceLocation;
@@ -37,28 +36,37 @@ public class SnifferRendererMixin {
         cir.setReturnValue(new TamedSnifferRenderState());
     }
 
-    @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/animal/sniffer/Sniffer;Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;F)V",
+    @Inject(
+            method =
+                    "extractRenderState(Lnet/minecraft/world/entity/animal/sniffer/Sniffer;Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;F)V",
             at = @At("TAIL"))
-    private void aromaaffect$extractRenderState(Sniffer sniffer, SnifferRenderState state, float partialTick, CallbackInfo ci) {
+    private void aromaaffect$extractRenderState(
+            Sniffer sniffer, SnifferRenderState state, float partialTick, CallbackInfo ci) {
         if (state instanceof TamedSnifferRenderState tamedState) {
             SnifferTamingData data = SnifferTamingData.get(sniffer.getUUID());
             tamedState.hasSaddle = !data.saddleItem.isEmpty() && data.saddleItem.is(Items.SADDLE);
-            tamedState.hasNose = !data.decorationItem.isEmpty() && data.decorationItem.getItem() instanceof SnifferNoseItem;
-            // Detect swimming mode: tamed, mounted, and in water
-            tamedState.isSwimmingMode = sniffer.isInWater() && sniffer.isVehicle() && data.ownerUUID != null;
+            tamedState.hasNose =
+                    !data.decorationItem.isEmpty()
+                            && data.decorationItem.getItem() instanceof SnifferNoseItem;
+
+            tamedState.isSwimmingMode =
+                    sniffer.isInWater() && sniffer.isVehicle() && data.ownerUUID != null;
             if (tamedState.isSwimmingMode) {
-                // Force digging animation to final frame (fully crouched) instantly
+
                 state.diggingAnimationState.start(0);
-                // Speed up walk animation (leg movement) when swimming
+
                 state.walkAnimationSpeed = Math.max(state.walkAnimationSpeed, 1.0F);
             }
         }
     }
 
-    @Inject(method = "getTextureLocation(Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;)Lnet/minecraft/resources/ResourceLocation;",
+    @Inject(
+            method =
+                    "getTextureLocation(Lnet/minecraft/client/renderer/entity/state/SnifferRenderState;)Lnet/minecraft/resources/ResourceLocation;",
             at = @At("HEAD"),
             cancellable = true)
-    private void aromaaffect$getCustomTexture(SnifferRenderState state, CallbackInfoReturnable<ResourceLocation> cir) {
+    private void aromaaffect$getCustomTexture(
+            SnifferRenderState state, CallbackInfoReturnable<ResourceLocation> cir) {
         if (state instanceof TamedSnifferRenderState tamedState) {
             if (tamedState.hasSaddle && tamedState.hasNose) {
                 cir.setReturnValue(SNIFFER_WITH_SADDLE_AND_NOSE);
@@ -68,6 +76,5 @@ public class SnifferRendererMixin {
                 cir.setReturnValue(SNIFFER_WITH_NOSE);
             }
         }
-        // If neither or not our state, let vanilla handle it
     }
 }

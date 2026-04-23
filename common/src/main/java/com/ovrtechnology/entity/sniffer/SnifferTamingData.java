@@ -1,10 +1,9 @@
 package com.ovrtechnology.entity.sniffer;
 
-import net.minecraft.world.item.ItemStack;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.item.ItemStack;
 
 public class SnifferTamingData {
 
@@ -15,7 +14,6 @@ public class SnifferTamingData {
     public ItemStack saddleItem = ItemStack.EMPTY;
     public ItemStack decorationItem = ItemStack.EMPTY;
 
-    // Tracking de esencias de dimensión obtenidas
     public boolean hasOverworldScent = false;
     public boolean hasNetherScent = false;
     public boolean hasEndScent = false;
@@ -24,9 +22,6 @@ public class SnifferTamingData {
         return DATA_MAP.computeIfAbsent(snifferUUID, k -> new SnifferTamingData());
     }
 
-    /**
-     * Verifica si el Sniffer ha completado las 3 esencias
-     */
     public boolean hasAllScents() {
         return hasOverworldScent && hasNetherScent && hasEndScent;
     }

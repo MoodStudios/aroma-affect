@@ -1,5 +1,6 @@
 package com.ovrtechnology.mixin;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -12,15 +13,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-
 @Mixin(SinglePoolElement.class)
 public class JigsawPriorityMixin {
 
     @Inject(method = "getShuffledJigsawBlocks", at = @At("RETURN"))
     private void aromaaffect$prioritizeNoseSmithHouse(
-            StructureTemplateManager manager, BlockPos pos,
-            Rotation rotation, RandomSource random,
+            StructureTemplateManager manager,
+            BlockPos pos,
+            Rotation rotation,
+            RandomSource random,
             CallbackInfoReturnable<List<StructureTemplate.JigsawBlockInfo>> cir) {
 
         List<StructureTemplate.JigsawBlockInfo> jigsaws = cir.getReturnValue();

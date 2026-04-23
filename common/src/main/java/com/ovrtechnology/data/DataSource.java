@@ -1,11 +1,10 @@
 package com.ovrtechnology.data;
 
 import com.google.gson.JsonElement;
-import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.Collections;
 import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 public interface DataSource {
     @Nullable

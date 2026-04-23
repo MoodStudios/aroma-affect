@@ -1,6 +1,8 @@
 package com.ovrtechnology.sniffer.loot;
 
-import com.ovrtechnology.AromaAffect;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -20,16 +22,12 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 public final class SnifferLootResolver {
 
-    private SnifferLootResolver() {
-    }
+    private SnifferLootResolver() {}
 
-    public static List<ItemStack> resolve(String noseFullId, ServerLevel level, BlockPos pos, RandomSource random) {
+    public static List<ItemStack> resolve(
+            String noseFullId, ServerLevel level, BlockPos pos, RandomSource random) {
         List<ItemStack> drops = new ArrayList<>();
         Holder<Biome> biome = level.getBiome(pos);
 
@@ -58,16 +56,22 @@ public final class SnifferLootResolver {
         return drops;
     }
 
-    private static void resolveEntry(SnifferLootEntry entry, ServerLevel level, BlockPos pos, RandomSource random, List<ItemStack> out) {
+    private static void resolveEntry(
+            SnifferLootEntry entry,
+            ServerLevel level,
+            BlockPos pos,
+            RandomSource random,
+            List<ItemStack> out) {
         if (entry.getLootTable() != null && !entry.getLootTable().isEmpty()) {
             ResourceLocation tableId = ResourceLocation.tryParse(entry.getLootTable());
             if (tableId == null) return;
             ResourceKey<LootTable> key = ResourceKey.create(Registries.LOOT_TABLE, tableId);
             LootTable table = level.getServer().reloadableRegistries().getLootTable(key);
             if (table == null) return;
-            LootParams params = new LootParams.Builder(level)
-                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
-                    .create(LootContextParamSets.GIFT);
+            LootParams params =
+                    new LootParams.Builder(level)
+                            .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
+                            .create(LootContextParamSets.GIFT);
             out.addAll(table.getRandomItems(params));
             return;
         }
@@ -78,7 +82,9 @@ public final class SnifferLootResolver {
         if (entry.getItem() != null && !entry.getItem().isEmpty()) {
             ResourceLocation id = ResourceLocation.tryParse(entry.getItem());
             if (id == null) return;
-            BuiltInRegistries.ITEM.getOptional(id).ifPresent(item -> out.add(new ItemStack(item, count)));
+            BuiltInRegistries.ITEM
+                    .getOptional(id)
+                    .ifPresent(item -> out.add(new ItemStack(item, count)));
             return;
         }
 
@@ -95,7 +101,8 @@ public final class SnifferLootResolver {
         }
     }
 
-    private static SnifferLootEntry pickWeighted(List<SnifferLootEntry> entries, RandomSource random) {
+    private static SnifferLootEntry pickWeighted(
+            List<SnifferLootEntry> entries, RandomSource random) {
         int totalWeight = 0;
         for (SnifferLootEntry e : entries) totalWeight += e.getWeightOrDefault();
         if (totalWeight <= 0) return null;
@@ -104,6 +111,6 @@ public final class SnifferLootResolver {
             target -= e.getWeightOrDefault();
             if (target < 0) return e;
         }
-        return entries.get(entries.size() - 1);
+        return entries.getLast();
     }
 }

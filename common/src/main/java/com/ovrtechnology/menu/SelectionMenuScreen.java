@@ -1,15 +1,17 @@
 package com.ovrtechnology.menu;
 
-import com.ovrtechnology.util.Texts;
-import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
-import com.ovrtechnology.trigger.PassiveModeManager;
+import com.ovrtechnology.util.Colors;
+import com.ovrtechnology.util.Ids;
+import com.ovrtechnology.util.Texts;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -17,23 +19,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
-/**
- * Abstract base for the four searchable selection menus
- * (Blocks, Biomes, Structures, Flowers).
- *
- * <p>Subclasses only need to provide:</p>
- * <ul>
- *   <li>{@link #loadCards()} — populate the {@code cards} list</li>
- *   <li>{@link #getRowHeight()} — 32 for compact, 56 for thumbnail rows</li>
- *   <li>{@link #renderRow} — draw one list row</li>
- * </ul>
- *
- * <p>Optionally override the filter hooks for menus with filter chips.</p>
- */
 public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
     protected static final int ROW_PADDING = 4;
@@ -44,10 +29,11 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     protected static final int BACK_BUTTON_SIZE = 24;
     protected static final int BACK_BUTTON_PADDING = 8;
 
-    protected static final ResourceLocation ICON_BACK = Ids.mod("textures/gui/sprites/radial/icon_back.png");
+    protected static final ResourceLocation ICON_BACK =
+            Ids.mod("textures/gui/sprites/radial/icon_back.png");
 
-    protected static final int ROW_COLOR = 0xB0222222;
-    protected static final int ROW_HOVER_COLOR = 0xE0444488;
+    protected static final int ROW_COLOR = Colors.HUD_OVERLAY_DARK;
+    protected static final int ROW_HOVER_COLOR = Colors.BORDER_PANEL_BLUE;
     protected static final int ROW_TRACKING_COLOR = 0xC0224422;
     protected static final int ROW_TRACKING_HOVER_COLOR = 0xE0336633;
 
@@ -68,49 +54,39 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         this.category = category;
     }
 
-    /** Populate {@link #cards} from the equipped nose's abilities. */
     protected abstract void loadCards();
 
-    /** Pixel height of a single list row (32 for compact, 56 for thumbnail). */
     protected abstract int getRowHeight();
 
-    /** Render one row at the given position. */
-    protected abstract void renderRow(GuiGraphics graphics, SelectionCard card,
-                                      int x, int y, int rowWidth,
-                                      boolean isHovered, boolean isTracking,
-                                      float animationProgress);
+    protected abstract void renderRow(
+            GuiGraphics graphics,
+            SelectionCard card,
+            int x,
+            int y,
+            int rowWidth,
+            boolean isHovered,
+            boolean isTracking,
+            float animationProgress);
 
-    /**
-     * Extra per-card filter logic beyond the search query.
-     * Return {@code true} to include the card, {@code false} to exclude it.
-     * Default implementation accepts all cards.
-     */
     protected boolean passesFilter(SelectionCard card) {
         return true;
     }
 
-    /**
-     * Handle a click that lands on the filter chip area.
-     * Return {@code true} if the click was consumed.
-     */
     protected boolean handleFilterClick(int mouseX, int mouseY) {
         return false;
     }
 
-    /**
-     * Render any filter chips (or other UI) between the search box and the list.
-     * Return the Y coordinate where the item list should start.
-     */
-    protected int renderBelowSearch(GuiGraphics graphics, int listX, int chipY,
-                                    int listWidth, int mouseX, int mouseY,
-                                    float animationProgress) {
+    protected int renderBelowSearch(
+            GuiGraphics graphics,
+            int listX,
+            int chipY,
+            int listWidth,
+            int mouseX,
+            int mouseY,
+            float animationProgress) {
         return chipY;
     }
 
-    /**
-     * Y offset where the scrollable list begins, used for scroll calculations.
-     * Override in subclasses that render filter chips to account for chip height.
-     */
     protected int getListTopOffset() {
         return 52 + SEARCH_BOX_HEIGHT + 8;
     }
@@ -123,14 +99,21 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int searchX = (width - listWidth) / 2;
         int searchY = 52;
 
-        searchBox = new EditBox(font, searchX, searchY, listWidth, SEARCH_BOX_HEIGHT,
-                Texts.tr("menu.aromaaffect." + category.getId() + ".search_placeholder"));
+        searchBox =
+                new EditBox(
+                        font,
+                        searchX,
+                        searchY,
+                        listWidth,
+                        SEARCH_BOX_HEIGHT,
+                        Texts.tr("menu.aromaaffect." + category.getId() + ".search_placeholder"));
         searchBox.setHint(Texts.tr("menu.aromaaffect." + category.getId() + ".search_placeholder"));
         searchBox.setMaxLength(50);
-        searchBox.setResponder(query -> {
-            searchQuery = query;
-            applyFilters();
-        });
+        searchBox.setResponder(
+                query -> {
+                    searchQuery = query;
+                    applyFilters();
+                });
         addWidget(searchBox);
 
         loadCards();
@@ -159,8 +142,12 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
-                                  float partialTick, float animationProgress) {
+    protected void renderContent(
+            GuiGraphics graphics,
+            int mouseX,
+            int mouseY,
+            float partialTick,
+            float animationProgress) {
         int centerX = width / 2;
         int listWidth = Math.min(MAX_LIST_WIDTH, width - 40);
         int listX = (width - listWidth) / 2;
@@ -168,23 +155,24 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         renderHeader(graphics, centerX, animationProgress);
         renderBackButton(graphics, mouseX, mouseY, animationProgress);
 
-        // Search box
         int searchY = 52;
         searchBox.setX(listX);
         searchBox.setY(searchY);
         searchBox.setWidth(listWidth);
         searchBox.render(graphics, mouseX, mouseY, partialTick);
 
-        // Optional filter chips (subclass hook)
         int chipY = searchY + SEARCH_BOX_HEIGHT + 6;
-        int listTop = renderBelowSearch(graphics, listX, chipY, listWidth, mouseX, mouseY, animationProgress);
+        int listTop =
+                renderBelowSearch(
+                        graphics, listX, chipY, listWidth, mouseX, mouseY, animationProgress);
         if (listTop == chipY) {
-            // No filter chips rendered — use standard spacing
+
             listTop = searchY + SEARCH_BOX_HEIGHT + 8;
         }
 
         int listBottom = height - 10;
-        renderItemList(graphics, listX, listTop, listWidth, listBottom, mouseX, mouseY, animationProgress);
+        renderItemList(
+                graphics, listX, listTop, listWidth, listBottom, mouseX, mouseY, animationProgress);
     }
 
     protected void renderHeader(GuiGraphics graphics, int centerX, float animationProgress) {
@@ -203,11 +191,14 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
                     category.getHeaderIcon(),
-                    iconX + offset, iconY + offset,
-                    0.0f, 0.0f,
-                    iconSize, iconSize,
-                    iconSize, iconSize
-            );
+                    iconX + offset,
+                    iconY + offset,
+                    0.0f,
+                    0.0f,
+                    iconSize,
+                    iconSize,
+                    iconSize,
+                    iconSize);
         }
 
         Component description = category.getDescription();
@@ -215,7 +206,8 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         graphics.drawCenteredString(font, description, centerX, 35, descColor);
     }
 
-    protected void renderBackButton(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
+    protected void renderBackButton(
+            GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
         float appear = Math.max(0.0f, (animationProgress - 0.2f) / 0.8f);
         if (appear <= 0.0f) return;
 
@@ -223,11 +215,11 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int by = BACK_BUTTON_PADDING;
         int bSize = BACK_BUTTON_SIZE + 8;
 
-        isHoveringBackButton = mouseX >= bx && mouseX < bx + bSize
-                && mouseY >= by && mouseY < by + bSize;
+        isHoveringBackButton =
+                mouseX >= bx && mouseX < bx + bSize && mouseY >= by && mouseY < by + bSize;
 
         if (isHoveringBackButton) {
-            int bgColor = (int) (0x80 * appear) << 24 | 0x9A7CFF;
+            int bgColor = (int) (0x80 * appear) << 24 | Colors.TRACK_PURPLE_RGB;
             graphics.fill(bx, by, bx + bSize, by + bSize, bgColor);
             int borderColor = (int) (0x88 * appear) << 24 | 0xFFFFFF;
             MenuRenderUtils.renderOutline(graphics, bx, by, bSize, bSize, borderColor);
@@ -239,23 +231,36 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
                 ICON_BACK,
-                bx + iconOffset, by + iconOffset,
-                0.0f, 0.0f,
-                iconSize, iconSize,
-                iconSize, iconSize
-        );
+                bx + iconOffset,
+                by + iconOffset,
+                0.0f,
+                0.0f,
+                iconSize,
+                iconSize,
+                iconSize,
+                iconSize);
     }
 
-    protected void renderItemList(GuiGraphics graphics, int listX, int listTop, int listWidth,
-                                   int listBottom, int mouseX, int mouseY, float animationProgress) {
+    protected void renderItemList(
+            GuiGraphics graphics,
+            int listX,
+            int listTop,
+            int listWidth,
+            int listBottom,
+            int mouseX,
+            int mouseY,
+            float animationProgress) {
         hoveredListIndex = -1;
 
         if (filteredCards.isEmpty()) {
             float alpha = animationProgress;
             int textColor = (int) (180 * alpha) << 24 | 0xAAAAAA;
-            graphics.drawCenteredString(font,
+            graphics.drawCenteredString(
+                    font,
                     Texts.tr("menu.aromaaffect." + category.getId() + ".no_results"),
-                    width / 2, listTop + 20, textColor);
+                    width / 2,
+                    listTop + 20,
+                    textColor);
             return;
         }
 
@@ -269,9 +274,13 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
                 continue;
             }
 
-            boolean isHovered = mouseX >= listX && mouseX < listX + listWidth
-                    && mouseY >= Math.max(rowY, listTop) && mouseY < Math.min(rowY + rowHeight, listBottom)
-                    && mouseY >= listTop && mouseY < listBottom;
+            boolean isHovered =
+                    mouseX >= listX
+                            && mouseX < listX + listWidth
+                            && mouseY >= Math.max(rowY, listTop)
+                            && mouseY < Math.min(rowY + rowHeight, listBottom)
+                            && mouseY >= listTop
+                            && mouseY < listBottom;
 
             if (isHovered) {
                 hoveredListIndex = i;
@@ -280,7 +289,15 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             SelectionCard card = filteredCards.get(i);
             boolean isTracking = ActiveTrackingState.isTracking(card.id);
 
-            renderRow(graphics, card, listX, rowY, listWidth, isHovered, isTracking, animationProgress);
+            renderRow(
+                    graphics,
+                    card,
+                    listX,
+                    rowY,
+                    listWidth,
+                    isHovered,
+                    isTracking,
+                    animationProgress);
         }
 
         graphics.disableScissor();
@@ -317,7 +334,8 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     }
 
     @Override
-    protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
+    protected boolean handleMouseScroll(
+            double mouseX, double mouseY, double scrollX, double scrollY) {
         int listTop = getListTopOffset();
         int listBottom = height - 10;
         int visibleHeight = listBottom - listTop;
@@ -344,19 +362,21 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         return false;
     }
 
-    protected void renderCostSection(GuiGraphics graphics, SelectionCard card,
-                                      int rowRight, int rowCenterY, float animationProgress) {
+    protected void renderCostSection(
+            GuiGraphics graphics,
+            SelectionCard card,
+            int rowRight,
+            int rowCenterY,
+            float animationProgress) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
         int alpha = (int) (255 * animationProgress);
         int costX = rowRight - ROW_PADDING;
 
-        // Nose durability cost
         String costText = String.valueOf(card.trackCost);
         int costTextWidth = font.width(costText);
 
-        // Check if player can afford
         ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
         boolean canAffordDurability = true;
         if (!headStack.isEmpty() && headStack.isDamageableItem()) {
@@ -364,14 +384,14 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             canAffordDurability = remaining >= card.trackCost;
         }
 
-        int costColor = canAffordDurability
-                ? (alpha << 24 | 0xFFAA00)
-                : (alpha << 24 | 0xFF4444);
+        int costColor =
+                canAffordDurability
+                        ? (alpha << 24 | Colors.WARNING_ORANGE_RGB)
+                        : (alpha << 24 | Colors.ERROR_RED_RGB);
 
         costX -= costTextWidth;
         graphics.drawString(font, costText, costX, rowCenterY - 4, costColor);
 
-        // Nose icon (14x14, rendered from head item)
         int noseIconSize = 14;
         costX -= noseIconSize + 2;
         if (!headStack.isEmpty() && animationProgress > 0.2f) {
@@ -382,17 +402,18 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             graphics.pose().popMatrix();
         }
 
-        // Required item (if any)
         if (card.requiredItem != null && !card.requiredItem.isEmpty()) {
-            costX -= 6; // gap
+            costX -= 6;
 
             String reqText = "x" + card.requiredItemCount;
             int reqTextWidth = font.width(reqText);
 
-            boolean hasRequiredItem = playerHasItem(player, card.requiredItem, card.requiredItemCount);
-            int reqColor = hasRequiredItem
-                    ? (alpha << 24 | 0xFFAA00)
-                    : (alpha << 24 | 0xFF4444);
+            boolean hasRequiredItem =
+                    playerHasItem(player, card.requiredItem, card.requiredItemCount);
+            int reqColor =
+                    hasRequiredItem
+                            ? (alpha << 24 | Colors.WARNING_ORANGE_RGB)
+                            : (alpha << 24 | Colors.ERROR_RED_RGB);
 
             costX -= reqTextWidth;
             graphics.drawString(font, reqText, costX, rowCenterY - 4, reqColor);
@@ -426,24 +447,30 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        // Pre-validate durability
         ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
         if (!headStack.isEmpty() && headStack.isDamageableItem()) {
             int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
             if (remaining < card.trackCost) {
                 player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
-                AromaAffect.LOGGER.info("Not enough nose durability for {}: need {}, have {}",
-                        card.id, card.trackCost, remaining);
+                AromaAffect.LOGGER.info(
+                        "Not enough nose durability for {}: need {}, have {}",
+                        card.id,
+                        card.trackCost,
+                        remaining);
                 return;
             }
         }
 
-        // Pre-validate required item
-        if (card.requiredItem != null && !card.requiredItem.isEmpty() && card.requiredItemCount > 0) {
+        if (card.requiredItem != null
+                && !card.requiredItem.isEmpty()
+                && card.requiredItemCount > 0) {
             if (!playerHasItem(player, card.requiredItem, card.requiredItemCount)) {
                 player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
-                AromaAffect.LOGGER.info("Missing required item for {}: need {}x {}",
-                        card.id, card.requiredItemCount, card.requiredItem.getDisplayName().getString());
+                AromaAffect.LOGGER.info(
+                        "Missing required item for {}: need {}x {}",
+                        card.id,
+                        card.requiredItemCount,
+                        card.requiredItem.getDisplayName().getString());
                 return;
             }
         }
@@ -460,14 +487,14 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        // Sync blacklist to server before path command
         if (Minecraft.getInstance().getConnection() != null) {
             PathScentNetworking.sendBlacklistSync(
                     Minecraft.getInstance().getConnection().registryAccess());
         }
 
-        String command = String.format("aromatest path %s %s",
-                category.getPathCommandType(), targetId.toString());
+        String command =
+                String.format(
+                        "aromatest path %s %s", category.getPathCommandType(), targetId.toString());
         AromaAffect.LOGGER.debug("Executing path command: {}", command);
 
         if (Minecraft.getInstance().getConnection() != null) {
@@ -492,8 +519,13 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         public ItemStack requiredItem;
         public int requiredItemCount = 0;
 
-        public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon,
-                            boolean isUnlocked, Component description, ResourceLocation thumbnail) {
+        public SelectionCard(
+                ResourceLocation id,
+                Component displayName,
+                ItemStack icon,
+                boolean isUnlocked,
+                Component description,
+                ResourceLocation thumbnail) {
             this.id = id;
             this.displayName = displayName;
             this.icon = icon;
@@ -502,12 +534,17 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             this.thumbnail = thumbnail;
         }
 
-        public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon,
-                            boolean isUnlocked, Component description) {
+        public SelectionCard(
+                ResourceLocation id,
+                Component displayName,
+                ItemStack icon,
+                boolean isUnlocked,
+                Component description) {
             this(id, displayName, icon, isUnlocked, description, null);
         }
 
-        public SelectionCard(ResourceLocation id, Component displayName, ItemStack icon, boolean isUnlocked) {
+        public SelectionCard(
+                ResourceLocation id, Component displayName, ItemStack icon, boolean isUnlocked) {
             this(id, displayName, icon, isUnlocked, null, null);
         }
     }

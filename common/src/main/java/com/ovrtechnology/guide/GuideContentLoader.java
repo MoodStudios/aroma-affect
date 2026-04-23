@@ -1,50 +1,28 @@
 package com.ovrtechnology.guide;
 
-import com.ovrtechnology.util.Texts;
-import com.ovrtechnology.util.Ids;
 import com.google.gson.*;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.util.Ids;
+import com.ovrtechnology.util.Texts;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Loads guide content from JSON resource files and converts them into
- * {@link GuideCategory} / {@link GuidePage} / {@link GuideElement} objects.
- *
- * <p>Text fields in JSON support two modes:</p>
- * <ul>
- *   <li>{@code "translate": "key"} → {@link Component#translatable(String)}</li>
- *   <li>{@code "text": "literal"} → {@link Component#literal(String)}</li>
- * </ul>
- * If both are present, {@code translate} takes priority.
- */
 public final class GuideContentLoader {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private GuideContentLoader() {
-    }
+    private GuideContentLoader() {}
 
-    /**
-     * Loads a guide category from a JSON resource on the classpath.
-     *
-     * @param resourcePath path like {@code "data/aromaaffect/guide/noses.json"}
-     * @return the parsed category, or {@code null} on failure
-     */
     @Nullable
     public static GuideCategory loadCategory(String resourcePath) {
         return loadCategory(ClasspathDataSource.INSTANCE, resourcePath);
     }
 
-    /**
-     * Loads a guide category from the given {@link DataSource}. Callers that
-     * want datapack overrides to apply should pass a {@code ResourceManagerDataSource}.
-     */
     @Nullable
     public static GuideCategory loadCategory(DataSource dataSource, String resourcePath) {
         try {
@@ -59,7 +37,8 @@ public final class GuideContentLoader {
             }
             return parseCategory(element.getAsJsonObject());
         } catch (Exception e) {
-            AromaAffect.LOGGER.error("[Guide] Failed to load category from {}: {}", resourcePath, e.getMessage());
+            AromaAffect.LOGGER.error(
+                    "[Guide] Failed to load category from {}: {}", resourcePath, e.getMessage());
             return null;
         }
     }
@@ -113,13 +92,14 @@ public final class GuideContentLoader {
                 return GuideElement.header(resolveText(json));
             case "subheader":
                 return GuideElement.subheader(resolveText(json));
-            case "text": {
-                if (json.has("color")) {
-                    int color = parseColor(json.get("color").getAsString());
-                    return GuideElement.coloredText(resolveText(json), color);
+            case "text":
+                {
+                    if (json.has("color")) {
+                        int color = parseColor(json.get("color").getAsString());
+                        return GuideElement.coloredText(resolveText(json), color);
+                    }
+                    return GuideElement.text(resolveText(json));
                 }
-                return GuideElement.text(resolveText(json));
-            }
             case "spacer":
                 return GuideElement.spacer(json.get("height").getAsInt());
             case "separator":
@@ -127,7 +107,8 @@ public final class GuideContentLoader {
             case "tip":
                 return GuideElement.tip(resolveText(json));
             case "item_showcase":
-                return GuideElement.itemShowcase(resolveItem(json.get("item").getAsString()), resolveText(json));
+                return GuideElement.itemShowcase(
+                        resolveItem(json.get("item").getAsString()), resolveText(json));
             case "icon_text":
                 return parseIconTextElement(json);
             case "detection_label":
@@ -135,7 +116,8 @@ public final class GuideContentLoader {
             case "ability":
                 return GuideElement.ability(resolveText(json));
             case "ability_link":
-                return GuideElement.abilityLink(resolveText(json), json.get("target_page").getAsString());
+                return GuideElement.abilityLink(
+                        resolveText(json), json.get("target_page").getAsString());
             case "crafting_grid":
                 return parseCraftingGrid(json);
             case "image":
@@ -165,7 +147,7 @@ public final class GuideContentLoader {
             }
             return GuideElement.iconText(text, icons);
         }
-        // Fallback: single item field
+
         if (json.has("item")) {
             return GuideElement.iconText(resolveItem(json.get("item").getAsString()), text);
         }
@@ -205,25 +187,14 @@ public final class GuideContentLoader {
         }
     }
 
-    /**
-     * Resolves a Minecraft item ID string to an ItemStack.
-     * Returns {@link ItemStack#EMPTY} for empty strings or {@code minecraft:air}.
-     */
     static ItemStack resolveItem(String itemId) {
         if (itemId == null || itemId.isEmpty() || itemId.equals("minecraft:air")) {
             return ItemStack.EMPTY;
         }
         ResourceLocation loc = Ids.parse(itemId);
-        return BuiltInRegistries.ITEM.getOptional(loc)
-                .map(ItemStack::new)
-                .orElse(ItemStack.EMPTY);
+        return BuiltInRegistries.ITEM.getOptional(loc).map(ItemStack::new).orElse(ItemStack.EMPTY);
     }
 
-    /**
-     * Resolves text from a JSON object.
-     * Checks for {@code "translate"} key first (i18n), then {@code "text"} (literal),
-     * then {@code "title"} (category/page titles).
-     */
     static Component resolveText(JsonObject json) {
         if (json.has("translate")) {
             return Texts.tr(json.get("translate").getAsString());
@@ -232,7 +203,7 @@ public final class GuideContentLoader {
             return Texts.lit(json.get("text").getAsString());
         }
         if (json.has("title")) {
-            // title field might also be a text object
+
             JsonElement titleEl = json.get("title");
             if (titleEl.isJsonObject()) {
                 return resolveText(titleEl.getAsJsonObject());
@@ -242,9 +213,6 @@ public final class GuideContentLoader {
         return Texts.empty();
     }
 
-    /**
-     * Parses a hex color string like {@code "#FFE8A838"} to an int.
-     */
     private static int parseColor(String hex) {
         String cleaned = hex.startsWith("#") ? hex.substring(1) : hex;
         return (int) Long.parseLong(cleaned, 16);

@@ -6,29 +6,21 @@ import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
-import lombok.Getter;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import lombok.Getter;
 
-/**
- * Loads and manages the sniffer configuration.
- */
 public final class SnifferConfigLoader {
 
     private static final String CONFIG_PATH = "data/aromaaffect/config/sniffer_config.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    @Getter
-    private static SnifferConfig config = new SnifferConfig();
+    @Getter private static SnifferConfig config = new SnifferConfig();
 
     private SnifferConfigLoader() {}
 
-    /**
-     * Initializes the config system by loading the configuration file.
-     */
     public static void init() {
         loadConfig(ClasspathDataSource.INSTANCE);
     }
@@ -41,22 +33,20 @@ public final class SnifferConfigLoader {
         loadConfig(ClasspathDataSource.INSTANCE);
     }
 
-    /**
-     * Loads the configuration from the JSON file.
-     * First tries the game's config directory, then the given {@link DataSource}
-     * (classpath by default, or the live {@code ResourceManager} during reload),
-     * finally hardcoded defaults.
-     */
     public static void loadConfig(DataSource dataSource) {
         Path externalConfig = getExternalConfigPath();
         if (Files.exists(externalConfig)) {
             try {
                 String json = Files.readString(externalConfig, StandardCharsets.UTF_8);
                 config = GSON.fromJson(json, SnifferConfig.class);
-                AromaAffect.LOGGER.info("Loaded sniffer config from external file: {}", externalConfig);
+                AromaAffect.LOGGER.info(
+                        "Loaded sniffer config from external file: {}", externalConfig);
                 return;
-            } catch (IOException e) {
-                AromaAffect.LOGGER.warn("Failed to load external sniffer config, using default", e);
+            } catch (Exception e) {
+                AromaAffect.LOGGER.warn(
+                        "Failed to parse external sniffer config (likely legacy schema); backing up and regenerating defaults :)",
+                        e);
+                backupStaleConfig(externalConfig);
             }
         }
 
@@ -64,10 +54,36 @@ public final class SnifferConfigLoader {
         saveDefaultConfig(externalConfig);
     }
 
+    private static void backupStaleConfig(Path externalConfig) {
+        try {
+            Path backup = externalConfig.resolveSibling("sniffer_config.json.bak");
+            Files.move(
+                    externalConfig,
+                    backup,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            AromaAffect.LOGGER.warn("Stale sniffer config backed up to: {}", backup);
+        } catch (IOException ioErr) {
+            AromaAffect.LOGGER.error(
+                    "Could not back up stale sniffer config at {}; attempting to delete instead",
+                    externalConfig,
+                    ioErr);
+            try {
+                Files.deleteIfExists(externalConfig);
+            } catch (IOException deleteErr) {
+                AromaAffect.LOGGER.error(
+                        "Failed to delete stale sniffer config; please remove it manually: {}",
+                        externalConfig,
+                        deleteErr);
+            }
+        }
+    }
+
     private static void loadDefaultConfig(DataSource dataSource) {
         JsonElement element = dataSource.read(CONFIG_PATH);
         if (element == null) {
-            AromaAffect.LOGGER.warn("Default sniffer config not found at {}, using hardcoded defaults", CONFIG_PATH);
+            AromaAffect.LOGGER.warn(
+                    "Default sniffer config not found at {}, using hardcoded defaults",
+                    CONFIG_PATH);
             config = new SnifferConfig();
             return;
         }
@@ -80,9 +96,6 @@ public final class SnifferConfigLoader {
         }
     }
 
-    /**
-     * Saves the current config to an external file for user editing.
-     */
     private static void saveDefaultConfig(Path path) {
         try {
             Files.createDirectories(path.getParent());
@@ -94,16 +107,10 @@ public final class SnifferConfigLoader {
         }
     }
 
-    /**
-     * Gets the path to the external config file.
-     */
     private static Path getExternalConfigPath() {
         return Path.of("config", AromaAffect.MOD_ID, "sniffer_config.json");
     }
 
-    /**
-     * Reloads the configuration from disk.
-     */
     public static void reload() {
         reload(ClasspathDataSource.INSTANCE);
     }

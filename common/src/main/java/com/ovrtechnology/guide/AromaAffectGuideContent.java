@@ -1,14 +1,19 @@
 package com.ovrtechnology.guide;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.nose.NoseRegistry;
+import com.ovrtechnology.util.Colors;
 import com.ovrtechnology.variant.CustomNoseRegistry;
 import com.ovrtechnology.variant.NoseVariant;
 import com.ovrtechnology.variant.NoseVariantRegistry;
 import com.ovrtechnology.variant.VariantRecipeIndex;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,21 +21,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
-/**
- * Builds the Aroma Affect guide content.
- * All categories are loaded from JSON via {@link GuideContentLoader}.
- */
 public final class AromaAffectGuideContent {
 
     private static GuideBook cachedBook;
 
-    private AromaAffectGuideContent() {
-    }
+    private AromaAffectGuideContent() {}
 
     public static GuideBook getBook() {
         if (cachedBook == null) {
@@ -60,13 +55,15 @@ public final class AromaAffectGuideContent {
     }
 
     private static GuideCategory buildWelcomeCategory() {
-        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/getting_started.json");
+        GuideCategory loaded =
+                GuideContentLoader.loadCategory("data/aromaaffect/guide/getting_started.json");
         if (loaded != null) {
             return loaded;
         }
-        AromaAffect.LOGGER.warn("[Guide] Getting Started JSON failed to load, using empty fallback");
+        AromaAffect.LOGGER.warn(
+                "[Guide] Getting Started JSON failed to load, using empty fallback");
         return GuideCategory.builder("welcome", "Getting Started")
-                .accentColor(0xFF6D5EF8)
+                .accentColor(Colors.ACCENT_PURPLE)
                 .build();
     }
 
@@ -76,7 +73,7 @@ public final class AromaAffectGuideContent {
             AromaAffect.LOGGER.warn("[Guide] Noses JSON failed to load, using empty fallback");
             return GuideCategory.builder("noses", "Noses")
                     .icon(GuideIcon.ofItem(noseItem("foragers_nose")))
-                    .accentColor(0xFFE8A838)
+                    .accentColor(Colors.ACCENT_AMBER)
                     .build();
         }
         return mergeAndSortNosePages(loaded);
@@ -95,7 +92,8 @@ public final class AromaAffectGuideContent {
             entries.add(new Entry(tier, page));
         }
 
-        for (Map.Entry<ResourceLocation, NoseVariant> entry : NoseVariantRegistry.all().entrySet()) {
+        for (Map.Entry<ResourceLocation, NoseVariant> entry :
+                NoseVariantRegistry.all().entrySet()) {
             GuidePage page = buildVariantPage(entry.getKey(), entry.getValue());
             if (page != null) {
                 entries.add(new Entry(entry.getValue().getTier(), page));
@@ -104,8 +102,9 @@ public final class AromaAffectGuideContent {
 
         entries.sort(Comparator.comparingInt(Entry::tier));
 
-        GuideCategory.Builder builder = GuideCategory.builder(source.getId(), source.getTitle())
-                .accentColor(source.getAccentColor());
+        GuideCategory.Builder builder =
+                GuideCategory.builder(source.getId(), source.getTitle())
+                        .accentColor(source.getAccentColor());
         if (source.getIcon() != null) {
             builder.icon(source.getIcon());
         }
@@ -117,7 +116,9 @@ public final class AromaAffectGuideContent {
 
     private static GuidePage buildVariantPage(ResourceLocation variantId, NoseVariant variant) {
         Item customNoseItem = CustomNoseRegistry.getCUSTOM_NOSE().get();
-        ItemStack icon = com.ovrtechnology.variant.CustomNoseItem.stackFor(customNoseItem, variantId, variant);
+        ItemStack icon =
+                com.ovrtechnology.variant.CustomNoseItem.stackFor(
+                        customNoseItem, variantId, variant);
         String name = variant.getDisplayName();
         GuideIcon pageIcon = GuideIcon.ofItem(icon);
 
@@ -134,24 +135,36 @@ public final class AromaAffectGuideContent {
                 GuidePage parsed = GuideContentLoader.parsePage(copy);
                 return rebuildWithIcon(parsed, pageIcon);
             } catch (Exception e) {
-                AromaAffect.LOGGER.error("[Guide] Failed to parse guide_page for variant {}: {}",
-                        variantId, e.getMessage());
+                AromaAffect.LOGGER.error(
+                        "[Guide] Failed to parse guide_page for variant {}: {}",
+                        variantId,
+                        e.getMessage());
             }
         }
 
-        GuidePage.Builder builder = GuidePage.builder(variantId.toString(), Component.literal(name))
-                .icon(pageIcon);
+        GuidePage.Builder builder =
+                GuidePage.builder(variantId.toString(), Component.literal(name)).icon(pageIcon);
 
         builder.element(GuideElement.header(Component.literal(name)));
         builder.element(GuideElement.spacer(4));
 
-        Component statsLine = Component.literal(
-                "Tier " + variant.getTier() + "  •  " + variant.getDurability() + " Durability");
+        Component statsLine =
+                Component.literal(
+                        "Tier "
+                                + variant.getTier()
+                                + "  •  "
+                                + variant.getDurability()
+                                + " Durability");
         Component repairComponent = resolveRepairComponent(variant.getRepair());
         if (repairComponent != null) {
-            statsLine = Component.literal("Tier " + variant.getTier() + "  •  "
-                    + variant.getDurability() + " Durability  •  Repair: ")
-                    .append(repairComponent);
+            statsLine =
+                    Component.literal(
+                                    "Tier "
+                                            + variant.getTier()
+                                            + "  •  "
+                                            + variant.getDurability()
+                                            + " Durability  •  Repair: ")
+                            .append(repairComponent);
         }
         builder.element(GuideElement.itemShowcase(icon, statsLine));
         builder.element(GuideElement.spacer(6));
@@ -168,19 +181,24 @@ public final class AromaAffectGuideContent {
             builder.element(GuideElement.subheader(Component.literal("Abilities")));
             for (String abilityId : unlock.getAbilities()) {
                 String display = humanize(abilityId);
-                String description = AbilityDefinitionLoader.getAbility(abilityId)
-                        .map(d -> d.getDescription())
-                        .orElse(null);
-                String label = description != null && !description.isEmpty()
-                        ? display + " — " + description
-                        : display;
+                String description =
+                        AbilityDefinitionLoader.getAbility(abilityId)
+                                .map(d -> d.getDescription())
+                                .orElse(null);
+                String label =
+                        description != null && !description.isEmpty()
+                                ? display + " — " + description
+                                : display;
                 builder.element(GuideElement.ability(label));
             }
             builder.element(GuideElement.spacer(8));
         }
 
-        boolean hasDetects = !unlock.getBlocks().isEmpty() || !unlock.getBiomes().isEmpty()
-                || !unlock.getStructures().isEmpty() || !unlock.getFlowers().isEmpty();
+        boolean hasDetects =
+                !unlock.getBlocks().isEmpty()
+                        || !unlock.getBiomes().isEmpty()
+                        || !unlock.getStructures().isEmpty()
+                        || !unlock.getFlowers().isEmpty();
         if (hasDetects) {
             builder.element(GuideElement.subheader(Component.literal("New Detections")));
             appendDetectSection(builder, "Blocks", unlock.getBlocks(), true);
@@ -195,28 +213,38 @@ public final class AromaAffectGuideContent {
             for (String nid : unlock.getNoses()) {
                 parentNames.add(humanize(nid));
             }
-            builder.element(GuideElement.text(Component.literal(
-                    "Inherits abilities from: " + String.join(", ", parentNames))));
+            builder.element(
+                    GuideElement.text(
+                            Component.literal(
+                                    "Inherits abilities from: " + String.join(", ", parentNames))));
         }
 
-        VariantRecipeIndex.get(variantId).ifPresent(entry -> {
-            builder.element(GuideElement.spacer(8));
-            builder.element(GuideElement.subheader(Component.literal("Recipe")));
-            builder.element(GuideElement.spacer(4));
-            ItemStack[] gridStacks = new ItemStack[9];
-            for (int i = 0; i < 9; i++) {
-                String id = entry.grid()[i];
-                if (id == null || id.isEmpty()) {
-                    gridStacks[i] = ItemStack.EMPTY;
-                } else {
-                    ResourceLocation loc = ResourceLocation.tryParse(id);
-                    gridStacks[i] = loc == null ? ItemStack.EMPTY
-                            : BuiltInRegistries.ITEM.getOptional(loc)
-                                    .map(ItemStack::new).orElse(ItemStack.EMPTY);
-                }
-            }
-            builder.element(GuideElement.craftingGrid(gridStacks, icon, Component.literal(name)));
-        });
+        VariantRecipeIndex.get(variantId)
+                .ifPresent(
+                        entry -> {
+                            builder.element(GuideElement.spacer(8));
+                            builder.element(GuideElement.subheader(Component.literal("Recipe")));
+                            builder.element(GuideElement.spacer(4));
+                            ItemStack[] gridStacks = new ItemStack[9];
+                            for (int i = 0; i < 9; i++) {
+                                String id = entry.grid()[i];
+                                if (id == null || id.isEmpty()) {
+                                    gridStacks[i] = ItemStack.EMPTY;
+                                } else {
+                                    ResourceLocation loc = ResourceLocation.tryParse(id);
+                                    gridStacks[i] =
+                                            loc == null
+                                                    ? ItemStack.EMPTY
+                                                    : BuiltInRegistries.ITEM
+                                                            .getOptional(loc)
+                                                            .map(ItemStack::new)
+                                                            .orElse(ItemStack.EMPTY);
+                                }
+                            }
+                            builder.element(
+                                    GuideElement.craftingGrid(
+                                            gridStacks, icon, Component.literal(name)));
+                        });
 
         return builder.build();
     }
@@ -234,20 +262,24 @@ public final class AromaAffectGuideContent {
         if (repairId == null || repairId.isEmpty()) return null;
         ResourceLocation loc = ResourceLocation.tryParse(repairId);
         if (loc == null) return Component.literal(humanize(repairId));
-        return BuiltInRegistries.ITEM.getOptional(loc)
-                .map(item -> (Component) new ItemStack(item).getHoverName())
+        return BuiltInRegistries.ITEM
+                .getOptional(loc)
+                .map(item -> new ItemStack(item).getHoverName())
                 .orElseGet(() -> Component.literal(humanize(repairId)));
     }
 
-    private static void appendDetectSection(GuidePage.Builder builder, String label,
-                                            List<String> ids, boolean hasItems) {
+    private static void appendDetectSection(
+            GuidePage.Builder builder, String label, List<String> ids, boolean hasItems) {
         if (ids == null || ids.isEmpty()) return;
         builder.element(GuideElement.detectionLabel(Component.literal(label)));
         for (String id : ids) {
             ResourceLocation loc = ResourceLocation.tryParse(id);
             if (hasItems && loc != null) {
-                ItemStack stack = BuiltInRegistries.ITEM.getOptional(loc)
-                        .map(ItemStack::new).orElse(ItemStack.EMPTY);
+                ItemStack stack =
+                        BuiltInRegistries.ITEM
+                                .getOptional(loc)
+                                .map(ItemStack::new)
+                                .orElse(ItemStack.EMPTY);
                 if (!stack.isEmpty()) {
                     builder.element(GuideElement.iconText(stack, stack.getHoverName()));
                     continue;
@@ -281,24 +313,22 @@ public final class AromaAffectGuideContent {
     }
 
     private static GuideCategory buildSnifferCategory() {
-        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/sniffer.json");
+        GuideCategory loaded =
+                GuideContentLoader.loadCategory("data/aromaaffect/guide/sniffer.json");
         if (loaded != null) {
             return loaded;
         }
         AromaAffect.LOGGER.warn("[Guide] Sniffer JSON failed to load, using empty fallback");
-        return GuideCategory.builder("sniffer", "Sniffer")
-                .accentColor(0xFF4EC9B0)
-                .build();
+        return GuideCategory.builder("sniffer", "Sniffer").accentColor(Colors.ACCENT_TEAL).build();
     }
 
     private static GuideCategory buildEndgameCategory() {
-        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/endgame.json");
+        GuideCategory loaded =
+                GuideContentLoader.loadCategory("data/aromaaffect/guide/endgame.json");
         if (loaded != null) {
             return loaded;
         }
         AromaAffect.LOGGER.warn("[Guide] Endgame JSON failed to load, using empty fallback");
-        return GuideCategory.builder("endgame", "Endgame")
-                .accentColor(0xFFD4AF37)
-                .build();
+        return GuideCategory.builder("endgame", "Endgame").accentColor(Colors.ACCENT_GOLD).build();
     }
 }

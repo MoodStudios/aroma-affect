@@ -1,6 +1,7 @@
 package com.ovrtechnology.sniffer.loot;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -10,8 +11,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -58,7 +57,8 @@ public class SnifferLootRule {
             } else {
                 ResourceLocation biomeId = ResourceLocation.tryParse(entry);
                 if (biomeId == null) continue;
-                ResourceLocation thisId = biomeHolder.unwrapKey().map(ResourceKey::location).orElse(null);
+                ResourceLocation thisId =
+                        biomeHolder.unwrapKey().map(ResourceKey::location).orElse(null);
                 if (biomeId.equals(thisId)) return true;
             }
         }

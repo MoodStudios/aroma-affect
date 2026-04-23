@@ -1,14 +1,9 @@
 package com.ovrtechnology.network;
 
-import net.minecraft.core.BlockPos;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.BlockPos;
 
-/**
- * Server-side singleton that stores blacklisted positions per player.
- * Synced from the client via a C2S packet before each path command.
- */
 public final class BlacklistSyncManager {
 
     private static final BlacklistSyncManager INSTANCE = new BlacklistSyncManager();
@@ -31,9 +26,6 @@ public final class BlacklistSyncManager {
         }
     }
 
-    /**
-     * Gets all excluded BlockPos entries for a specific player and target.
-     */
     public Set<BlockPos> getExcludedPositionsForTarget(UUID playerId, String targetId) {
         List<ExcludedPosition> list = excludedPositions.get(playerId);
         if (list == null) return Collections.emptySet();
@@ -47,25 +39,6 @@ public final class BlacklistSyncManager {
         return result;
     }
 
-    /**
-     * Checks if a position is excluded for a player (exact match).
-     */
-    public boolean isExcluded(UUID playerId, String targetId, BlockPos pos) {
-        List<ExcludedPosition> list = excludedPositions.get(playerId);
-        if (list == null) return false;
-        for (ExcludedPosition ep : list) {
-            if (ep.targetId.equals(targetId)
-                    && ep.x == pos.getX() && ep.y == pos.getY() && ep.z == pos.getZ()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Checks if a position is within a distance threshold of any excluded position
-     * for the same target. Used for structures/biomes where positions may not match exactly.
-     */
     public boolean isExcludedNearby(UUID playerId, String targetId, BlockPos pos, int threshold) {
         List<ExcludedPosition> list = excludedPositions.get(playerId);
         if (list == null) return false;
@@ -77,9 +50,5 @@ public final class BlacklistSyncManager {
             }
         }
         return false;
-    }
-
-    public void removePlayer(UUID playerId) {
-        excludedPositions.remove(playerId);
     }
 }

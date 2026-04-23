@@ -1,28 +1,29 @@
 package com.ovrtechnology.guide;
 
+import com.ovrtechnology.util.Colors;
 import com.ovrtechnology.util.Texts;
-import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
+import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
-/**
- * A category (section) in the guide table of contents.
- * Categories group related pages and can be expanded/collapsed in the sidebar.
- */
+@Getter
 public final class GuideCategory {
 
     private final String id;
     private final Component title;
-    @Nullable
-    private final GuideIcon icon;
+    @Nullable private final GuideIcon icon;
     private final int accentColor;
     private final List<GuidePage> pages;
 
-    private GuideCategory(String id, Component title, @Nullable GuideIcon icon,
-                          int accentColor, List<GuidePage> pages) {
+    private GuideCategory(
+            String id,
+            Component title,
+            @Nullable GuideIcon icon,
+            int accentColor,
+            List<GuidePage> pages) {
         this.id = id;
         this.title = title;
         this.icon = icon;
@@ -38,33 +39,11 @@ public final class GuideCategory {
         return new Builder(id, title);
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public Component getTitle() {
-        return title;
-    }
-
-    @Nullable
-    public GuideIcon getIcon() {
-        return icon;
-    }
-
-    public int getAccentColor() {
-        return accentColor;
-    }
-
-    public List<GuidePage> getPages() {
-        return pages;
-    }
-
     public static final class Builder {
         private final String id;
         private final Component title;
-        @Nullable
-        private GuideIcon icon;
-        private int accentColor = 0xFF6D5EF8;
+        @Nullable private GuideIcon icon;
+        private int accentColor = Colors.ACCENT_PURPLE;
         private final List<GuidePage> pages = new ArrayList<>();
 
         private Builder(String id, Component title) {

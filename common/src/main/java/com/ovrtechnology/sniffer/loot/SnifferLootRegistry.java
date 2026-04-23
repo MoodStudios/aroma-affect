@@ -5,12 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.DataSource;
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
 
 public final class SnifferLootRegistry {
 
@@ -19,8 +18,7 @@ public final class SnifferLootRegistry {
     private static final Gson GSON = new GsonBuilder().create();
     private static final Map<ResourceLocation, SnifferLootRule> rules = new LinkedHashMap<>();
 
-    private SnifferLootRegistry() {
-    }
+    private SnifferLootRegistry() {}
 
     public static Collection<SnifferLootRule> all() {
         return Collections.unmodifiableCollection(rules.values());
@@ -36,9 +34,11 @@ public final class SnifferLootRegistry {
                     rules.put(entry.getKey(), rule);
                 }
             } catch (Exception e) {
-                AromaAffect.LOGGER.error("Failed to parse sniffer loot rule {}: {}", entry.getKey(), e.getMessage());
+                AromaAffect.LOGGER.error(
+                        "Failed to parse sniffer loot rule {}: {}", entry.getKey(), e.getMessage());
             }
         }
-        AromaAffect.LOGGER.info("SnifferLootRegistry loaded {} rules from {} file(s)", rules.size(), files.size());
+        AromaAffect.LOGGER.info(
+                "SnifferLootRegistry loaded {} rules from {} file(s)", rules.size(), files.size());
     }
 }
