@@ -175,17 +175,34 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
     }
 
     private void addBiomeCard(ResourceLocation biomeId, boolean isUnlocked) {
-        ItemStack icon = BIOME_ICONS.getOrDefault(biomeId.toString(), Items.GRASS_BLOCK.getDefaultInstance());
+        BiomeDefinition biomeDef = BiomeDefinitionLoader.getBiomeById(biomeId.toString());
+
+        ItemStack icon = null;
+        if (biomeDef != null && biomeDef.getBlock() != null && !biomeDef.getBlock().isEmpty()) {
+            ResourceLocation blockLoc = Ids.parse(biomeDef.getBlock());
+            if (blockLoc != null) {
+                icon = BuiltInRegistries.ITEM.getOptional(blockLoc)
+                        .map(ItemStack::new).orElse(null);
+            }
+        }
+        if (icon == null || icon.isEmpty()) {
+            icon = BIOME_ICONS.getOrDefault(biomeId.toString(), Items.GRASS_BLOCK.getDefaultInstance());
+        }
 
         String biomeName = MenuRenderUtils.capitalizeWords(biomeId.getPath().replace("_", " "));
         Component displayName = Texts.lit(biomeName);
         Component description = Texts.tr("menu.aromaaffect.biomes.card.description", displayName);
 
-        ResourceLocation thumbnail = BiomeThumbnailResolver.resolve(biomeId);
+        ResourceLocation thumbnail = null;
+        if (biomeDef != null && biomeDef.getRawImage() != null
+                && biomeDef.getRawImage().contains(":")) {
+            thumbnail = ResourceLocation.tryParse(biomeDef.getRawImage());
+        }
+        if (thumbnail == null) {
+            thumbnail = BiomeThumbnailResolver.resolve(biomeId);
+        }
         SelectionCard card = new SelectionCard(biomeId, displayName, icon, isUnlocked, description, thumbnail);
 
-        // Populate cost data from BiomeDefinitionLoader
-        BiomeDefinition biomeDef = BiomeDefinitionLoader.getBiomeById(biomeId.toString());
         if (biomeDef != null) {
             card.trackCost = biomeDef.getTrackCost();
             RequiredItem req = biomeDef.getRequiredItem();

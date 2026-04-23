@@ -124,26 +124,43 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
 
     private void addStructureCard(ResourceLocation structureId, boolean isUnlocked) {
         StructureInfo info = STRUCTURE_INFO.get(structureId.toString());
+        StructureDefinition structureDef = StructureDefinitionLoader.getStructureById(structureId.toString());
 
-        ItemStack icon;
+        ItemStack icon = null;
         String displayName;
 
+        if (structureDef != null && structureDef.getIconBlock() != null && !structureDef.getIconBlock().isEmpty()) {
+            ResourceLocation blockLoc = Ids.parse(structureDef.getIconBlock());
+            if (blockLoc != null) {
+                icon = BuiltInRegistries.ITEM.getOptional(blockLoc)
+                        .map(ItemStack::new).orElse(null);
+            }
+        }
+
         if (info != null) {
-            icon = info.icon;
+            if (icon == null || icon.isEmpty()) icon = info.icon;
             displayName = info.displayName;
         } else {
-            icon = Items.COMPASS.getDefaultInstance();
-            displayName = MenuRenderUtils.capitalizeWords(structureId.getPath().replace("_", " "));
+            if (icon == null || icon.isEmpty()) icon = Items.COMPASS.getDefaultInstance();
+            displayName = structureDef != null && structureDef.getFallbackName() != null
+                    && !structureDef.getFallbackName().isEmpty()
+                    ? structureDef.getFallbackName()
+                    : MenuRenderUtils.capitalizeWords(structureId.getPath().replace("_", " "));
         }
 
         Component name = Texts.lit(displayName);
         Component description = Texts.tr("menu.aromaaffect.structures.card.description", name);
 
-        ResourceLocation thumbnail = StructureThumbnailResolver.resolve(structureId);
+        ResourceLocation thumbnail = null;
+        if (structureDef != null && structureDef.getRawImage() != null
+                && structureDef.getRawImage().contains(":")) {
+            thumbnail = ResourceLocation.tryParse(structureDef.getRawImage());
+        }
+        if (thumbnail == null) {
+            thumbnail = StructureThumbnailResolver.resolve(structureId);
+        }
         SelectionCard card = new SelectionCard(structureId, name, icon, isUnlocked, description, thumbnail);
 
-        // Populate cost data from StructureDefinitionLoader
-        StructureDefinition structureDef = StructureDefinitionLoader.getStructureById(structureId.toString());
         if (structureDef != null) {
             card.trackCost = structureDef.getTrackCost();
             RequiredItem req = structureDef.getRequiredItem();
