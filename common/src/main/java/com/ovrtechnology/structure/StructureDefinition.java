@@ -84,6 +84,9 @@ public class StructureDefinition {
      */
     @SerializedName("image")
     private String image;
+
+    @SerializedName("icon_block")
+    private String iconBlock;
     
     /**
      * Fallback display name when localization is unavailable.

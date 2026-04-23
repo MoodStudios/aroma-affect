@@ -74,6 +74,9 @@ public class BiomeDefinition {
      */
     @SerializedName("image")
     private String image;
+
+    @SerializedName("block")
+    private String block;
     
     /**
      * Fallback display name when localization is unavailable.
