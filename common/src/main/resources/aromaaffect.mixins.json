@@ -5,13 +5,8 @@
   "minVersion": "0.8",
   "client": [
     "AbstractContainerScreenAccessor",
-    "EntityRenderStateMixin",
-    "EntityRendererMixin",
-    "LivingEntityRendererMixin",
-    "SnifferRendererMixin",
-    "SnifferModelMixin",
     "IronGolemModelMixin",
-    "IronGolemRendererMixin"
+    "CustomHeadLayerMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",

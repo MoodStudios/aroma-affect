@@ -14,7 +14,6 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -49,9 +48,9 @@ public class GuideScreen extends BaseMenuScreen {
     private static final int COLOR_SIDEBAR_HOVER = Colors.OVERLAY_WHITE_MEDIUM;
     private static final int COLOR_SIDEBAR_SELECTED = Colors.ACCENT_PURPLE_ALPHA_STRONG;
     private static final int COLOR_CATEGORY_TEXT = 0xFFDDDDEE;
-    private static final int COLOR_SCROLLBAR_BG = Colors.OVERLAY_WHITE_SOFT;
-    private static final int COLOR_SCROLLBAR_THUMB = 0x60AAAACC;
-    private static final int COLOR_SCROLLBAR_THUMB_HOVER = 0x90BBBBDD;
+    private static final int COLOR_SCROLLBAR_BG = 0xFF1F2030;
+    private static final int COLOR_SCROLLBAR_THUMB = 0xFFAAAACC;
+    private static final int COLOR_SCROLLBAR_THUMB_HOVER = 0xFFBBBBDD;
     private static final int COLOR_PAGE_TITLE_BG = 0xF0181838;
     private static final int COLOR_TIP_BG = Colors.FOREST_OVERLAY;
     private static final int COLOR_TIP_BORDER = 0xFF2D8B46;
@@ -223,11 +222,11 @@ public class GuideScreen extends BaseMenuScreen {
         float titleScale = 1.2f;
         int textLeftX = left + 14;
         int titleY = top + 7;
-        g.pose().pushMatrix();
-        g.pose().translate(textLeftX, titleY);
-        g.pose().scale(titleScale, titleScale);
+        g.pose().pushPose();
+        g.pose().translate(textLeftX, titleY, 0);
+        g.pose().scale(titleScale, titleScale, 1);
         g.drawString(font, title, 0, 0, applyAlpha(COLOR_TITLE, alpha), true);
-        g.pose().popMatrix();
+        g.pose().popPose();
 
         Component subtitle = book.getSubtitle();
         if (subtitle != null && !subtitle.getString().isEmpty()) {
@@ -373,16 +372,15 @@ public class GuideScreen extends BaseMenuScreen {
         if (entry.category != null && entry.category.getIcon() != null) {
             GuideIcon icon = entry.category.getIcon();
             if (icon.isItem()) {
-                g.pose().pushMatrix();
-                g.pose().translate(iconX, iconY);
-                g.pose().scale(0.75f, 0.75f);
+                g.pose().pushPose();
+                g.pose().translate(iconX, iconY, 0);
+                g.pose().scale(0.75f, 0.75f, 1);
                 g.renderItem(icon.getItemStack(), 0, 0);
-                g.pose().popMatrix();
+                g.pose().popPose();
             } else if (icon.isTexture()) {
                 int renderSize = 12;
                 int texIconY = y + (h - renderSize) / 2;
                 g.blit(
-                        RenderPipelines.GUI_TEXTURED,
                         icon.getTexture(),
                         iconX,
                         texIconY,
@@ -505,11 +503,11 @@ public class GuideScreen extends BaseMenuScreen {
         int iconY = y + (SIDEBAR_ITEM_HEIGHT - iconRenderSize) / 2;
         GuideIcon pageIcon = entry.page != null ? entry.page.getIcon() : null;
         if (pageIcon != null && pageIcon.isItem()) {
-            g.pose().pushMatrix();
-            g.pose().translate(iconX, iconY);
-            g.pose().scale(0.75f, 0.75f);
+            g.pose().pushPose();
+            g.pose().translate(iconX, iconY, 0);
+            g.pose().scale(0.75f, 0.75f, 1);
             g.renderItem(pageIcon.getItemStack(), 0, 0);
-            g.pose().popMatrix();
+            g.pose().popPose();
         } else if (pageIcon != null && pageIcon.isSymbol()) {
             int symY = y + (SIDEBAR_ITEM_HEIGHT - font.lineHeight) / 2;
             g.drawString(
@@ -572,11 +570,11 @@ public class GuideScreen extends BaseMenuScreen {
         int titleTextX = left + 16;
         GuideIcon pageIcon = currentPage.getIcon();
         if (pageIcon != null && pageIcon.isItem()) {
-            g.pose().pushMatrix();
-            g.pose().translate(left + 16, top + 8);
-            g.pose().scale(0.75f, 0.75f);
+            g.pose().pushPose();
+            g.pose().translate(left + 16, top + 8, 0);
+            g.pose().scale(0.75f, 0.75f, 1);
             g.renderItem(pageIcon.getItemStack(), 0, 0);
-            g.pose().popMatrix();
+            g.pose().popPose();
             titleTextX = left + 32;
         } else if (pageIcon != null && pageIcon.isSymbol()) {
             g.drawString(
@@ -661,22 +659,17 @@ public class GuideScreen extends BaseMenuScreen {
         if (!craftingTooltipItem.isEmpty()) {
             List<Component> tooltipLines =
                     Screen.getTooltipFromItem(Minecraft.getInstance(), craftingTooltipItem);
-            List<net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent>
-                    clientComponents = new ArrayList<>();
+            List<net.minecraft.util.FormattedCharSequence> charSequences = new ArrayList<>();
             for (Component line : tooltipLines) {
-                clientComponents.add(
-                        net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
-                                .create(line.getVisualOrderText()));
+                charSequences.add(line.getVisualOrderText());
             }
             g.renderTooltip(
                     font,
-                    clientComponents,
-                    mouseX,
-                    mouseY,
+                    charSequences,
                     net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner
                             .INSTANCE,
-                    craftingTooltipItem.get(
-                            net.minecraft.core.component.DataComponents.TOOLTIP_STYLE));
+                    mouseX,
+                    mouseY);
         }
     }
 
@@ -711,12 +704,12 @@ public class GuideScreen extends BaseMenuScreen {
         Component text = element.getText();
         if (text == null) return 0;
 
-        g.pose().pushMatrix();
+        g.pose().pushPose();
         float scale = 1.5f;
-        g.pose().translate(x, y);
-        g.pose().scale(scale, scale);
+        g.pose().translate(x, y, 0);
+        g.pose().scale(scale, scale, 1);
         g.drawString(font, text, 0, 0, applyAlpha(Colors.WHITE, alpha), true);
-        g.pose().popMatrix();
+        g.pose().popPose();
 
         int textHeight = (int) (font.lineHeight * scale);
 
@@ -928,17 +921,7 @@ public class GuideScreen extends BaseMenuScreen {
                 y + imgH + 2,
                 applyAlpha(COLOR_IMAGE_SHADOW, alpha));
 
-        g.blit(
-                RenderPipelines.GUI_TEXTURED,
-                element.getImageTexture(),
-                imgX,
-                y,
-                0.0f,
-                0.0f,
-                texW,
-                texH,
-                texW,
-                texH);
+        g.blit(element.getImageTexture(), imgX, y, 0.0f, 0.0f, texW, texH, texW, texH);
 
         drawBorder(
                 g,
@@ -1228,12 +1211,12 @@ public class GuideScreen extends BaseMenuScreen {
         }
 
         if (displayItem != null && !displayItem.isEmpty()) {
-            g.pose().pushMatrix();
+            g.pose().pushPose();
             float scale = iconSize / 16.0f;
-            g.pose().translate(x, y);
-            g.pose().scale(scale, scale);
+            g.pose().translate(x, y, 0);
+            g.pose().scale(scale, scale, 1);
             g.renderItem(displayItem, 0, 0);
-            g.pose().popMatrix();
+            g.pose().popPose();
         }
 
         List<FormattedCharSequence> lines = font.split(text, width - iconSize - iconPad);
@@ -1475,9 +1458,9 @@ public class GuideScreen extends BaseMenuScreen {
 
     @Override
     public boolean mouseDragged(
-            net.minecraft.client.input.MouseButtonEvent event, double dragX, double dragY) {
-        if (event.button() == 0 && dragging != DragTarget.NONE) {
-            double deltaY = event.y() - dragStartMouseY;
+            double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (button == 0 && dragging != DragTarget.NONE) {
+            double deltaY = mouseY - dragStartMouseY;
             if (dragging == DragTarget.CONTENT_SCROLLBAR) {
                 int maxScroll = Math.max(0, contentTotalHeight - contentVisibleHeight);
                 int thumbH =
@@ -1501,16 +1484,16 @@ public class GuideScreen extends BaseMenuScreen {
             }
             return true;
         }
-        return super.mouseDragged(event, dragX, dragY);
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
-        if (event.button() == 0 && dragging != DragTarget.NONE) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && dragging != DragTarget.NONE) {
             dragging = DragTarget.NONE;
             return true;
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     private int getThumbHeight(int trackHeight, int totalHeight, int visibleHeight) {

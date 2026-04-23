@@ -75,8 +75,8 @@ public final class StructurePositionRefiner {
             ServerLevel level, BlockPos approxPos, ResourceLocation structureId) {
         try {
             Registry<Structure> structureRegistry =
-                    level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-            Structure structure = structureRegistry.getValue(structureId);
+                    level.registryAccess().registryOrThrow(Registries.STRUCTURE);
+            Structure structure = structureRegistry.get(structureId);
             if (structure == null) {
                 return approxPos;
             }

@@ -6,7 +6,6 @@ import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ItemCombinerMenu;
-import net.minecraft.world.inventory.ItemCombinerMenuSlotDefinition;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -23,9 +22,8 @@ public abstract class AnvilRepairMixin extends ItemCombinerMenu {
             MenuType<?> menuType,
             int containerId,
             Inventory playerInventory,
-            ContainerLevelAccess access,
-            ItemCombinerMenuSlotDefinition slotDef) {
-        super(menuType, containerId, playerInventory, access, slotDef);
+            ContainerLevelAccess access) {
+        super(menuType, containerId, playerInventory, access);
     }
 
     @Shadow private int repairItemCountCost;
@@ -38,7 +36,7 @@ public abstract class AnvilRepairMixin extends ItemCombinerMenu {
         ItemStack result = this.resultSlots.getItem(0);
 
         if (result.isEmpty() || !left.is(NoseTags.NOSES)) return;
-        if (!left.isDamageableItem() || !left.isValidRepairItem(right)) return;
+        if (!left.isDamageableItem() || !left.getItem().isValidRepairItem(left, right)) return;
         if (left.getDamageValue() <= 0) return;
 
         int repairPerUnit = Math.max(left.getMaxDamage() / 3, 1);

@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:melon_slice",
-    "A": "minecraft:orange_dye",
-    "C": "minecraft:yellow_dye",
-    "E": "minecraft:lime_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:melon_slice"
+    },
+    "A": {
+      "item": "minecraft:orange_dye"
+    },
+    "C": {
+      "item": "minecraft:yellow_dye"
+    },
+    "E": {
+      "item": "minecraft:lime_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:citrus_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:citrus_scent"
   }
 }

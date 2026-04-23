@@ -7,13 +7,21 @@
     "SBS"
   ],
   "key": {
-    "D": "minecraft:diamond",
-    "N": "aromaaffect:prospectors_nose",
-    "B": "minecraft:bone_meal",
-    "S": "minecraft:string"
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "N": {
+      "item": "aromaaffect:prospectors_nose"
+    },
+    "B": {
+      "item": "minecraft:bone_meal"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
   },
   "result": {
-    "id": "aromaaffect:jewelers_nose",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:jewelers_nose"
   }
 }

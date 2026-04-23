@@ -7,14 +7,24 @@
     "ACA"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:iron_ingot",
-    "A": "minecraft:gray_dye",
-    "C": "minecraft:black_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:iron_ingot"
+    },
+    "A": {
+      "item": "minecraft:gray_dye"
+    },
+    "C": {
+      "item": "minecraft:black_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:machina_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:machina_scent"
   }
 }

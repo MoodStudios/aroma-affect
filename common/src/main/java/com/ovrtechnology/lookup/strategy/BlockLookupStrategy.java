@@ -142,8 +142,8 @@ public class BlockLookupStrategy implements LookupStrategy {
             BlockPos origin,
             Block targetBlock,
             Set<BlockPos> excludedPositions) {
-        int minY = Math.max(level.getMinY(), origin.getY() - Y_SCAN_RANGE);
-        int maxY = Math.min(level.getMaxY(), origin.getY() + Y_SCAN_RANGE);
+        int minY = Math.max(level.getMinBuildHeight(), origin.getY() - Y_SCAN_RANGE);
+        int maxY = Math.min(level.getMaxBuildHeight(), origin.getY() + Y_SCAN_RANGE);
 
         int chunkMinX = chunk.getPos().getMinBlockX();
         int chunkMinZ = chunk.getPos().getMinBlockZ();

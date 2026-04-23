@@ -3,12 +3,11 @@ package com.ovrtechnology.mixin;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.entity.nosesmith.NoseSmithZombieMarker;
-import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.ZombieVillager;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -40,16 +39,16 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void aromaaffect$saveNoseSmithData(ValueOutput output, CallbackInfo ci) {
+    private void aromaaffect$saveNoseSmithData(CompoundTag tag, CallbackInfo ci) {
         if (aromaaffect$wasNoseSmith) {
-            output.putBoolean("aromaaffect:WasNoseSmith", true);
-            output.putBoolean("aromaaffect:NoseSmithHasNose", aromaaffect$noseSmithHasNose);
-            output.putString(
+            tag.putBoolean("aromaaffect:WasNoseSmith", true);
+            tag.putBoolean("aromaaffect:NoseSmithHasNose", aromaaffect$noseSmithHasNose);
+            tag.putString(
                     "aromaaffect:NoseSmithRequestedFlower", aromaaffect$noseSmithRequestedFlower);
-            output.putBoolean(
+            tag.putBoolean(
                     "aromaaffect:NoseSmithHouseDecorated", aromaaffect$noseSmithHouseDecorated);
             if (aromaaffect$noseSmithNoseRemovedGameTime >= 0) {
-                output.putString(
+                tag.putString(
                         "aromaaffect:NoseSmithNoseRemovedGameTime",
                         Long.toString(aromaaffect$noseSmithNoseRemovedGameTime));
             }
@@ -57,25 +56,32 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void aromaaffect$loadNoseSmithData(ValueInput input, CallbackInfo ci) {
-        aromaaffect$wasNoseSmith = input.getBooleanOr("aromaaffect:WasNoseSmith", false);
+    private void aromaaffect$loadNoseSmithData(CompoundTag tag, CallbackInfo ci) {
+        aromaaffect$wasNoseSmith =
+                tag.contains("aromaaffect:WasNoseSmith", Tag.TAG_BYTE)
+                        && tag.getBoolean("aromaaffect:WasNoseSmith");
         if (aromaaffect$wasNoseSmith) {
-            aromaaffect$noseSmithHasNose = input.getBooleanOr("aromaaffect:NoseSmithHasNose", true);
+            aromaaffect$noseSmithHasNose =
+                    !tag.contains("aromaaffect:NoseSmithHasNose", Tag.TAG_BYTE)
+                            || tag.getBoolean("aromaaffect:NoseSmithHasNose");
             aromaaffect$noseSmithRequestedFlower =
-                    input.getString("aromaaffect:NoseSmithRequestedFlower").orElse("");
+                    tag.contains("aromaaffect:NoseSmithRequestedFlower", Tag.TAG_STRING)
+                            ? tag.getString("aromaaffect:NoseSmithRequestedFlower")
+                            : "";
             aromaaffect$noseSmithHouseDecorated =
-                    input.getBooleanOr("aromaaffect:NoseSmithHouseDecorated", false);
-            aromaaffect$noseSmithNoseRemovedGameTime =
-                    input.getString("aromaaffect:NoseSmithNoseRemovedGameTime")
-                            .map(
-                                    s -> {
-                                        try {
-                                            return Long.parseLong(s);
-                                        } catch (NumberFormatException e) {
-                                            return -1L;
-                                        }
-                                    })
-                            .orElse(-1L);
+                    tag.contains("aromaaffect:NoseSmithHouseDecorated", Tag.TAG_BYTE)
+                            && tag.getBoolean("aromaaffect:NoseSmithHouseDecorated");
+            if (tag.contains("aromaaffect:NoseSmithNoseRemovedGameTime", Tag.TAG_STRING)) {
+                try {
+                    aromaaffect$noseSmithNoseRemovedGameTime =
+                            Long.parseLong(
+                                    tag.getString("aromaaffect:NoseSmithNoseRemovedGameTime"));
+                } catch (NumberFormatException e) {
+                    aromaaffect$noseSmithNoseRemovedGameTime = -1L;
+                }
+            } else {
+                aromaaffect$noseSmithNoseRemovedGameTime = -1L;
+            }
         }
     }
 
@@ -85,33 +91,26 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
                     @At(
                             value = "INVOKE",
                             target =
-                                    "Lnet/minecraft/world/entity/monster/ZombieVillager;convertTo(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/ConversionParams;Lnet/minecraft/world/entity/ConversionParams$AfterConversion;)Lnet/minecraft/world/entity/Mob;"))
+                                    "Lnet/minecraft/world/entity/monster/ZombieVillager;convertTo(Lnet/minecraft/world/entity/EntityType;Z)Lnet/minecraft/world/entity/Mob;"))
     @Nullable
     private <T extends Mob> T aromaaffect$redirectConversion(
-            ZombieVillager self,
-            EntityType<T> entityType,
-            ConversionParams params,
-            ConversionParams.AfterConversion<T> afterConversion) {
+            ZombieVillager self, EntityType<T> entityType, boolean preserveCanPickUpLoot) {
         if (!aromaaffect$wasNoseSmith) {
-            return self.convertTo(entityType, params, afterConversion);
+            return self.convertTo(entityType, preserveCanPickUpLoot);
         }
 
         @SuppressWarnings("unchecked")
         EntityType<T> noseSmithType =
                 (EntityType<T>) (EntityType<?>) NoseSmithRegistry.getNOSE_SMITH().get();
 
-        return self.convertTo(
-                noseSmithType,
-                params,
-                entity -> {
-                    afterConversion.finalizeConversion(entity);
-                    if (entity instanceof NoseSmithEntity noseSmith) {
-                        noseSmith.restoreNoseSmithData(
-                                aromaaffect$noseSmithHasNose,
-                                aromaaffect$noseSmithRequestedFlower,
-                                aromaaffect$noseSmithHouseDecorated,
-                                aromaaffect$noseSmithNoseRemovedGameTime);
-                    }
-                });
+        T result = self.convertTo(noseSmithType, preserveCanPickUpLoot);
+        if (result instanceof NoseSmithEntity noseSmith) {
+            noseSmith.restoreNoseSmithData(
+                    aromaaffect$noseSmithHasNose,
+                    aromaaffect$noseSmithRequestedFlower,
+                    aromaaffect$noseSmithHouseDecorated,
+                    aromaaffect$noseSmithNoseRemovedGameTime);
+        }
+        return result;
     }
 }

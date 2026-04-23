@@ -9,9 +9,9 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.world.entity.LivingEntity;
 
-public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
+public final class NoseMaskModel extends HumanoidModel<LivingEntity> {
     private static final int TEXTURE_WIDTH = 32;
     private static final int TEXTURE_HEIGHT = 32;
 
@@ -38,7 +38,7 @@ public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
 
         PartDefinition head =
                 partdefinition.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.ZERO);
-        head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+        partdefinition.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
         partdefinition.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.ZERO);
         partdefinition.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.ZERO);
         partdefinition.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.ZERO);

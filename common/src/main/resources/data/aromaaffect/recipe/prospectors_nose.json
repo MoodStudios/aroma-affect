@@ -7,13 +7,21 @@
     "SBS"
   ],
   "key": {
-    "G": "minecraft:gold_ingot",
-    "N": "aromaaffect:foragers_nose",
-    "B": "minecraft:bone_meal",
-    "S": "minecraft:string"
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "N": {
+      "item": "aromaaffect:foragers_nose"
+    },
+    "B": {
+      "item": "minecraft:bone_meal"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
   },
   "result": {
-    "id": "aromaaffect:prospectors_nose",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:prospectors_nose"
   }
 }

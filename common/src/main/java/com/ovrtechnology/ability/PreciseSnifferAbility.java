@@ -211,7 +211,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
     }
 
     private void completeSniffing(ServerPlayer player, BlockPos pos) {
-        ServerLevel level = player.level();
+        ServerLevel level = (ServerLevel) player.level();
 
         activeSessions.remove(player.getUUID());
 

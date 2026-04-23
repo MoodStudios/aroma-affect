@@ -7,11 +7,15 @@
     "NNN"
   ],
   "key": {
-    "G": "minecraft:glass_bottle",
-    "N": "minecraft:iron_nugget"
+    "G": {
+      "item": "minecraft:glass_bottle"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    }
   },
   "result": {
-    "id": "aromaaffect:scent_container",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:scent_container"
   }
 }

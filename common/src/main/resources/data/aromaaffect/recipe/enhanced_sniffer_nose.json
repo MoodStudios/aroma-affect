@@ -1,21 +1,30 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "category": "equipment",
-    "pattern": [
-      " O ",
-      "NUE",
-      " D "
-    ],
-    "key": {
-      "U": "aromaaffect:iron_nose",
-      "O": "aromaaffect:overworld_scent",
-      "E": "aromaaffect:end_scent",
-      "N": "aromaaffect:nether_scent",
-      "D": "minecraft:diamond"
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " O ",
+    "NUE",
+    " D "
+  ],
+  "key": {
+    "U": {
+      "item": "aromaaffect:iron_nose"
     },
-    "result": {
-      "id": "aromaaffect:enhanced_sniffer_nose",
-      "count": 1
+    "O": {
+      "item": "aromaaffect:overworld_scent"
+    },
+    "E": {
+      "item": "aromaaffect:end_scent"
+    },
+    "N": {
+      "item": "aromaaffect:nether_scent"
+    },
+    "D": {
+      "item": "minecraft:diamond"
     }
+  },
+  "result": {
+    "count": 1,
+    "item": "aromaaffect:enhanced_sniffer_nose"
   }
-  
+}

@@ -7,14 +7,24 @@
     "ACA"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:kelp",
-    "A": "minecraft:cyan_dye",
-    "C": "minecraft:blue_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:kelp"
+    },
+    "A": {
+      "item": "minecraft:cyan_dye"
+    },
+    "C": {
+      "item": "minecraft:blue_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:marine_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:marine_scent"
   }
 }

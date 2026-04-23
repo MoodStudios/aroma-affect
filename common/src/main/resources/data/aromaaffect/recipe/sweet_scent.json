@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:honey_block",
-    "A": "minecraft:yellow_dye",
-    "C": "minecraft:orange_dye",
-    "E": "minecraft:pink_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:honey_block"
+    },
+    "A": {
+      "item": "minecraft:yellow_dye"
+    },
+    "C": {
+      "item": "minecraft:orange_dye"
+    },
+    "E": {
+      "item": "minecraft:pink_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:sweet_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:sweet_scent"
   }
 }

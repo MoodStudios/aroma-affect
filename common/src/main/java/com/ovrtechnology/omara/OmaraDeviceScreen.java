@@ -10,8 +10,6 @@ import com.ovrtechnology.util.Texts;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -41,17 +39,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(
-                RenderPipelines.GUI_TEXTURED,
-                TEXTURE,
-                x,
-                y,
-                0.0F,
-                0.0F,
-                this.imageWidth,
-                this.imageHeight,
-                256,
-                256);
+        guiGraphics.blit(TEXTURE, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override
@@ -76,12 +64,12 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
-        if (event.button() == 0) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0) {
             int x = (this.width - this.imageWidth) / 2;
             int y = (this.height - this.imageHeight) / 2;
-            double mx = event.x();
-            double my = event.y();
+            double mx = mouseX;
+            double my = mouseY;
 
             if (isInBounds(mx, my, x + BTN_X, y + BTN_MODE_Y, BTN_W, BTN_H)) {
                 if (this.minecraft != null && this.minecraft.gameMode != null) {
@@ -101,7 +89,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
             }
         }
 
-        return super.mouseClicked(event, isValidClickButton);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private void renderInfoPanel(GuiGraphics g, int x, int y) {

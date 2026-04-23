@@ -108,7 +108,7 @@ public final class AromaGuideNetworking {
     }
 
     private static GuideTarget findGuideTarget(ServerPlayer player) {
-        ServerLevel level = player.level();
+        ServerLevel level = (ServerLevel) player.level();
         BlockPos playerPos = player.blockPosition();
 
         var result =
@@ -117,8 +117,9 @@ public final class AromaGuideNetworking {
                         .findNearestMapStructure(
                                 level,
                                 level.registryAccess()
-                                        .lookupOrThrow(Registries.STRUCTURE)
-                                        .getOrThrow(net.minecraft.tags.StructureTags.VILLAGE),
+                                        .registryOrThrow(Registries.STRUCTURE)
+                                        .getTag(net.minecraft.tags.StructureTags.VILLAGE)
+                                        .orElseThrow(),
                                 playerPos,
                                 SEARCH_RADIUS,
                                 false);

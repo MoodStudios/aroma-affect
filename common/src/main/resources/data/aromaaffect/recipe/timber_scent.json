@@ -7,14 +7,24 @@
     "ACA"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:oak_log",
-    "A": "minecraft:brown_dye",
-    "C": "minecraft:green_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:oak_log"
+    },
+    "A": {
+      "item": "minecraft:brown_dye"
+    },
+    "C": {
+      "item": "minecraft:green_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:timber_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:timber_scent"
   }
 }

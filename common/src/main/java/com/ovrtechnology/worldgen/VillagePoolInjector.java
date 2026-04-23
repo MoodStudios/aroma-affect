@@ -70,17 +70,14 @@ public final class VillagePoolInjector {
             var registryAccess = server.registryAccess();
 
             Registry<StructureTemplatePool> pools =
-                    registryAccess.lookupOrThrow(Registries.TEMPLATE_POOL);
+                    registryAccess.registryOrThrow(Registries.TEMPLATE_POOL);
 
             for (VillageBiome biome : EnumSet.allOf(VillageBiome.class)) {
-                StructureTemplatePool townCenters =
-                        pools.get(biome.townCentersPool())
-                                .orElseThrow(
-                                        () ->
-                                                new IllegalStateException(
-                                                        "Missing template pool: "
-                                                                + biome.townCentersPool()))
-                                .value();
+                StructureTemplatePool townCenters = pools.get(biome.townCentersPool());
+                if (townCenters == null) {
+                    throw new IllegalStateException(
+                            "Missing template pool: " + biome.townCentersPool());
+                }
 
                 StructurePoolElement startElement =
                         StructurePoolElement.legacy(biome.noseSmithTownCenterTemplate().toString())

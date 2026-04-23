@@ -8,7 +8,6 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -40,23 +39,13 @@ public final class NoseSmithRegistry {
                             EntityType.Builder.of(NoseSmithEntity::new, MobCategory.MISC)
                                     .sized(0.6F, 1.95F)
                                     .clientTrackingRange(10)
-                                    .build(
-                                            ResourceKey.create(
-                                                    Registries.ENTITY_TYPE,
-                                                    Ids.mod(NOSE_SMITH_ID))));
+                                    .build(NOSE_SMITH_ID));
 
     @Getter
     public static final RegistrySupplier<Item> NOSE_SMITH_SPAWN_EGG =
             ITEMS.register(
                     NOSE_SMITH_SPAWN_EGG_ID,
-                    () ->
-                            new NoseSmithSpawnItem(
-                                    new Item.Properties()
-                                            .stacksTo(64)
-                                            .setId(
-                                                    ResourceKey.create(
-                                                            Registries.ITEM,
-                                                            Ids.mod(NOSE_SMITH_SPAWN_EGG_ID)))));
+                    () -> new NoseSmithSpawnItem(new Item.Properties().stacksTo(64)));
 
     @Getter
     public static final RegistrySupplier<Item> SPECIAL_ROSE =
@@ -64,27 +53,13 @@ public final class NoseSmithRegistry {
                     SPECIAL_ROSE_ID,
                     () ->
                             new SpecialRoseItem(
-                                    new Item.Properties()
-                                            .stacksTo(16)
-                                            .rarity(Rarity.EPIC)
-                                            .setId(
-                                                    ResourceKey.create(
-                                                            Registries.ITEM,
-                                                            Ids.mod(SPECIAL_ROSE_ID)))));
+                                    new Item.Properties().stacksTo(16).rarity(Rarity.EPIC)));
 
     @Getter
     public static final RegistrySupplier<Item> IRON_NOSE =
             ITEMS.register(
                     IRON_NOSE_ID,
-                    () ->
-                            new Item(
-                                    new Item.Properties()
-                                            .stacksTo(1)
-                                            .rarity(Rarity.RARE)
-                                            .setId(
-                                                    ResourceKey.create(
-                                                            Registries.ITEM,
-                                                            Ids.mod(IRON_NOSE_ID)))));
+                    () -> new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
     @Getter private static boolean initialized = false;
 

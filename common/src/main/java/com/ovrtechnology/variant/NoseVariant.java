@@ -71,8 +71,14 @@ public class NoseVariant {
     @SerializedName("animation")
     private Animation animation;
 
+    @SerializedName("custom_model_data")
+    private int customModelData;
+
     @SerializedName("guide_page")
     private JsonElement guidePage;
+
+    @SerializedName("example")
+    private boolean example;
 
     public int getDurability() {
         return durability > 0 ? durability : 250;

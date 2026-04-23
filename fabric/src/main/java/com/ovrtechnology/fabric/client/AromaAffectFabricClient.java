@@ -16,6 +16,7 @@ public final class AromaAffectFabricClient implements ClientModInitializer {
         NoseClient.init();
 
         AromaAffectClient.init();
+        AromaAffectClient.registerCompassProperty();
 
         MenuScreens.register(SnifferMenuRegistry.SNIFFER_MENU.get(), SnifferScreen::new);
 

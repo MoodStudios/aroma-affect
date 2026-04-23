@@ -6,7 +6,6 @@ import com.ovrtechnology.util.Texts;
 import java.net.URI;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -86,10 +85,10 @@ public class ShopScreen extends BaseMenuScreen {
         int panelBottom = panelTop + panelH;
 
         float scaleA = easeOutBack(Math.min(1f, a * 1.2f));
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(centerX, centerY);
-        graphics.pose().scale(scaleA, scaleA);
-        graphics.pose().translate(-centerX, -centerY);
+        graphics.pose().pushPose();
+        graphics.pose().translate(centerX, centerY, 0);
+        graphics.pose().scale(scaleA, scaleA, 1);
+        graphics.pose().translate(-centerX, -centerY, 0);
 
         graphics.fill(
                 panelLeft,
@@ -146,17 +145,7 @@ public class ShopScreen extends BaseMenuScreen {
                 imgDrawY + imgH + glowPad,
                 glowColor);
 
-        graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
-                OMARA_COVER,
-                imgDrawX,
-                imgDrawY,
-                0.0f,
-                0.0f,
-                imgMaxW,
-                imgH,
-                imgMaxW,
-                imgH);
+        graphics.blit(OMARA_COVER, imgDrawX, imgDrawY, 0.0f, 0.0f, imgMaxW, imgH, imgMaxW, imgH);
 
         if (t > 0.05f) {
             renderInfoPanel(
@@ -257,15 +246,7 @@ public class ShopScreen extends BaseMenuScreen {
             }
 
             graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    ICON_BACK,
-                    backX + 2,
-                    backY + 2,
-                    0.0f,
-                    0.0f,
-                    backSize,
-                    backSize,
-                    backSize,
+                    ICON_BACK, backX + 2, backY + 2, 0.0f, 0.0f, backSize, backSize, backSize,
                     backSize);
 
             int buyBtnW = 90;
@@ -304,7 +285,7 @@ public class ShopScreen extends BaseMenuScreen {
                     MenuRenderUtils.withAlpha(COL_TEXT, backAlpha));
         }
 
-        graphics.pose().popMatrix();
+        graphics.pose().popPose();
 
         renderBackButton(graphics, mouseX, mouseY, a);
     }
@@ -372,7 +353,6 @@ public class ShopScreen extends BaseMenuScreen {
         int iconSize = (int) (BACK_BUTTON_SIZE * scale * appear);
         int iconOffset = (bSize - iconSize) / 2;
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
                 ICON_BACK,
                 bx + iconOffset,
                 by + iconOffset,

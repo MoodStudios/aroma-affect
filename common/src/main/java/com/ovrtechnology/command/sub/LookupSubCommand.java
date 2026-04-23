@@ -33,12 +33,13 @@ public class LookupSubCommand implements SubCommand {
             (context, builder) -> {
                 if (context.getSource().getLevel() != null) {
                     return SharedSuggestionProvider.suggestResource(
-                            context.getSource()
+                            context
+                                    .getSource()
                                     .getLevel()
                                     .registryAccess()
-                                    .lookupOrThrow(Registries.BIOME)
-                                    .listElementIds()
-                                    .map(key -> key.location()),
+                                    .registryOrThrow(Registries.BIOME)
+                                    .keySet()
+                                    .stream(),
                             builder);
                 }
                 return builder.buildFuture();
@@ -48,12 +49,13 @@ public class LookupSubCommand implements SubCommand {
             (context, builder) -> {
                 if (context.getSource().getLevel() != null) {
                     return SharedSuggestionProvider.suggestResource(
-                            context.getSource()
+                            context
+                                    .getSource()
                                     .getLevel()
                                     .registryAccess()
-                                    .lookupOrThrow(Registries.STRUCTURE)
-                                    .listElementIds()
-                                    .map(key -> key.location()),
+                                    .registryOrThrow(Registries.STRUCTURE)
+                                    .keySet()
+                                    .stream(),
                             builder);
                 }
                 return builder.buildFuture();
@@ -252,10 +254,14 @@ public class LookupSubCommand implements SubCommand {
                                             .withStyle(
                                                     Style.EMPTY
                                                             .withClickEvent(
-                                                                    new ClickEvent.RunCommand(
+                                                                    new ClickEvent(
+                                                                            ClickEvent.Action
+                                                                                    .RUN_COMMAND,
                                                                             tpCommand))
                                                             .withHoverEvent(
-                                                                    new HoverEvent.ShowText(
+                                                                    new HoverEvent(
+                                                                            HoverEvent.Action
+                                                                                    .SHOW_TEXT,
                                                                             Texts.lit(
                                                                                     "§aClick to teleport!")))));
             source.sendSuccess(() -> teleportText, false);

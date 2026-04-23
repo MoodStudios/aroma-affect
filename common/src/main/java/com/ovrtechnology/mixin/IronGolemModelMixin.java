@@ -1,6 +1,6 @@
 package com.ovrtechnology.mixin;
 
-import com.ovrtechnology.entity.irongolem.IronGolemNoseRenderState;
+import com.ovrtechnology.entity.irongolem.IronGolemNoseTracker;
 import net.minecraft.client.model.IronGolemModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -9,7 +9,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
+import net.minecraft.world.entity.animal.IronGolem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -83,10 +83,17 @@ public class IronGolemModelMixin {
         return LayerDefinition.create(meshDefinition, 128, 128);
     }
 
-    @Inject(method = "setupAnim", at = @At("HEAD"))
-    private void aromaaffect$toggleNoseVisibility(IronGolemRenderState state, CallbackInfo ci) {
-        if (state instanceof IronGolemNoseRenderState noseState) {
-            head.getChild("nose").visible = noseState.hasNose;
-        }
+    @Inject(
+            method = "setupAnim(Lnet/minecraft/world/entity/animal/IronGolem;FFFFF)V",
+            at = @At("HEAD"))
+    private void aromaaffect$toggleNoseVisibility(
+            IronGolem entity,
+            float limbSwing,
+            float limbSwingAmount,
+            float ageInTicks,
+            float netHeadYaw,
+            float headPitch,
+            CallbackInfo ci) {
+        head.getChild("nose").visible = IronGolemNoseTracker.hasNose(entity.getUUID());
     }
 }

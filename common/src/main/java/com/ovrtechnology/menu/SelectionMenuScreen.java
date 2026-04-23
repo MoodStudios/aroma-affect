@@ -11,7 +11,6 @@ import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -189,7 +188,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             int iconSize = (int) (HEADER_ICON_SIZE * iconAlpha);
             int offset = (HEADER_ICON_SIZE - iconSize) / 2;
             graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
                     category.getHeaderIcon(),
                     iconX + offset,
                     iconY + offset,
@@ -229,7 +227,6 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int iconSize = (int) (BACK_BUTTON_SIZE * scale * appear);
         int iconOffset = (bSize - iconSize) / 2;
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
                 ICON_BACK,
                 bx + iconOffset,
                 by + iconOffset,
@@ -395,11 +392,11 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int noseIconSize = 14;
         costX -= noseIconSize + 2;
         if (!headStack.isEmpty() && animationProgress > 0.2f) {
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(costX, rowCenterY - noseIconSize / 2);
-            graphics.pose().scale(noseIconSize / 16.0f, noseIconSize / 16.0f);
+            graphics.pose().pushPose();
+            graphics.pose().translate(costX, rowCenterY - noseIconSize / 2, 0);
+            graphics.pose().scale(noseIconSize / 16.0f, noseIconSize / 16.0f, 1);
             graphics.renderItem(headStack, 0, 0);
-            graphics.pose().popMatrix();
+            graphics.pose().popPose();
         }
 
         if (card.requiredItem != null && !card.requiredItem.isEmpty()) {
@@ -421,11 +418,11 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             int reqIconSize = 14;
             costX -= reqIconSize + 2;
             if (animationProgress > 0.2f) {
-                graphics.pose().pushMatrix();
-                graphics.pose().translate(costX, rowCenterY - reqIconSize / 2);
-                graphics.pose().scale(reqIconSize / 16.0f, reqIconSize / 16.0f);
+                graphics.pose().pushPose();
+                graphics.pose().translate(costX, rowCenterY - reqIconSize / 2, 0);
+                graphics.pose().scale(reqIconSize / 16.0f, reqIconSize / 16.0f, 1);
                 graphics.renderItem(card.requiredItem, 0, 0);
-                graphics.pose().popMatrix();
+                graphics.pose().popPose();
             }
         }
     }

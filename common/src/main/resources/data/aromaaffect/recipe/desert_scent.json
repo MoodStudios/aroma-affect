@@ -7,14 +7,24 @@
     "ACA"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:sand",
-    "A": "minecraft:yellow_dye",
-    "C": "minecraft:orange_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:sand"
+    },
+    "A": {
+      "item": "minecraft:yellow_dye"
+    },
+    "C": {
+      "item": "minecraft:orange_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:desert_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:desert_scent"
   }
 }

@@ -89,8 +89,8 @@ public final class MenuKeyBindings {
     }
 
     private static boolean isShiftDown() {
-        var window = Minecraft.getInstance().getWindow();
-        return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_SHIFT)
-                || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_SHIFT);
+        long handle = Minecraft.getInstance().getWindow().getWindow();
+        return InputConstants.isKeyDown(handle, GLFW.GLFW_KEY_LEFT_SHIFT)
+                || InputConstants.isKeyDown(handle, GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
 }

@@ -3,8 +3,6 @@ package com.ovrtechnology.menu;
 import com.ovrtechnology.util.Colors;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public abstract class BaseMenuScreen extends Screen {
@@ -82,11 +80,11 @@ public abstract class BaseMenuScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
-        if (handleMouseClick(event.x(), event.y(), event.button())) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (handleMouseClick(mouseX, mouseY, button)) {
             return true;
         }
-        return super.mouseClicked(event, isValidClickButton);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -98,11 +96,11 @@ public abstract class BaseMenuScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(KeyEvent event) {
-        if (handleKeyPress(event.key(), event.scancode(), event.modifiers())) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (handleKeyPress(keyCode, scanCode, modifiers)) {
             return true;
         }
-        return super.keyPressed(event);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
@@ -240,6 +238,12 @@ public abstract class BaseMenuScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
+
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
+
+    @Override
+    protected void renderBlurredBackground(float partialTick) {}
 
     @Override
     public void onClose() {

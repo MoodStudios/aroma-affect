@@ -13,8 +13,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -256,14 +254,14 @@ public final class NoseSmithDialogueScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!finished) {
             finishTyping();
             return true;
         }
 
         if (buttonsVisible) {
-            return super.mouseClicked(event, doubleClick);
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
         onClose();
@@ -271,9 +269,8 @@ public final class NoseSmithDialogueScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(KeyEvent event) {
-        int keyCode = event.key();
-        if (event.isEscape()) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             onClose();
             return true;
         }
@@ -289,13 +286,19 @@ public final class NoseSmithDialogueScreen extends Screen {
             }
         }
 
-        return super.keyPressed(event);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean isPauseScreen() {
         return false;
     }
+
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
+
+    @Override
+    protected void renderBlurredBackground(float partialTick) {}
 
     private void finishTyping() {
         typedCodepoints = totalCodepoints;
@@ -390,7 +393,7 @@ public final class NoseSmithDialogueScreen extends Screen {
             return null;
         }
 
-        return BuiltInRegistries.BLOCK.get(flowerId).map(holder -> holder.value()).orElse(null);
+        return BuiltInRegistries.BLOCK.getOptional(flowerId).orElse(null);
     }
 
     private void playTypeSoundFor(int codePoint) {

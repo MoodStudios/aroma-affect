@@ -57,10 +57,7 @@ public final class SnifferConfigLoader {
     private static void backupStaleConfig(Path externalConfig) {
         try {
             Path backup = externalConfig.resolveSibling("sniffer_config.json.bak");
-            Files.move(
-                    externalConfig,
-                    backup,
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Files.move(externalConfig, backup, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             AromaAffect.LOGGER.warn("Stale sniffer config backed up to: {}", backup);
         } catch (IOException ioErr) {
             AromaAffect.LOGGER.error(

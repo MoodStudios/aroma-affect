@@ -7,12 +7,18 @@
     "EDE"
   ],
   "key": {
-    "D": "minecraft:dragon_breath",
-    "A": "aromaaffect:ancient_nose",
-    "E": "minecraft:ender_eye"
+    "D": {
+      "item": "minecraft:dragon_breath"
+    },
+    "A": {
+      "item": "aromaaffect:ancient_nose"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    }
   },
   "result": {
-    "id": "aromaaffect:dragon_nose",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:dragon_nose"
   }
 }

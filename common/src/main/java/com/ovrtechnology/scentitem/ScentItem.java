@@ -9,28 +9,24 @@ import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.ItemTriggerDefinition;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
-import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.util.Texts;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import lombok.Getter;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 
 public class ScentItem extends Item {
@@ -40,15 +36,13 @@ public class ScentItem extends Item {
     @Getter private final String itemId;
 
     public ScentItem(ScentItemDefinition definition, String itemId) {
-        super(createProperties(definition, itemId));
+        super(createProperties(definition));
         this.definition = definition;
         this.itemId = itemId;
     }
 
-    private static Properties createProperties(ScentItemDefinition definition, String itemId) {
+    private static Properties createProperties(ScentItemDefinition definition) {
         Properties properties = new Properties();
-
-        properties.setId(ResourceKey.create(Registries.ITEM, Ids.mod(itemId)));
 
         if (definition.isCapsule()) {
             properties.stacksTo(1);
@@ -75,14 +69,15 @@ public class ScentItem extends Item {
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    public InteractionResultHolder<ItemStack> use(
+            Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
             if (definition.isCapsule()) {
 
-                if (player.getCooldowns().isOnCooldown(stack)) {
-                    return InteractionResult.FAIL;
+                if (player.getCooldowns().isOnCooldown(stack.getItem())) {
+                    return InteractionResultHolder.fail(stack);
                 }
 
                 EquipmentSlot slot =
@@ -93,7 +88,7 @@ public class ScentItem extends Item {
 
                 String fullId = AromaAffect.MOD_ID + ":" + itemId;
                 int cooldownTicks = getCooldownTicks(fullId);
-                player.getCooldowns().addCooldown(stack, cooldownTicks);
+                player.getCooldowns().addCooldown(stack.getItem(), cooldownTicks);
 
                 level.playSound(
                         null,
@@ -107,9 +102,9 @@ public class ScentItem extends Item {
                     spawnScentParticles(serverLevel, player);
                 }
 
-                return InteractionResult.SUCCESS;
+                return InteractionResultHolder.success(stack);
             }
-            return InteractionResult.PASS;
+            return InteractionResultHolder.pass(stack);
         }
 
         String fullItemId = AromaAffect.MOD_ID + ":" + itemId;
@@ -118,12 +113,12 @@ public class ScentItem extends Item {
                 ScentTriggerConfigLoader.getItemTrigger(fullItemId);
         if (triggerOpt.isEmpty()) {
             AromaAffect.LOGGER.debug("No trigger configured for item: {}", fullItemId);
-            return InteractionResult.PASS;
+            return InteractionResultHolder.pass(stack);
         }
 
         ItemTriggerDefinition triggerDef = triggerOpt.get();
         if (!triggerDef.isUseTriggered()) {
-            return InteractionResult.PASS;
+            return InteractionResultHolder.pass(stack);
         }
 
         String scentName = triggerDef.getScentName();
@@ -139,7 +134,7 @@ public class ScentItem extends Item {
                             "message.aromaaffect.scent_cooldown",
                             String.format("%.1f", remaining / 1000.0)),
                     true);
-            return InteractionResult.FAIL;
+            return InteractionResultHolder.fail(stack);
         }
 
         ScentTrigger trigger =
@@ -171,10 +166,10 @@ public class ScentItem extends Item {
             }
 
             AromaAffect.LOGGER.debug("Item {} triggered scent '{}'", fullItemId, scentName);
-            return InteractionResult.SUCCESS;
+            return InteractionResultHolder.success(stack);
         }
 
-        return InteractionResult.PASS;
+        return InteractionResultHolder.pass(stack);
     }
 
     private static int getCooldownTicks(String fullItemId) {
@@ -221,10 +216,9 @@ public class ScentItem extends Item {
     public void appendHoverText(
             ItemStack stack,
             TooltipContext context,
-            TooltipDisplay tooltipDisplay,
-            Consumer<Component> tooltipAdder,
+            List<Component> tooltip,
             TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
+        super.appendHoverText(stack, context, tooltip, tooltipFlag);
 
         String description = definition.getDescription();
         if (description != null && !description.isEmpty()) {
@@ -234,14 +228,14 @@ public class ScentItem extends Item {
 
             for (String word : words) {
                 if (line.length() + word.length() + 1 > 40) {
-                    tooltipAdder.accept(Texts.lit("§7" + line.toString().trim()));
+                    tooltip.add(Texts.lit("§7" + line.toString().trim()));
                     line = new StringBuilder();
                 }
                 line.append(word).append(" ");
             }
 
             if (!line.isEmpty()) {
-                tooltipAdder.accept(Texts.lit("§7" + line.toString().trim()));
+                tooltip.add(Texts.lit("§7" + line.toString().trim()));
             }
         }
     }

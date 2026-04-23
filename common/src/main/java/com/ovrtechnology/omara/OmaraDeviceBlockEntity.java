@@ -10,9 +10,11 @@ import com.ovrtechnology.util.Texts;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -25,8 +27,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
@@ -148,24 +148,24 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        ContainerHelper.saveAllItems(output, this.items);
-        output.putInt("CooldownTicks", cooldownTicks);
-        output.putInt("Mode", mode);
-        output.putInt("IntervalIndex", intervalIndex);
-        output.putInt("StatusTicks", statusTicks);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, this.items, registries);
+        tag.putInt("CooldownTicks", cooldownTicks);
+        tag.putInt("Mode", mode);
+        tag.putInt("IntervalIndex", intervalIndex);
+        tag.putInt("StatusTicks", statusTicks);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(input, this.items);
-        this.cooldownTicks = input.getIntOr("CooldownTicks", 0);
-        this.mode = input.getIntOr("Mode", MODE_AUTO);
-        this.intervalIndex = input.getIntOr("IntervalIndex", 0);
-        this.statusTicks = input.getIntOr("StatusTicks", 0);
+        ContainerHelper.loadAllItems(tag, this.items, registries);
+        this.cooldownTicks = tag.getInt("CooldownTicks");
+        this.mode = tag.contains("Mode") ? tag.getInt("Mode") : MODE_AUTO;
+        this.intervalIndex = tag.getInt("IntervalIndex");
+        this.statusTicks = tag.getInt("StatusTicks");
     }
 
     private void setStatus(Level level, BlockPos pos, BlockState state, int status, int ticks) {

@@ -380,7 +380,7 @@ public final class PathTrailRenderer {
 
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
-            int minY = Math.max(level.getMinY(), y - 20);
+            int minY = Math.max(level.getMinBuildHeight(), y - 20);
 
             for (int scanY = y; scanY > minY; scanY--) {
                 pos.setY(scanY);

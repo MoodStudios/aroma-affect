@@ -331,8 +331,8 @@ public final class LookupManager {
     }
 
     public int findYLevel(ServerLevel level, int x, int z, LookupType type) {
-        int minY = level.getMinY();
-        int maxY = level.getMaxY() - 1;
+        int minY = level.getMinBuildHeight();
+        int maxY = level.getMaxBuildHeight() - 1;
         int seaLevel = level.getSeaLevel();
 
         if (type == LookupType.STRUCTURE) {

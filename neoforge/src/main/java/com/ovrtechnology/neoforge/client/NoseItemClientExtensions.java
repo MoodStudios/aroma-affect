@@ -1,17 +1,15 @@
 package com.ovrtechnology.neoforge.client;
 
-import com.ovrtechnology.nose.client.NoseClient;
 import com.ovrtechnology.nose.client.NoseMaskModel;
 import com.ovrtechnology.nose.client.NoseModelLayers;
 import com.ovrtechnology.nose.client.NoseRenderContext;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
-import com.ovrtechnology.util.Colors;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.Model;
-import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
@@ -70,9 +68,9 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
     }
 
     @Override
-    public Model getHumanoidArmorModel(
-            ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {
-        if (layerType != EquipmentClientInfo.LayerType.HUMANOID) {
+    public HumanoidModel<?> getHumanoidArmorModel(
+            LivingEntity entity, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> original) {
+        if (slot != EquipmentSlot.HEAD) {
             return original;
         }
 
@@ -84,20 +82,5 @@ public final class NoseItemClientExtensions implements IClientItemExtensions {
             return hiddenModel;
         }
         return prefs.strapEnabled() ? visibleWithStrapModel : visibleNoStrapModel;
-    }
-
-    @Override
-    public ResourceLocation getArmorTexture(
-            ItemStack stack,
-            EquipmentClientInfo.LayerType layerType,
-            EquipmentClientInfo.Layer layer,
-            ResourceLocation defaultTexture) {
-        return NoseClient.getArmorTexture(stack);
-    }
-
-    @Override
-    public int getArmorLayerTintColor(
-            ItemStack stack, EquipmentClientInfo.Layer layer, int layerIdx, int defaultColor) {
-        return layerIdx == 0 ? Colors.WHITE : 0;
     }
 }

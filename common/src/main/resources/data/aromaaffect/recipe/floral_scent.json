@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:rose_bush",
-    "A": "minecraft:pink_dye",
-    "C": "minecraft:red_dye",
-    "E": "minecraft:magenta_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:rose_bush"
+    },
+    "A": {
+      "item": "minecraft:pink_dye"
+    },
+    "C": {
+      "item": "minecraft:red_dye"
+    },
+    "E": {
+      "item": "minecraft:magenta_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:floral_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:floral_scent"
   }
 }

@@ -1,12 +1,10 @@
 package com.ovrtechnology.omara;
 
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.util.Ids;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -40,11 +38,7 @@ public final class OmaraDeviceRegistry {
                                     BlockBehaviour.Properties.of()
                                             .strength(3.5F)
                                             .requiresCorrectToolForDrops()
-                                            .noOcclusion()
-                                            .setId(
-                                                    ResourceKey.create(
-                                                            Registries.BLOCK,
-                                                            Ids.mod(OMARA_DEVICE_ID)))));
+                                            .noOcclusion()));
 
     public static final RegistrySupplier<BlockEntityType<OmaraDeviceBlockEntity>>
             OMARA_DEVICE_BLOCK_ENTITY =
@@ -53,19 +47,13 @@ public final class OmaraDeviceRegistry {
                             () ->
                                     new BlockEntityType<>(
                                             OmaraDeviceBlockEntity::new,
-                                            java.util.Set.of(OMARA_DEVICE.get())));
+                                            java.util.Set.of(OMARA_DEVICE.get()),
+                                            null));
 
     public static final RegistrySupplier<Item> OMARA_DEVICE_ITEM =
             ITEMS.register(
                     OMARA_DEVICE_ID,
-                    () ->
-                            new BlockItem(
-                                    OMARA_DEVICE.get(),
-                                    new Item.Properties()
-                                            .setId(
-                                                    ResourceKey.create(
-                                                            Registries.ITEM,
-                                                            Ids.mod(OMARA_DEVICE_ID)))));
+                    () -> new BlockItem(OMARA_DEVICE.get(), new Item.Properties()));
 
     public static final RegistrySupplier<MenuType<OmaraDeviceMenu>> OMARA_DEVICE_MENU =
             MENUS.register(

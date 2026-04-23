@@ -94,6 +94,9 @@ public final class AromaAffectGuideContent {
 
         for (Map.Entry<ResourceLocation, NoseVariant> entry :
                 NoseVariantRegistry.all().entrySet()) {
+            if (entry.getValue().isExample()) {
+                continue;
+            }
             GuidePage page = buildVariantPage(entry.getKey(), entry.getValue());
             if (page != null) {
                 entries.add(new Entry(entry.getValue().getTier(), page));

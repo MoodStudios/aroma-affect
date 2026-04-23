@@ -56,12 +56,13 @@ public class PathSubCommand implements SubCommand {
             (context, builder) -> {
                 if (context.getSource().getLevel() != null) {
                     return SharedSuggestionProvider.suggestResource(
-                            context.getSource()
+                            context
+                                    .getSource()
                                     .getLevel()
                                     .registryAccess()
-                                    .lookupOrThrow(Registries.BIOME)
-                                    .listElementIds()
-                                    .map(key -> key.location()),
+                                    .registryOrThrow(Registries.BIOME)
+                                    .keySet()
+                                    .stream(),
                             builder);
                 }
                 return builder.buildFuture();
@@ -71,12 +72,13 @@ public class PathSubCommand implements SubCommand {
             (context, builder) -> {
                 if (context.getSource().getLevel() != null) {
                     return SharedSuggestionProvider.suggestResource(
-                            context.getSource()
+                            context
+                                    .getSource()
                                     .getLevel()
                                     .registryAccess()
-                                    .lookupOrThrow(Registries.STRUCTURE)
-                                    .listElementIds()
-                                    .map(key -> key.location()),
+                                    .registryOrThrow(Registries.STRUCTURE)
+                                    .keySet()
+                                    .stream(),
                             builder);
                 }
                 return builder.buildFuture();
@@ -688,7 +690,7 @@ public class PathSubCommand implements SubCommand {
     private boolean playerHasItem(ServerPlayer player, RequiredItem req) {
         if (req == null || req.getItemId() == null) return true;
         ResourceLocation itemId = Ids.parse(req.getItemId());
-        var itemOpt = BuiltInRegistries.ITEM.get(itemId);
+        var itemOpt = BuiltInRegistries.ITEM.getOptional(itemId);
         if (itemOpt.isEmpty()) return false;
 
         int needed = req.getCount();
@@ -708,7 +710,7 @@ public class PathSubCommand implements SubCommand {
         if (req == null || req.getItemId() == null) return;
 
         ResourceLocation itemId = Ids.parse(req.getItemId());
-        var itemOpt = BuiltInRegistries.ITEM.get(itemId);
+        var itemOpt = BuiltInRegistries.ITEM.getOptional(itemId);
         if (itemOpt.isEmpty()) return;
 
         int toRemove = req.getCount();

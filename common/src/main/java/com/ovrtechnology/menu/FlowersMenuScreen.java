@@ -151,9 +151,9 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         ItemStack icon = FLOWER_ICONS.get(flowerId.toString());
 
         if (icon == null) {
-            var blockOptional = BuiltInRegistries.BLOCK.get(flowerId);
+            var blockOptional = BuiltInRegistries.BLOCK.getOptional(flowerId);
             if (blockOptional.isPresent()) {
-                icon = new ItemStack(blockOptional.get().value().asItem());
+                icon = new ItemStack(blockOptional.get().asItem());
             }
         }
 
@@ -175,9 +175,9 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             RequiredItem req = flowerDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
                 ResourceLocation reqId = Ids.parse(req.getItemId());
-                var itemOpt = BuiltInRegistries.ITEM.get(reqId);
+                var itemOpt = BuiltInRegistries.ITEM.getOptional(reqId);
                 if (itemOpt.isPresent()) {
-                    card.requiredItem = new ItemStack(itemOpt.get().value());
+                    card.requiredItem = new ItemStack(itemOpt.get());
                     card.requiredItemCount = req.getCount();
                 }
             }
@@ -307,11 +307,11 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         int iconY = y + (rowHeight - ICON_SIZE) / 2;
         if (card.icon != null && animationProgress > 0.2f) {
             float iconAlpha = (animationProgress - 0.2f) / 0.8f;
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(iconX, iconY);
-            graphics.pose().scale(ICON_SIZE / 16.0f * iconAlpha, ICON_SIZE / 16.0f * iconAlpha);
+            graphics.pose().pushPose();
+            graphics.pose().translate(iconX, iconY, 0);
+            graphics.pose().scale(ICON_SIZE / 16.0f * iconAlpha, ICON_SIZE / 16.0f * iconAlpha, 1);
             graphics.renderItem(card.icon, 0, 0);
-            graphics.pose().popMatrix();
+            graphics.pose().popPose();
         }
 
         int textX = iconX + ICON_SIZE + 8;

@@ -115,13 +115,13 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     }
 
     private void addBlockCard(ResourceLocation blockId, boolean isUnlocked) {
-        var blockOptional = BuiltInRegistries.BLOCK.get(blockId);
+        var blockOptional = BuiltInRegistries.BLOCK.getOptional(blockId);
         if (blockOptional.isEmpty()) {
             AromaAffect.LOGGER.warn("Block not found: {}", blockId);
             return;
         }
 
-        var block = blockOptional.get().value();
+        var block = blockOptional.get();
         ItemStack icon = new ItemStack(block.asItem());
 
         if (icon.isEmpty()) {
@@ -145,9 +145,9 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
             RequiredItem req = blockDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
                 ResourceLocation reqId = Ids.parse(req.getItemId());
-                var itemOpt = BuiltInRegistries.ITEM.get(reqId);
+                var itemOpt = BuiltInRegistries.ITEM.getOptional(reqId);
                 if (itemOpt.isPresent()) {
-                    card.requiredItem = new ItemStack(itemOpt.get().value());
+                    card.requiredItem = new ItemStack(itemOpt.get());
                     card.requiredItemCount = req.getCount();
                 }
             }
@@ -277,11 +277,11 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         int iconY = y + (rowHeight - ICON_SIZE) / 2;
         if (card.icon != null && animationProgress > 0.2f) {
             float iconAlpha = (animationProgress - 0.2f) / 0.8f;
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(iconX, iconY);
-            graphics.pose().scale(ICON_SIZE / 16.0f * iconAlpha, ICON_SIZE / 16.0f * iconAlpha);
+            graphics.pose().pushPose();
+            graphics.pose().translate(iconX, iconY, 0);
+            graphics.pose().scale(ICON_SIZE / 16.0f * iconAlpha, ICON_SIZE / 16.0f * iconAlpha, 1);
             graphics.renderItem(card.icon, 0, 0);
-            graphics.pose().popMatrix();
+            graphics.pose().popPose();
         }
 
         int textX = iconX + ICON_SIZE + 8;

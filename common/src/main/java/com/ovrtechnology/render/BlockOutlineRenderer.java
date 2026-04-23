@@ -7,8 +7,8 @@ import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.menu.MenuCategory;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
@@ -52,19 +52,8 @@ public final class BlockOutlineRenderer {
 
         VertexConsumer lineConsumer = consumers.getBuffer(AromaRenderTypes.BLOCK_OUTLINE_LINES);
 
-        ShapeRenderer.renderLineBox(
-                poseStack.last(),
-                lineConsumer,
-                dx,
-                dy,
-                dz,
-                dx + 1.0,
-                dy + 1.0,
-                dz + 1.0,
-                r,
-                g,
-                b,
-                alpha);
+        LevelRenderer.renderLineBox(
+                poseStack, lineConsumer, dx, dy, dz, dx + 1.0, dy + 1.0, dz + 1.0, r, g, b, alpha);
     }
 
     private static float[] resolveColor() {

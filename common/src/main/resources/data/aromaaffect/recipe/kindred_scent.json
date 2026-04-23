@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:leather",
-    "A": "minecraft:brown_dye",
-    "C": "minecraft:red_dye",
-    "E": "minecraft:orange_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:leather"
+    },
+    "A": {
+      "item": "minecraft:brown_dye"
+    },
+    "C": {
+      "item": "minecraft:red_dye"
+    },
+    "E": {
+      "item": "minecraft:orange_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:kindred_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:kindred_scent"
   }
 }

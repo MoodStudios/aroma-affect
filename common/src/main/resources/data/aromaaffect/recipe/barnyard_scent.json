@@ -7,14 +7,24 @@
     "ACA"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:hay_block",
-    "A": "minecraft:yellow_dye",
-    "C": "minecraft:brown_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:hay_block"
+    },
+    "A": {
+      "item": "minecraft:yellow_dye"
+    },
+    "C": {
+      "item": "minecraft:brown_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:barnyard_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:barnyard_scent"
   }
 }

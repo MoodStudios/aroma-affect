@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:clay",
-    "A": "minecraft:gray_dye",
-    "C": "minecraft:brown_dye",
-    "E": "minecraft:blue_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:clay"
+    },
+    "A": {
+      "item": "minecraft:gray_dye"
+    },
+    "C": {
+      "item": "minecraft:brown_dye"
+    },
+    "E": {
+      "item": "minecraft:blue_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:petrichor_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:petrichor_scent"
   }
 }

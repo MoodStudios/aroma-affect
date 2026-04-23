@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:moss_block",
-    "A": "minecraft:green_dye",
-    "C": "minecraft:brown_dye",
-    "E": "minecraft:lime_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:moss_block"
+    },
+    "A": {
+      "item": "minecraft:green_dye"
+    },
+    "C": {
+      "item": "minecraft:brown_dye"
+    },
+    "E": {
+      "item": "minecraft:lime_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:terra_silva_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:terra_silva_scent"
   }
 }

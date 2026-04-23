@@ -129,6 +129,20 @@ public final class AromaAffectClient {
                 });
     }
 
+    public static void registerCompassProperty() {
+        dev.architectury.registry.item.ItemPropertiesRegistry.register(
+                com.ovrtechnology.guide.AromaGuideRegistry.getAROMA_GUIDE().get(),
+                net.minecraft.resources.ResourceLocation.withDefaultNamespace("angle"),
+                new net.minecraft.client.renderer.item.CompassItemPropertyFunction(
+                        (level, stack, entity) -> {
+                            net.minecraft.world.item.component.LodestoneTracker tracker =
+                                    stack.get(
+                                            net.minecraft.core.component.DataComponents
+                                                    .LODESTONE_TRACKER);
+                            return tracker != null ? tracker.target().orElse(null) : null;
+                        }));
+    }
+
     private static void initWebSocketClient() {
 
         WebSocketConfig config =

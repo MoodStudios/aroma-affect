@@ -1,5 +1,6 @@
 {
   "display_name": "Example Nose",
+  "example": true,
   "tier": 2,
   "durability": 500,
   "rarity": "UNCOMMON",

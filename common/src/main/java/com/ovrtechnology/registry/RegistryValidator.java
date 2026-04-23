@@ -60,9 +60,9 @@ public final class RegistryValidator {
 
         validateBlocks();
 
-        validateBiomes(registryAccess.lookupOrThrow(Registries.BIOME));
+        validateBiomes(registryAccess.registryOrThrow(Registries.BIOME));
 
-        validateStructures(registryAccess.lookupOrThrow(Registries.STRUCTURE));
+        validateStructures(registryAccess.registryOrThrow(Registries.STRUCTURE));
 
         validated = true;
         long elapsed = System.currentTimeMillis() - startTime;

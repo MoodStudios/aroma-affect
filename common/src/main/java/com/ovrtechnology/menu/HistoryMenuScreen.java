@@ -17,7 +17,6 @@ import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -234,7 +233,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int iconSize = (int) (BACK_BUTTON_SIZE * scale * appear);
         int iconOffset = (bSize - iconSize) / 2;
         g.blit(
-                RenderPipelines.GUI_TEXTURED,
                 ICON_BACK,
                 bx + iconOffset,
                 by + iconOffset,
@@ -967,17 +965,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         MenuCategory cat = MenuCategory.fromId(categoryId);
         if (cat != null) {
-            g.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    cat.getHeaderIcon(),
-                    iconX,
-                    iconY,
-                    0.0f,
-                    0.0f,
-                    16,
-                    16,
-                    16,
-                    16);
+            g.blit(cat.getHeaderIcon(), iconX, iconY, 0.0f, 0.0f, 16, 16, 16, 16);
         }
 
         if (specificIcon != null && !specificIcon.isEmpty()) {
@@ -998,14 +986,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             MenuRenderUtils.renderOutline(
                     g, bx - pad, by - pad, badgeSize + pad * 2, badgeSize + pad * 2, borderColor);
 
-            g.pose().pushMatrix();
+            g.pose().pushPose();
             float itemSize = badgeSize - 2;
             float offset = (badgeSize - itemSize) / 2.0f;
-            g.pose().translate(bx + offset, by + offset);
+            g.pose().translate(bx + offset, by + offset, 0);
             float scale = itemSize / 16.0f;
-            g.pose().scale(scale, scale);
+            g.pose().scale(scale, scale, 1);
             g.renderItem(specificIcon, 0, 0);
-            g.pose().popMatrix();
+            g.pose().popPose();
         }
     }
 

@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -40,19 +39,19 @@ public final class AbilityHandler {
         AromaAffect.LOGGER.info("AbilityHandler initialized");
     }
 
-    private static InteractionResult onRightClickBlock(
+    private static dev.architectury.event.EventResult onRightClickBlock(
             Player player, InteractionHand hand, BlockPos pos, Direction direction) {
 
         if (hand != InteractionHand.MAIN_HAND) {
-            return InteractionResult.PASS;
+            return dev.architectury.event.EventResult.pass();
         }
 
         if (player.level().isClientSide()) {
-            return InteractionResult.PASS;
+            return dev.architectury.event.EventResult.pass();
         }
 
         if (!(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResult.PASS;
+            return dev.architectury.event.EventResult.pass();
         }
 
         Block block = player.level().getBlockState(pos).getBlock();
@@ -83,10 +82,10 @@ public final class AbilityHandler {
                 ACTIVE_INTERACTIONS.remove(player.getUUID());
             }
 
-            return InteractionResult.SUCCESS;
+            return dev.architectury.event.EventResult.interruptTrue();
         }
 
-        return InteractionResult.PASS;
+        return dev.architectury.event.EventResult.pass();
     }
 
     private static void onServerTick(Level level) {

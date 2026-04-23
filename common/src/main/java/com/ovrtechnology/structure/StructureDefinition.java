@@ -210,7 +210,7 @@ public class StructureDefinition {
 
         for (String part : parts) {
             if (!part.isEmpty()) {
-                if (result.length() > 0) {
+                if (!result.isEmpty()) {
                     result.append(" ");
                 }
                 result.append(Character.toUpperCase(part.charAt(0)));

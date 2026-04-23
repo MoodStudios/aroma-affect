@@ -1,24 +1,24 @@
 package com.ovrtechnology.guide;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.event.events.common.PlayerEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.experimental.UtilityClass;
-import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
 
 @UtilityClass
 public final class AromaGuideFirstJoinHandler {
+
+    private static final String DATA_ID = AromaAffect.MOD_ID + "_guide_recipients";
 
     public static void init() {
         PlayerEvent.PLAYER_JOIN.register(AromaGuideFirstJoinHandler::onPlayerJoin);
@@ -27,7 +27,7 @@ public final class AromaGuideFirstJoinHandler {
     private static void onPlayerJoin(ServerPlayer player) {
         ServerLevel overworld = player.level().getServer().overworld();
         GuideRecipientData data =
-                overworld.getDataStorage().computeIfAbsent(GuideRecipientData.TYPE);
+                overworld.getDataStorage().computeIfAbsent(GuideRecipientData.factory(), DATA_ID);
 
         if (data.addPlayer(player.getUUID())) {
             ItemStack guide = new ItemStack(AromaGuideRegistry.getAROMA_GUIDE().get());
@@ -40,30 +40,40 @@ public final class AromaGuideFirstJoinHandler {
     static class GuideRecipientData extends SavedData {
         private final Set<UUID> recipients;
 
-        private static final Codec<GuideRecipientData> CODEC =
-                RecordCodecBuilder.create(
-                        instance ->
-                                instance.group(
-                                                UUIDUtil.CODEC
-                                                        .listOf()
-                                                        .fieldOf("recipients")
-                                                        .forGetter(
-                                                                d -> new ArrayList<>(d.recipients)))
-                                        .apply(instance, GuideRecipientData::new));
-
-        static final SavedDataType<GuideRecipientData> TYPE =
-                new SavedDataType<>(
-                        AromaAffect.MOD_ID + "_guide_recipients",
-                        GuideRecipientData::new,
-                        CODEC,
-                        null);
-
         GuideRecipientData() {
             this.recipients = new HashSet<>();
         }
 
-        GuideRecipientData(List<UUID> recipients) {
-            this.recipients = new HashSet<>(recipients);
+        GuideRecipientData(Set<UUID> recipients) {
+            this.recipients = recipients;
+        }
+
+        public static GuideRecipientData load(CompoundTag tag, HolderLookup.Provider registries) {
+            Set<UUID> uuids = new HashSet<>();
+            if (tag.contains("recipients")) {
+                ListTag list = tag.getList("recipients", 8);
+                for (int i = 0; i < list.size(); i++) {
+                    try {
+                        uuids.add(UUID.fromString(list.getString(i)));
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                }
+            }
+            return new GuideRecipientData(uuids);
+        }
+
+        @Override
+        public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+            ListTag list = new ListTag();
+            for (UUID uuid : recipients) {
+                list.add(StringTag.valueOf(uuid.toString()));
+            }
+            tag.put("recipients", list);
+            return tag;
+        }
+
+        public static Factory<GuideRecipientData> factory() {
+            return new Factory<>(GuideRecipientData::new, GuideRecipientData::load, null);
         }
 
         boolean addPlayer(UUID uuid) {

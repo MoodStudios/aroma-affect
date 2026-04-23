@@ -1,5 +1,6 @@
 package com.ovrtechnology.trigger.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.util.Ids;
 import dev.architectury.event.events.client.ClientGuiEvent;
@@ -8,9 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
 
 public final class ScentPuffOverlay {
 
@@ -101,21 +100,11 @@ public final class ScentPuffOverlay {
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();
 
-        int tint = ARGB.color(finalAlpha, 0xFFFFFF);
-        graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
-                activeMask,
-                0,
-                0,
-                0.0f,
-                0.0f,
-                width,
-                height,
-                width,
-                height,
-                width,
-                height,
-                tint);
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, finalAlpha);
+        graphics.blit(activeMask, 0, 0, 0.0f, 0.0f, width, height, width, height);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.disableBlend();
     }
 
     private static float computePulseAlpha(long elapsedMs) {

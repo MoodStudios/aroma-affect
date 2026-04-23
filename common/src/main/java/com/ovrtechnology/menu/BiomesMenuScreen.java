@@ -12,7 +12,6 @@ import com.ovrtechnology.util.Texts;
 import java.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -44,7 +43,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         BIOME_ICONS.put("minecraft:flower_forest", Items.PEONY.getDefaultInstance());
         BIOME_ICONS.put("minecraft:cherry_grove", Items.CHERRY_LOG.getDefaultInstance());
         BIOME_ICONS.put("minecraft:windswept_forest", Items.OAK_LEAVES.getDefaultInstance());
-        BIOME_ICONS.put("minecraft:pale_garden", Items.PALE_MOSS_BLOCK.getDefaultInstance());
+        BIOME_ICONS.put("minecraft:pale_garden", Items.MOSS_BLOCK.getDefaultInstance());
 
         BIOME_ICONS.put("minecraft:taiga", Items.SPRUCE_LOG.getDefaultInstance());
         BIOME_ICONS.put("minecraft:snowy_taiga", Items.SPRUCE_SAPLING.getDefaultInstance());
@@ -196,9 +195,9 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
             RequiredItem req = biomeDef.getRequiredItem();
             if (req != null && req.getItemId() != null) {
                 ResourceLocation reqId = Ids.parse(req.getItemId());
-                var itemOpt = BuiltInRegistries.ITEM.get(reqId);
+                var itemOpt = BuiltInRegistries.ITEM.getOptional(reqId);
                 if (itemOpt.isPresent()) {
-                    card.requiredItem = new ItemStack(itemOpt.get().value());
+                    card.requiredItem = new ItemStack(itemOpt.get());
                     card.requiredItemCount = req.getCount();
                 }
             }
@@ -252,33 +251,19 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
                     thumbBorder);
 
             ResourceLocation thumbTex = card.thumbnail != null ? card.thumbnail : PLACEHOLDER_IMG;
-            float thumbScale = (float) THUMB_W / TEX_W;
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(thumbX, thumbY);
-            graphics.pose().scale(thumbScale, thumbScale);
-            graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    thumbTex,
-                    0,
-                    0,
-                    0.0f,
-                    0.0f,
-                    TEX_W,
-                    TEX_H,
-                    TEX_W,
-                    TEX_H);
-            graphics.pose().popMatrix();
+            MenuRenderUtils.blitScaledNearest(
+                    graphics, thumbTex, thumbX, thumbY, THUMB_W, THUMB_H, TEX_W, TEX_H);
         }
 
         int iconX = thumbX + THUMB_W + 6;
         int iconY = y + (rowHeight - ICON_SIZE) / 2;
         if (card.icon != null && animationProgress > 0.2f) {
             float iconAlpha = (animationProgress - 0.2f) / 0.8f;
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(iconX, iconY);
-            graphics.pose().scale(ICON_SIZE / 16.0f * iconAlpha, ICON_SIZE / 16.0f * iconAlpha);
+            graphics.pose().pushPose();
+            graphics.pose().translate(iconX, iconY, 0);
+            graphics.pose().scale(ICON_SIZE / 16.0f * iconAlpha, ICON_SIZE / 16.0f * iconAlpha, 1);
             graphics.renderItem(card.icon, 0, 0);
-            graphics.pose().popMatrix();
+            graphics.pose().popPose();
         }
 
         int textX = iconX + ICON_SIZE + 6;

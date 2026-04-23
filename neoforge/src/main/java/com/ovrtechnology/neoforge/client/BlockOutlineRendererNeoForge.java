@@ -13,23 +13,22 @@ public final class BlockOutlineRendererNeoForge {
 
     public static void init() {
         NeoForge.EVENT_BUS.addListener(
-                RenderLevelStageEvent.AfterTranslucentBlocks.class,
-                BlockOutlineRendererNeoForge::onAfterTranslucent);
+                RenderLevelStageEvent.class, BlockOutlineRendererNeoForge::onRenderStage);
     }
 
-    private static void onAfterTranslucent(RenderLevelStageEvent.AfterTranslucentBlocks event) {
+    private static void onRenderStage(RenderLevelStageEvent event) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+            return;
+        }
+
         MultiBufferSource.BufferSource bufferSource =
                 Minecraft.getInstance().renderBuffers().bufferSource();
 
         PathTrailRenderer.renderTrail(
-                event.getPoseStack(),
-                event.getLevelRenderState().cameraRenderState.pos,
-                bufferSource);
+                event.getPoseStack(), event.getCamera().getPosition(), bufferSource);
 
         BlockOutlineRenderer.renderOutline(
-                event.getPoseStack(),
-                event.getLevelRenderState().cameraRenderState.pos,
-                bufferSource);
+                event.getPoseStack(), event.getCamera().getPosition(), bufferSource);
 
         bufferSource.endLastBatch();
     }

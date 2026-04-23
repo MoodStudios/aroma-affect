@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:nautilus_shell",
-    "A": "minecraft:cyan_dye",
-    "C": "minecraft:light_blue_dye",
-    "E": "minecraft:yellow_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:nautilus_shell"
+    },
+    "A": {
+      "item": "minecraft:cyan_dye"
+    },
+    "C": {
+      "item": "minecraft:light_blue_dye"
+    },
+    "E": {
+      "item": "minecraft:yellow_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:beach_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:beach_scent"
   }
 }

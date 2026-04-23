@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -29,7 +31,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -54,8 +55,6 @@ import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,21 +106,12 @@ public class NoseSmithEntity extends Villager {
         this.setCustomName(Texts.tr("entity.aromaaffect.nose_smith"));
         this.setCustomNameVisible(true);
         this.setVillagerData(
-                this.getVillagerData()
-                        .withProfession(
-                                BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(
-                                        VillagerProfession.NITWIT))
-                        .withLevel(5));
+                this.getVillagerData().setProfession(VillagerProfession.NITWIT).setLevel(5));
     }
 
     @Override
     public void setVillagerData(VillagerData villagerData) {
-        super.setVillagerData(
-                villagerData
-                        .withProfession(
-                                BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(
-                                        VillagerProfession.NITWIT))
-                        .withLevel(5));
+        super.setVillagerData(villagerData.setProfession(VillagerProfession.NITWIT).setLevel(5));
     }
 
     @Override
@@ -155,51 +145,50 @@ public class NoseSmithEntity extends Villager {
     }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        super.addAdditionalSaveData(output);
-        output.putBoolean(TAG_HAS_NOSE, hasNose());
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putBoolean(TAG_HAS_NOSE, hasNose());
         if (requestedFlower != null) {
-            output.putString(TAG_REQUESTED_FLOWER, requestedFlower.toString());
+            tag.putString(TAG_REQUESTED_FLOWER, requestedFlower.toString());
         }
-        output.putBoolean(TAG_HOUSE_DECORATED, houseDecorated);
+        tag.putBoolean(TAG_HOUSE_DECORATED, houseDecorated);
         if (noseRemovedGameTime >= 0) {
-            output.putString(TAG_NOSE_REMOVED_TIME, Long.toString(noseRemovedGameTime));
+            tag.putString(TAG_NOSE_REMOVED_TIME, Long.toString(noseRemovedGameTime));
         }
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        super.readAdditionalSaveData(input);
-        setHasNose(input.getBooleanOr(TAG_HAS_NOSE, true));
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        setHasNose(tag.contains(TAG_HAS_NOSE, Tag.TAG_BYTE) ? tag.getBoolean(TAG_HAS_NOSE) : true);
 
         requestedFlower =
-                input.getString(TAG_REQUESTED_FLOWER).map(ResourceLocation::parse).orElse(null);
+                tag.contains(TAG_REQUESTED_FLOWER, Tag.TAG_STRING)
+                        ? ResourceLocation.tryParse(tag.getString(TAG_REQUESTED_FLOWER))
+                        : null;
 
         this.entityData.set(
                 REQUESTED_FLOWER_ID, requestedFlower != null ? requestedFlower.toString() : "");
 
-        houseDecorated = input.getBooleanOr(TAG_HOUSE_DECORATED, false);
+        houseDecorated =
+                tag.contains(TAG_HOUSE_DECORATED, Tag.TAG_BYTE)
+                        && tag.getBoolean(TAG_HOUSE_DECORATED);
 
-        noseRemovedGameTime =
-                input.getString(TAG_NOSE_REMOVED_TIME)
-                        .map(
-                                s -> {
-                                    try {
-                                        return Long.parseLong(s);
-                                    } catch (NumberFormatException e) {
-                                        return -1L;
-                                    }
-                                })
-                        .orElse(-1L);
+        if (tag.contains(TAG_NOSE_REMOVED_TIME, Tag.TAG_STRING)) {
+            try {
+                noseRemovedGameTime = Long.parseLong(tag.getString(TAG_NOSE_REMOVED_TIME));
+            } catch (NumberFormatException e) {
+                noseRemovedGameTime = -1L;
+            }
+        } else {
+            noseRemovedGameTime = -1L;
+        }
     }
 
     @Override
     @Nullable
-    public <T extends Mob> T convertTo(
-            EntityType<T> entityType,
-            ConversionParams params,
-            ConversionParams.AfterConversion<T> afterConversion) {
-        T result = super.convertTo(entityType, params, afterConversion);
+    public <T extends Mob> T convertTo(EntityType<T> entityType, boolean preserveCanPickUpLoot) {
+        T result = super.convertTo(entityType, preserveCanPickUpLoot);
         if (result instanceof NoseSmithZombieMarker marker) {
             marker.aromaaffect$markAsNoseSmith(
                     hasNose(),
@@ -268,11 +257,10 @@ public class NoseSmithEntity extends Villager {
     }
 
     @Override
-    protected void customServerAiStep(ServerLevel serverLevel) {
+    protected void customServerAiStep() {
 
         if (isInDialogue()) {
             this.getNavigation().stop();
-            this.getMoveControl().setWait();
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.0D, 1.0D, 0.0D));
 
             Player player = getDialoguePlayer();
@@ -295,7 +283,7 @@ public class NoseSmithEntity extends Villager {
 
         if (this.level() instanceof ServerLevel) {
             keepDialogueAlive(player);
-            return InteractionResult.SUCCESS_SERVER;
+            return InteractionResult.SUCCESS;
         }
 
         return InteractionResult.CONSUME;
@@ -327,7 +315,7 @@ public class NoseSmithEntity extends Villager {
             return;
         }
 
-        Player player = serverLevel.getPlayerInAnyDimension(dialoguePlayerId);
+        Player player = serverLevel.getPlayerByUUID(dialoguePlayerId);
         if (player == null || player.isRemoved() || player.level() != this.level()) {
             clearDialogueSession();
             return;
@@ -354,7 +342,7 @@ public class NoseSmithEntity extends Villager {
             return null;
         }
 
-        Player player = this.level().getPlayerInAnyDimension(dialoguePlayerId);
+        Player player = this.level().getPlayerByUUID(dialoguePlayerId);
         if (player == null || player.level() != this.level()) {
             return null;
         }

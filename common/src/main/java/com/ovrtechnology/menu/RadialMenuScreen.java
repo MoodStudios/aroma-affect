@@ -1,8 +1,13 @@
 package com.ovrtechnology.menu;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Axis;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
@@ -12,18 +17,13 @@ import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.util.Texts;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -31,7 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import org.joml.Matrix3x2f;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 public class RadialMenuScreen extends BaseMenuScreen {
@@ -53,10 +53,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final int COLOR_RING_BORDER = Colors.OVERLAY_WHITE_TOOLTIP;
     private static final int COLOR_RING_SEPARATOR = 0x80A88CFF;
     private static final int COLOR_INDICATOR = 0xEEFFFFFF;
-
-    private static final TextureSetup NO_TEXTURE = TextureSetup.noTexture();
-
-    private static final Field GUI_RENDER_STATE_FIELD = findGuiRenderStateField();
 
     private final List<RadialEntry> entries = new ArrayList<>();
     private float[] selectionProgress = new float[0];
@@ -173,7 +169,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         if (selectedIndex != previousHoverIndex) {
             if (selectedIndex >= 0 && selectedIndex < entries.size()) {
-                MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3f, 1.5f);
+                MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK, 0.3f, 1.5f);
             }
             previousHoverIndex = selectedIndex;
         }
@@ -300,7 +296,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int gearIconX = gearX + 2;
         int gearIconY = gearY + 2;
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
                 ICON_CONFIG,
                 gearIconX,
                 gearIconY,
@@ -486,32 +481,32 @@ public class RadialMenuScreen extends BaseMenuScreen {
             AromaAffect.LOGGER.debug("Passive mode toggle clicked");
             PassiveModeManager.togglePassiveMode();
             MenuRenderUtils.playSound(
-                    SoundEvents.UI_BUTTON_CLICK.value(),
+                    SoundEvents.UI_BUTTON_CLICK,
                     0.5f,
                     PassiveModeManager.isPassiveModeEnabled() ? 1.3f : 0.9f);
             return true;
         }
         if (isHoveringConfigGear) {
             AromaAffect.LOGGER.debug("Config gear button clicked");
-            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK, 0.6f, 1.0f);
             MenuManager.openConfigMenu();
             return true;
         }
         if (isHoveringGuide) {
             AromaAffect.LOGGER.debug("Guide button clicked");
-            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK, 0.6f, 1.0f);
             MenuManager.openGuide();
             return true;
         }
         if (isHoveringShop) {
             AromaAffect.LOGGER.debug("Shop button clicked");
-            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK, 0.6f, 1.2f);
             MenuManager.openShopMenu();
             return true;
         }
         if (isHoveringHistory) {
             AromaAffect.LOGGER.debug("History button clicked");
-            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK, 0.6f, 1.0f);
             MenuManager.openHistoryMenu();
             return true;
         }
@@ -548,7 +543,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return true;
         }
 
-        MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+        MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK, 0.6f, 1.0f);
         onEntrySelected(entries.get(index));
         return true;
     }
@@ -637,17 +632,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
             ResourceLocation icon = lockedSlots[i] ? getGrayscaleIcon(entry.icon()) : entry.icon();
 
-            graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    icon,
-                    drawX,
-                    drawY,
-                    0.0f,
-                    0.0f,
-                    iconSize,
-                    iconSize,
-                    iconSize,
-                    iconSize);
+            graphics.blit(icon, drawX, drawY, 0.0f, 0.0f, iconSize, iconSize, iconSize, iconSize);
 
             if (lockedSlots[i]) {
                 renderLockIcon(graphics, drawX, drawY, iconSize);
@@ -994,7 +979,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
                 String texName = original.getPath().replace('/', '_').replace('.', '_');
                 ResourceLocation grayLoc = Ids.mod("dynamic/gray_" + texName);
-                DynamicTexture dynamicTexture = new DynamicTexture(() -> texName, grayscale);
+                DynamicTexture dynamicTexture = new DynamicTexture(grayscale);
                 Minecraft.getInstance().getTextureManager().register(grayLoc, dynamicTexture);
                 GRAYSCALE_CACHE.put(original, grayLoc);
                 return grayLoc;
@@ -1086,12 +1071,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int renderH = (int) (diameter / aspect);
 
         float rotation = arrowAngle - (float) (-Math.PI / 2.0);
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(centerX, centerY);
-        graphics.pose().rotate(rotation);
+        graphics.pose().pushPose();
+        graphics.pose().translate(centerX, centerY, 0);
+        graphics.pose().mulPose(Axis.ZP.rotation(rotation));
 
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
                 ICON_CENTER_LOGO,
                 -renderW / 2,
                 -renderH / 2,
@@ -1103,7 +1087,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 renderH);
 
         graphics.blit(
-                RenderPipelines.GUI_TEXTURED,
                 ICON_CENTER_ARROW,
                 -renderW / 2,
                 -renderH / 2,
@@ -1114,7 +1097,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 renderW,
                 renderH);
 
-        graphics.pose().popMatrix();
+        graphics.pose().popPose();
     }
 
     private void submitRadialRenderState(
@@ -1128,34 +1111,171 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int selectedColor = MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, animationProgress);
         int borderColor = MenuRenderUtils.withAlpha(COLOR_RING_BORDER, animationProgress);
         int separatorColor = MenuRenderUtils.withAlpha(COLOR_RING_SEPARATOR, animationProgress);
-        int indicatorColor = MenuRenderUtils.withAlpha(COLOR_INDICATOR, animationProgress);
 
-        int boundsPadding = 4;
-        int boundsLeft = centerX - outerRadius - boundsPadding;
-        int boundsTop = centerY - outerRadius - boundsPadding;
-        int boundsSize = (outerRadius + boundsPadding) * 2;
+        Matrix4f matrix = graphics.pose().last().pose();
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder buffer =
+                tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        ScreenRectangle bounds = new ScreenRectangle(boundsLeft, boundsTop, boundsSize, boundsSize);
-        GuiRenderState renderState = getGuiRenderState(graphics);
-        renderState.submitGuiElement(
-                new RadialRingRenderState(
-                        RenderPipelines.GUI,
-                        NO_TEXTURE,
-                        new Matrix3x2f(graphics.pose()),
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        int segments = selectionProgress.length;
+        if (segments > 0) {
+            float segmentAngle = TWO_PI / segments;
+            int fullSteps = computeFullArcSteps(outerRadius);
+            int stepsPerSegment = Math.max(8, fullSteps / segments);
+
+            for (int i = 0; i < segments; i++) {
+                float t = selectionProgress[i];
+                int fillColor = lerpColor(baseColor, selectedColor, t);
+                float start = START_ANGLE_RAD + i * segmentAngle;
+                addRingArc(
+                        buffer,
+                        matrix,
                         centerX,
                         centerY,
                         innerRadius,
                         outerRadius,
-                        baseColor,
-                        selectedColor,
-                        borderColor,
-                        separatorColor,
-                        indicatorColor,
-                        START_ANGLE_RAD,
-                        selectedIndex,
-                        selectionProgress,
-                        bounds,
-                        null));
+                        start,
+                        segmentAngle,
+                        stepsPerSegment,
+                        fillColor);
+            }
+
+            addRingArc(
+                    buffer,
+                    matrix,
+                    centerX,
+                    centerY,
+                    outerRadius - BORDER_THICKNESS_PX,
+                    outerRadius,
+                    START_ANGLE_RAD,
+                    TWO_PI,
+                    fullSteps,
+                    borderColor);
+            addRingArc(
+                    buffer,
+                    matrix,
+                    centerX,
+                    centerY,
+                    innerRadius,
+                    innerRadius + BORDER_THICKNESS_PX,
+                    START_ANGLE_RAD,
+                    TWO_PI,
+                    fullSteps,
+                    borderColor);
+
+            for (int i = 0; i < segments; i++) {
+                float angle = START_ANGLE_RAD + i * segmentAngle;
+                addRadialQuad(
+                        buffer,
+                        matrix,
+                        centerX,
+                        centerY,
+                        innerRadius,
+                        outerRadius,
+                        angle,
+                        SEPARATOR_THICKNESS_PX,
+                        separatorColor);
+            }
+        }
+
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        RenderSystem.disableBlend();
+    }
+
+    private static void addRingArc(
+            BufferBuilder buffer,
+            Matrix4f matrix,
+            float centerX,
+            float centerY,
+            float innerR,
+            float outerR,
+            float startAngle,
+            float arcAngle,
+            int steps,
+            int color) {
+        if (steps <= 0) return;
+        float stepAngle = arcAngle / steps;
+        double cosStep = Math.cos(stepAngle);
+        double sinStep = Math.sin(stepAngle);
+        double cos = Math.cos(startAngle);
+        double sin = Math.sin(startAngle);
+        for (int i = 0; i < steps; i++) {
+            double cosNext = cos * cosStep - sin * sinStep;
+            double sinNext = sin * cosStep + cos * sinStep;
+            float xInner0 = centerX + (float) (innerR * cos);
+            float yInner0 = centerY + (float) (innerR * sin);
+            float xOuter0 = centerX + (float) (outerR * cos);
+            float yOuter0 = centerY + (float) (outerR * sin);
+            float xOuter1 = centerX + (float) (outerR * cosNext);
+            float yOuter1 = centerY + (float) (outerR * sinNext);
+            float xInner1 = centerX + (float) (innerR * cosNext);
+            float yInner1 = centerY + (float) (innerR * sinNext);
+            addQuad(
+                    buffer, matrix, xInner0, yInner0, xOuter0, yOuter0, xOuter1, yOuter1, xInner1,
+                    yInner1, color);
+            cos = cosNext;
+            sin = sinNext;
+        }
+    }
+
+    private static void addRadialQuad(
+            BufferBuilder buffer,
+            Matrix4f matrix,
+            float centerX,
+            float centerY,
+            float innerR,
+            float outerR,
+            float angleRad,
+            float thicknessPx,
+            int color) {
+        float dirX = (float) Math.cos(angleRad);
+        float dirY = (float) Math.sin(angleRad);
+        float perpX = -dirY;
+        float perpY = dirX;
+        float halfT = thicknessPx * 0.5f;
+        float x0 = centerX + dirX * innerR;
+        float y0 = centerY + dirY * innerR;
+        float x1 = centerX + dirX * outerR;
+        float y1 = centerY + dirY * outerR;
+        float ax = x0 + perpX * halfT;
+        float ay = y0 + perpY * halfT;
+        float bx = x0 - perpX * halfT;
+        float by = y0 - perpY * halfT;
+        float cx = x1 - perpX * halfT;
+        float cy = y1 - perpY * halfT;
+        float dx = x1 + perpX * halfT;
+        float dy = y1 + perpY * halfT;
+        addQuad(buffer, matrix, ax, ay, bx, by, cx, cy, dx, dy, color);
+    }
+
+    private static void addQuad(
+            BufferBuilder buffer,
+            Matrix4f matrix,
+            float x0,
+            float y0,
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float x3,
+            float y3,
+            int color) {
+        int a = (color >>> 24) & 0xFF;
+        int r = (color >>> 16) & 0xFF;
+        int g = (color >>> 8) & 0xFF;
+        int b = color & 0xFF;
+        buffer.addVertex(matrix, x0, y0, 0).setColor(r, g, b, a);
+        buffer.addVertex(matrix, x3, y3, 0).setColor(r, g, b, a);
+        buffer.addVertex(matrix, x2, y2, 0).setColor(r, g, b, a);
+        buffer.addVertex(matrix, x1, y1, 0).setColor(r, g, b, a);
+    }
+
+    private static int computeFullArcSteps(float outerRadius) {
+        return Mth.clamp((int) (outerRadius * 0.75f), 48, 96);
     }
 
     private static int computeOuterRadiusPx(int width, int height) {
@@ -1215,24 +1335,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    private static GuiRenderState getGuiRenderState(GuiGraphics graphics) {
-        try {
-            return (GuiRenderState) GUI_RENDER_STATE_FIELD.get(graphics);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to access GuiGraphics GuiRenderState", e);
-        }
-    }
-
-    private static Field findGuiRenderStateField() {
-        for (Field field : GuiGraphics.class.getDeclaredFields()) {
-            if (GuiRenderState.class.isAssignableFrom(field.getType())) {
-                field.setAccessible(true);
-                return field;
-            }
-        }
-        throw new IllegalStateException("Unable to locate GuiRenderState field on GuiGraphics");
-    }
-
     private void drawDistanceLine(
             GuiGraphics graphics,
             int x,
@@ -1257,221 +1359,4 @@ public class RadialMenuScreen extends BaseMenuScreen {
             Component description,
             ResourceLocation icon,
             Runnable onSelect) {}
-
-    private record RadialRingRenderState(
-            RenderPipeline pipeline,
-            TextureSetup textureSetup,
-            Matrix3x2f pose,
-            int centerX,
-            int centerY,
-            float innerRadius,
-            float outerRadius,
-            int baseColor,
-            int selectedColor,
-            int borderColor,
-            int separatorColor,
-            int indicatorColor,
-            float startAngleRad,
-            int selectedIndex,
-            float[] selectionProgress,
-            ScreenRectangle bounds,
-            ScreenRectangle scissorArea)
-            implements GuiElementRenderState {
-
-        @Override
-        public void buildVertices(VertexConsumer consumer) {
-            int segments = selectionProgress.length;
-            if (segments <= 0) {
-                return;
-            }
-
-            float segmentAngle = TWO_PI / segments;
-            int fullSteps = computeFullArcSteps(outerRadius);
-            int stepsPerSegment = Math.max(8, fullSteps / segments);
-
-            for (int i = 0; i < segments; i++) {
-                float t = selectionProgress[i];
-                int fillColor = lerpColor(baseColor, selectedColor, t);
-                float start = startAngleRad + i * segmentAngle;
-                addRingArc(
-                        consumer,
-                        centerX,
-                        centerY,
-                        innerRadius,
-                        outerRadius,
-                        start,
-                        segmentAngle,
-                        stepsPerSegment,
-                        fillColor);
-            }
-
-            addRingArc(
-                    consumer,
-                    centerX,
-                    centerY,
-                    outerRadius - BORDER_THICKNESS_PX,
-                    outerRadius,
-                    startAngleRad,
-                    TWO_PI,
-                    fullSteps,
-                    borderColor);
-            addRingArc(
-                    consumer,
-                    centerX,
-                    centerY,
-                    innerRadius,
-                    innerRadius + BORDER_THICKNESS_PX,
-                    startAngleRad,
-                    TWO_PI,
-                    fullSteps,
-                    borderColor);
-
-            for (int i = 0; i < segments; i++) {
-                float angle = startAngleRad + i * segmentAngle;
-                addRadialQuad(
-                        consumer,
-                        centerX,
-                        centerY,
-                        innerRadius,
-                        outerRadius,
-                        angle,
-                        SEPARATOR_THICKNESS_PX,
-                        separatorColor);
-            }
-        }
-
-        private void addRingArc(
-                VertexConsumer consumer,
-                float centerX,
-                float centerY,
-                float innerR,
-                float outerR,
-                float startAngle,
-                float arcAngle,
-                int steps,
-                int color) {
-            if (steps <= 0) {
-                return;
-            }
-
-            float stepAngle = arcAngle / steps;
-            double cosStep = Math.cos(stepAngle);
-            double sinStep = Math.sin(stepAngle);
-
-            double cos = Math.cos(startAngle);
-            double sin = Math.sin(startAngle);
-
-            for (int i = 0; i < steps; i++) {
-                double cosNext = cos * cosStep - sin * sinStep;
-                double sinNext = sin * cosStep + cos * sinStep;
-
-                float xInner0 = centerX + (float) (innerR * cos);
-                float yInner0 = centerY + (float) (innerR * sin);
-                float xOuter0 = centerX + (float) (outerR * cos);
-                float yOuter0 = centerY + (float) (outerR * sin);
-
-                float xOuter1 = centerX + (float) (outerR * cosNext);
-                float yOuter1 = centerY + (float) (outerR * sinNext);
-                float xInner1 = centerX + (float) (innerR * cosNext);
-                float yInner1 = centerY + (float) (innerR * sinNext);
-
-                addQuad(
-                        consumer, xInner0, yInner0, xOuter0, yOuter0, xOuter1, yOuter1, xInner1,
-                        yInner1, color);
-
-                cos = cosNext;
-                sin = sinNext;
-            }
-        }
-
-        private void addRadialQuad(
-                VertexConsumer consumer,
-                float centerX,
-                float centerY,
-                float innerR,
-                float outerR,
-                float angleRad,
-                float thicknessPx,
-                int color) {
-            float dirX = (float) Math.cos(angleRad);
-            float dirY = (float) Math.sin(angleRad);
-
-            float perpX = -dirY;
-            float perpY = dirX;
-            float halfT = thicknessPx * 0.5f;
-
-            float x0 = centerX + dirX * innerR;
-            float y0 = centerY + dirY * innerR;
-            float x1 = centerX + dirX * outerR;
-            float y1 = centerY + dirY * outerR;
-
-            float ax = x0 + perpX * halfT;
-            float ay = y0 + perpY * halfT;
-            float bx = x0 - perpX * halfT;
-            float by = y0 - perpY * halfT;
-            float cx = x1 - perpX * halfT;
-            float cy = y1 - perpY * halfT;
-            float dx = x1 + perpX * halfT;
-            float dy = y1 + perpY * halfT;
-
-            addQuad(consumer, ax, ay, bx, by, cx, cy, dx, dy, color);
-        }
-
-        private void addLineQuad(
-                VertexConsumer consumer,
-                float x0,
-                float y0,
-                float x1,
-                float y1,
-                float thicknessPx,
-                int color) {
-            float dx = x1 - x0;
-            float dy = y1 - y0;
-            float lenSq = dx * dx + dy * dy;
-            if (lenSq < 0.0001f) {
-                return;
-            }
-
-            float invLen = Mth.invSqrt(lenSq);
-            float nx = dx * invLen;
-            float ny = dy * invLen;
-
-            float perpX = -ny;
-            float perpY = nx;
-            float halfT = thicknessPx * 0.5f;
-
-            float ax = x0 + perpX * halfT;
-            float ay = y0 + perpY * halfT;
-            float bx = x0 - perpX * halfT;
-            float by = y0 - perpY * halfT;
-            float cx = x1 - perpX * halfT;
-            float cy = y1 - perpY * halfT;
-            float dx2 = x1 + perpX * halfT;
-            float dy2 = y1 + perpY * halfT;
-
-            addQuad(consumer, ax, ay, bx, by, cx, cy, dx2, dy2, color);
-        }
-
-        private void addQuad(
-                VertexConsumer consumer,
-                float x0,
-                float y0,
-                float x1,
-                float y1,
-                float x2,
-                float y2,
-                float x3,
-                float y3,
-                int color) {
-
-            consumer.addVertexWith2DPose(pose, x0, y0).setColor(color);
-            consumer.addVertexWith2DPose(pose, x3, y3).setColor(color);
-            consumer.addVertexWith2DPose(pose, x2, y2).setColor(color);
-            consumer.addVertexWith2DPose(pose, x1, y1).setColor(color);
-        }
-
-        private static int computeFullArcSteps(float outerRadius) {
-            return Mth.clamp((int) (outerRadius * 0.75f), 48, 96);
-        }
-    }
 }

@@ -274,7 +274,7 @@ public final class PassiveModeManager {
             try {
                 ResourceLocation loc = Ids.parse(trigger.getBlockId());
                 level.registryAccess()
-                        .lookupOrThrow(Registries.BLOCK)
+                        .registryOrThrow(Registries.BLOCK)
                         .getOptional(loc)
                         .ifPresent(block -> triggersByBlock.put(block, trigger));
             } catch (Exception e) {
@@ -378,7 +378,7 @@ public final class PassiveModeManager {
             ResourceLocation entityLocation = Ids.parse(entityTypeId);
             Optional<EntityType<?>> entityTypeOpt =
                     level.registryAccess()
-                            .lookupOrThrow(Registries.ENTITY_TYPE)
+                            .registryOrThrow(Registries.ENTITY_TYPE)
                             .getOptional(entityLocation);
 
             if (entityTypeOpt.isEmpty()) {
@@ -471,7 +471,7 @@ public final class PassiveModeManager {
         String currentBiomeId =
                 Objects.requireNonNull(
                                 level.registryAccess()
-                                        .lookupOrThrow(Registries.BIOME)
+                                        .registryOrThrow(Registries.BIOME)
                                         .getKey(biomeHolder.value()))
                         .toString();
 
@@ -586,7 +586,7 @@ public final class PassiveModeManager {
         try {
             ResourceLocation location = Ids.parse(blockId);
             Optional<Block> blockOpt =
-                    level.registryAccess().lookupOrThrow(Registries.BLOCK).getOptional(location);
+                    level.registryAccess().registryOrThrow(Registries.BLOCK).getOptional(location);
 
             if (blockOpt.isPresent()) {
                 Block block = blockOpt.get();

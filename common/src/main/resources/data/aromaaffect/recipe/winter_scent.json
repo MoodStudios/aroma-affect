@@ -7,14 +7,24 @@
     "ACA"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:blue_ice",
-    "A": "minecraft:light_blue_dye",
-    "C": "minecraft:white_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:blue_ice"
+    },
+    "A": {
+      "item": "minecraft:light_blue_dye"
+    },
+    "C": {
+      "item": "minecraft:white_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:winter_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:winter_scent"
   }
 }

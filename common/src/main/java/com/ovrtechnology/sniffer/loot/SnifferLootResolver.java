@@ -94,7 +94,7 @@ public final class SnifferLootResolver {
             ResourceLocation tagId = ResourceLocation.tryParse(tagStr);
             if (tagId == null) return;
             TagKey<Item> tagKey = TagKey.create(Registries.ITEM, tagId);
-            Optional<HolderSet.Named<Item>> optSet = BuiltInRegistries.ITEM.get(tagKey);
+            Optional<HolderSet.Named<Item>> optSet = BuiltInRegistries.ITEM.getTag(tagKey);
             if (optSet.isEmpty() || optSet.get().size() == 0) return;
             Optional<Holder<Item>> picked = optSet.get().getRandomElement(random);
             picked.ifPresent(h -> out.add(new ItemStack(h.value(), count)));

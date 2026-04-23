@@ -7,14 +7,24 @@
     "ACA"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:campfire",
-    "A": "minecraft:gray_dye",
-    "C": "minecraft:black_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:campfire"
+    },
+    "A": {
+      "item": "minecraft:gray_dye"
+    },
+    "C": {
+      "item": "minecraft:black_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:smoky_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:smoky_scent"
   }
 }

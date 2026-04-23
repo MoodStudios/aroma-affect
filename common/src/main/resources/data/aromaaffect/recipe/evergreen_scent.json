@@ -7,15 +7,27 @@
     "ECE"
   ],
   "key": {
-    "S": "aromaaffect:scent_base",
-    "D": "aromaaffect:scent_container",
-    "B": "minecraft:spruce_leaves",
-    "A": "minecraft:green_dye",
-    "C": "minecraft:lime_dye",
-    "E": "minecraft:cyan_dye"
+    "S": {
+      "item": "aromaaffect:scent_base"
+    },
+    "D": {
+      "item": "aromaaffect:scent_container"
+    },
+    "B": {
+      "item": "minecraft:spruce_leaves"
+    },
+    "A": {
+      "item": "minecraft:green_dye"
+    },
+    "C": {
+      "item": "minecraft:lime_dye"
+    },
+    "E": {
+      "item": "minecraft:cyan_dye"
+    }
   },
   "result": {
-    "id": "aromaaffect:evergreen_scent",
-    "count": 1
+    "count": 1,
+    "item": "aromaaffect:evergreen_scent"
   }
 }

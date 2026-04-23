@@ -1112,7 +1112,7 @@ public class ConfigScreen extends BaseMenuScreen {
     private void updateSliderDrag(int mouseX) {
         if (activeDrag == DragTarget.NONE) return;
 
-        long window = Minecraft.getInstance().getWindow().handle();
+        long window = Minecraft.getInstance().getWindow().getWindow();
         if (GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) != GLFW.GLFW_PRESS) {
             activeDrag = DragTarget.NONE;
             return;

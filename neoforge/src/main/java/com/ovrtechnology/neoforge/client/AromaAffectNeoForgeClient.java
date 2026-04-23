@@ -15,6 +15,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 
@@ -29,6 +30,25 @@ public final class AromaAffectNeoForgeClient {
 
         modEventBus.addListener(this::onRegisterClientExtensions);
         modEventBus.addListener(this::onRegisterMenuScreens);
+        modEventBus.addListener(this::onAddLayers);
+        modEventBus.addListener(this::onClientSetup);
+    }
+
+    private void onAddLayers(EntityRenderersEvent.AddLayers event) {
+        for (net.minecraft.client.resources.PlayerSkin.Model skinModel :
+                net.minecraft.client.resources.PlayerSkin.Model.values()) {
+            net.minecraft.client.renderer.entity.LivingEntityRenderer<
+                            net.minecraft.client.player.AbstractClientPlayer,
+                            net.minecraft.client.model.PlayerModel<
+                                    net.minecraft.client.player.AbstractClientPlayer>>
+                    renderer = event.getSkin(skinModel);
+            if (renderer
+                    instanceof
+                    net.minecraft.client.renderer.entity.player.PlayerRenderer
+                    playerRenderer) {
+                playerRenderer.addLayer(new NoseLayer(playerRenderer));
+            }
+        }
     }
 
     private void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
@@ -39,8 +59,7 @@ public final class AromaAffectNeoForgeClient {
     }
 
     private void onClientSetup(FMLClientSetupEvent event) {
-
-        AromaAffectClient.init();
+        event.enqueueWork(AromaAffectClient::registerCompassProperty);
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {

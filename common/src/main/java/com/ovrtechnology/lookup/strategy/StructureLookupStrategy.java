@@ -119,9 +119,9 @@ public class StructureLookupStrategy implements LookupStrategy {
         try {
 
             Registry<Structure> structureRegistry =
-                    level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+                    level.registryAccess().registryOrThrow(Registries.STRUCTURE);
 
-            Structure structure = structureRegistry.getValue(target.resourceId());
+            Structure structure = structureRegistry.get(target.resourceId());
             if (structure == null) {
                 AromaAffect.LOGGER.warn("Structure not found in registry: {}", target.resourceId());
                 callback.accept(

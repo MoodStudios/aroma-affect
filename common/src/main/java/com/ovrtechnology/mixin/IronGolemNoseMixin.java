@@ -6,6 +6,8 @@ import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.entity.nosesmith.SpecialRoseItem;
 import com.ovrtechnology.network.IronGolemNoseNetworking;
 import java.util.List;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -16,8 +18,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,13 +48,15 @@ public abstract class IronGolemNoseMixin extends AbstractGolem implements IronGo
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void aromaaffect$saveNoseData(ValueOutput output, CallbackInfo ci) {
-        output.putBoolean("aromaaffect:HasNose", aromaaffect$hasNose);
+    private void aromaaffect$saveNoseData(CompoundTag tag, CallbackInfo ci) {
+        tag.putBoolean("aromaaffect:HasNose", aromaaffect$hasNose);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void aromaaffect$loadNoseData(ValueInput input, CallbackInfo ci) {
-        aromaaffect$hasNose = input.getBooleanOr("aromaaffect:HasNose", true);
+    private void aromaaffect$loadNoseData(CompoundTag tag, CallbackInfo ci) {
+        aromaaffect$hasNose =
+                !tag.contains("aromaaffect:HasNose", Tag.TAG_BYTE)
+                        || tag.getBoolean("aromaaffect:HasNose");
     }
 
     @Inject(method = "aiStep", at = @At("TAIL"))

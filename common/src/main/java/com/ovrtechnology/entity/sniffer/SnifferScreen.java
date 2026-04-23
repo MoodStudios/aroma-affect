@@ -4,7 +4,6 @@ import com.ovrtechnology.util.Ids;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,7 +27,6 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
         int l = (this.height - this.imageHeight) / 2;
 
         guiGraphics.blit(
-                RenderPipelines.GUI_TEXTURED,
                 HORSE_INVENTORY_LOCATION,
                 k,
                 l,
@@ -59,7 +57,7 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
     }
 
     private void drawSlot(GuiGraphics guiGraphics, int x, int y) {
-        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, x, y, 18, 18);
+        guiGraphics.blitSprite(SLOT_SPRITE, x, y, 18, 18);
     }
 
     @Override

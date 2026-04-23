@@ -63,7 +63,7 @@ public final class StructureSyncHandler {
     }
 
     private static String detectStructure(ServerPlayer player) {
-        ServerLevel level = player.level();
+        ServerLevel level = (ServerLevel) player.level();
         BlockPos playerPos = player.blockPosition();
 
         for (StructureTriggerDefinition trigger :
@@ -83,7 +83,7 @@ public final class StructureSyncHandler {
             ResourceLocation location = Ids.parse(structureId);
             var structureOpt =
                     level.registryAccess()
-                            .lookupOrThrow(Registries.STRUCTURE)
+                            .registryOrThrow(Registries.STRUCTURE)
                             .getOptional(location);
 
             if (structureOpt.isEmpty()) return false;
