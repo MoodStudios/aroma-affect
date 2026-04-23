@@ -17,10 +17,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.ovrtechnology.fabric.ExampleModFabric"
+      "com.ovrtechnology.fabric.AromaAffectFabric"
     ],
     "client": [
-      "com.ovrtechnology.fabric.client.ExampleModFabricClient"
+      "com.ovrtechnology.fabric.client.AromaAffectFabricClient"
     ]
   },
   "accessWidener": "aromaaffect.accesswidener",

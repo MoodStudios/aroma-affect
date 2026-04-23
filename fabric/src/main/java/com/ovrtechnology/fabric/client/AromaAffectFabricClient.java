@@ -9,7 +9,7 @@ import com.ovrtechnology.omara.OmaraDeviceScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.screens.MenuScreens;
 
-public final class ExampleModFabricClient implements ClientModInitializer {
+public final class AromaAffectFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
 
