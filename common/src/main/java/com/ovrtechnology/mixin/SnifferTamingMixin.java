@@ -220,6 +220,20 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
     }
 
+    @Inject(method = "customServerAiStep()V", at = @At("HEAD"), cancellable = true)
+    private void aromaaffect$skipAiWhenRidden(CallbackInfo ci) {
+        Sniffer self = (Sniffer) (Object) this;
+        if (!self.isVehicle()) return;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+        if (data.ownerUUID == null) return;
+        if (!(self.getFirstPassenger() instanceof Player)) return;
+
+        self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET);
+        self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_DIGGING);
+        self.getBrain().eraseMemory(MemoryModuleType.SNIFFER_HAPPY);
+        ci.cancel();
+    }
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void aromaaffect$onTick(CallbackInfo ci) {
         Sniffer self = (Sniffer) (Object) this;

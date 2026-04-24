@@ -6,7 +6,9 @@
   "client": [
     "AbstractContainerScreenAccessor",
     "IronGolemModelMixin",
-    "CustomHeadLayerMixin"
+    "CustomHeadLayerMixin",
+    "SnifferRendererMixin",
+    "SnifferModelMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",
