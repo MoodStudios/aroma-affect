@@ -368,8 +368,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
-        int miniToggleW = 28;
-        int categoryToggleX = x + w - SLIDER_W - 40 - miniToggleW - 8;
+        int categoryToggleX = x + w - SLIDER_W - 40 - TOGGLE_W - 12;
         for (String category : EVENT_CATEGORIES) {
             graphics.drawString(
                     font,
@@ -458,8 +457,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int rowY = y;
         int sliderX = x + w - SLIDER_W - 40;
         int toggleX = x + w - TOGGLE_W - 30;
-        int miniToggleW = 28;
-        int categoryToggleX = x + w - SLIDER_W - 40 - miniToggleW - 8;
+        int categoryToggleX = x + w - SLIDER_W - 40 - TOGGLE_W - 12;
 
         if (mx >= toggleX
                 && mx < toggleX + TOGGLE_W
