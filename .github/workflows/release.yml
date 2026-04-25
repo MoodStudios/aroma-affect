@@ -53,6 +53,10 @@ jobs:
     outputs:
       version: ${{ steps.validate.outputs.version }}
       minecraft_version: ${{ steps.properties.outputs.minecraft_version }}
+      neoforge_version: ${{ steps.properties.outputs.neoforge_version }}
+      fabric_loader_version: ${{ steps.properties.outputs.fabric_loader_version }}
+      fabric_api_version: ${{ steps.properties.outputs.fabric_api_version }}
+      architectury_api_version: ${{ steps.properties.outputs.architectury_api_version }}
       tag_name: ${{ steps.validate.outputs.tag_name }}
       is_prerelease: ${{ steps.validate.outputs.is_prerelease }}
     
@@ -63,7 +67,12 @@ jobs:
       - name: Extract Minecraft Version
         id: properties
         run: |
-          echo "minecraft_version=$(grep -E '^minecraft_version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_OUTPUT
+          read_prop() { grep -E "^$1\s*=" gradle.properties | cut -d'=' -f2- | tr -d ' '; }
+          echo "minecraft_version=$(read_prop minecraft_version)" >> $GITHUB_OUTPUT
+          echo "neoforge_version=$(read_prop neoforge_version)" >> $GITHUB_OUTPUT
+          echo "fabric_loader_version=$(read_prop fabric_loader_version)" >> $GITHUB_OUTPUT
+          echo "fabric_api_version=$(read_prop fabric_api_version)" >> $GITHUB_OUTPUT
+          echo "architectury_api_version=$(read_prop architectury_api_version)" >> $GITHUB_OUTPUT
 
       - name: Validate Version Format
         id: validate
@@ -73,12 +82,12 @@ jobs:
           
           # Validate semantic version format (x.y.z or x.y.z-prerelease.n)
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?$ ]]; then
-            echo "❌ Invalid version format: $VERSION"
-            echo "   Expected: x.y.z or x.y.z-prerelease.n (e.g., 1.0.0, 1.2.3-beta.1)"
+            echo "Invalid version format: $VERSION"
+            echo "  Expected: x.y.z or x.y.z-prerelease.n (e.g., 1.0.0, 1.2.3-beta.1)"
             exit 1
           fi
-          
-          echo "✅ Version format valid: $VERSION"
+
+          echo "Version format valid: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag_name=v${VERSION}+MC${MC_VERSION}" >> $GITHUB_OUTPUT
           echo "is_prerelease=${{ github.event.inputs.release_type == 'pre-release' }}" >> $GITHUB_OUTPUT
@@ -88,10 +97,10 @@ jobs:
         run: |
           TAG="${{ steps.validate.outputs.tag_name }}"
           if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "❌ Tag $TAG already exists!"
+            echo "Tag $TAG already exists"
             exit 1
           fi
-          echo "✅ Tag $TAG is available"
+          echo "Tag $TAG is available"
 
       - name: Display Release Information
         run: |
@@ -127,7 +136,7 @@ jobs:
         run: |
           VERSION="${{ needs.validate.outputs.version }}"
           sed -i "s/^mod_version\s*=.*/mod_version = $VERSION/" gradle.properties
-          echo "✅ Updated mod_version to $VERSION"
+          echo "Updated mod_version to $VERSION"
           cat gradle.properties | grep mod_version
 
       - name: Commit Version Update
@@ -135,7 +144,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add gradle.properties
-          git commit -m "🔖 Release v${{ needs.validate.outputs.version }}"
+          git commit -m "Release v${{ needs.validate.outputs.version }}"
           git push
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -241,29 +250,27 @@ jobs:
       - name: Generate Release Notes
         id: release_notes
         run: |
-          VERSION="${{ needs.validate.outputs.version }}"
-          MC_VERSION="${{ needs.validate.outputs.minecraft_version }}"
-          
           cat << 'EOF' > release_notes.md
-          # 🧪 AromaAffect ${{ needs.validate.outputs.version }}
-          
+          # AromaAffect ${{ needs.validate.outputs.version }}
+
           **Minecraft Version:** ${{ needs.validate.outputs.minecraft_version }}
-          
-          ## 📦 Downloads
-          
+
+          ## Downloads
+
           | Platform | File |
           |----------|------|
           | NeoForge | `aromaaffect-neoforge-${{ needs.validate.outputs.version }}.jar` |
           | Fabric | `aromaaffect-fabric-${{ needs.validate.outputs.version }}.jar` |
-          
-          ## 📋 Requirements
-          
+
+          ## Requirements
+
           - **Minecraft:** ${{ needs.validate.outputs.minecraft_version }}
           - **Java:** 21+
-          - **NeoForge:** 21.10.50+ (for NeoForge version)
-          - **Fabric Loader:** 0.18.2+ (for Fabric version)
-          - **Architectury API:** 18.0.8+
-          
+          - **NeoForge:** ${{ needs.validate.outputs.neoforge_version }}+ (for NeoForge version)
+          - **Fabric Loader:** ${{ needs.validate.outputs.fabric_loader_version }}+ (for Fabric version)
+          - **Fabric API:** ${{ needs.validate.outputs.fabric_api_version }}+ (for Fabric version)
+          - **Architectury API:** ${{ needs.validate.outputs.architectury_api_version }}+
+
           EOF
 
       - name: Create GitHub Release
@@ -292,7 +299,7 @@ jobs:
     steps:
       - name: Generate Release Summary
         run: |
-          echo "# 🚀 AromaAffect Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "# AromaAffect Release Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -300,10 +307,10 @@ jobs:
           echo "| **Minecraft** | \`${{ needs.validate.outputs.minecraft_version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Tag** | \`${{ needs.validate.outputs.tag_name }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Type** | ${{ github.event.inputs.release_type }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Build Status** | ${{ needs.build.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Release Status** | ${{ needs.release.result == 'success' && '✅ Published' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build Status** | ${{ needs.build.result == 'success' && 'Success' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Release Status** | ${{ needs.release.result == 'success' && 'Published' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "## Links" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- [View Release](https://github.com/${{ github.repository }}/releases/tag/${{ needs.validate.outputs.tag_name }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
