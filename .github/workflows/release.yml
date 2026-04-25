@@ -259,8 +259,8 @@ jobs:
 
           | Platform | File |
           |----------|------|
-          | NeoForge | `aromaaffect-neoforge-${{ needs.validate.outputs.version }}.jar` |
-          | Fabric | `aromaaffect-fabric-${{ needs.validate.outputs.version }}.jar` |
+          | NeoForge | `aromaaffect-neoforge-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}.jar` |
+          | Fabric | `aromaaffect-fabric-${{ needs.validate.outputs.version }}+MC${{ needs.validate.outputs.minecraft_version }}.jar` |
 
           ## Requirements
 

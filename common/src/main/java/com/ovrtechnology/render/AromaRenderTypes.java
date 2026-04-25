@@ -41,12 +41,10 @@ public final class AromaRenderTypes {
                     CompositeState.builder()
                             .setShaderState(RENDERTYPE_LINES_SHADER)
                             .setLineState(new RenderStateShard.LineStateShard(lineWidth))
-                            .setLayeringState(VIEW_OFFSET_Z_LAYERING)
                             .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                            .setOutputState(ITEM_ENTITY_TARGET)
-                            .setWriteMaskState(COLOR_DEPTH_WRITE)
                             .setCullState(NO_CULL)
                             .setDepthTestState(NO_DEPTH_TEST)
+                            .setWriteMaskState(COLOR_WRITE)
                             .createCompositeState(false));
         }
     }

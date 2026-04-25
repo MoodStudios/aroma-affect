@@ -11,6 +11,7 @@ public final class BlockOutlineRendererFabric {
     public static void init() {
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
                 context -> {
+                    com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
                     PathTrailRenderer.renderTrail(
                             context.matrixStack(),
                             context.camera().getPosition(),
@@ -19,6 +20,16 @@ public final class BlockOutlineRendererFabric {
                             context.matrixStack(),
                             context.camera().getPosition(),
                             context.consumers());
+
+                    if (context.consumers()
+                            instanceof
+                            net.minecraft.client.renderer.MultiBufferSource.BufferSource
+                            bs) {
+                        bs.endBatch();
+                    }
+                    com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+                    com.mojang.blaze3d.systems.RenderSystem.depthFunc(
+                            org.lwjgl.opengl.GL11.GL_LEQUAL);
                 });
     }
 }

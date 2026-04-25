@@ -379,6 +379,9 @@ public final class PathTrailRenderer {
             }
 
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            if (y <= level.getMinBuildHeight() + 1) {
+                return level.getSeaLevel();
+            }
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
             int minY = Math.max(level.getMinBuildHeight(), y - 20);
 
@@ -846,14 +849,19 @@ public final class PathTrailRenderer {
             List<Vec3> path, Vec3 originalPlayerPos, Vec3 currentPlayerPos) {
         if (path == null || path.size() < 2 || originalPlayerPos == null) return path;
         Vec3 delta = currentPlayerPos.subtract(originalPlayerPos);
-        if (delta.lengthSqr() < 0.001) return path;
 
         List<Vec3> adjusted = new ArrayList<>(path);
         int blendCount = Math.min(PLAYER_BLEND_POINTS, adjusted.size());
-        for (int i = 0; i < blendCount; i++) {
-            double weight = 1.0 - (double) i / blendCount;
-            weight *= weight;
-            adjusted.set(i, path.get(i).add(delta.scale(weight)));
+        if (delta.lengthSqr() >= 0.001) {
+            for (int i = 0; i < blendCount; i++) {
+                double weight = 1.0 - (double) i / blendCount;
+                weight *= weight;
+                adjusted.set(i, path.get(i).add(delta.scale(weight)));
+            }
+        }
+        if (!adjusted.isEmpty()) {
+            Vec3 first = adjusted.get(0);
+            adjusted.set(0, new Vec3(first.x, currentPlayerPos.y, first.z));
         }
         return adjusted;
     }

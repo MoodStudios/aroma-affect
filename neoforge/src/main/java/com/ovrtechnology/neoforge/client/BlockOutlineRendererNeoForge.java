@@ -24,12 +24,16 @@ public final class BlockOutlineRendererNeoForge {
         MultiBufferSource.BufferSource bufferSource =
                 Minecraft.getInstance().renderBuffers().bufferSource();
 
+        com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
+
         PathTrailRenderer.renderTrail(
                 event.getPoseStack(), event.getCamera().getPosition(), bufferSource);
 
         BlockOutlineRenderer.renderOutline(
                 event.getPoseStack(), event.getCamera().getPosition(), bufferSource);
 
-        bufferSource.endLastBatch();
+        bufferSource.endBatch();
+        com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+        com.mojang.blaze3d.systems.RenderSystem.depthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
     }
 }
