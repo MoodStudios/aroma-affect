@@ -16,7 +16,10 @@
     "JigsawPriorityMixin",
     "AnvilRepairMixin",
     "ZombieVillagerConversionMixin",
-    "IronGolemNoseMixin"
+    "IronGolemNoseMixin",
+    "FishingHookRetrieveMixin",
+    "AnvilOnTakeMixin",
+    "MerchantNotifyTradeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

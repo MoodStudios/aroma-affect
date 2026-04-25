@@ -6,6 +6,7 @@ import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.event.EventDefinition;
 import com.ovrtechnology.trigger.event.EventDefinitionLoader;
+import com.ovrtechnology.trigger.event.EventThrottle;
 import com.ovrtechnology.trigger.event.EventTriggersConfig;
 import com.ovrtechnology.util.Ids;
 import dev.architectury.networking.NetworkManager;
@@ -50,7 +51,10 @@ public final class ScentEventNetworking {
                 ScentEventS2C.TYPE,
                 ScentEventS2C.STREAM_CODEC,
                 (payload, context) ->
-                        context.queue(() -> handleEventOnClient(payload.eventId(), payload.intensityOverride())));
+                        context.queue(
+                                () ->
+                                        handleEventOnClient(
+                                                payload.eventId(), payload.intensityOverride())));
 
         AromaAffect.LOGGER.info("ScentEventNetworking initialized");
     }
@@ -74,6 +78,10 @@ public final class ScentEventNetworking {
         if (scentName == null || "Unknown Scent".equals(scentName)) {
             AromaAffect.LOGGER.warn(
                     "Event '{}' references unresolvable scent '{}'", eventId, def.getScentId());
+            return;
+        }
+
+        if (!EventThrottle.tryConsume()) {
             return;
         }
 

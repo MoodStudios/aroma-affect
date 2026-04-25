@@ -54,9 +54,7 @@ public final class EventDefinitionLoader {
                 processEvent(event);
             } catch (Exception e) {
                 AromaAffect.LOGGER.error(
-                        "Failed to parse event definition {}: {}",
-                        entry.getKey(),
-                        e.getMessage());
+                        "Failed to parse event definition {}: {}", entry.getKey(), e.getMessage());
             }
         }
 

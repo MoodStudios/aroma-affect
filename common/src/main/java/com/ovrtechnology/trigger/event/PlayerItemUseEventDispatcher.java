@@ -5,6 +5,7 @@ import com.ovrtechnology.AromaAffect;
 import java.util.List;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -14,7 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.core.component.DataComponents;
 
 public final class PlayerItemUseEventDispatcher {
 
@@ -51,8 +51,7 @@ public final class PlayerItemUseEventDispatcher {
                         def -> matchesItem(def.getConditions(), itemKey),
                         -1.0);
         if (!fired) {
-            AromaAffect.LOGGER.debug(
-                    "[Events] no food event matched item {}", itemKey);
+            AromaAffect.LOGGER.debug("[Events] no food event matched item {}", itemKey);
         }
     }
 

@@ -29,11 +29,13 @@ public final class EventTriggersConfig {
 
     private static EventTriggersConfig instance;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     @SerializedName("event_triggers_enabled")
     private boolean eventTriggersEnabled = true;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     @SerializedName("global_throttle_per_minute")
     private int globalThrottlePerMinute = 30;
 
@@ -97,8 +99,7 @@ public final class EventTriggersConfig {
                 }
             } catch (IOException e) {
                 AromaAffect.LOGGER.warn(
-                        "Failed to load event triggers config, using defaults: {}",
-                        e.getMessage());
+                        "Failed to load event triggers config, using defaults: {}", e.getMessage());
             }
         }
 

@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:anvil_used",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "ANVIL_USED",
+  "scent_id": "machina",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}

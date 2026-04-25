@@ -67,27 +67,14 @@ public final class PlayerStateTickHandler {
         }
 
         evaluateContinuous(player, config, TT_WEATHER_RAINING, () -> evalRain(player));
-        evaluateContinuous(
-                player, config, TT_WEATHER_THUNDERING, () -> evalThunder(player));
-        evaluateContinuous(
-                player, config, TT_PLAYER_EYES_IN_WATER, () -> evalSubmerged(player));
+        evaluateContinuous(player, config, TT_WEATHER_THUNDERING, () -> evalThunder(player));
+        evaluateContinuous(player, config, TT_PLAYER_EYES_IN_WATER, () -> evalSubmerged(player));
         evaluateContinuous(player, config, TT_PLAYER_ON_FIRE, () -> evalOnFire(player));
         evaluateContinuous(player, config, TT_PLAYER_IN_LAVA, () -> evalInLava(player));
+        evaluateContinuous(player, config, TT_PLAYER_HEALTH_THRESHOLD, () -> evalLowHealth(player));
+        evaluateContinuous(player, config, TT_PLAYER_HUNGER_THRESHOLD, () -> evalLowHunger(player));
         evaluateContinuous(
-                player,
-                config,
-                TT_PLAYER_HEALTH_THRESHOLD,
-                () -> evalLowHealth(player));
-        evaluateContinuous(
-                player,
-                config,
-                TT_PLAYER_HUNGER_THRESHOLD,
-                () -> evalLowHunger(player));
-        evaluateContinuous(
-                player,
-                config,
-                TT_PLAYER_NEGATIVE_EFFECT,
-                () -> evalNegativeEffect(player));
+                player, config, TT_PLAYER_NEGATIVE_EFFECT, () -> evalNegativeEffect(player));
 
         evaluateLevelUp(player, config);
         evaluateDimensionChange(player, config);
@@ -99,8 +86,7 @@ public final class PlayerStateTickHandler {
             EventTriggersConfig config,
             String triggerType,
             ConditionEval eval) {
-        EventDefinition def =
-                EventDefinitionLoader.getFirstByTriggerType(triggerType).orElse(null);
+        EventDefinition def = EventDefinitionLoader.getFirstByTriggerType(triggerType).orElse(null);
         if (def == null) return;
 
         if (!config.isCategoryEnabled(def.getCategory())) {
@@ -146,20 +132,19 @@ public final class PlayerStateTickHandler {
             return;
         }
 
+        if (!EventThrottle.tryConsume()) {
+            return;
+        }
+
         ScentTrigger trigger =
                 ScentTrigger.create(
-                        scentName,
-                        def.resolveSource(),
-                        def.getPriority(),
-                        -1,
-                        def.getIntensity());
+                        scentName, def.resolveSource(), def.getPriority(), -1, def.getIntensity());
 
         boolean fired = ScentTriggerManager.getInstance().trigger(trigger);
         if (fired) {
             lastFiredAtMs.put(def.getEventId(), now);
             activeContinuous.add(def.getEventId());
-            AromaAffect.LOGGER.debug(
-                    "[Events] continuous '{}' -> {}", def.getEventId(), scentName);
+            AromaAffect.LOGGER.debug("[Events] continuous '{}' -> {}", def.getEventId(), scentName);
         }
     }
 
@@ -175,9 +160,7 @@ public final class PlayerStateTickHandler {
                 && active.source() == def.resolveSource()) {
             ScentTriggerManager.getInstance().stop(scentName);
             AromaAffect.LOGGER.debug(
-                    "[Events] continuous '{}' released slot for {}",
-                    def.getEventId(),
-                    scentName);
+                    "[Events] continuous '{}' released slot for {}", def.getEventId(), scentName);
         }
     }
 
@@ -283,10 +266,10 @@ public final class PlayerStateTickHandler {
 
     private static boolean evalNegativeEffect(LocalPlayer player) {
         EventDefinition def =
-                EventDefinitionLoader.getFirstByTriggerType(TT_PLAYER_NEGATIVE_EFFECT)
-                        .orElse(null);
+                EventDefinitionLoader.getFirstByTriggerType(TT_PLAYER_NEGATIVE_EFFECT).orElse(null);
         if (def == null) return false;
-        List<String> effectIds = EventConditionUtils.getStringArray(def.getConditions(), "effect_ids");
+        List<String> effectIds =
+                EventConditionUtils.getStringArray(def.getConditions(), "effect_ids");
         if (effectIds.isEmpty()) {
             for (MobEffectInstance inst : player.getActiveEffects()) {
                 if (!inst.getEffect().value().isBeneficial()) return true;
@@ -324,7 +307,9 @@ public final class PlayerStateTickHandler {
             Long lastTime = lastFiredAtMs.get(def.getEventId());
             if (lastTime == null || (now - lastTime) >= cooldown) {
                 String scentName = ScentRegistry.getDisplayName(def.getScentId());
-                if (scentName != null && !"Unknown Scent".equals(scentName)) {
+                if (scentName != null
+                        && !"Unknown Scent".equals(scentName)
+                        && EventThrottle.tryConsume()) {
                     ScentTrigger trigger =
                             ScentTrigger.create(
                                     scentName,
@@ -365,16 +350,12 @@ public final class PlayerStateTickHandler {
                     def -> {
                         String target =
                                 def.getConditions().has("target_dimension")
-                                        ? def.getConditions()
-                                                .get("target_dimension")
-                                                .getAsString()
+                                        ? def.getConditions().get("target_dimension").getAsString()
                                         : null;
                         if (target != null && !target.equals(currentDim)) return false;
                         String from =
                                 def.getConditions().has("from_dimension")
-                                        ? def.getConditions()
-                                                .get("from_dimension")
-                                                .getAsString()
+                                        ? def.getConditions().get("from_dimension").getAsString()
                                         : null;
                         if (from != null && !from.equals(previous)) return false;
                         return true;
@@ -401,8 +382,7 @@ public final class PlayerStateTickHandler {
         }
         if (!config.isEventTriggersEnabled()) return false;
 
-        List<EventDefinition> candidates =
-                EventDefinitionLoader.getByTriggerType(triggerType);
+        List<EventDefinition> candidates = EventDefinitionLoader.getByTriggerType(triggerType);
         if (candidates.isEmpty()) return false;
 
         long now = System.currentTimeMillis();
@@ -417,6 +397,8 @@ public final class PlayerStateTickHandler {
             String scentName = ScentRegistry.getDisplayName(def.getScentId());
             if (scentName == null || "Unknown Scent".equals(scentName)) return false;
 
+            if (!EventThrottle.tryConsume()) return false;
+
             double intensity =
                     intensityOverride > 0 && intensityOverride <= 1.0
                             ? intensityOverride
@@ -424,11 +406,7 @@ public final class PlayerStateTickHandler {
 
             ScentTrigger trigger =
                     ScentTrigger.create(
-                            scentName,
-                            def.resolveSource(),
-                            def.getPriority(),
-                            1,
-                            intensity);
+                            scentName, def.resolveSource(), def.getPriority(), 1, intensity);
             boolean fired = ScentTriggerManager.getInstance().trigger(trigger);
             if (fired) {
                 lastFiredAtMs.put(def.getEventId(), now);

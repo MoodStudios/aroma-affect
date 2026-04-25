@@ -20,7 +20,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class ServerEventBusHandler {
@@ -28,6 +30,13 @@ public final class ServerEventBusHandler {
     public static final String TT_BLOCK_BROKEN = "BLOCK_BROKEN";
     public static final String TT_MOB_KILLED = "MOB_KILLED";
     public static final String TT_ADVANCEMENT_OBTAINED = "ADVANCEMENT_OBTAINED";
+    public static final String TT_ANIMAL_TAMED = "ANIMAL_TAMED";
+    public static final String TT_ITEM_CRAFTED = "ITEM_CRAFTED";
+    public static final String TT_ITEM_SMELTED = "ITEM_SMELTED";
+    public static final String TT_FISHING_PULLED = "FISHING_PULLED";
+    public static final String TT_TRADE_COMPLETED = "TRADE_COMPLETED";
+    public static final String TT_ANVIL_USED = "ANVIL_USED";
+    public static final String TT_SNIFFER_DUG = "SNIFFER_DUG";
 
     private static final Map<UUID, Map<String, Long>> serverCooldowns = new HashMap<>();
 
@@ -56,7 +65,80 @@ public final class ServerEventBusHandler {
 
         PlayerEvent.PLAYER_ADVANCEMENT.register(ServerEventBusHandler::onAdvancement);
 
+        EntityEvent.ANIMAL_TAME.register(
+                (animal, player) -> {
+                    onAnimalTamed(animal, player);
+                    return EventResult.pass();
+                });
+
+        PlayerEvent.CRAFT_ITEM.register((player, stack, container) -> onItemCrafted(player, stack));
+
+        PlayerEvent.SMELT_ITEM.register(ServerEventBusHandler::onItemSmelted);
+
         AromaAffect.LOGGER.info("ServerEventBusHandler initialized");
+    }
+
+    private static void onAnimalTamed(Animal animal, Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer) || animal == null) return;
+        ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(animal.getType());
+        if (entityId == null) return;
+        String entityKey = entityId.toString();
+
+        dispatch(
+                serverPlayer,
+                TT_ANIMAL_TAMED,
+                def -> matchesEntitySimple(def.getConditions(), entityKey));
+    }
+
+    private static boolean matchesEntitySimple(JsonObject conditions, String entityKey) {
+        List<String> ids = EventConditionUtils.getStringArray(conditions, "entity_ids");
+        if (ids.isEmpty()) {
+            return EventConditionUtils.getBoolean(conditions, "default", true);
+        }
+        return ids.contains(entityKey);
+    }
+
+    private static void onItemCrafted(Player player, ItemStack stack) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        if (stack == null || stack.isEmpty()) return;
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (itemId == null) return;
+        String itemKey = itemId.toString();
+
+        dispatch(
+                serverPlayer,
+                TT_ITEM_CRAFTED,
+                def -> matchesItemSimple(def.getConditions(), itemKey));
+    }
+
+    private static void onItemSmelted(Player player, ItemStack stack) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        if (stack == null || stack.isEmpty()) return;
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (itemId == null) return;
+        String itemKey = itemId.toString();
+
+        dispatch(
+                serverPlayer,
+                TT_ITEM_SMELTED,
+                def -> matchesItemSimple(def.getConditions(), itemKey));
+    }
+
+    private static boolean matchesItemSimple(JsonObject conditions, String itemKey) {
+        List<String> ids = EventConditionUtils.getStringArray(conditions, "item_ids");
+        if (!ids.isEmpty() && ids.contains(itemKey)) return true;
+        List<String> tagFilters = EventConditionUtils.getStringArray(conditions, "item_tags");
+        if (!tagFilters.isEmpty()) {
+            for (String t : tagFilters) {
+                if (t.startsWith("#") && itemKey.contains(t.substring(1))) return true;
+            }
+        }
+        return EventConditionUtils.getBoolean(conditions, "default", false);
+    }
+
+    public static void fireSimpleEvent(ServerPlayer player, String triggerType) {
+        if (player == null || triggerType == null) return;
+        dispatch(player, triggerType, def -> true);
     }
 
     private static void onBlockBroken(ServerPlayer player, BlockState state) {
@@ -66,10 +148,7 @@ public final class ServerEventBusHandler {
         String blockKey = blockId.toString();
         Set<String> tags = collectBlockTags(state);
 
-        dispatch(
-                player,
-                TT_BLOCK_BROKEN,
-                def -> matchesBlock(def.getConditions(), blockKey, tags));
+        dispatch(player, TT_BLOCK_BROKEN, def -> matchesBlock(def.getConditions(), blockKey, tags));
     }
 
     private static Set<String> collectBlockTags(BlockState state) {
@@ -108,10 +187,7 @@ public final class ServerEventBusHandler {
         String entityKey = entityId.toString();
         Set<String> tags = collectEntityTags(entity);
 
-        dispatch(
-                killer,
-                TT_MOB_KILLED,
-                def -> matchesEntity(def.getConditions(), entityKey, tags));
+        dispatch(killer, TT_MOB_KILLED, def -> matchesEntity(def.getConditions(), entityKey, tags));
     }
 
     private static ServerPlayer resolvePlayerSource(DamageSource source) {
@@ -187,9 +263,7 @@ public final class ServerEventBusHandler {
             if (!matcher.test(def)) continue;
 
             long cooldown =
-                    Math.max(
-                            def.getCooldownMs(),
-                            config.getCategoryCooldownMs(def.getCategory()));
+                    Math.max(def.getCooldownMs(), config.getCategoryCooldownMs(def.getCategory()));
             Long lastTime = playerCooldowns.get(def.getEventId());
             if (lastTime != null && (now - lastTime) < cooldown) {
                 return;
