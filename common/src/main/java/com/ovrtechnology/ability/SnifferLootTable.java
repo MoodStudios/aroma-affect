@@ -119,7 +119,7 @@ public final class SnifferLootTable {
         LootTable lootTable = level.getServer().reloadableRegistries()
                 .getLootTable(lootKey);
 
-        ItemStack tool = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack tool = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
 
         LootParams lootParams = new LootParams.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))

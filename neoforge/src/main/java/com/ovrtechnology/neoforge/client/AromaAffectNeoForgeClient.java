@@ -35,6 +35,7 @@ public final class AromaAffectNeoForgeClient {
 
         modEventBus.addListener(this::onRegisterClientExtensions);
         modEventBus.addListener(this::onRegisterMenuScreens);
+        modEventBus.addListener(this::onClientSetup);
     }
 
     private void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
@@ -46,9 +47,9 @@ public final class AromaAffectNeoForgeClient {
     }
     
     private void onClientSetup(FMLClientSetupEvent event) {
-        // Initialize common client systems directly (not enqueued)
-        // This ensures Architectury events are registered at the right time
-        AromaAffectClient.init();
+        // Register Curios renderer for noses on the main thread.
+        event.enqueueWork(
+                com.ovrtechnology.neoforge.client.accessory.CuriosClientIntegration::init);
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {

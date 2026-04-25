@@ -1,6 +1,7 @@
 package com.ovrtechnology.nose;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.nose.accessory.NoseAccessory;
 import lombok.Getter;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -13,14 +14,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.enchantment.Repairable;
-import net.minecraft.world.item.equipment.EquipmentAssets;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 
 /**
@@ -75,20 +73,10 @@ public class NoseItem extends Item {
         
         // Set rarity based on tier
         properties.rarity(getRarityForTier(definition.getTier()));
-        
-        // Configure the equippable component with the proper equipment asset
-        // This makes the nose show as a helmet when worn, but use the custom icon in inventory
-        ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> equipmentAsset = 
-                getEquipmentAssetFromModel(definition.getModel());
-        
-        Equippable equippable = Equippable.builder(EquipmentSlot.HEAD)
-                .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
-                .setAsset(equipmentAsset)
-                .setSwappable(true)
-                .setDamageOnHurt(true)
-                .build();
-        
-        properties.component(DataComponents.EQUIPPABLE, equippable);
+
+        // Note: noses are equipped via the Curios accessory slot on NeoForge
+        // and the vanilla HEAD slot on Fabric, both routed through NoseAccessory.
+        // No vanilla Equippable component so shift-click does not auto-fill the helmet.
 
         // Add Repairable component for anvil repair
         String repairId = definition.getRepair();
@@ -104,37 +92,6 @@ public class NoseItem extends Item {
     }
     
     /**
-     * Convert a model string (e.g., "minecraft:iron_helmet") to an equipment asset key.
-     * This maps helmet model names to their corresponding equipment asset.
-     */
-    private static ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> getEquipmentAssetFromModel(String model) {
-        if (model == null || model.isEmpty()) {
-            return EquipmentAssets.IRON;
-        }
-        
-        // Extract just the material name from the model
-        // e.g., "minecraft:iron_helmet" -> "iron"
-        // e.g., "minecraft:golden_helmet" -> "gold"
-        // e.g., "minecraft:diamond_helmet" -> "diamond"
-        String lowerModel = model.toLowerCase();
-        
-        if (lowerModel.contains("diamond")) {
-            return EquipmentAssets.DIAMOND;
-        } else if (lowerModel.contains("gold")) {
-            return EquipmentAssets.GOLD;
-        } else if (lowerModel.contains("netherite")) {
-            return EquipmentAssets.NETHERITE;
-        } else if (lowerModel.contains("leather")) {
-            return EquipmentAssets.LEATHER;
-        } else if (lowerModel.contains("chain")) {
-            return EquipmentAssets.CHAINMAIL;
-        } else {
-            // Default to iron
-            return EquipmentAssets.IRON;
-        }
-    }
-    
-    /**
      * Get the Minecraft rarity based on nose tier
      */
     private static Rarity getRarityForTier(int tier) {
@@ -147,29 +104,25 @@ public class NoseItem extends Item {
     }
     
     /**
-     * Allow right-click to equip the nose to head slot
+     * Right-click routes the nose into the platform-specific accessory slot
+     * (Curios face slot on NeoForge, vanilla HEAD slot on Fabric).
      */
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
-        
-        if (headStack.isEmpty()) {
-            // Equip to head slot
-            player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-            if (!level.isClientSide()) {
-                player.awardStat(Stats.ITEM_USED.get(this));
-            }
-            heldStack.setCount(0);
-            player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-            return InteractionResult.SUCCESS;
-        } else {
-            // Swap with current head item (nose or helmet)
-            player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-            player.setItemInHand(hand, headStack.copy());
-            player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-            return InteractionResult.SUCCESS;
+
+        if (!NoseAccessory.hasSlot(player)) {
+            return InteractionResult.PASS;
         }
+
+        ItemStack previous = NoseAccessory.equip(player, heldStack.copy());
+        player.setItemInHand(hand, previous);
+
+        if (!level.isClientSide()) {
+            player.awardStat(Stats.ITEM_USED.get(this));
+        }
+        player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
+        return InteractionResult.SUCCESS;
     }
     
     // ========== Nose-specific Methods ==========
