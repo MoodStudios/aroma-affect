@@ -246,6 +246,7 @@
   "config.aromaaffect.events.placeholder": "Event trigger configuration coming soon.",
   "config.aromaaffect.events.master_enabled": "Event Triggers Enabled",
   "config.aromaaffect.events.categories_header": "Categories",
+  "config.aromaaffect.events.cooldown": "Cooldown",
   "config.aromaaffect.events.throttle": "Global Throttle",
   "config.aromaaffect.events.reset_defaults": "Reset Defaults",
   "config.aromaaffect.events.category.weather": "Weather",

@@ -328,7 +328,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int totalContentH =
                 (ROW_HEIGHT + 8)
                         + 16
-                        + (EVENT_CATEGORIES.length * (ROW_HEIGHT + 4))
+                        + (EVENT_CATEGORIES.length * (ROW_HEIGHT * 2 + 6))
                         + 16
                         + ROW_HEIGHT
                         + 8
@@ -368,7 +368,6 @@ public class ConfigScreen extends BaseMenuScreen {
                 MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
-        int categoryToggleX = x + w - SLIDER_W - 40 - TOGGLE_W - 12;
         for (String category : EVENT_CATEGORIES) {
             graphics.drawString(
                     font,
@@ -378,8 +377,15 @@ public class ConfigScreen extends BaseMenuScreen {
                     MenuRenderUtils.withAlpha(COL_TEXT, a));
 
             boolean catEnabled = config.getCategoryEnabled().getOrDefault(category, true);
-            renderTogglePill(graphics, categoryToggleX, rowY + 1, catEnabled, a);
+            renderTogglePill(graphics, toggleX, rowY + 1, catEnabled, a);
+            rowY += ROW_HEIGHT;
 
+            graphics.drawString(
+                    font,
+                    Texts.tr("config.aromaaffect.events.cooldown"),
+                    x + 12,
+                    rowY + 2,
+                    MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
             float cdSec = config.getCategoryCooldownMs(category) / 1000f;
             renderSlider(graphics, sliderX, rowY, SLIDER_W, cdSec, 0f, 60f, a);
             graphics.drawString(
@@ -388,7 +394,7 @@ public class ConfigScreen extends BaseMenuScreen {
                     sliderX + SLIDER_W + 6,
                     rowY + 2,
                     MenuRenderUtils.withAlpha(COL_TEXT, a));
-            rowY += ROW_HEIGHT + 4;
+            rowY += ROW_HEIGHT + 6;
         }
 
         rowY += 8;
@@ -457,7 +463,6 @@ public class ConfigScreen extends BaseMenuScreen {
         int rowY = y;
         int sliderX = x + w - SLIDER_W - 40;
         int toggleX = x + w - TOGGLE_W - 30;
-        int categoryToggleX = x + w - SLIDER_W - 40 - TOGGLE_W - 12;
 
         if (mx >= toggleX
                 && mx < toggleX + TOGGLE_W
@@ -472,8 +477,8 @@ public class ConfigScreen extends BaseMenuScreen {
         rowY += 16;
 
         for (String category : EVENT_CATEGORIES) {
-            if (mx >= categoryToggleX
-                    && mx < categoryToggleX + TOGGLE_W
+            if (mx >= toggleX
+                    && mx < toggleX + TOGGLE_W
                     && adjustedMy >= rowY
                     && adjustedMy < rowY + TOGGLE_H + 2) {
                 boolean current = config.getCategoryEnabled().getOrDefault(category, true);
@@ -482,6 +487,8 @@ public class ConfigScreen extends BaseMenuScreen {
                 MenuRenderUtils.playToggleSound(!current);
                 return true;
             }
+            rowY += ROW_HEIGHT;
+
             if (mx >= sliderX
                     && mx < sliderX + SLIDER_W
                     && adjustedMy >= rowY
@@ -495,7 +502,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 activeDragCategory = category;
                 return true;
             }
-            rowY += ROW_HEIGHT + 4;
+            rowY += ROW_HEIGHT + 6;
         }
 
         rowY += 8;
