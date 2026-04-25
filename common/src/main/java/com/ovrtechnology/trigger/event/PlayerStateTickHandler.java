@@ -144,7 +144,7 @@ public final class PlayerStateTickHandler {
         if (fired) {
             lastFiredAtMs.put(def.getEventId(), now);
             activeContinuous.add(def.getEventId());
-            AromaAffect.LOGGER.debug("[Events] continuous '{}' -> {}", def.getEventId(), scentName);
+            EventDebugLog.fired(def, scentName, def.getIntensity());
         }
     }
 
@@ -159,8 +159,7 @@ public final class PlayerStateTickHandler {
                 && active.scentName().equals(scentName)
                 && active.source() == def.resolveSource()) {
             ScentTriggerManager.getInstance().stop(scentName);
-            AromaAffect.LOGGER.debug(
-                    "[Events] continuous '{}' released slot for {}", def.getEventId(), scentName);
+            EventDebugLog.stopped(def, scentName);
         }
     }
 
@@ -320,11 +319,7 @@ public final class PlayerStateTickHandler {
                     boolean fired = ScentTriggerManager.getInstance().trigger(trigger);
                     if (fired) {
                         lastFiredAtMs.put(def.getEventId(), now);
-                        AromaAffect.LOGGER.debug(
-                                "[Events] level-up {} -> {} (level {})",
-                                def.getEventId(),
-                                scentName,
-                                currentLevel);
+                        EventDebugLog.fired(def, scentName, def.getIntensity());
                     }
                 }
             }
@@ -410,11 +405,7 @@ public final class PlayerStateTickHandler {
             boolean fired = ScentTriggerManager.getInstance().trigger(trigger);
             if (fired) {
                 lastFiredAtMs.put(def.getEventId(), now);
-                AromaAffect.LOGGER.debug(
-                        "[Events] one-shot {} -> {} (trigger {})",
-                        def.getEventId(),
-                        scentName,
-                        triggerType);
+                EventDebugLog.fired(def, scentName, intensity);
             }
             return fired;
         }

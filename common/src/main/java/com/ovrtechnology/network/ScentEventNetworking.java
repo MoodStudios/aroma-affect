@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.trigger.event.EventDebugLog;
 import com.ovrtechnology.trigger.event.EventDefinition;
 import com.ovrtechnology.trigger.event.EventDefinitionLoader;
 import com.ovrtechnology.trigger.event.EventThrottle;
@@ -99,8 +100,12 @@ public final class ScentEventNetworking {
                         intensity);
 
         boolean fired = ScentTriggerManager.getInstance().trigger(trigger);
-        AromaAffect.LOGGER.debug(
-                "Scent event '{}' from server -> {} (fired: {})", eventId, scentName, fired);
+        if (fired) {
+            EventDebugLog.fired(def, scentName, intensity);
+        } else {
+            AromaAffect.LOGGER.debug(
+                    "Scent event '{}' from server -> {} (manager rejected)", eventId, scentName);
+        }
     }
 
     public static void sendEvent(ServerPlayer player, String eventId) {
