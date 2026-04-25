@@ -36,6 +36,7 @@ public class ConfigScreen extends BaseMenuScreen {
     private enum Section {
         GENERAL,
         PASSIVE,
+        EVENTS,
         SCENT_VALUES,
         WEBSOCKET
     }
@@ -229,6 +230,7 @@ public class ConfigScreen extends BaseMenuScreen {
                     switch (section) {
                         case GENERAL -> "config.aromaaffect.section.general";
                         case PASSIVE -> "config.aromaaffect.section.passive";
+                        case EVENTS -> "config.aromaaffect.section.events";
                         case SCENT_VALUES -> "config.aromaaffect.section.scent_values";
                         case WEBSOCKET -> "config.aromaaffect.section.websocket";
                     };
@@ -284,7 +286,32 @@ public class ConfigScreen extends BaseMenuScreen {
                     mouseX,
                     mouseY,
                     a);
+            case EVENTS -> renderEventsSection(
+                    graphics,
+                    contentLeft,
+                    contentTop,
+                    contentW,
+                    panelBottom - CONTENT_PAD - contentTop,
+                    mouseX,
+                    mouseY,
+                    a);
         }
+    }
+
+    private void renderEventsSection(
+            GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+        graphics.drawString(
+                font,
+                Texts.tr("config.aromaaffect.section.events"),
+                x,
+                y + 6,
+                MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.drawString(
+                font,
+                Texts.tr("config.aromaaffect.events.placeholder"),
+                x,
+                y + 28,
+                MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
     }
 
     private void renderGeneralSection(

@@ -1,0 +1,10 @@
+{
+  "event_id": "aromaaffect:player_in_lava",
+  "category": "PLAYER_STATE",
+  "trigger_type": "PLAYER_IN_LAVA",
+  "scent_id": "smoky",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "CONTINUOUS",
+  "cooldown_ms": 5000
+}

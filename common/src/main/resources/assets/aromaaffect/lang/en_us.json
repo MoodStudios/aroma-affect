@@ -242,6 +242,8 @@
   "config.aromaaffect.title": "Aroma Affect Settings",
   "config.aromaaffect.section.general": "General",
   "config.aromaaffect.section.passive": "Passive Mode",
+  "config.aromaaffect.section.events": "Events",
+  "config.aromaaffect.events.placeholder": "Event trigger configuration coming soon.",
   "config.aromaaffect.section.scent_values": "Scent Values",
   "config.aromaaffect.puff_mode": "Puff Mode",
   "config.aromaaffect.puff_mode.automatic": "Automatic",
