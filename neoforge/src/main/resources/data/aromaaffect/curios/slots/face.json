@@ -1,5 +1,5 @@
 {
   "order": 50,
-  "icon": "curios:slot/empty_head_slot",
+  "icon": "aromaaffect:slot/empty_face_slot",
   "validators": ["curios:tag"]
 }
