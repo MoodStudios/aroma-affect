@@ -1,0 +1,17 @@
+{
+  "event_id": "aromaaffect:player_food_citrus",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_FOOD_EATEN",
+  "scent_id": "citrus",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:golden_apple",
+      "minecraft:enchanted_golden_apple",
+      "minecraft:golden_carrot"
+    ]
+  }
+}

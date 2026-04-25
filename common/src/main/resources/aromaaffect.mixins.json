@@ -8,7 +8,8 @@
     "IronGolemModelMixin",
     "CustomHeadLayerMixin",
     "SnifferRendererMixin",
-    "SnifferModelMixin"
+    "SnifferModelMixin",
+    "LocalPlayerCompleteUseItemMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",

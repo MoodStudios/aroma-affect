@@ -40,6 +40,7 @@ import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.event.EventDefinitionLoader;
 import com.ovrtechnology.trigger.event.EventTriggersConfig;
+import com.ovrtechnology.trigger.event.ServerEventBusHandler;
 import com.ovrtechnology.variant.CustomNoseRegistry;
 import com.ovrtechnology.variant.ModDataComponents;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
@@ -116,6 +117,8 @@ public final class AromaAffect {
 
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
+
+        ServerEventBusHandler.init();
 
         StructureSyncHandler.init();
 

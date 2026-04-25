@@ -1,0 +1,10 @@
+{
+  "event_id": "aromaaffect:player_slept",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_SLEPT",
+  "scent_id": "floral",
+  "intensity": 0.6,
+  "priority": "LOW",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 30000
+}
