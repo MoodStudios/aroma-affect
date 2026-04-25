@@ -1,9 +1,9 @@
 package com.ovrtechnology.nose;
 
+import com.ovrtechnology.nose.accessory.NoseAccessory;
 import com.ovrtechnology.variant.CustomNoseItem;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -11,38 +11,35 @@ public final class EquippedNoseHelper {
 
     private EquippedNoseHelper() {}
 
+    public static ItemStack getEquippedStack(Player player) {
+        if (player == null) return ItemStack.EMPTY;
+        return NoseAccessory.getEquipped(player);
+    }
+
     public static Optional<NoseItem> getEquippedNose(Player player) {
-        if (player == null) {
-            return Optional.empty();
-        }
+        ItemStack stack = getEquippedStack(player);
+        if (stack.isEmpty()) return Optional.empty();
 
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (headStack.isEmpty()) {
-            return Optional.empty();
-        }
-
-        if (headStack.getItem() instanceof NoseItem noseItem) {
+        if (stack.getItem() instanceof NoseItem noseItem) {
             if (!noseItem.getDefinition().isEnabled()) {
                 return Optional.empty();
             }
             return Optional.of(noseItem);
         }
-
         return Optional.empty();
     }
 
     public static NoseAbilityResolver.ResolvedAbilities getEquippedAbilities(Player player) {
-        if (player == null) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
-        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (head.isEmpty()) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
+        ItemStack stack = getEquippedStack(player);
+        if (stack.isEmpty()) return NoseAbilityResolver.ResolvedAbilities.EMPTY;
 
-        if (head.getItem() instanceof NoseItem noseItem) {
+        if (stack.getItem() instanceof NoseItem noseItem) {
             if (!noseItem.getDefinition().isEnabled())
                 return NoseAbilityResolver.ResolvedAbilities.EMPTY;
             return noseItem.getResolvedAbilities();
         }
-        if (head.getItem() instanceof CustomNoseItem) {
-            Optional<ResourceLocation> vid = CustomNoseItem.getVariantId(head);
+        if (stack.getItem() instanceof CustomNoseItem) {
+            Optional<ResourceLocation> vid = CustomNoseItem.getVariantId(stack);
             if (vid.isPresent()) {
                 return NoseAbilityResolver.getResolvedAbilities(vid.get().toString());
             }
@@ -51,14 +48,13 @@ public final class EquippedNoseHelper {
     }
 
     public static boolean hasNoseEquipped(Player player) {
-        if (player == null) return false;
-        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (head.isEmpty()) return false;
-        if (head.getItem() instanceof NoseItem noseItem) {
+        ItemStack stack = getEquippedStack(player);
+        if (stack.isEmpty()) return false;
+        if (stack.getItem() instanceof NoseItem noseItem) {
             return noseItem.getDefinition().isEnabled();
         }
-        return head.getItem() instanceof CustomNoseItem
-                && CustomNoseItem.getVariantId(head).isPresent();
+        return stack.getItem() instanceof CustomNoseItem
+                && CustomNoseItem.getVariantId(stack).isPresent();
     }
 
     public static boolean canDetectBlock(Player player, String blockId) {
@@ -78,15 +74,14 @@ public final class EquippedNoseHelper {
     }
 
     public static Optional<String> getEquippedNoseId(Player player) {
-        if (player == null) return Optional.empty();
-        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (head.isEmpty()) return Optional.empty();
-        if (head.getItem() instanceof NoseItem noseItem) {
+        ItemStack stack = getEquippedStack(player);
+        if (stack.isEmpty()) return Optional.empty();
+        if (stack.getItem() instanceof NoseItem noseItem) {
             if (!noseItem.getDefinition().isEnabled()) return Optional.empty();
             return Optional.of(noseItem.getDefinition().getId());
         }
-        if (head.getItem() instanceof CustomNoseItem) {
-            return CustomNoseItem.getVariantId(head).map(ResourceLocation::toString);
+        if (stack.getItem() instanceof CustomNoseItem) {
+            return CustomNoseItem.getVariantId(stack).map(ResourceLocation::toString);
         }
         return Optional.empty();
     }

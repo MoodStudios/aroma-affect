@@ -1,5 +1,6 @@
 package com.ovrtechnology.nose;
 
+import com.ovrtechnology.nose.accessory.NoseAccessory;
 import com.ovrtechnology.util.Ids;
 import lombok.Getter;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -8,15 +9,13 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 
-public class NoseItem extends Item implements Equipable {
+public class NoseItem extends Item {
 
     @Getter private final NoseDefinition definition;
 
@@ -46,11 +45,6 @@ public class NoseItem extends Item implements Equipable {
     }
 
     @Override
-    public EquipmentSlot getEquipmentSlot() {
-        return EquipmentSlot.HEAD;
-    }
-
-    @Override
     public boolean isValidRepairItem(ItemStack stack, ItemStack ingredient) {
         String repairId = definition.getRepair();
         if (repairId == null || repairId.isEmpty()) return false;
@@ -62,22 +56,19 @@ public class NoseItem extends Item implements Equipable {
     public InteractionResultHolder<ItemStack> use(
             Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
 
-        if (headStack.isEmpty()) {
-            player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-            if (!level.isClientSide()) {
-                player.awardStat(Stats.ITEM_USED.get(this));
-            }
-            heldStack.setCount(0);
-            player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-            return InteractionResultHolder.success(heldStack);
-        } else {
-            player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-            player.setItemInHand(hand, headStack.copy());
-            player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-            return InteractionResultHolder.success(heldStack);
+        if (!NoseAccessory.hasSlot(player)) {
+            return InteractionResultHolder.pass(heldStack);
         }
+
+        ItemStack previous = NoseAccessory.equip(player, heldStack.copy());
+        player.setItemInHand(hand, previous);
+
+        if (!level.isClientSide()) {
+            player.awardStat(Stats.ITEM_USED.get(this));
+        }
+        player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
+        return InteractionResultHolder.success(player.getItemInHand(hand));
     }
 
     public int getTier() {

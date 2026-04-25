@@ -60,6 +60,8 @@ public final class AromaAffectNeoForgeClient {
 
     private void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(AromaAffectClient::registerCompassProperty);
+        event.enqueueWork(
+                com.ovrtechnology.neoforge.client.accessory.CuriosClientIntegration::init);
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {

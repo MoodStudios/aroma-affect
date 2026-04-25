@@ -1,6 +1,7 @@
 package com.ovrtechnology.variant;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.nose.accessory.NoseAccessory;
 import com.ovrtechnology.util.Ids;
 import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
@@ -11,16 +12,14 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
 
-public class CustomNoseItem extends Item implements Equipable {
+public class CustomNoseItem extends Item {
 
     public static final String ITEM_ID = "custom_nose";
     public static final int DEFAULT_DURABILITY = 250;
@@ -99,29 +98,22 @@ public class CustomNoseItem extends Item implements Equipable {
     }
 
     @Override
-    public EquipmentSlot getEquipmentSlot() {
-        return EquipmentSlot.HEAD;
-    }
-
-    @Override
     public InteractionResultHolder<ItemStack> use(
             Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
 
-        if (headStack.isEmpty()) {
-            player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-            if (!level.isClientSide()) {
-                player.awardStat(Stats.ITEM_USED.get(this));
-            }
-            heldStack.setCount(0);
-            player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-            return InteractionResultHolder.success(heldStack);
+        if (!NoseAccessory.hasSlot(player)) {
+            return InteractionResultHolder.pass(heldStack);
         }
-        player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-        player.setItemInHand(hand, headStack.copy());
+
+        ItemStack previous = NoseAccessory.equip(player, heldStack.copy());
+        player.setItemInHand(hand, previous);
+
+        if (!level.isClientSide()) {
+            player.awardStat(Stats.ITEM_USED.get(this));
+        }
         player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-        return InteractionResultHolder.success(heldStack);
+        return InteractionResultHolder.success(player.getItemInHand(hand));
     }
 
     private static Rarity parseRarity(String name) {

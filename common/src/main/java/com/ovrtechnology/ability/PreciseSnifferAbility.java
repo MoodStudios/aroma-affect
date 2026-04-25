@@ -112,7 +112,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
             return false;
         }
 
-        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headItem = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (headItem.isEmpty() || !headItem.is(NoseTags.NOSES)) {
             return false;
         }
@@ -275,7 +275,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
     }
 
     private void damageNose(ServerPlayer player) {
-        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headItem = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (!headItem.isEmpty()) {
             headItem.hurtAndBreak(getDurabilityCost(), player, EquipmentSlot.HEAD);
         }
