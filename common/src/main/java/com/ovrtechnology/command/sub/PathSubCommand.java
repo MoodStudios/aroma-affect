@@ -264,7 +264,7 @@ public class PathSubCommand implements SubCommand {
             int targetCost = resolveTrackCost(type, resourceId.toString());
 
             // Check nose durability
-            ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+            ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
             if (headStack.getItem() instanceof NoseItem) {
                 if (headStack.isDamageableItem()) {
                     int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
@@ -404,7 +404,7 @@ public class PathSubCommand implements SubCommand {
 
                 // Deduct per-target durability from equipped nose
                 int targetCost = resolveTrackCost(result.target().type(), targetId);
-                ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+                ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
                 if (headStack.getItem() instanceof NoseItem) {
                     headStack.hurtAndBreak(targetCost, player, EquipmentSlot.HEAD);
                 }
@@ -667,7 +667,7 @@ public class PathSubCommand implements SubCommand {
 
         // Deduct reduced history retrack cost
         int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (headStack.getItem() instanceof NoseItem) {
             if (headStack.isDamageableItem()) {
                 int remaining = headStack.getMaxDamage() - headStack.getDamageValue();

@@ -17,7 +17,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -1113,7 +1112,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         // Pre-validate durability for recall cost
         if (player != null) {
             int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
-            ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+            ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
             if (!headStack.isEmpty() && headStack.isDamageableItem()) {
                 int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
                 if (remaining < retrackCost) {

@@ -5,7 +5,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -119,7 +118,7 @@ public final class SnifferLootTable {
         LootTable lootTable = level.getServer().reloadableRegistries()
                 .getLootTable(lootKey);
 
-        ItemStack tool = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack tool = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
 
         LootParams lootParams = new LootParams.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))

@@ -11,7 +11,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -376,7 +375,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int costTextWidth = font.width(costText);
 
         // Check if player can afford
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         boolean canAffordDurability = true;
         if (!headStack.isEmpty() && headStack.isDamageableItem()) {
             int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
@@ -448,7 +447,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         if (player == null) return;
 
         // Pre-validate durability
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (!headStack.isEmpty() && headStack.isDamageableItem()) {
             int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
             if (remaining < card.trackCost) {

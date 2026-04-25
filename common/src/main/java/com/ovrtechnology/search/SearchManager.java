@@ -4,7 +4,6 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseItem;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -131,7 +130,7 @@ public final class SearchManager {
      * Called when search mode is activated.
      */
     private static void onSearchActivated(Player player) {
-        ItemStack noseStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack noseStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         String noseName = "Unknown";
         
         if (noseStack.getItem() instanceof NoseItem noseItem) {
@@ -169,7 +168,7 @@ public final class SearchManager {
             return false;
         }
         
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         return !headStack.isEmpty() && headStack.getItem() instanceof NoseItem;
     }
     
@@ -184,7 +183,7 @@ public final class SearchManager {
             return null;
         }
         
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (!headStack.isEmpty() && headStack.getItem() instanceof NoseItem noseItem) {
             return noseItem;
         }

@@ -1,6 +1,6 @@
 package com.ovrtechnology.nose;
 
-import net.minecraft.world.entity.EquipmentSlot;
+import com.ovrtechnology.nose.accessory.NoseAccessory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -33,12 +33,12 @@ public final class EquippedNoseHelper {
             return Optional.empty();
         }
 
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (headStack.isEmpty()) {
+        ItemStack stack = NoseAccessory.getEquipped(player);
+        if (stack.isEmpty()) {
             return Optional.empty();
         }
 
-        if (headStack.getItem() instanceof NoseItem noseItem) {
+        if (stack.getItem() instanceof NoseItem noseItem) {
             return Optional.of(noseItem);
         }
 
