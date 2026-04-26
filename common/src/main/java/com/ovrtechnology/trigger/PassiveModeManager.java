@@ -537,7 +537,7 @@ public final class PassiveModeManager {
                     triggered);
         }
 
-        if (ClientConfig.getInstance().isDebugScentMessages()) {
+        if (triggered && ClientConfig.getInstance().isDebugScentMessages()) {
 
             String triggerTypeName = candidate.type.name().toLowerCase();
 

@@ -5,6 +5,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.trigger.ScentTriggerSource;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -132,6 +133,10 @@ public final class PlayerStateTickHandler {
             return;
         }
 
+        if (def.isYieldsToPassive() && passiveOwnsScent(scentName)) {
+            return;
+        }
+
         if (!EventThrottle.tryConsume()) {
             return;
         }
@@ -146,6 +151,13 @@ public final class PlayerStateTickHandler {
             activeContinuous.add(def.getEventId());
             EventDebugLog.fired(def, scentName, def.getIntensity());
         }
+    }
+
+    private static boolean passiveOwnsScent(String scentName) {
+        ScentTrigger active = ScentTriggerManager.getInstance().getActiveScent();
+        return active != null
+                && active.source() == ScentTriggerSource.PASSIVE_MODE
+                && active.scentName().equals(scentName);
     }
 
     private static void stopContinuous(EventDefinition def) {

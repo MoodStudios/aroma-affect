@@ -6,5 +6,6 @@
   "intensity": 1.0,
   "priority": "MEDIUM",
   "duration_mode": "CONTINUOUS",
-  "cooldown_ms": 10000
+  "cooldown_ms": 10000,
+  "yields_to_passive": true
 }

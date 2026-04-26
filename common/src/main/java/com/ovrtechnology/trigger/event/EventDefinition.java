@@ -52,6 +52,9 @@ public class EventDefinition {
     @SerializedName("cooldown_ms")
     private Long cooldownMs;
 
+    @SerializedName("yields_to_passive")
+    private boolean yieldsToPassive = false;
+
     @Getter(AccessLevel.NONE)
     @SerializedName("conditions")
     private JsonObject conditions;
