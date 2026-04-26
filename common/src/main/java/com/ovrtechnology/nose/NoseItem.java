@@ -9,13 +9,23 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 
-public class NoseItem extends Item {
+/**
+ * Base item class for all nose equipment in Aroma Affect.
+ *
+ * <p>Implements {@link Equipable} so noses always work in the vanilla helmet
+ * slot. On NeoForge, Curios provides an additional "face" accessory slot when
+ * installed; {@link NoseAccessory} routes equip/lookup to whichever is
+ * appropriate.</p>
+ */
+public class NoseItem extends Item implements Equipable {
 
     @Getter private final NoseDefinition definition;
 
@@ -45,6 +55,11 @@ public class NoseItem extends Item {
     }
 
     @Override
+    public EquipmentSlot getEquipmentSlot() {
+        return EquipmentSlot.HEAD;
+    }
+
+    @Override
     public boolean isValidRepairItem(ItemStack stack, ItemStack ingredient) {
         String repairId = definition.getRepair();
         if (repairId == null || repairId.isEmpty()) return false;
@@ -52,6 +67,10 @@ public class NoseItem extends Item {
         return BuiltInRegistries.ITEM.getOptional(repairLoc).map(ingredient::is).orElse(false);
     }
 
+    /**
+     * Right-click routes the nose into the platform-specific accessory slot
+     * (Curios face slot when present on NeoForge, vanilla HEAD slot otherwise).
+     */
     @Override
     public InteractionResultHolder<ItemStack> use(
             Level level, Player player, InteractionHand hand) {

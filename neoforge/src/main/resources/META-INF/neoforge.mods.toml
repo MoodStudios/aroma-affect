@@ -36,7 +36,7 @@ side = "BOTH"
 
 [[dependencies.aromaaffect]]
 modId = "curios"
-type = "required"
+type = "optional"
 versionRange = "[9.5.0,)"
 ordering = "AFTER"
 side = "BOTH"
