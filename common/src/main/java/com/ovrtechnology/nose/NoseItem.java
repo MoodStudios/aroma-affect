@@ -14,11 +14,14 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.EquipmentAssets;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 
 /**
@@ -74,9 +77,18 @@ public class NoseItem extends Item {
         // Set rarity based on tier
         properties.rarity(getRarityForTier(definition.getTier()));
 
-        // Note: noses are equipped via the Curios accessory slot on NeoForge
-        // and the vanilla HEAD slot on Fabric, both routed through NoseAccessory.
-        // No vanilla Equippable component so shift-click does not auto-fill the helmet.
+        // Equippable HEAD slot: noses always work in the vanilla helmet slot.
+        // On NeoForge, Curios provides an additional "face" accessory slot when
+        // installed; NoseAccessory routes equip/lookup to whichever is appropriate.
+        ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> equipmentAsset =
+                getEquipmentAssetFromModel(definition.getModel());
+        Equippable equippable = Equippable.builder(EquipmentSlot.HEAD)
+                .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
+                .setAsset(equipmentAsset)
+                .setSwappable(true)
+                .setDamageOnHurt(true)
+                .build();
+        properties.component(DataComponents.EQUIPPABLE, equippable);
 
         // Add Repairable component for anvil repair
         String repairId = definition.getRepair();
@@ -89,6 +101,20 @@ public class NoseItem extends Item {
         }
 
         return properties;
+    }
+
+    /**
+     * Map a helmet-style model id (e.g. "minecraft:iron_helmet") to its equipment asset key.
+     */
+    private static ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> getEquipmentAssetFromModel(String model) {
+        if (model == null || model.isEmpty()) return EquipmentAssets.IRON;
+        String lower = model.toLowerCase();
+        if (lower.contains("diamond")) return EquipmentAssets.DIAMOND;
+        if (lower.contains("gold")) return EquipmentAssets.GOLD;
+        if (lower.contains("netherite")) return EquipmentAssets.NETHERITE;
+        if (lower.contains("leather")) return EquipmentAssets.LEATHER;
+        if (lower.contains("chain")) return EquipmentAssets.CHAINMAIL;
+        return EquipmentAssets.IRON;
     }
 
     /**
