@@ -13,6 +13,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -35,7 +36,9 @@ public final class AromaAffectNeoForgeClient {
 
         modEventBus.addListener(this::onRegisterClientExtensions);
         modEventBus.addListener(this::onRegisterMenuScreens);
-        modEventBus.addListener(this::onClientSetup);
+        if (ModList.get().isLoaded("curios")) {
+            modEventBus.addListener(this::onClientSetup);
+        }
     }
 
     private void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
