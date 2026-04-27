@@ -124,12 +124,17 @@ public final class PlayerStateTickHandler {
         Long lastTime = lastFiredAtMs.get(def.getEventId());
         boolean alreadyActive = activeContinuous.contains(def.getEventId());
 
-        if (alreadyActive && lastTime != null && (now - lastTime) < cooldown) {
+        String scentName = ScentRegistry.getDisplayName(def.getScentId());
+        if (scentName == null || "Unknown Scent".equals(scentName)) {
             return;
         }
 
-        String scentName = ScentRegistry.getDisplayName(def.getScentId());
-        if (scentName == null || "Unknown Scent".equals(scentName)) {
+        if (alreadyActive && !managerStillOwnsContinuous(def, scentName)) {
+            activeContinuous.remove(def.getEventId());
+            alreadyActive = false;
+        }
+
+        if (alreadyActive && lastTime != null && (now - lastTime) < cooldown) {
             return;
         }
 
@@ -158,6 +163,13 @@ public final class PlayerStateTickHandler {
         return active != null
                 && active.source() == ScentTriggerSource.PASSIVE_MODE
                 && active.scentName().equals(scentName);
+    }
+
+    private static boolean managerStillOwnsContinuous(EventDefinition def, String scentName) {
+        ScentTrigger active = ScentTriggerManager.getInstance().getActiveScent();
+        return active != null
+                && active.scentName().equals(scentName)
+                && active.source() == def.resolveSource();
     }
 
     private static void stopContinuous(EventDefinition def) {
