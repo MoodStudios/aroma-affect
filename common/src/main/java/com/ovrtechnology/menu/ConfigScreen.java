@@ -347,7 +347,17 @@ public class ConfigScreen extends BaseMenuScreen {
                 rowY + 4,
                 MenuRenderUtils.withAlpha(COL_TEXT, a));
         boolean masterEnabled = config.isEventTriggersEnabled();
-        renderTogglePill(graphics, toggleX, rowY + 1, masterEnabled, a);
+        boolean passiveOn = PassiveModeManager.isPassiveModeEnabled();
+        float masterAlpha = passiveOn ? a : Math.max(0.2f, a / 3f);
+        renderTogglePill(graphics, toggleX, rowY + 1, masterEnabled, masterAlpha);
+        if (!passiveOn
+                && mx >= toggleX
+                && mx < toggleX + TOGGLE_W
+                && my >= rowY + 1
+                && my < rowY + 1 + TOGGLE_H) {
+            setTooltipForNextRenderPass(
+                    Texts.tr("config.aromaaffect.events.requires_passive_mode"));
+        }
         Component toggleLabel =
                 masterEnabled
                         ? Texts.tr("config.aromaaffect.on")
@@ -357,7 +367,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 toggleLabel,
                 toggleX + TOGGLE_W + 6,
                 rowY + 4,
-                MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+                MenuRenderUtils.withAlpha(COL_TEXT_DIM, masterAlpha));
         rowY += ROW_HEIGHT + 8;
 
         graphics.drawString(
@@ -468,6 +478,9 @@ public class ConfigScreen extends BaseMenuScreen {
                 && mx < toggleX + TOGGLE_W
                 && adjustedMy >= rowY
                 && adjustedMy < rowY + TOGGLE_H + 2) {
+            if (!PassiveModeManager.isPassiveModeEnabled()) {
+                return true;
+            }
             config.setEventTriggersEnabled(!config.isEventTriggersEnabled());
             config.save();
             MenuRenderUtils.playToggleSound(config.isEventTriggersEnabled());
@@ -532,7 +545,9 @@ public class ConfigScreen extends BaseMenuScreen {
                 config.setCategoryEnabled(c, true);
             }
             config.getCategoryCooldownMs().clear();
-            config.setEventTriggersEnabled(true);
+            if (PassiveModeManager.isPassiveModeEnabled()) {
+                config.setEventTriggersEnabled(true);
+            }
             config.setGlobalThrottlePerMinute(30);
             config.save();
             return true;

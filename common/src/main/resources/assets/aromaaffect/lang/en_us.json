@@ -245,6 +245,7 @@
   "config.aromaaffect.section.events": "Events",
   "config.aromaaffect.events.placeholder": "Event trigger configuration coming soon.",
   "config.aromaaffect.events.master_enabled": "Event Triggers Enabled",
+  "config.aromaaffect.events.requires_passive_mode": "Enable Passive Mode to use Event Triggers",
   "config.aromaaffect.events.categories_header": "Categories",
   "config.aromaaffect.events.cooldown": "Cooldown",
   "config.aromaaffect.events.throttle": "Global Throttle",
