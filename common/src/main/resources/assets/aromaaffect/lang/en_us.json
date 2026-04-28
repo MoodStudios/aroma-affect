@@ -65,6 +65,8 @@
   "gui.aromaaffect.nose_strap.on": "Strap: ON",
   "gui.aromaaffect.nose_strap.off": "Strap: OFF",
   "gui.aromaaffect.nose_strap.tooltip": "Toggle nose strap rendering",
+
+  "message.aromaaffect.nose.already_equipped": "You already have a nose equipped — moved the new one to your inventory.",
   
   "menu.aromaaffect.radial.title": "Scent Selection",
   
