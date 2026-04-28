@@ -64,6 +64,16 @@ public record ScentTrigger(
                 scentName, ScentTriggerSource.PASSIVE_MODE, priority, durationTicks, intensity);
     }
 
+    public static ScentTrigger continuous(
+            String scentName, ScentTriggerSource source, ScentPriority priority, double intensity) {
+        return create(scentName, source, priority, -1, intensity);
+    }
+
+    public static ScentTrigger oneShot(
+            String scentName, ScentTriggerSource source, ScentPriority priority, double intensity) {
+        return create(scentName, source, priority, 1, intensity);
+    }
+
     public boolean isIndefinite() {
         return durationTicks < 0;
     }

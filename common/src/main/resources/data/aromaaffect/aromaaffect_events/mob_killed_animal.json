@@ -1,0 +1,25 @@
+{
+  "event_id": "aromaaffect:mob_killed_animal",
+  "category": "COMBAT",
+  "trigger_type": "MOB_KILLED",
+  "scent_id": "barnyard",
+  "intensity": 0.7,
+  "priority": "MEDLOW",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "entity_ids": [
+      "minecraft:cow",
+      "minecraft:pig",
+      "minecraft:chicken",
+      "minecraft:sheep",
+      "minecraft:rabbit",
+      "minecraft:horse",
+      "minecraft:donkey",
+      "minecraft:mule",
+      "minecraft:llama",
+      "minecraft:goat",
+      "minecraft:mooshroom"
+    ]
+  }
+}

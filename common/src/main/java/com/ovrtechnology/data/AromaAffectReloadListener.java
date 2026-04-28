@@ -18,6 +18,7 @@ import com.ovrtechnology.sniffer.loot.SnifferLootRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseDefinitionLoader;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.trigger.event.EventDefinitionLoader;
 import com.ovrtechnology.variant.NoseVariantRegistry;
 import com.ovrtechnology.variant.VariantRecipeIndex;
 import java.util.List;
@@ -61,6 +62,7 @@ public final class AromaAffectReloadListener extends SimplePreparableReloadListe
             FlowerDefinitionLoader.loadAllFlowers(ds);
             StructureDefinitionLoader.loadAllStructures(ds);
             MobDefinitionLoader.loadAllMobs(ds);
+            EventDefinitionLoader.loadAllEvents(ds);
 
             ScentTriggerConfigLoader.reload(ds);
 

@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:advancement_obtained",
+  "category": "PLAYER_PROGRESS",
+  "trigger_type": "ADVANCEMENT_OBTAINED",
+  "scent_id": "sweet",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 30000,
+  "conditions": {
+    "default": true
+  }
+}

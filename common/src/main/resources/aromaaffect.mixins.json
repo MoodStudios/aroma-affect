@@ -8,14 +8,18 @@
     "IronGolemModelMixin",
     "CustomHeadLayerMixin",
     "SnifferRendererMixin",
-    "SnifferModelMixin"
+    "SnifferModelMixin",
+    "LocalPlayerCompleteUseItemMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",
     "JigsawPriorityMixin",
     "AnvilRepairMixin",
     "ZombieVillagerConversionMixin",
-    "IronGolemNoseMixin"
+    "IronGolemNoseMixin",
+    "FishingHookRetrieveMixin",
+    "AnvilOnTakeMixin",
+    "MerchantNotifyTradeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

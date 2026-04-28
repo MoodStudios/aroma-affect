@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:player_dimension_nether",
+  "category": "DIMENSION",
+  "trigger_type": "PLAYER_DIMENSION_CHANGE",
+  "scent_id": "smoky",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 30000,
+  "conditions": {
+    "target_dimension": "minecraft:the_nether"
+  }
+}

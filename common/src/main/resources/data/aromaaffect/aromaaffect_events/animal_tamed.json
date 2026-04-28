@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:animal_tamed",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "ANIMAL_TAMED",
+  "scent_id": "kindred",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 10000,
+  "conditions": {
+    "default": true
+  }
+}

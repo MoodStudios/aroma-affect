@@ -1,0 +1,19 @@
+{
+  "event_id": "aromaaffect:item_crafted_wood",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "ITEM_CRAFTED",
+  "scent_id": "timber",
+  "intensity": 0.6,
+  "priority": "MEDLOW",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 10000,
+  "conditions": {
+    "item_tags": ["#minecraft:planks", "#minecraft:wooden_tools", "#minecraft:logs"],
+    "item_ids": [
+      "minecraft:crafting_table",
+      "minecraft:chest",
+      "minecraft:barrel",
+      "minecraft:stick"
+    ]
+  }
+}

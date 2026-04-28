@@ -1,0 +1,17 @@
+{
+  "event_id": "aromaaffect:player_potion_water_breathing",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_POTION_DRUNK",
+  "scent_id": "marine",
+  "intensity": 0.9,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "effect_ids": [
+      "minecraft:water_breathing",
+      "minecraft:dolphins_grace",
+      "minecraft:conduit_power"
+    ]
+  }
+}

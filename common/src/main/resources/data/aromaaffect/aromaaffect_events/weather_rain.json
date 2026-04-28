@@ -1,0 +1,14 @@
+{
+  "event_id": "aromaaffect:weather_rain",
+  "category": "WEATHER",
+  "trigger_type": "WEATHER_RAINING",
+  "scent_id": "petrichor",
+  "intensity": 0.71,
+  "priority": "MEDLOW",
+  "duration_mode": "CONTINUOUS",
+  "cooldown_ms": 15000,
+  "conditions": {
+    "exclude_biome_paths": ["desert", "badlands", "savanna", "nether_wastes", "crimson_forest", "warped_forest", "soul_sand_valley", "basalt_deltas", "the_end"],
+    "requires_sky_visible": true
+  }
+}

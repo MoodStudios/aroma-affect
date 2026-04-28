@@ -1,0 +1,19 @@
+{
+  "event_id": "aromaaffect:player_potion_buff",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_POTION_DRUNK",
+  "scent_id": "citrus",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "effect_ids": [
+      "minecraft:strength",
+      "minecraft:speed",
+      "minecraft:jump_boost",
+      "minecraft:luck",
+      "minecraft:haste"
+    ]
+  }
+}

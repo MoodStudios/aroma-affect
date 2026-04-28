@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:player_dimension_overworld",
+  "category": "DIMENSION",
+  "trigger_type": "PLAYER_DIMENSION_CHANGE",
+  "scent_id": "floral",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 30000,
+  "conditions": {
+    "target_dimension": "minecraft:overworld"
+  }
+}

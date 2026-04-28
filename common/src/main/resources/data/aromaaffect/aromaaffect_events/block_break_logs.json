@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:block_break_logs",
+  "category": "BLOCK_BREAK",
+  "trigger_type": "BLOCK_BROKEN",
+  "scent_id": "timber",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "block_tags": ["#minecraft:logs"]
+  }
+}
