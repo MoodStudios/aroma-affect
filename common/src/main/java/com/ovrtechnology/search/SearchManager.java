@@ -5,7 +5,6 @@ import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseTags;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -68,7 +67,7 @@ public final class SearchManager {
 
     public static boolean isNoseEquipped(Player player) {
         if (player == null) return false;
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         return !headStack.isEmpty() && headStack.is(NoseTags.NOSES);
     }
 }

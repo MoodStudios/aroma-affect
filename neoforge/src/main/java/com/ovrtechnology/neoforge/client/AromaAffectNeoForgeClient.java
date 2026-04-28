@@ -13,6 +13,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -60,6 +61,10 @@ public final class AromaAffectNeoForgeClient {
 
     private void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(AromaAffectClient::registerCompassProperty);
+        if (ModList.get().isLoaded("curios")) {
+            event.enqueueWork(
+                    com.ovrtechnology.neoforge.client.accessory.CuriosClientIntegration::init);
+        }
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {

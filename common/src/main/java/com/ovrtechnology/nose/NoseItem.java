@@ -1,5 +1,6 @@
 package com.ovrtechnology.nose;
 
+import com.ovrtechnology.nose.accessory.NoseAccessory;
 import com.ovrtechnology.util.Ids;
 import lombok.Getter;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -16,6 +17,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 
+/**
+ * Base item class for all nose equipment in Aroma Affect.
+ *
+ * <p>Implements {@link Equipable} so noses always work in the vanilla helmet
+ * slot. On NeoForge, Curios provides an additional "face" accessory slot when
+ * installed; {@link NoseAccessory} routes equip/lookup to whichever is
+ * appropriate.</p>
+ */
 public class NoseItem extends Item implements Equipable {
 
     @Getter private final NoseDefinition definition;
@@ -58,26 +67,27 @@ public class NoseItem extends Item implements Equipable {
         return BuiltInRegistries.ITEM.getOptional(repairLoc).map(ingredient::is).orElse(false);
     }
 
+    /**
+     * Right-click routes the nose into the platform-specific accessory slot
+     * (Curios face slot when present on NeoForge, vanilla HEAD slot otherwise).
+     */
     @Override
     public InteractionResultHolder<ItemStack> use(
             Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
 
-        if (headStack.isEmpty()) {
-            player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-            if (!level.isClientSide()) {
-                player.awardStat(Stats.ITEM_USED.get(this));
-            }
-            heldStack.setCount(0);
-            player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-            return InteractionResultHolder.success(heldStack);
-        } else {
-            player.setItemSlot(EquipmentSlot.HEAD, heldStack.copy());
-            player.setItemInHand(hand, headStack.copy());
-            player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
-            return InteractionResultHolder.success(heldStack);
+        if (!NoseAccessory.hasSlot(player)) {
+            return InteractionResultHolder.pass(heldStack);
         }
+
+        ItemStack previous = NoseAccessory.equip(player, heldStack.copy());
+        player.setItemInHand(hand, previous);
+
+        if (!level.isClientSide()) {
+            player.awardStat(Stats.ITEM_USED.get(this));
+        }
+        player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
+        return InteractionResultHolder.success(player.getItemInHand(hand));
     }
 
     public int getTier() {

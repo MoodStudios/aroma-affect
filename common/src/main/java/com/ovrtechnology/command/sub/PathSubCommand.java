@@ -318,7 +318,8 @@ public class PathSubCommand implements SubCommand {
         if (player != null) {
             int targetCost = resolveTrackCost(type, resourceId.toString());
 
-            ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+            ItemStack headStack =
+                    com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
             if (headStack.is(com.ovrtechnology.nose.NoseTags.NOSES)) {
                 if (headStack.isDamageableItem()) {
                     int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
@@ -520,7 +521,8 @@ public class PathSubCommand implements SubCommand {
                         .createPath(player, level, finalDestination, targetType, targetId);
 
                 int targetCost = resolveTrackCost(result.target().type(), targetId);
-                ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+                ItemStack headStack =
+                        com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
                 if (headStack.is(com.ovrtechnology.nose.NoseTags.NOSES)) {
                     headStack.hurtAndBreak(targetCost, player, EquipmentSlot.HEAD);
                 }
@@ -767,7 +769,7 @@ public class PathSubCommand implements SubCommand {
         }
 
         int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (headStack.is(com.ovrtechnology.nose.NoseTags.NOSES)) {
             if (headStack.isDamageableItem()) {
                 int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
