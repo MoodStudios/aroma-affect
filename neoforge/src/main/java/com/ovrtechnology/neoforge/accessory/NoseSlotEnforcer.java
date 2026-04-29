@@ -2,7 +2,6 @@ package com.ovrtechnology.neoforge.accessory;
 
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.accessory.NoseAccessory;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -15,8 +14,8 @@ import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
  *
  * <p>Policy: when a nose is equipped to HEAD and Curios is loaded, it is
  * auto-routed to the face slot. If the face slot already holds another nose,
- * the new one is bounced to the inventory (or dropped) and a chat message is
- * shown.</p>
+ * the new one is bounced to the inventory (or dropped if the inventory is
+ * full).</p>
  *
  * <p>Only registered when Curios is on the modlist. The reverse direction
  * (drag into face while HEAD already has one) is intentionally not covered
@@ -61,6 +60,5 @@ public final class NoseSlotEnforcer {
         if (!player.getInventory().add(moved)) {
             player.drop(moved, false);
         }
-        player.displayClientMessage(Component.translatable("message.aromaaffect.nose.already_equipped"), false);
     }
 }
