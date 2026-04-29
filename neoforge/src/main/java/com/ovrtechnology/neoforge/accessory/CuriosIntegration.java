@@ -34,10 +34,10 @@ public final class CuriosIntegration {
             }
 
             /**
-             * Mirror of {@link NoseSlotEnforcer} for the opposite direction:
-             * when a nose is equipped to the Curios face slot and the player
-             * is already wearing another nose in HEAD, push the HEAD one back
-             * to the inventory so we never have two noses on the same player.
+             * Mirror of {@link NoseSlotEnforcer} for the opposite direction: when a nose is
+             * equipped to the Curios face slot and the player is already wearing another nose in
+             * HEAD, push the HEAD one back to the inventory so we never have two noses on the same
+             * player.
              */
             @Override
             public void onEquip(SlotContext slotContext, ItemStack prevStack) {

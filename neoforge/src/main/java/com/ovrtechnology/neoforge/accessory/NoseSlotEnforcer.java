@@ -9,24 +9,24 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 
 /**
- * Server-side guard that prevents a player from wearing a nose in both the
- * vanilla HEAD slot and the Curios "face" slot at the same time.
+ * Server-side guard that prevents a player from wearing a nose in both the vanilla HEAD slot and
+ * the Curios "face" slot at the same time.
  *
- * <p>Policy: when a nose is equipped to HEAD and Curios is loaded, it is
- * auto-routed to the face slot. If the face slot already holds another nose,
- * the new one is bounced to the inventory (or dropped if the inventory is
- * full).</p>
+ * <p>Policy: when a nose is equipped to HEAD and Curios is loaded, it is auto-routed to the face
+ * slot. If the face slot already holds another nose, the new one is bounced to the inventory (or
+ * dropped if the inventory is full).
  *
- * <p>Only registered when Curios is on the modlist. The reverse direction
- * (drag into face while HEAD already has one) is intentionally not covered
- * here to avoid coupling to per-version Curios event APIs.</p>
+ * <p>Only registered when Curios is on the modlist. The reverse direction (drag into face while
+ * HEAD already has one) is intentionally not covered here to avoid coupling to per-version Curios
+ * event APIs.
  */
 public final class NoseSlotEnforcer {
 
     private NoseSlotEnforcer() {}
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(LivingEquipmentChangeEvent.class, NoseSlotEnforcer::onEquipChange);
+        NeoForge.EVENT_BUS.addListener(
+                LivingEquipmentChangeEvent.class, NoseSlotEnforcer::onEquipChange);
     }
 
     private static void onEquipChange(LivingEquipmentChangeEvent event) {
