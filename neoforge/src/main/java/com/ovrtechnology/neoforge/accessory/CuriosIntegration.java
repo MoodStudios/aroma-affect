@@ -3,7 +3,6 @@ package com.ovrtechnology.neoforge.accessory;
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
 import dev.architectury.registry.registries.RegistrySupplier;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -51,9 +50,6 @@ public final class CuriosIntegration {
                 if (!player.getInventory().add(displaced)) {
                     player.drop(displaced, false);
                 }
-                player.displayClientMessage(
-                        Component.translatable("message.aromaaffect.nose.already_equipped"),
-                        false);
             }
         };
     }
