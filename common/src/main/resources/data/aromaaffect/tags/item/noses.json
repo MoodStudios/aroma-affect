@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "aromaaffect:foragers_nose",
+    "aromaaffect:prospectors_nose",
+    "aromaaffect:jewelers_nose",
+    "aromaaffect:dimensional_nose",
+    "aromaaffect:ancient_nose",
+    "aromaaffect:dragon_nose",
+    {"id": "aromaaffect:basic_nose", "required": false},
+    {"id": "aromaaffect:gold_nose", "required": false},
+    {"id": "aromaaffect:diamond_nose", "required": false},
+    {"id": "aromaaffect:blaze_nose", "required": false},
+    {"id": "aromaaffect:netherite_nose", "required": false},
+    {"id": "aromaaffect:ultimate_nose", "required": false}
+  ]
+}

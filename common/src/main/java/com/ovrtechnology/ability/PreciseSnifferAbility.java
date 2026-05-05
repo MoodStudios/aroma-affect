@@ -180,7 +180,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
         }
 
         // Check if player has a nose with the ability equipped
-        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headItem = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (headItem.isEmpty() || !(headItem.getItem() instanceof NoseItem noseItem)) {
             return false;
         }
@@ -369,7 +369,7 @@ public final class PreciseSnifferAbility implements BlockInteractionAbility {
      * Damages the player's equipped nose.
      */
     private void damageNose(ServerPlayer player) {
-        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headItem = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (!headItem.isEmpty()) {
             headItem.hurtAndBreak(getDurabilityCost(), player, EquipmentSlot.HEAD);
         }
