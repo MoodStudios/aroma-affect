@@ -1113,7 +1113,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         // Pre-validate durability for recall cost
         if (player != null) {
             int retrackCost = TrackingConfig.getInstance().getHistoryRetrackCost();
-            ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+            ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
             if (!headStack.isEmpty() && headStack.isDamageableItem()) {
                 int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
                 if (remaining < retrackCost) {

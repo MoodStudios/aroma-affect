@@ -376,7 +376,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int costTextWidth = font.width(costText);
 
         // Check if player can afford
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         boolean canAffordDurability = true;
         if (!headStack.isEmpty() && headStack.isDamageableItem()) {
             int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
@@ -448,7 +448,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         if (player == null) return;
 
         // Pre-validate durability
-        ItemStack headStack = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack headStack = com.ovrtechnology.nose.accessory.NoseAccessory.getEquipped(player);
         if (!headStack.isEmpty() && headStack.isDamageableItem()) {
             int remaining = headStack.getMaxDamage() - headStack.getDamageValue();
             if (remaining < card.trackCost) {
