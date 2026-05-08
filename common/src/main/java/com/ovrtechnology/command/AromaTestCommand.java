@@ -5,6 +5,7 @@ import static net.minecraft.commands.Commands.literal;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.command.sub.EventTestSubCommand;
 import com.ovrtechnology.command.sub.GiveVariantSubCommand;
 import com.ovrtechnology.command.sub.LookupSubCommand;
 import com.ovrtechnology.command.sub.PathSubCommand;
@@ -26,6 +27,7 @@ public final class AromaTestCommand {
         register(new LookupSubCommand());
         register(new PathSubCommand());
         register(new GiveVariantSubCommand());
+        register(new EventTestSubCommand());
     }
 
     private AromaTestCommand() {}

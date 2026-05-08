@@ -10,6 +10,7 @@ import com.ovrtechnology.trigger.config.MobTriggerDefinition;
 import com.ovrtechnology.trigger.config.PassiveModeConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
+import com.ovrtechnology.trigger.event.EventTriggersConfig;
 import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
@@ -537,7 +538,7 @@ public final class PassiveModeManager {
                     triggered);
         }
 
-        if (ClientConfig.getInstance().isDebugScentMessages()) {
+        if (triggered && ClientConfig.getInstance().isDebugScentMessages()) {
 
             String triggerTypeName = candidate.type.name().toLowerCase();
 
@@ -686,8 +687,24 @@ public final class PassiveModeManager {
 
     public static void setPassiveModeEnabled(boolean enabled) {
         PassiveModeConfig config = PassiveModeConfig.getInstance();
+        if (config.isPassiveModeEnabled() == enabled) {
+            return;
+        }
         config.setPassiveModeEnabled(enabled);
+
+        EventTriggersConfig events = EventTriggersConfig.getInstance();
+        if (!enabled) {
+            if (config.getEventEnabledBeforeDisable() == null) {
+                config.setEventEnabledBeforeDisable(events.isEventTriggersEnabled());
+            }
+            events.setEventTriggersEnabled(false);
+        } else if (config.getEventEnabledBeforeDisable() != null) {
+            events.setEventTriggersEnabled(config.getEventEnabledBeforeDisable());
+            config.setEventEnabledBeforeDisable(null);
+        }
+
         config.save();
+        events.save();
 
         if (!enabled) {
             stopPassiveMode();

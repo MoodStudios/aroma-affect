@@ -25,6 +25,7 @@ import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.NoseSmithTradeNetworking;
 import com.ovrtechnology.network.OmaraDeviceNetworking;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.network.ScentEventNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -37,6 +38,9 @@ import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.trigger.event.EventDefinitionLoader;
+import com.ovrtechnology.trigger.event.EventTriggersConfig;
+import com.ovrtechnology.trigger.event.ServerEventBusHandler;
 import com.ovrtechnology.variant.CustomNoseRegistry;
 import com.ovrtechnology.variant.ModDataComponents;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
@@ -57,6 +61,7 @@ public final class AromaAffect {
         NoseSmithDialogueNetworking.init();
         NoseSmithTradeNetworking.init();
         PathScentNetworking.init();
+        ScentEventNetworking.init();
         SnifferEquipmentNetworking.init();
         IronGolemNoseNetworking.init();
         NoseRenderNetworking.init();
@@ -106,9 +111,14 @@ public final class AromaAffect {
         FlowerDefinitionLoader.loadAllFlowers();
         StructureDefinitionLoader.loadAllStructures();
         MobDefinitionLoader.loadAllMobs();
+        EventDefinitionLoader.loadAllEvents();
+
+        EventTriggersConfig.getInstance();
 
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
+
+        ServerEventBusHandler.init();
 
         StructureSyncHandler.init();
 

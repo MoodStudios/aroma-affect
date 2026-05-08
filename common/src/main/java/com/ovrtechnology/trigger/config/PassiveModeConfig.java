@@ -19,6 +19,8 @@ public final class PassiveModeConfig {
 
     @Getter @Setter private boolean passiveModeEnabled = false;
 
+    @Getter @Setter private Boolean eventEnabledBeforeDisable = null;
+
     private PassiveModeConfig() {}
 
     public static PassiveModeConfig getInstance() {

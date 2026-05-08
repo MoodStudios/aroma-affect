@@ -21,5 +21,21 @@ public enum ScentTriggerSource {
 
     PATH_TRACKING,
 
-    OMARA_DEVICE
+    OMARA_DEVICE,
+
+    WEATHER,
+
+    PLAYER_STATE,
+
+    PLAYER_PROGRESS,
+
+    PLAYER_ACTION,
+
+    COMBAT,
+
+    CRAFT_INTERACT,
+
+    DIMENSION,
+
+    BLOCK_BREAK
 }

@@ -670,6 +670,16 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                         MemoryModuleType.SNIFF_COOLDOWN,
                         Unit.INSTANCE,
                         aromaaffect$getConfig().digging.sniffCooldownWithNose);
+
+        if (found && self.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            net.minecraft.server.level.ServerPlayer owner =
+                    serverLevel.getServer().getPlayerList().getPlayer(data.ownerUUID);
+            if (owner != null) {
+                com.ovrtechnology.trigger.event.ServerEventBusHandler.fireSimpleEvent(
+                        owner,
+                        com.ovrtechnology.trigger.event.ServerEventBusHandler.TT_SNIFFER_DUG);
+            }
+        }
     }
 
     @Unique

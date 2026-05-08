@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.trigger.event.PlayerStateTickHandler;
 import dev.architectury.event.events.client.ClientTickEvent;
 
 public final class ScentTriggerHandler {
@@ -25,6 +26,7 @@ public final class ScentTriggerHandler {
 
                         if (minecraft.player != null) {
                             PassiveModeManager.tick(minecraft.player);
+                            PlayerStateTickHandler.tick(minecraft.player);
                         }
                     });
 

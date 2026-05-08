@@ -1,0 +1,22 @@
+{
+  "event_id": "aromaaffect:block_break_crops",
+  "category": "BLOCK_BREAK",
+  "trigger_type": "BLOCK_BROKEN",
+  "scent_id": "sweet",
+  "intensity": 0.7,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "block_tags": ["#minecraft:crops"],
+    "block_ids": [
+      "minecraft:wheat",
+      "minecraft:carrots",
+      "minecraft:potatoes",
+      "minecraft:beetroots",
+      "minecraft:melon",
+      "minecraft:pumpkin",
+      "minecraft:sweet_berry_bush"
+    ]
+  }
+}
