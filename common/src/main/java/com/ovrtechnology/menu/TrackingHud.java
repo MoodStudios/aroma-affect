@@ -1,11 +1,11 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.event.events.client.ClientGuiEvent;
-import dev.architectury.event.events.client.ClientTickEvent;
+import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
+import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
 import com.ovrtechnology.trigger.config.ClientConfig;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -44,13 +44,13 @@ public final class TrackingHud {
         }
 
         // Tick ActiveTrackingState globally
-        ClientTickEvent.CLIENT_POST.register(instance -> {
+        ClientTickCallback.AFTER.register(instance -> {
             ActiveTrackingState.tick();
             tickNotification();
         });
 
         // Render HUD overlay
-        ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> {
+        RenderCallback.Gui.AFTER.register((graphics, window) -> {
             render(graphics);
         });
 
@@ -91,13 +91,13 @@ public final class TrackingHud {
         }
     }
 
-    private static void render(GuiGraphics graphics) {
+    private static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.isPaused() || mc.player == null || mc.options.hideGui) {
             return;
         }
 
-        // Don't render if radial menu (or any BaseMenuScreen) is open — it has its own panel
+        // Don't render if radial menu (or any BaseMenuScreen) is open â€” it has its own panel
         if (mc.screen instanceof BaseMenuScreen) {
             return;
         }
@@ -186,7 +186,7 @@ public final class TrackingHud {
     }
 
     private static void renderPersistentTrackingToast(
-            GuiGraphics graphics,
+            GuiGraphicsExtractor graphics,
             Minecraft mc,
             ActiveTrackingState.TrackingStatus status
     ) {
@@ -206,7 +206,7 @@ public final class TrackingHud {
             MenuCategory cat = ActiveTrackingState.getCategory();
             headerText = Component.translatable("menu.aromaaffect.tracking.label").getString();
             if (cat != null) {
-                headerText += " · " + cat.getDisplayName().getString();
+                headerText += " Â· " + cat.getDisplayName().getString();
             }
         }
 
@@ -272,7 +272,7 @@ public final class TrackingHud {
     }
 
     private static void drawDistanceLine(
-            GuiGraphics graphics,
+            GuiGraphicsExtractor graphics,
             int x,
             int y,
             TrackingDirectionIndicator.Kind directionKind,

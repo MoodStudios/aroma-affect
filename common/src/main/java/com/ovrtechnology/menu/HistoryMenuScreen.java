@@ -1,4 +1,4 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.history.BlacklistEntry;
@@ -10,7 +10,7 @@ import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.tracking.TrackingConfig;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -32,7 +32,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
     private enum Tab { HISTORY, SAVED, BLACKLIST }
 
-    // ── Layout constants ─────────────────────────────────────────────────
+    // â”€â”€ Layout constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static final int MAX_LIST_WIDTH = 380;
     private static final int ROW_HEIGHT = 36;
@@ -50,7 +50,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private static final Identifier ICON_BACK = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
 
-    // ── Tab colors ───────────────────────────────────────────────────────
+    // â”€â”€ Tab colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static final int TAB_HISTORY_COLOR = 0xFF6B8CFF;
     private static final int TAB_SAVED_COLOR = 0xFFFFCC44;
@@ -59,14 +59,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private static final int ROW_COLOR = 0xB0222222;
     private static final int ROW_HOVER_COLOR = 0xE0444488;
 
-    // ── Category accent colors ───────────────────────────────────────────
+    // â”€â”€ Category accent colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static final int BADGE_BLOCKS = 0xFF4488CC;
     private static final int BADGE_BIOMES = 0xFF44AA44;
     private static final int BADGE_STRUCTURES = 0xFFCC8844;
     private static final int BADGE_FLOWERS = 0xFFCC44AA;
 
-    // ── State ────────────────────────────────────────────────────────────
+    // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private Tab activeTab = Tab.HISTORY;
     private EditBox searchBox;
@@ -96,7 +96,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         super(Component.translatable("history.aromaaffect.title"));
     }
 
-    // ── Lifecycle ────────────────────────────────────────────────────────
+    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     protected void init() {
@@ -119,7 +119,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         rebuildFilteredList();
     }
 
-    // ── Filtering ────────────────────────────────────────────────────────
+    // â”€â”€ Filtering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void rebuildFilteredList() {
         filteredIndices.clear();
@@ -161,10 +161,10 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         return displayName != null && displayName.toLowerCase(Locale.ROOT).contains(lowerQuery);
     }
 
-    // ── Rendering ────────────────────────────────────────────────────────
+    // â”€â”€ Rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
-    protected void renderContent(GuiGraphics g, int mouseX, int mouseY,
+    protected void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY,
                                   float partialTick, float animationProgress) {
         int centerX = width / 2;
         int listWidth = Math.min(MAX_LIST_WIDTH, width - 40);
@@ -205,7 +205,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    private void renderTooltip(GuiGraphics g, Component text, int x, int y, float ap) {
+    private void renderTooltip(GuiGraphicsExtractor g, Component text, int x, int y, float ap) {
         int tw = font.width(text) + 8;
         int th = 14;
         // Ensure tooltip stays on screen
@@ -218,7 +218,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.drawString(font, text, tx + 4, ty + 3, MenuRenderUtils.withAlpha(0xFFDDDDDD, ap));
     }
 
-    private void renderBackButton(GuiGraphics g, int mouseX, int mouseY, float ap) {
+    private void renderBackButton(GuiGraphicsExtractor g, int mouseX, int mouseY, float ap) {
         float appear = Math.max(0.0f, (ap - 0.2f) / 0.8f);
         if (appear <= 0.0f) return;
 
@@ -245,7 +245,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 0.0f, 0.0f, iconSize, iconSize, iconSize, iconSize);
     }
 
-    private void renderTabs(GuiGraphics g, int listX, int tabY, int listWidth,
+    private void renderTabs(GuiGraphicsExtractor g, int listX, int tabY, int listWidth,
                             int mouseX, int mouseY, float ap) {
         hoveredTabIndex = -1;
         Tab[] tabs = Tab.values();
@@ -290,7 +290,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    private void renderList(GuiGraphics g, int listX, int listTop, int listWidth,
+    private void renderList(GuiGraphicsExtractor g, int listX, int listTop, int listWidth,
                             int listBottom, int mouseX, int mouseY, float ap) {
         hoveredRowIndex = -1;
         hoveredActionIndex = -1;
@@ -334,9 +334,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.disableScissor();
     }
 
-    // ── History Row ──────────────────────────────────────────────────────
+    // â”€â”€ History Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void renderHistoryRow(GuiGraphics g, int dataIndex, int x, int y, int w,
+    private void renderHistoryRow(GuiGraphicsExtractor g, int dataIndex, int x, int y, int w,
                                   boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
         HistoryEntry entry = data.getHistory().get(dataIndex);
@@ -419,9 +419,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Saved Row ────────────────────────────────────────────────────────
+    // â”€â”€ Saved Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void renderSavedRow(GuiGraphics g, int dataIndex, int x, int y, int w,
+    private void renderSavedRow(GuiGraphicsExtractor g, int dataIndex, int x, int y, int w,
                                 boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
         SavedEntry entry = data.getSaved().get(dataIndex);
@@ -482,9 +482,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Blacklist Row ────────────────────────────────────────────────────
+    // â”€â”€ Blacklist Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void renderBlacklistRow(GuiGraphics g, int dataIndex, int x, int y, int w,
+    private void renderBlacklistRow(GuiGraphicsExtractor g, int dataIndex, int x, int y, int w,
                                     boolean hovered, float ap, int mouseX, int mouseY, int filteredIdx) {
         TrackingHistoryData data = TrackingHistoryData.getInstance();
         BlacklistEntry entry = data.getBlacklist().get(dataIndex);
@@ -525,9 +525,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Go (Re-track) Button ─────────────────────────────────────────────
+    // â”€â”€ Go (Re-track) Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void renderGoButton(GuiGraphics g, int x, int y, int w, int h,
+    private void renderGoButton(GuiGraphicsExtractor g, int x, int y, int w, int h,
                                 String targetId, String categoryId,
                                 int mouseX, int mouseY, float ap,
                                 int filteredIdx, int actionIdx, boolean forceDisabled) {
@@ -540,7 +540,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             hoveredActionIndex = actionIdx;
         }
 
-        // Background — vibrant green when available, muted gray when disabled
+        // Background â€” vibrant green when available, muted gray when disabled
         int baseColor = canRetrack ? 0xFF2D8B2D : 0xFF3A3A3A;
         int hoverColor = canRetrack ? 0xFF3DAF3D : 0xFF4A4A4A;
         int bg = MenuRenderUtils.withAlpha(hov ? hoverColor : baseColor, ap);
@@ -551,7 +551,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             g.fill(x, y, x + 1, y + h, MenuRenderUtils.withAlpha(0xFF66FF66, ap));
         }
 
-        // Arrow icon ▶ (triangle pointing right)
+        // Arrow icon â–¶ (triangle pointing right)
         int cx = x + w / 2;
         int cy = y + h / 2;
         int arrowColor = canRetrack
@@ -598,9 +598,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Zigzag Torn-Edge Separator ───────────────────────────────────────
+    // â”€â”€ Zigzag Torn-Edge Separator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void renderZigzagSeparator(GuiGraphics g, int x, int y, int w, int h, float ap) {
+    private void renderZigzagSeparator(GuiGraphicsExtractor g, int x, int y, int w, int h, float ap) {
         // Draws a vertical zigzag torn-paper edge
         // Left half: row background bleeds through, right half: Go button color bleeds
         // Creates triangular teeth alternating left/right
@@ -645,7 +645,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Icon Button Types ────────────────────────────────────────────────
+    // â”€â”€ Icon Button Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private enum IconType { SAVE, BLACKLIST, DELETE, RENAME, TELEPORT, UNBLOCK }
 
@@ -653,7 +653,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
      * Renders a square icon button with a procedural icon and hover tooltip.
      * Returns the X position for the next button to the left.
      */
-    private int renderIconButton(GuiGraphics g, int rightEdge, int y,
+    private int renderIconButton(GuiGraphicsExtractor g, int rightEdge, int y,
                                  IconType type, int accentColor, Component tooltip,
                                  int mouseX, int mouseY, float ap,
                                  int filteredIdx, int actionIdx) {
@@ -704,7 +704,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         return bx - ICON_BTN_GAP;
     }
 
-    private int renderTeleportIconButton(GuiGraphics g, int rightEdge, int y,
+    private int renderTeleportIconButton(GuiGraphicsExtractor g, int rightEdge, int y,
                                          int mouseX, int mouseY, float ap,
                                          int filteredIdx, int actionIdx) {
         var player = Minecraft.getInstance().player;
@@ -716,10 +716,10 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 mouseX, mouseY, ap, filteredIdx, actionIdx);
     }
 
-    // ── Procedural Icon Drawing ──────────────────────────────────────────
+    // â”€â”€ Procedural Icon Drawing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /** Star (bookmark/save): 5-pointed star outline */
-    private static void drawStarIcon(GuiGraphics g, int cx, int cy, int color) {
+    private static void drawStarIcon(GuiGraphicsExtractor g, int cx, int cy, int color) {
         // Simple star: center dot + 4 points
         g.fill(cx - 1, cy - 1, cx + 2, cy + 2, color);  // center
         g.fill(cx, cy - 4, cx + 1, cy - 1, color);        // top spike
@@ -734,7 +734,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     /** Ban/blacklist: circle with diagonal slash */
-    private static void drawBanIcon(GuiGraphics g, int cx, int cy, int color) {
+    private static void drawBanIcon(GuiGraphicsExtractor g, int cx, int cy, int color) {
         // Circle approximation (octagon-ish)
         g.fill(cx - 2, cy - 4, cx + 3, cy - 3, color); // top
         g.fill(cx - 2, cy + 4, cx + 3, cy + 5, color); // bottom
@@ -755,7 +755,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     /** Trash can icon */
-    private static void drawTrashIcon(GuiGraphics g, int cx, int cy, int color) {
+    private static void drawTrashIcon(GuiGraphicsExtractor g, int cx, int cy, int color) {
         // Lid
         g.fill(cx - 3, cy - 4, cx + 4, cy - 3, color);
         g.fill(cx - 1, cy - 5, cx + 2, cy - 4, color); // handle
@@ -769,7 +769,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     /** Pencil/edit icon */
-    private static void drawPencilIcon(GuiGraphics g, int cx, int cy, int color) {
+    private static void drawPencilIcon(GuiGraphicsExtractor g, int cx, int cy, int color) {
         // Pencil body (diagonal)
         g.fill(cx - 3, cy + 2, cx - 2, cy + 4, color);   // tip
         g.fill(cx - 2, cy + 1, cx - 1, cy + 3, color);
@@ -783,7 +783,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     /** Lightning bolt (teleport) */
-    private static void drawLightningIcon(GuiGraphics g, int cx, int cy, int color) {
+    private static void drawLightningIcon(GuiGraphicsExtractor g, int cx, int cy, int color) {
         g.fill(cx, cy - 5, cx + 3, cy - 4, color);
         g.fill(cx - 1, cy - 4, cx + 2, cy - 3, color);
         g.fill(cx - 1, cy - 3, cx + 1, cy - 2, color);
@@ -796,7 +796,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     /** Checkmark (un-blacklist) */
-    private static void drawCheckIcon(GuiGraphics g, int cx, int cy, int color) {
+    private static void drawCheckIcon(GuiGraphicsExtractor g, int cx, int cy, int color) {
         // Short leg (going down-right)
         g.fill(cx - 3, cy, cx - 2, cy + 1, color);
         g.fill(cx - 2, cy + 1, cx - 1, cy + 2, color);
@@ -809,13 +809,13 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.fill(cx + 4, cy - 3, cx + 5, cy - 2, color);
     }
 
-    // ── Status Badge ─────────────────────────────────────────────────────
+    // â”€â”€ Status Badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Renders the entry icon: category header texture as the main 16x16 icon,
      * with the specific target item as a small overlay badge at the bottom-right.
      */
-    private void renderEntryIcon(GuiGraphics g, int iconX, int iconY,
+    private void renderEntryIcon(GuiGraphicsExtractor g, int iconX, int iconY,
                                   ItemStack specificIcon, String categoryId, float ap) {
         // Big icon: category header texture at 16x16
         MenuCategory cat = MenuCategory.fromId(categoryId);
@@ -853,7 +853,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     /** Renders a small pill-shaped badge. Returns the X position after the badge for chaining. */
-    private int renderBadge(GuiGraphics g, int x, int y, String label, int textColor, int bgColor, float ap) {
+    private int renderBadge(GuiGraphicsExtractor g, int x, int y, String label, int textColor, int bgColor, float ap) {
         int tw = font.width(label);
         int pillW = tw + 6;
         int pillH = 10;
@@ -865,9 +865,9 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         return x + pillW + 3;
     }
 
-    // ── Name Popup ───────────────────────────────────────────────────────
+    // â”€â”€ Name Popup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void renderNamePopup(GuiGraphics g, int mouseX, int mouseY,
+    private void renderNamePopup(GuiGraphicsExtractor g, int mouseX, int mouseY,
                                  float partialTick, float ap) {
         g.fill(0, 0, width, height, MenuRenderUtils.withAlpha(0xCC000000, ap));
 
@@ -921,7 +921,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
     }
 
-    // ── Input Handling ───────────────────────────────────────────────────
+    // â”€â”€ Input Handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
@@ -984,7 +984,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         return false;
     }
 
-    // ── Action Handling ──────────────────────────────────────────────────
+    // â”€â”€ Action Handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void handleActionClick(int filteredIdx, int actionIdx) {
         if (filteredIdx < 0 || filteredIdx >= filteredIndices.size()) return;
@@ -1069,7 +1069,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Re-track ─────────────────────────────────────────────────────────
+    // â”€â”€ Re-track â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private boolean canRetrackTarget(String targetId, String categoryId) {
         var player = Minecraft.getInstance().player;
@@ -1140,7 +1140,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         MenuManager.returnToRadialMenu();
     }
 
-    // ── Teleport ─────────────────────────────────────────────────────────
+    // â”€â”€ Teleport â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void executeTeleport(int x, int y, int z) {
         var player = Minecraft.getInstance().player;
@@ -1159,7 +1159,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Name Popup Logic ─────────────────────────────────────────────────
+    // â”€â”€ Name Popup Logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void openNamePopup(int dataIndex, boolean isRename, String prefill) {
         showNamePopup = true;
@@ -1248,7 +1248,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         return true;
     }
 
-    // ── Utilities ────────────────────────────────────────────────────────
+    // â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Resolves an item icon for the given target using the same icon maps

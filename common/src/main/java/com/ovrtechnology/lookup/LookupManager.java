@@ -1,4 +1,4 @@
-package com.ovrtechnology.lookup;
+﻿package com.ovrtechnology.lookup;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.strategy.BiomeLookupStrategy;
@@ -6,8 +6,8 @@ import com.ovrtechnology.lookup.strategy.BlockLookupStrategy;
 import com.ovrtechnology.lookup.strategy.LookupStrategy;
 import com.ovrtechnology.lookup.strategy.StructureLookupStrategy;
 import com.ovrtechnology.lookup.worker.StructureSearchWorkerManager;
-import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.TickEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerLifecycleCallback;
+import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -115,9 +115,9 @@ public final class LookupManager {
      */
     public static void init() {
         // Register lifecycle events
-        LifecycleEvent.SERVER_STARTING.register(INSTANCE::onServerStarting);
-        LifecycleEvent.SERVER_STOPPING.register(INSTANCE::onServerStopping);
-        TickEvent.SERVER_POST.register(INSTANCE::onServerTick);
+        ServerLifecycleCallback.Starting.EVENT.register(INSTANCE::onServerStarting);
+        ServerLifecycleCallback.Stopping.EVENT.register(INSTANCE::onServerStopping);
+        ServerTickCallback.AFTER.register(INSTANCE::onServerTick);
         
         // Initialize the structure search worker manager
         StructureSearchWorkerManager.init();

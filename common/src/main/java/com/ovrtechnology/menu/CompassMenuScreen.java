@@ -1,7 +1,7 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -38,7 +38,7 @@ public class CompassMenuScreen extends BaseMenuScreen {
     }
     
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
         // Calculate panel position (centered)
         int panelX = (width - PANEL_WIDTH) / 2;
         int panelY = (height - PANEL_HEIGHT) / 2;
@@ -96,7 +96,7 @@ public class CompassMenuScreen extends BaseMenuScreen {
     /**
      * Draws a simple circle outline using line segments.
      */
-    private void drawCircleOutline(GuiGraphics graphics, int centerX, int centerY, int radius, int color) {
+    private void drawCircleOutline(GuiGraphicsExtractor graphics, int centerX, int centerY, int radius, int color) {
         int segments = 32;
         double angleStep = Math.PI * 2 / segments;
         

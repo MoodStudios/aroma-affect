@@ -1,10 +1,10 @@
-package com.ovrtechnology.command.path;
+﻿package com.ovrtechnology.command.path;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.nose.EquippedNoseHelper;
-import dev.architectury.event.events.common.TickEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -72,7 +72,7 @@ public final class ActivePathManager {
             return;
         }
 
-        TickEvent.SERVER_POST.register(INSTANCE::onServerTick);
+        ServerTickCallback.AFTER.register(INSTANCE::onServerTick);
         INSTANCE.initialized = true;
         AromaAffect.LOGGER.info("Active path manager initialized");
     }
@@ -174,7 +174,7 @@ public final class ActivePathManager {
             BlockPos playerPos = player.blockPosition();
             BlockPos destination = path.destination();
 
-            // Check if player has arrived (3D distance — prevents false arrival above underground targets)
+            // Check if player has arrived (3D distance â€” prevents false arrival above underground targets)
             double distanceToDestination = Math.sqrt(
                     Math.pow(playerPos.getX() - destination.getX(), 2) +
                     Math.pow(playerPos.getY() - destination.getY(), 2) +
@@ -204,7 +204,7 @@ public final class ActivePathManager {
                 // Player has arrived!
                 if (PathSubCommand.isVerbose()) {
                     player.sendSystemMessage(Component.literal(
-                            "§6[Aroma Affect] §aYou have arrived at your destination!"
+                            "Â§6[Aroma Affect] Â§aYou have arrived at your destination!"
                     ));
                 }
                 PathScentNetworking.sendPathArrived(player);

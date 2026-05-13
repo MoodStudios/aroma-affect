@@ -1,10 +1,10 @@
-package com.ovrtechnology.trigger.client;
+﻿package com.ovrtechnology.trigger.client;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.ActiveTrackingState;
-import dev.architectury.event.events.client.ClientGuiEvent;
+import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -60,7 +60,7 @@ public final class PathTrackingMaskOverlay {
         }
         initialized = true;
 
-        ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> render(graphics));
+        RenderCallback.Gui.AFTER.register((graphics, window) -> render(graphics));
         AromaAffect.LOGGER.info("PathTrackingMaskOverlay initialized");
     }
 
@@ -79,7 +79,7 @@ public final class PathTrackingMaskOverlay {
         lastPuffIntensity = clamp01(intensity);
     }
 
-    private static void render(GuiGraphics graphics) {
+    private static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
         if (activeMask == null || mc.player == null || mc.isPaused() || mc.options.hideGui) {
             return;

@@ -1,9 +1,9 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.keybind.AromaAffectKeyCategory;
 import com.ovrtechnology.trigger.ScentTriggerManager;
-import dev.architectury.event.events.client.ClientTickEvent;
+import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -83,7 +83,7 @@ public final class MenuKeyBindings {
         KeyMappingRegistry.register(RESET_COOLDOWNS);
         
         // Register tick handler to check for key presses
-        ClientTickEvent.CLIENT_POST.register(instance -> {
+        ClientTickCallback.AFTER.register(instance -> {
             handleKeyInputs();
         });
         

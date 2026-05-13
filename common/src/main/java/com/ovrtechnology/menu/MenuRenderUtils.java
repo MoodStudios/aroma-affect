@@ -1,7 +1,7 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -26,7 +26,7 @@ public final class MenuRenderUtils {
     /**
      * Renders a 1-pixel rectangular outline.
      */
-    public static void renderOutline(GuiGraphics graphics, int x, int y, int w, int h, int color) {
+    public static void renderOutline(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int color) {
         graphics.fill(x, y, x + w, y + 1, color);           // Top
         graphics.fill(x, y + h - 1, x + w, y + h, color);   // Bottom
         graphics.fill(x, y, x + 1, y + h, color);            // Left

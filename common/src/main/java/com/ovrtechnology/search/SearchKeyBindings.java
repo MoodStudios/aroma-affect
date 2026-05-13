@@ -1,8 +1,8 @@
-package com.ovrtechnology.search;
+﻿package com.ovrtechnology.search;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.keybind.AromaAffectKeyCategory;
-import dev.architectury.event.events.client.ClientTickEvent;
+import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -63,7 +63,7 @@ public final class SearchKeyBindings {
         KeyMappingRegistry.register(TOGGLE_SEARCH);
         
         // Register tick handler to check for key presses
-        ClientTickEvent.CLIENT_POST.register(instance -> {
+        ClientTickCallback.AFTER.register(instance -> {
             handleKeyInputs();
         });
         

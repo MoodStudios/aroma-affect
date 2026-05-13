@@ -1,4 +1,4 @@
-package com.ovrtechnology;
+﻿package com.ovrtechnology;
 
 import com.ovrtechnology.entity.nosesmith.client.NoseSmithClientRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
@@ -16,7 +16,7 @@ import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
-import dev.architectury.event.events.client.ClientTickEvent;
+import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 import lombok.experimental.UtilityClass;
 import net.blay09.mods.balm.client.BalmClientRegistrars;
 import net.minecraft.client.Minecraft;
@@ -107,7 +107,7 @@ public final class AromaAffectClient {
     private static java.util.UUID lastPlayerUuid = null;
 
     private static void initNoseRenderSync() {
-        ClientTickEvent.CLIENT_POST.register(minecraft -> {
+        ClientTickCallback.AFTER.register(minecraft -> {
             if (minecraft.player != null && !sentInitialPrefs) {
                 sentInitialPrefs = true;
                 boolean noseEnabled = com.ovrtechnology.nose.client.NoseRenderToggles.isNoseEnabled();

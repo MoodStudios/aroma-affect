@@ -1,9 +1,10 @@
-package com.ovrtechnology.nose.client;
+﻿package com.ovrtechnology.nose.client;
 
-import dev.architectury.event.events.client.ClientGuiEvent;
+import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
+import net.blay09.mods.balm.client.platform.event.callback.ScreenCallback;
 import dev.architectury.hooks.client.screen.ScreenAccess;
 import com.ovrtechnology.mixin.AbstractContainerScreenAccessor;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.entity.player.Inventory;
@@ -30,8 +31,8 @@ public final class NoseInventoryUi {
             return;
         }
 
-        ClientGuiEvent.INIT_POST.register(NoseInventoryUi::onInitPost);
-        ClientGuiEvent.RENDER_CONTAINER_FOREGROUND.register(NoseInventoryUi::onRenderContainerForeground);
+        ScreenCallback.Init.After.EVENT.register(NoseInventoryUi::onInitPost);
+        ScreenCallback.Render.AFTER.register(NoseInventoryUi::onRenderContainerForeground);
         initialized = true;
     }
 
@@ -51,7 +52,7 @@ public final class NoseInventoryUi {
 
     private static void onRenderContainerForeground(
             AbstractContainerScreen<?> screen,
-            GuiGraphics graphics,
+            GuiGraphicsExtractor graphics,
             int mouseX,
             int mouseY,
             float delta

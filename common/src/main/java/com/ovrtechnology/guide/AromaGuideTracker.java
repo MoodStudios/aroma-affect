@@ -1,7 +1,7 @@
-package com.ovrtechnology.guide;
+﻿package com.ovrtechnology.guide;
 
 import com.ovrtechnology.network.AromaGuideNetworking;
-import dev.architectury.event.events.client.ClientTickEvent;
+import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -64,7 +64,7 @@ public final class AromaGuideTracker {
      * Initialize the client tick listener.
      */
     public static void init() {
-        ClientTickEvent.CLIENT_POST.register(AromaGuideTracker::onClientTick);
+        ClientTickCallback.AFTER.register(AromaGuideTracker::onClientTick);
     }
 
     private static void onClientTick(Minecraft client) {

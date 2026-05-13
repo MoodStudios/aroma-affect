@@ -1,7 +1,7 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 
@@ -76,7 +76,7 @@ public final class TrackingDirectionIndicator {
         };
     }
 
-    public static void draw(GuiGraphics graphics, int x, int y, Kind kind, int color) {
+    public static void draw(GuiGraphicsExtractor graphics, int x, int y, Kind kind, int color) {
         int ox = x;
         int oy = y + 1;
         switch (kind) {
@@ -94,67 +94,67 @@ public final class TrackingDirectionIndicator {
         }
     }
 
-    private static void drawN(GuiGraphics g, int x, int y, int c) {
+    private static void drawN(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x + 2, y, c);
         fillPx(g, x + 1, y + 1, c); fillPx(g, x + 2, y + 1, c); fillPx(g, x + 3, y + 1, c);
         fillPx(g, x + 2, y + 2, c); fillPx(g, x + 2, y + 3, c); fillPx(g, x + 2, y + 4, c);
     }
 
-    private static void drawS(GuiGraphics g, int x, int y, int c) {
+    private static void drawS(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x + 2, y + 4, c);
         fillPx(g, x + 1, y + 3, c); fillPx(g, x + 2, y + 3, c); fillPx(g, x + 3, y + 3, c);
         fillPx(g, x + 2, y + 2, c); fillPx(g, x + 2, y + 1, c); fillPx(g, x + 2, y, c);
     }
 
-    private static void drawE(GuiGraphics g, int x, int y, int c) {
+    private static void drawE(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x + 4, y + 2, c);
         fillPx(g, x + 3, y + 1, c); fillPx(g, x + 3, y + 2, c); fillPx(g, x + 3, y + 3, c);
         fillPx(g, x + 2, y + 2, c); fillPx(g, x + 1, y + 2, c); fillPx(g, x, y + 2, c);
     }
 
-    private static void drawW(GuiGraphics g, int x, int y, int c) {
+    private static void drawW(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x, y + 2, c);
         fillPx(g, x + 1, y + 1, c); fillPx(g, x + 1, y + 2, c); fillPx(g, x + 1, y + 3, c);
         fillPx(g, x + 2, y + 2, c); fillPx(g, x + 3, y + 2, c); fillPx(g, x + 4, y + 2, c);
     }
 
-    private static void drawNE(GuiGraphics g, int x, int y, int c) {
+    private static void drawNE(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x + 4, y, c);
         fillPx(g, x + 3, y, c); fillPx(g, x + 4, y + 1, c);
         fillPx(g, x + 3, y + 1, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 1, y + 3, c); fillPx(g, x, y + 4, c);
     }
 
-    private static void drawNW(GuiGraphics g, int x, int y, int c) {
+    private static void drawNW(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x, y, c);
         fillPx(g, x + 1, y, c); fillPx(g, x, y + 1, c);
         fillPx(g, x + 1, y + 1, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 3, y + 3, c); fillPx(g, x + 4, y + 4, c);
     }
 
-    private static void drawSE(GuiGraphics g, int x, int y, int c) {
+    private static void drawSE(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x + 4, y + 4, c);
         fillPx(g, x + 3, y + 4, c); fillPx(g, x + 4, y + 3, c);
         fillPx(g, x + 3, y + 3, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 1, y + 1, c); fillPx(g, x, y, c);
     }
 
-    private static void drawSW(GuiGraphics g, int x, int y, int c) {
+    private static void drawSW(GuiGraphicsExtractor g, int x, int y, int c) {
         fillPx(g, x, y + 4, c);
         fillPx(g, x + 1, y + 4, c); fillPx(g, x, y + 3, c);
         fillPx(g, x + 1, y + 3, c); fillPx(g, x + 2, y + 2, c); fillPx(g, x + 3, y + 1, c); fillPx(g, x + 4, y, c);
     }
 
-    private static void drawUp(GuiGraphics g, int x, int y, int c) {
+    private static void drawUp(GuiGraphicsExtractor g, int x, int y, int c) {
         drawN(g, x, y, c);
         fillPx(g, x, y + 4, c);
         fillPx(g, x + 4, y + 4, c);
     }
 
-    private static void drawDown(GuiGraphics g, int x, int y, int c) {
+    private static void drawDown(GuiGraphicsExtractor g, int x, int y, int c) {
         drawS(g, x, y, c);
         fillPx(g, x, y, c);
         fillPx(g, x + 4, y, c);
     }
 
-    private static void drawOnTarget(GuiGraphics g, int x, int y, int c) {
+    private static void drawOnTarget(GuiGraphicsExtractor g, int x, int y, int c) {
         int left = x;
         int top = y;
         int right = x + ICON_SIZE - 1;
@@ -170,7 +170,7 @@ public final class TrackingDirectionIndicator {
         }
     }
 
-    private static void fillPx(GuiGraphics g, int x, int y, int color) {
+    private static void fillPx(GuiGraphicsExtractor g, int x, int y, int color) {
         g.fill(x, y, x + 1, y + 1, color);
     }
 }

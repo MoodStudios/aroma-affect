@@ -1,9 +1,9 @@
-package com.ovrtechnology.guide;
+﻿package com.ovrtechnology.guide;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.event.events.common.PlayerEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +25,7 @@ import java.util.UUID;
 public final class AromaGuideFirstJoinHandler {
 
     public static void init() {
-        PlayerEvent.PLAYER_JOIN.register(AromaGuideFirstJoinHandler::onPlayerJoin);
+        ServerPlayerCallback.Join.EVENT.register(AromaGuideFirstJoinHandler::onPlayerJoin);
     }
 
     private static void onPlayerJoin(ServerPlayer player) {

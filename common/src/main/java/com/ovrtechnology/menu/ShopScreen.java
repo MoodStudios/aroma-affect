@@ -1,8 +1,8 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.util.Util;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -75,7 +75,7 @@ public class ShopScreen extends BaseMenuScreen {
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                                   float partialTick, float animationProgress) {
         float a = animationProgress;
         int centerX = width / 2;
@@ -117,7 +117,7 @@ public class ShopScreen extends BaseMenuScreen {
         // Interpolated transition value for smooth lerp
         float t = easeOutCubic(infoTransition);
 
-        // Image area — slides from center to left
+        // Image area â€” slides from center to left
         int imgMaxW = Math.min(160, panelW / 2 - 20);
         int imgH = (int) (imgMaxW * 1.0f); // square-ish
         int imgCenterX = centerX; // product view: centered
@@ -239,7 +239,7 @@ public class ShopScreen extends BaseMenuScreen {
         renderBackButton(graphics, mouseX, mouseY, a);
     }
 
-    private void renderInfoPanel(GuiGraphics graphics, int x, int y, int w, int h, float t, float a) {
+    private void renderInfoPanel(GuiGraphicsExtractor graphics, int x, int y, int w, int h, float t, float a) {
         float alpha = t * a;
         int textColor = MenuRenderUtils.withAlpha(COL_TEXT, alpha);
         int dimColor = MenuRenderUtils.withAlpha(COL_TEXT_DIM, alpha);
@@ -283,7 +283,7 @@ public class ShopScreen extends BaseMenuScreen {
         graphics.drawString(font, compatible, textX, textY, MenuRenderUtils.withAlpha(COL_GREEN, alpha));
     }
 
-    private void renderBackButton(GuiGraphics graphics, int mouseX, int mouseY, float a) {
+    private void renderBackButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         float appear = Math.max(0f, (a - 0.2f) / 0.8f);
         if (appear <= 0f) return;
 

@@ -1,8 +1,8 @@
-package com.ovrtechnology.network;
+﻿package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
-import dev.architectury.event.events.common.PlayerEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -100,7 +100,7 @@ public final class NoseRenderNetworking {
                 });
 
         // When a player joins, send them all existing player preferences
-        PlayerEvent.PLAYER_JOIN.register(serverPlayer -> {
+        ServerPlayerCallback.Join.EVENT.register(serverPlayer -> {
             for (Map.Entry<UUID, NoseRenderPreferencesManager.NosePrefs> entry
                     : NoseRenderPreferencesManager.getAllServerPrefs()) {
                 sendPrefsToPlayer(serverPlayer, entry.getKey(),
@@ -109,7 +109,7 @@ public final class NoseRenderNetworking {
         });
 
         // When a player leaves, clean up server-side data
-        PlayerEvent.PLAYER_QUIT.register(serverPlayer -> {
+        ServerPlayerCallback.Leave.EVENT.register(serverPlayer -> {
             NoseRenderPreferencesManager.removeServerPrefs(serverPlayer.getUUID());
         });
 

@@ -1,7 +1,7 @@
-package com.ovrtechnology.nose.client;
+﻿package com.ovrtechnology.nose.client;
 
 import com.ovrtechnology.AromaAffect;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -30,7 +30,7 @@ public final class NoseStrapToggleButton extends ImageButton {
     }
 
     @Override
-    public void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    public void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         Identifier sprite = NoseRenderToggles.isStrapEnabled() ? STRAP_ON : STRAP_OFF;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, getX(), getY(), width, height);
     }

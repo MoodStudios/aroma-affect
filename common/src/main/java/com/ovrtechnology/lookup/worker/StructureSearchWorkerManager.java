@@ -1,8 +1,8 @@
-package com.ovrtechnology.lookup.worker;
+﻿package com.ovrtechnology.lookup.worker;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.TickEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerLifecycleCallback;
+import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
@@ -62,9 +62,9 @@ public final class StructureSearchWorkerManager {
             return;
         }
         
-        LifecycleEvent.SERVER_STOPPING.register(INSTANCE::onServerStopping);
-        TickEvent.SERVER_PRE.register(INSTANCE::onServerTickPre);
-        TickEvent.SERVER_POST.register(INSTANCE::onServerTickPost);
+        ServerLifecycleCallback.Stopping.EVENT.register(INSTANCE::onServerStopping);
+        ServerTickCallback.BEFORE.register(INSTANCE::onServerTickPre);
+        ServerTickCallback.AFTER.register(INSTANCE::onServerTickPost);
         
         INSTANCE.initialized = true;
         AromaAffect.LOGGER.info("Structure search worker manager initialized");

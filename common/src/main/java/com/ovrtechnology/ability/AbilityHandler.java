@@ -1,9 +1,9 @@
-package com.ovrtechnology.ability;
+﻿package com.ovrtechnology.ability;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.world.InteractionResult;
-import dev.architectury.event.events.common.InteractionEvent;
-import dev.architectury.event.events.common.TickEvent;
+import net.blay09.mods.balm.platform.event.callback.BlockCallback;
+import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -63,10 +63,10 @@ public final class AbilityHandler {
         AromaAffect.LOGGER.info("Initializing AbilityHandler...");
 
         // Register block interaction event
-        InteractionEvent.RIGHT_CLICK_BLOCK.register(AbilityHandler::onRightClickBlock);
+        BlockCallback.Use.EVENT.register(AbilityHandler::onRightClickBlock);
 
         // Register server tick event for processing ongoing interactions
-        TickEvent.SERVER_LEVEL_POST.register(AbilityHandler::onServerTick);
+        ServerTickCallback.ServerLevelTick.AFTER.register(AbilityHandler::onServerTick);
 
         initialized = true;
         AromaAffect.LOGGER.info("AbilityHandler initialized");

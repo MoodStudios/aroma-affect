@@ -1,4 +1,4 @@
-package com.ovrtechnology.trigger.client;
+﻿package com.ovrtechnology.trigger.client;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.trigger.PassiveModeManager;
@@ -8,9 +8,10 @@ import com.ovrtechnology.trigger.ScentTriggerSource;
 import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.TriggerSettings;
-import dev.architectury.event.events.client.ClientGuiEvent;
+import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
+import net.blay09.mods.balm.client.platform.event.callback.ScreenCallback;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
  * HUD overlay that displays the current passive mode scent status.
@@ -64,7 +65,7 @@ public final class PassiveModeHud {
             return;
         }
 
-        ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> {
+        RenderCallback.Gui.AFTER.register((graphics, tickDelta) -> {
             render(graphics);
         });
 
@@ -75,7 +76,7 @@ public final class PassiveModeHud {
     /**
      * Renders the passive mode HUD.
      */
-    private static void render(GuiGraphics graphics) {
+    private static void render(GuiGraphicsExtractor graphics) {
         Minecraft minecraft = Minecraft.getInstance();
 
         // Don't render if game is paused or no player
@@ -181,7 +182,7 @@ public final class PassiveModeHud {
      * @param progress      cooldown progress (0.0 = ready, 1.0 = full cooldown)
      * @param cooldownColor color to use when on cooldown
      */
-    private static void renderCircularIndicator(GuiGraphics graphics, int centerX, int centerY,
+    private static void renderCircularIndicator(GuiGraphicsExtractor graphics, int centerX, int centerY,
                                                  float progress, int cooldownColor) {
         int outerRadius = CIRCLE_RADIUS;
         int innerRadius = CIRCLE_RADIUS - CIRCLE_THICKNESS;
@@ -214,7 +215,7 @@ public final class PassiveModeHud {
      * @param endFrac     end fraction (1.0 = full circle)
      * @param color       ARGB color
      */
-    private static void drawCircleRing(GuiGraphics graphics, int centerX, int centerY,
+    private static void drawCircleRing(GuiGraphicsExtractor graphics, int centerX, int centerY,
                                         int outerRadius, int innerRadius,
                                         float startFrac, float endFrac, int color) {
         if (endFrac <= startFrac) {
@@ -252,7 +253,7 @@ public final class PassiveModeHud {
      * Draws a filled triangle using small rectangles (approximation).
      * Uses a simple scanline approach for better visual quality.
      */
-    private static void drawTriangle(GuiGraphics graphics, int x1, int y1, int x2, int y2, int x3, int y3, int color) {
+    private static void drawTriangle(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int x3, int y3, int color) {
         // Find bounding box
         int minX = Math.min(x1, Math.min(x2, x3));
         int maxX = Math.max(x1, Math.max(x2, x3));

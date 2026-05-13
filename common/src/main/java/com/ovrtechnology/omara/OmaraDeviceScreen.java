@@ -1,11 +1,11 @@
-package com.ovrtechnology.omara;
+﻿package com.ovrtechnology.omara;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.MenuRenderUtils;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItem;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -40,26 +40,26 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphicsExtractor GuiGraphicsExtractor, float partialTick, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void render(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
+        super.render(GuiGraphicsExtractor, mouseX, mouseY, partialTick);
 
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
-        renderInfoPanel(guiGraphics, x, y);
-        renderModeButton(guiGraphics, x, y, mouseX, mouseY);
+        renderInfoPanel(GuiGraphicsExtractor, x, y);
+        renderModeButton(GuiGraphicsExtractor, x, y, mouseX, mouseY);
         if (this.menu.getMode() == 0) {
-            renderIntervalButton(guiGraphics, x, y, mouseX, mouseY);
+            renderIntervalButton(GuiGraphicsExtractor, x, y, mouseX, mouseY);
         }
 
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
+        this.renderTooltip(GuiGraphicsExtractor, mouseX, mouseY);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     // Info Panel (right of slot)
     // ========================================
 
-    private void renderInfoPanel(GuiGraphics g, int x, int y) {
+    private void renderInfoPanel(GuiGraphicsExtractor g, int x, int y) {
         ItemStack capsule = this.menu.getSlot(0).getItem();
         int infoX = x + INFO_X;
 
@@ -122,7 +122,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         }
         int scentColor = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
 
-        // ── Row 1: Scent name with color dot ──
+        // â”€â”€ Row 1: Scent name with color dot â”€â”€
         int row1Y = y + 24;
         g.fill(infoX, row1Y + 1, infoX + 4, row1Y + 5, scentColor);
 
@@ -131,7 +131,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         String displayName = trimToWidth(fallbackName, maxNamePx);
         g.drawString(this.font, displayName, infoX + 6, row1Y, 0xFFFFFFFF, true);
 
-        // ── Row 2: Charges bar (no text) ──
+        // â”€â”€ Row 2: Charges bar (no text) â”€â”€
         int row2Y = y + 36;
         drawBatteryIcon(g, infoX, row2Y, scentColor);
 
@@ -146,7 +146,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
             g.fill(barX, row2Y, barX + fillW, row2Y + BAR_H, scentColor);
         }
 
-        // ── Row 3: Cooldown timer ──
+        // â”€â”€ Row 3: Cooldown timer â”€â”€
         int row3Y = y + 48;
         int cooldownTicks = this.menu.getCooldownTicks();
         int maxCooldownTicks = this.menu.getMaxCooldownTicks();
@@ -185,7 +185,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     // Buttons (bottom of grid, above "Inventory")
     // ========================================
 
-    private void renderModeButton(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+    private void renderModeButton(GuiGraphicsExtractor g, int x, int y, int mouseX, int mouseY) {
         int bx = x + BTN_X;
         int by = y + BTN_MODE_Y;
 
@@ -203,7 +203,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         g.drawString(this.font, label, bx + (BTN_W - textW) / 2, by + 2, textColor, true);
     }
 
-    private void renderIntervalButton(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+    private void renderIntervalButton(GuiGraphicsExtractor g, int x, int y, int mouseX, int mouseY) {
         int bx = x + BTN_X;
         int by = y + BTN_INTERVAL_Y;
 
@@ -219,7 +219,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         g.drawString(this.font, label, bx + (BTN_W - textW) / 2, by + 2, 0xFFFFFFFF, true);
     }
 
-    private void drawButton(GuiGraphics g, int bx, int by, int w, int h, boolean hovered) {
+    private void drawButton(GuiGraphicsExtractor g, int bx, int by, int w, int h, boolean hovered) {
         int bg = hovered ? 0xFF555555 : 0xFF3A3A3A;
         g.fill(bx, by, bx + w, by + h, bg);
         g.fill(bx, by, bx + w, by + 1, 0xFF666666);           // top highlight
@@ -232,7 +232,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     // Pixel-art icons
     // ========================================
 
-    private void drawBatteryIcon(GuiGraphics g, int x, int y, int color) {
+    private void drawBatteryIcon(GuiGraphicsExtractor g, int x, int y, int color) {
         int b = 0xFFAAAAAA;
         g.fill(x, y, x + 5, y + 1, b);
         g.fill(x, y + 4, x + 5, y + 5, b);
@@ -242,7 +242,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         g.fill(x + 1, y + 1, x + 4, y + 4, color);
     }
 
-    private void drawClockIcon(GuiGraphics g, int x, int y) {
+    private void drawClockIcon(GuiGraphicsExtractor g, int x, int y) {
         int c = 0xFFAAAAAA;
         g.fill(x + 1, y, x + 4, y + 1, c);
         g.fill(x + 1, y + 4, x + 4, y + 5, c);

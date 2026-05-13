@@ -1,10 +1,10 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,16 +24,16 @@ import java.util.Locale;
  *
  * <p>Subclasses only need to provide:</p>
  * <ul>
- *   <li>{@link #loadCards()} — populate the {@code cards} list</li>
- *   <li>{@link #getRowHeight()} — 32 for compact, 56 for thumbnail rows</li>
- *   <li>{@link #renderRow} — draw one list row</li>
+ *   <li>{@link #loadCards()} â€” populate the {@code cards} list</li>
+ *   <li>{@link #getRowHeight()} â€” 32 for compact, 56 for thumbnail rows</li>
+ *   <li>{@link #renderRow} â€” draw one list row</li>
  * </ul>
  *
  * <p>Optionally override the filter hooks for menus with filter chips.</p>
  */
 public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
-    // ── Shared layout constants ──────────────────────────────────────────
+    // â”€â”€ Shared layout constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected static final int ROW_PADDING = 4;
     protected static final int ICON_SIZE = 24;
@@ -46,14 +46,14 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     protected static final Identifier ICON_BACK = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");
 
-    // ── Shared row colors ────────────────────────────────────────────────
+    // â”€â”€ Shared row colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected static final int ROW_COLOR = 0xB0222222;
     protected static final int ROW_HOVER_COLOR = 0xE0444488;
     protected static final int ROW_TRACKING_COLOR = 0xC0224422;
     protected static final int ROW_TRACKING_HOVER_COLOR = 0xE0336633;
 
-    // ── Shared state ─────────────────────────────────────────────────────
+    // â”€â”€ Shared state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected final MenuCategory category;
     protected final List<SelectionCard> cards = new ArrayList<>();
@@ -67,14 +67,14 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
     protected int selectedCardIndex = -1;
 
-    // ── Constructor ──────────────────────────────────────────────────────
+    // â”€â”€ Constructor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected SelectionMenuScreen(MenuCategory category) {
         super(Component.translatable("menu.aromaaffect." + category.getId() + ".title"));
         this.category = category;
     }
 
-    // ── Abstract / overridable hooks ─────────────────────────────────────
+    // â”€â”€ Abstract / overridable hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /** Populate {@link #cards} from the equipped nose's abilities. */
     protected abstract void loadCards();
@@ -83,7 +83,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     protected abstract int getRowHeight();
 
     /** Render one row at the given position. */
-    protected abstract void renderRow(GuiGraphics graphics, SelectionCard card,
+    protected abstract void renderRow(GuiGraphicsExtractor graphics, SelectionCard card,
                                       int x, int y, int rowWidth,
                                       boolean isHovered, boolean isTracking,
                                       float animationProgress);
@@ -109,7 +109,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
      * Render any filter chips (or other UI) between the search box and the list.
      * Return the Y coordinate where the item list should start.
      */
-    protected int renderBelowSearch(GuiGraphics graphics, int listX, int chipY,
+    protected int renderBelowSearch(GuiGraphicsExtractor graphics, int listX, int chipY,
                                     int listWidth, int mouseX, int mouseY,
                                     float animationProgress) {
         return chipY;
@@ -123,7 +123,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         return 52 + SEARCH_BOX_HEIGHT + 8;
     }
 
-    // ── Lifecycle ────────────────────────────────────────────────────────
+    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     protected void init() {
@@ -147,7 +147,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         applyFilters();
     }
 
-    // ── Filtering ────────────────────────────────────────────────────────
+    // â”€â”€ Filtering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected void applyFilters() {
         filteredCards.clear();
@@ -170,10 +170,10 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         listScrollOffset = 0;
     }
 
-    // ── Rendering ────────────────────────────────────────────────────────
+    // â”€â”€ Rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                                   float partialTick, float animationProgress) {
         int centerX = width / 2;
         int listWidth = Math.min(MAX_LIST_WIDTH, width - 40);
@@ -193,7 +193,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int chipY = searchY + SEARCH_BOX_HEIGHT + 6;
         int listTop = renderBelowSearch(graphics, listX, chipY, listWidth, mouseX, mouseY, animationProgress);
         if (listTop == chipY) {
-            // No filter chips rendered — use standard spacing
+            // No filter chips rendered â€” use standard spacing
             listTop = searchY + SEARCH_BOX_HEIGHT + 8;
         }
 
@@ -201,7 +201,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         renderItemList(graphics, listX, listTop, listWidth, listBottom, mouseX, mouseY, animationProgress);
     }
 
-    protected void renderHeader(GuiGraphics graphics, int centerX, float animationProgress) {
+    protected void renderHeader(GuiGraphicsExtractor graphics, int centerX, float animationProgress) {
         float alpha = animationProgress;
         int textColor = (int) (255 * alpha) << 24 | 0xFFFFFF;
 
@@ -229,7 +229,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         graphics.drawCenteredString(font, description, centerX, 35, descColor);
     }
 
-    protected void renderBackButton(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
+    protected void renderBackButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
         float appear = Math.max(0.0f, (animationProgress - 0.2f) / 0.8f);
         if (appear <= 0.0f) return;
 
@@ -260,7 +260,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         );
     }
 
-    protected void renderItemList(GuiGraphics graphics, int listX, int listTop, int listWidth,
+    protected void renderItemList(GuiGraphicsExtractor graphics, int listX, int listTop, int listWidth,
                                    int listBottom, int mouseX, int mouseY, float animationProgress) {
         hoveredListIndex = -1;
 
@@ -300,7 +300,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         graphics.disableScissor();
     }
 
-    // ── Input handling ───────────────────────────────────────────────────
+    // â”€â”€ Input handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
@@ -360,9 +360,9 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         return false;
     }
 
-    // ── Cost rendering helper ─────────────────────────────────────────────
+    // â”€â”€ Cost rendering helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    protected void renderCostSection(GuiGraphics graphics, SelectionCard card,
+    protected void renderCostSection(GuiGraphicsExtractor graphics, SelectionCard card,
                                       int rowRight, int rowCenterY, float animationProgress) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -440,7 +440,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         return false;
     }
 
-    // ── Card selection / path commands ────────────────────────────────────
+    // â”€â”€ Card selection / path commands â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected void onCardSelected(SelectionCard card, int index) {
         Player player = Minecraft.getInstance().player;
@@ -501,7 +501,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         }
     }
 
-    // ── Inner class ──────────────────────────────────────────────────────
+    // â”€â”€ Inner class â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public static class SelectionCard {
         public final Identifier id;

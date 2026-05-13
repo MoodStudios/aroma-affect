@@ -1,4 +1,4 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.EquippedNoseHelper;
@@ -7,7 +7,7 @@ import com.ovrtechnology.structure.StructureDefinition;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.tracking.RequiredItem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -85,7 +85,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
         super(MenuCategory.STRUCTURES);
     }
 
-    // ── SelectionMenuScreen hooks ────────────────────────────────────────
+    // â”€â”€ SelectionMenuScreen hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     protected int getRowHeight() {
@@ -162,7 +162,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected void renderRow(GuiGraphics graphics, SelectionCard card, int x, int y,
+    protected void renderRow(GuiGraphicsExtractor graphics, SelectionCard card, int x, int y,
                               int rowWidth, boolean isHovered, boolean isTracking,
                               float animationProgress) {
         int rowHeight = getRowHeight();

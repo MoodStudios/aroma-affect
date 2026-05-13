@@ -1,11 +1,11 @@
-package com.ovrtechnology.trigger;
+﻿package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
-import dev.architectury.event.events.common.PlayerEvent;
-import dev.architectury.event.events.common.TickEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
+import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -43,7 +43,7 @@ public final class StructureSyncHandler {
         if (initialized) return;
         initialized = true;
 
-        TickEvent.SERVER_POST.register(server -> {
+        ServerTickCallback.AFTER.register(server -> {
             if (++tickCounter < CHECK_INTERVAL_TICKS) return;
             tickCounter = 0;
 
@@ -60,7 +60,7 @@ public final class StructureSyncHandler {
             }
         });
 
-        PlayerEvent.PLAYER_QUIT.register(player -> {
+        ServerPlayerCallback.Leave.EVENT.register(player -> {
             playerStructures.remove(player.getUUID());
         });
 

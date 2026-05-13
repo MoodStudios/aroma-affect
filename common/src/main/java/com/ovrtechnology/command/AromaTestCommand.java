@@ -1,4 +1,4 @@
-package com.ovrtechnology.command;
+﻿package com.ovrtechnology.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -6,7 +6,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.LookupSubCommand;
 import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.command.sub.PingSubCommand;
-import dev.architectury.event.events.common.CommandRegistrationEvent;
+import net.blay09.mods.balm.Balm;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -55,7 +55,7 @@ public final class AromaTestCommand {
      * Should be called during mod initialization.
      */
     public static void init() {
-        CommandRegistrationEvent.EVENT.register(AromaTestCommand::registerCommands);
+        Balm.commands().register(AromaTestCommand::registerCommands);
         AromaAffect.LOGGER.info("Aroma Affect test commands initialized");
     }
     
@@ -77,12 +77,12 @@ public final class AromaTestCommand {
         // Default execution (no subcommand) shows available subcommands
         builder.executes(context -> {
             context.getSource().sendSuccess(
-                    () -> Component.literal("§6[Aroma Affect] §7Available subcommands:"),
+                    () -> Component.literal("Â§6[Aroma Affect] Â§7Available subcommands:"),
                     false
             );
             for (SubCommand subCommand : SUB_COMMANDS.values()) {
                 context.getSource().sendSuccess(
-                        () -> Component.literal("§7  - §e/aromatest " + subCommand.getName() + " §8- " + subCommand.getDescription()),
+                        () -> Component.literal("Â§7  - Â§e/aromatest " + subCommand.getName() + " Â§8- " + subCommand.getDescription()),
                         false
                 );
             }

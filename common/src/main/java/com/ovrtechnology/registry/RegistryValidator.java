@@ -1,4 +1,4 @@
-package com.ovrtechnology.registry;
+﻿package com.ovrtechnology.registry;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.biome.BiomeDefinition;
@@ -7,7 +7,7 @@ import com.ovrtechnology.block.BlockDefinition;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.structure.StructureDefinition;
 import com.ovrtechnology.structure.StructureRegistry;
-import dev.architectury.event.events.common.LifecycleEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerLifecycleCallback;
 import lombok.Getter;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -86,7 +86,7 @@ public final class RegistryValidator {
      * Registers a SERVER_STARTED event handler to perform validation.
      */
     public static void init() {
-        LifecycleEvent.SERVER_STARTED.register(RegistryValidator::onServerStarted);
+        ServerLifecycleCallback.Started.EVENT.register(RegistryValidator::onServerStarted);
         AromaAffect.LOGGER.info("RegistryValidator initialized - will validate on server start");
     }
     

@@ -1,11 +1,11 @@
-package com.ovrtechnology.entity.nosesmith.client.dialogue;
+﻿package com.ovrtechnology.entity.nosesmith.client.dialogue;
 
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;
 import com.ovrtechnology.network.NoseSmithTradeNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -159,27 +159,27 @@ public final class NoseSmithDialogueScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
         int left = BOX_MARGIN;
         int right = this.width - BOX_MARGIN;
         int bottom = this.height - BOX_MARGIN;
         int top = bottom - BOX_HEIGHT;
 
-        guiGraphics.fill(left, top, right, bottom, COLOR_BOX_BG);
-        guiGraphics.fill(left, top, right, top + HEADER_HEIGHT, COLOR_HEADER_BG);
+        GuiGraphicsExtractor.fill(left, top, right, bottom, COLOR_BOX_BG);
+        GuiGraphicsExtractor.fill(left, top, right, top + HEADER_HEIGHT, COLOR_HEADER_BG);
 
-        drawBorder(guiGraphics, left, top, right, bottom, COLOR_BORDER);
+        drawBorder(GuiGraphicsExtractor, left, top, right, bottom, COLOR_BORDER);
 
         int headerTextX = left + PADDING;
         int headerTextY = top + 5;
-        guiGraphics.drawString(this.font, this.title, headerTextX, headerTextY, COLOR_TEXT, true);
+        GuiGraphicsExtractor.drawString(this.font, this.title, headerTextX, headerTextY, COLOR_TEXT, true);
 
         Block flowerBlock = getRequestedFlowerBlock();
         if (lastHasNose && flowerBlock != null) {
             ItemStack flowerStack = new ItemStack(flowerBlock.asItem());
             int iconX = right - PADDING - 16;
             int iconY = top + 1;
-            guiGraphics.renderItem(flowerStack, iconX, iconY);
+            GuiGraphicsExtractor.renderItem(flowerStack, iconX, iconY);
         }
 
         int portraitLeft = left + PADDING;
@@ -189,7 +189,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
         int portraitScale = Math.min(portraitRight - portraitLeft, portraitBottom - portraitTop) - 8;
         InventoryScreen.renderEntityInInventoryFollowsMouse(
-                guiGraphics,
+                GuiGraphicsExtractor,
                 portraitLeft,
                 portraitTop,
                 portraitRight,
@@ -205,9 +205,9 @@ public final class NoseSmithDialogueScreen extends Screen {
         int textTop = portraitTop;
         int textWidth = (right - PADDING) - textLeft;
 
-        drawTypewriterText(guiGraphics, textLeft, textTop, textWidth);
+        drawTypewriterText(GuiGraphicsExtractor, textLeft, textTop, textWidth);
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(GuiGraphicsExtractor, mouseX, mouseY, partialTick);
     }
 
     private void sendTalkingState(boolean talking) {
@@ -219,7 +219,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         NoseSmithDialogueNetworking.sendDialogueState(minecraft.level.registryAccess(), noseSmith.getId(), talking);
     }
 
-    private void drawTypewriterText(GuiGraphics guiGraphics, int x, int y, int width) {
+    private void drawTypewriterText(GuiGraphicsExtractor GuiGraphicsExtractor, int x, int y, int width) {
         if (wrappedLines.isEmpty()) {
             return;
         }
@@ -234,7 +234,7 @@ public final class NoseSmithDialogueScreen extends Screen {
             }
 
             FormattedCharSequence partial = take(wrappedLines.get(i), toShow);
-            guiGraphics.drawString(this.font, partial, x, lineY, COLOR_TEXT, true);
+            GuiGraphicsExtractor.drawString(this.font, partial, x, lineY, COLOR_TEXT, true);
             remaining -= toShow;
             lineY += this.font.lineHeight + 2;
 
@@ -400,11 +400,11 @@ public final class NoseSmithDialogueScreen extends Screen {
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
     }
 
-    private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
-        guiGraphics.fill(left, top, right, top + 1, color);
-        guiGraphics.fill(left, bottom - 1, right, bottom, color);
-        guiGraphics.fill(left, top, left + 1, bottom, color);
-        guiGraphics.fill(right - 1, top, right, bottom, color);
+    private static void drawBorder(GuiGraphicsExtractor GuiGraphicsExtractor, int left, int top, int right, int bottom, int color) {
+        GuiGraphicsExtractor.fill(left, top, right, top + 1, color);
+        GuiGraphicsExtractor.fill(left, bottom - 1, right, bottom, color);
+        GuiGraphicsExtractor.fill(left, top, left + 1, bottom, color);
+        GuiGraphicsExtractor.fill(right - 1, top, right, bottom, color);
     }
 
     private static int countCodepoints(FormattedCharSequence sequence) {

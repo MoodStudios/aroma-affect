@@ -1,8 +1,8 @@
-package com.ovrtechnology.worldgen;
+﻿package com.ovrtechnology.worldgen;
 
 import com.mojang.datafixers.util.Pair;
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.event.events.common.LifecycleEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerLifecycleCallback;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -79,7 +79,7 @@ public final class VillagePoolInjector {
         }
 
         // Must happen before any chunks generate; otherwise spawn-area villages may generate without our changes.
-        LifecycleEvent.SERVER_BEFORE_START.register(VillagePoolInjector::inject);
+        ServerLifecycleCallback.Starting.EVENT.register(VillagePoolInjector::inject);
 
         initialized = true;
         AromaAffect.LOGGER.info("Village pool injector initialized");

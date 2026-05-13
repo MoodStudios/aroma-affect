@@ -1,7 +1,7 @@
-package com.ovrtechnology.trigger;
+﻿package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.event.events.client.ClientTickEvent;
+import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 
 /**
  * Handles game events that can trigger scents.
@@ -45,7 +45,7 @@ public final class ScentTriggerHandler {
         
         try {
             // Register client tick handler for processing scent durations and passive-mode
-            ClientTickEvent.CLIENT_POST.register(minecraft -> {
+            ClientTickCallback.AFTER.register(minecraft -> {
                 // Process active scent durations
                 ScentTriggerManager.getInstance().tick();
                 
@@ -55,7 +55,7 @@ public final class ScentTriggerHandler {
                 }
             });
             
-            AromaAffect.LOGGER.info("[ScentTriggerHandler] ClientTickEvent.CLIENT_POST registered successfully!");
+            AromaAffect.LOGGER.info("[ScentTriggerHandler] ClientTickCallback.AFTER registered successfully!");
         } catch (Exception e) {
             AromaAffect.LOGGER.error("[ScentTriggerHandler] Failed to register ClientTickEvent!", e);
         }

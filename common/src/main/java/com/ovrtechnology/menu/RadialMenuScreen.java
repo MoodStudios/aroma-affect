@@ -1,4 +1,4 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -9,7 +9,7 @@ import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
@@ -239,7 +239,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private int panelStopX, panelStopY, panelStopW, panelStopH;
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
         if (entries.isEmpty()) {
             return;
         }
@@ -267,7 +267,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     /**
      * Renders the corner buttons (top-left row: passive toggle, gear, guide, shop).
      */
-    private void renderCornerButtons(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
+    private void renderCornerButtons(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
         float appear = Mth.clamp((animationProgress - 0.3f) / 0.7f, 0.0f, 1.0f);
         if (appear <= 0.0f) {
             return;
@@ -417,7 +417,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.fill(hx - 5, hy + 5, hx + 5, hy + 6, clockColor); // bottom
         graphics.fill(hx - 6, hy - 5, hx - 5, hy + 5, clockColor); // left
         graphics.fill(hx + 5, hy - 5, hx + 6, hy + 5, clockColor); // right
-        // Clock hands — minute (up) + hour (right)
+        // Clock hands â€” minute (up) + hour (right)
         graphics.fill(hx, hy - 4, hx + 1, hy + 1, clockColor);  // minute hand (up)
         graphics.fill(hx, hy, hx + 3, hy + 1, clockColor);       // hour hand (right)
 
@@ -588,7 +588,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         entry.onSelect.run();
     }
 
-    private void renderEntryIcons(GuiGraphics graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
+    private void renderEntryIcons(GuiGraphicsExtractor graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
         float appear = Mth.clamp((animationProgress - 0.15f) / 0.85f, 0.0f, 1.0f);
         if (appear <= 0.0f) {
             return;
@@ -653,7 +653,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
      * Renders a small lock icon at the bottom-right corner of the given icon area.
      * Drawn procedurally using fill calls (shackle arc + body rectangle).
      */
-    private static void renderLockIcon(GuiGraphics graphics, int iconX, int iconY, int iconSize) {
+    private static void renderLockIcon(GuiGraphicsExtractor graphics, int iconX, int iconY, int iconSize) {
         // Position lock at bottom-right of icon
         int lockW = 10;
         int lockH = 8;
@@ -678,10 +678,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
     /**
      * Renders an animated "online" indicator at the top-right corner of an icon.
-     * Smooth pulsing glow around a solid green dot — pure opacity animation,
+     * Smooth pulsing glow around a solid green dot â€” pure opacity animation,
      * no moving geometry, so no integer-rounding jitter.
      */
-    private static void renderTrackingIndicator(GuiGraphics graphics, int iconX, int iconY, int iconSize, float alpha) {
+    private static void renderTrackingIndicator(GuiGraphicsExtractor graphics, int iconX, int iconY, int iconSize, float alpha) {
         int dotSize = 6;
         int dx = iconX + iconSize - dotSize;
         int dy = iconY - 1;
@@ -689,7 +689,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Continuous time in seconds for smooth per-frame interpolation
         double t = System.nanoTime() / 1_000_000_000.0;
 
-        // Soft glow layers (fixed size, only opacity animates — perfectly smooth)
+        // Soft glow layers (fixed size, only opacity animates â€” perfectly smooth)
         // Sine wave with ~3s period, phase-shifted per layer for a gentle ripple
         float glow1 = 0.5f + 0.5f * (float) Math.sin(t * 2.1);        // ~3.0s
         float glow2 = 0.5f + 0.5f * (float) Math.sin(t * 2.1 - 0.8);  // same speed, offset
@@ -708,7 +708,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     (g1Alpha << 24) | 0x44FF44);
         }
 
-        // Solid dot — subtle brightness breathing
+        // Solid dot â€” subtle brightness breathing
         float breathe = 0.9f + 0.1f * (float) Math.sin(t * 2.1 + 1.6);
         int borderColor = (int) (200 * alpha * breathe) << 24 | 0x226622;
         int dotColor = (int) (230 * alpha * breathe) << 24 | 0x44FF44;
@@ -721,7 +721,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
      * Renders a compact tracking info panel flush to the top-right corner.
      * Content varies based on tracking status state machine.
      */
-    private void renderTrackingPanel(GuiGraphics graphics, int mouseX, int mouseY, float animationProgress) {
+    private void renderTrackingPanel(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
         isHoveringPanelStop = false;
         isHoveringPanelTeleport = false;
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
@@ -774,7 +774,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             case TRACKING -> {
                 headerText = Component.translatable("menu.aromaaffect.tracking.label").getString();
                 if (cat != null) {
-                    headerText += " · " + cat.getDisplayName().getString();
+                    headerText += " Â· " + cat.getDisplayName().getString();
                 }
             }
             case ARRIVED -> headerText = Component.translatable("tracking.aromaaffect.status.arrived").getString();
@@ -1018,7 +1018,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         return locked;
     }
 
-    private void renderSelectionText(GuiGraphics graphics, int centerX, int centerY, int outerRadius, float animationProgress) {
+    private void renderSelectionText(GuiGraphicsExtractor graphics, int centerX, int centerY, int outerRadius, float animationProgress) {
         if (selectedIndex < 0 || selectedIndex >= entries.size() || animationProgress < 0.45f) {
             return;
         }
@@ -1045,7 +1045,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final int CENTER_LOGO_TEX_W = 155;
     private static final int CENTER_LOGO_TEX_H = 147;
 
-    private void renderCenterLogo(GuiGraphics graphics, int centerX, int centerY, float innerRadius, float animationProgress) {
+    private void renderCenterLogo(GuiGraphicsExtractor graphics, int centerX, int centerY, float innerRadius, float animationProgress) {
         float appear = Mth.clamp(animationProgress / 0.6f, 0.0f, 1.0f);
         if (appear <= 0.0f) {
             return;
@@ -1084,7 +1084,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.pose().popMatrix();
     }
 
-    private void submitRadialRenderState(GuiGraphics graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
+    private void submitRadialRenderState(GuiGraphicsExtractor graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
         int baseColor = MenuRenderUtils.withAlpha(COLOR_RING_BASE, animationProgress);
         int selectedColor = MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, animationProgress);
         int borderColor = MenuRenderUtils.withAlpha(COLOR_RING_BORDER, animationProgress);
@@ -1170,26 +1170,26 @@ public class RadialMenuScreen extends BaseMenuScreen {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    private static GuiRenderState getGuiRenderState(GuiGraphics graphics) {
+    private static GuiRenderState getGuiRenderState(GuiGraphicsExtractor graphics) {
         try {
             return (GuiRenderState) GUI_RENDER_STATE_FIELD.get(graphics);
         } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to access GuiGraphics GuiRenderState", e);
+            throw new IllegalStateException("Failed to access GuiGraphicsExtractor GuiRenderState", e);
         }
     }
 
     private static Field findGuiRenderStateField() {
-        for (Field field : GuiGraphics.class.getDeclaredFields()) {
+        for (Field field : GuiGraphicsExtractor.class.getDeclaredFields()) {
             if (GuiRenderState.class.isAssignableFrom(field.getType())) {
                 field.setAccessible(true);
                 return field;
             }
         }
-        throw new IllegalStateException("Unable to locate GuiRenderState field on GuiGraphics");
+        throw new IllegalStateException("Unable to locate GuiRenderState field on GuiGraphicsExtractor");
     }
 
     private void drawDistanceLine(
-            GuiGraphics graphics,
+            GuiGraphicsExtractor graphics,
             int x,
             int y,
             TrackingDirectionIndicator.Kind directionKind,
@@ -1271,7 +1271,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             float perpY = dirX;
 
             float tipR = innerRadius - 10.0f;
-            // For a true 90° "L" corner, keep length == width so the two segments are perpendicular.
+            // For a true 90Â° "L" corner, keep length == width so the two segments are perpendicular.
             float headLength = 13.0f;
             float headWidth = 13.0f;
 

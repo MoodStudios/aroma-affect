@@ -1,9 +1,9 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -49,7 +49,7 @@ public abstract class BaseMenuScreen extends Screen {
      */
     protected int backgroundColor = 0x80000000;
 
-    // ── Notification System ──────────────────────────────────────────────
+    // â”€â”€ Notification System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Duration in milliseconds before notifications auto-hide.
@@ -107,7 +107,7 @@ public abstract class BaseMenuScreen extends Screen {
     }
     
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // Calculate interpolated animation progress
         float smoothProgress = getSmoothAnimationProgress(partialTick);
 
@@ -175,7 +175,7 @@ public abstract class BaseMenuScreen extends Screen {
     /**
      * Renders the semi-transparent background overlay.
      */
-    protected void renderMenuBackground(GuiGraphics graphics, float animationProgress) {
+    protected void renderMenuBackground(GuiGraphicsExtractor graphics, float animationProgress) {
         int alpha = (int) (128 * animationProgress);
         int color = (alpha << 24);
         graphics.fill(0, 0, width, height, color);
@@ -190,10 +190,10 @@ public abstract class BaseMenuScreen extends Screen {
      * @param partialTick the partial tick for smooth rendering
      * @param animationProgress the current animation progress (0.0 to 1.0)
      */
-    protected abstract void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
+    protected abstract void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                                           float partialTick, float animationProgress);
 
-    // ── Notification Methods ─────────────────────────────────────────────
+    // â”€â”€ Notification Methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Shows an error notification at the top of the screen.
@@ -220,7 +220,7 @@ public abstract class BaseMenuScreen extends Screen {
     /**
      * Renders the notification banner if one is active.
      */
-    private void renderNotification(GuiGraphics graphics) {
+    private void renderNotification(GuiGraphicsExtractor graphics) {
         if (notificationMessage == null) {
             return;
         }

@@ -1,8 +1,8 @@
-package com.ovrtechnology.entity.sniffer;
+﻿package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
-import dev.architectury.event.events.common.PlayerEvent;
+import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import lombok.experimental.UtilityClass;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,7 +18,7 @@ public final class SnifferSyncHandler {
 
     public static void init() {
         // Sync all tamed sniffers to the player when they join
-        PlayerEvent.PLAYER_JOIN.register(SnifferSyncHandler::onPlayerJoin);
+        ServerPlayerCallback.Join.EVENT.register(SnifferSyncHandler::onPlayerJoin);
     }
 
     private static void onPlayerJoin(ServerPlayer player) {

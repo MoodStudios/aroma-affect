@@ -1,6 +1,6 @@
-package com.ovrtechnology.entity.sniffer;
+﻿package com.ovrtechnology.entity.sniffer;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -22,23 +22,23 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphicsExtractor GuiGraphicsExtractor, float partialTick, int mouseX, int mouseY) {
         int k = (this.width - this.imageWidth) / 2;
         int l = (this.height - this.imageHeight) / 2;
 
         // Fondo principal (igual que HorseInventoryScreen)
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, k, l, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, k, l, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
-        // Slot de silla (saddle) - posición k+7, l+17
-        drawSlot(guiGraphics, k + 7, l + 35 - 18);
+        // Slot de silla (saddle) - posiciÃ³n k+7, l+17
+        drawSlot(GuiGraphicsExtractor, k + 7, l + 35 - 18);
 
-        // Slot de decoración (armor) - posición k+7, l+35
-        drawSlot(guiGraphics, k + 7, l + 35);
+        // Slot de decoraciÃ³n (armor) - posiciÃ³n k+7, l+35
+        drawSlot(GuiGraphicsExtractor, k + 7, l + 35);
 
         // Renderizar el Sniffer en la pantalla
         if (this.menu.getSniffer() != null) {
             InventoryScreen.renderEntityInInventoryFollowsMouse(
-                    guiGraphics,
+                    GuiGraphicsExtractor,
                     k + 26, l + 18,
                     k + 78, l + 70,
                     17,
@@ -49,15 +49,15 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
         }
     }
 
-    private void drawSlot(GuiGraphics guiGraphics, int x, int y) {
-        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, x, y, 18, 18);
+    private void drawSlot(GuiGraphicsExtractor GuiGraphicsExtractor, int x, int y) {
+        GuiGraphicsExtractor.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, x, y, 18, 18);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
         this.xMouse = (float) mouseX;
         this.yMouse = (float) mouseY;
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
+        super.render(GuiGraphicsExtractor, mouseX, mouseY, partialTick);
+        this.renderTooltip(GuiGraphicsExtractor, mouseX, mouseY);
     }
 }

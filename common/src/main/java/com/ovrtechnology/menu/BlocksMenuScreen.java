@@ -1,4 +1,4 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.block.BlockDefinition;
@@ -7,7 +7,7 @@ import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.tracking.RequiredItem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -66,7 +66,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         super(MenuCategory.BLOCKS);
     }
 
-    // ── SelectionMenuScreen hooks ────────────────────────────────────────
+    // â”€â”€ SelectionMenuScreen hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     protected int getRowHeight() {
@@ -171,7 +171,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected int renderBelowSearch(GuiGraphics graphics, int startX, int y, int availableWidth,
+    protected int renderBelowSearch(GuiGraphicsExtractor graphics, int startX, int y, int availableWidth,
                                      int mouseX, int mouseY, float animationProgress) {
         hoveredFilterIndex = -1;
         BlockFilter[] filters = BlockFilter.values();
@@ -227,7 +227,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected void renderRow(GuiGraphics graphics, SelectionCard card, int x, int y,
+    protected void renderRow(GuiGraphicsExtractor graphics, SelectionCard card, int x, int y,
                               int rowWidth, boolean isHovered, boolean isTracking,
                               float animationProgress) {
         int rowHeight = getRowHeight();
@@ -280,7 +280,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
     }
 
-    // ── Block filter enum ────────────────────────────────────────────────
+    // â”€â”€ Block filter enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     enum BlockFilter {
         ALL("menu.aromaaffect.blocks.filter.all"),

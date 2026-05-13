@@ -1,7 +1,7 @@
-package com.ovrtechnology.websocket;
+﻿package com.ovrtechnology.websocket;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.event.events.client.ClientTickEvent;
+import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 import lombok.Getter;
 
 import java.net.URI;
@@ -168,7 +168,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         AromaAffect.LOGGER.info("  Auto-reconnect: {}", config.isAutoReconnect());
 
         // Register tick handler for main thread execution
-        ClientTickEvent.CLIENT_POST.register(instance -> {
+        ClientTickCallback.AFTER.register(instance -> {
             INSTANCE.processMainThreadQueue();
         });
 
@@ -697,7 +697,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             delay = config.getInitialReconnectDelayMs();
         }
 
-        // Apply jitter (±10%)
+        // Apply jitter (Â±10%)
         double jitter = 0.9 + (Math.random() * 0.2);
         delay = (long) (delay * jitter);
 

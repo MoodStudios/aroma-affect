@@ -1,4 +1,4 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.flower.FlowerDefinition;
@@ -7,7 +7,7 @@ import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.tracking.RequiredItem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -94,7 +94,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         super(MenuCategory.FLOWERS);
     }
 
-    // ── SelectionMenuScreen hooks ────────────────────────────────────────
+    // â”€â”€ SelectionMenuScreen hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Override
     protected int getRowHeight() {
@@ -195,7 +195,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected int renderBelowSearch(GuiGraphics graphics, int startX, int y, int availableWidth,
+    protected int renderBelowSearch(GuiGraphicsExtractor graphics, int startX, int y, int availableWidth,
                                      int mouseX, int mouseY, float animationProgress) {
         hoveredFilterIndex = -1;
         FlowerFilter[] filters = FlowerFilter.values();
@@ -251,7 +251,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
     }
 
     @Override
-    protected void renderRow(GuiGraphics graphics, SelectionCard card, int x, int y,
+    protected void renderRow(GuiGraphicsExtractor graphics, SelectionCard card, int x, int y,
                               int rowWidth, boolean isHovered, boolean isTracking,
                               float animationProgress) {
         int rowHeight = getRowHeight();
@@ -304,7 +304,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         }
     }
 
-    // ── Flower filter enum ───────────────────────────────────────────────
+    // â”€â”€ Flower filter enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     enum FlowerFilter {
         ALL("menu.aromaaffect.flowers.filter.all"),

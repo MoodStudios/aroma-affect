@@ -1,4 +1,4 @@
-package com.ovrtechnology.menu;
+﻿package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.NoseRenderNetworking;
@@ -15,7 +15,7 @@ import com.ovrtechnology.websocket.ConnectionState;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketMessage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -105,7 +105,7 @@ public class ConfigScreen extends BaseMenuScreen {
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY,
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                                   float partialTick, float animationProgress) {
         // Handle slider dragging: update value each frame while mouse is held
         updateSliderDrag(mouseX);
@@ -185,7 +185,7 @@ public class ConfigScreen extends BaseMenuScreen {
         }
     }
 
-    private void renderGeneralSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+    private void renderGeneralSection(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int mx, int my, float a) {
         ClientConfig config = ClientConfig.getInstance();
         boolean isAutomatic = "automatic".equals(config.getPuffMode());
 
@@ -314,7 +314,7 @@ public class ConfigScreen extends BaseMenuScreen {
         }
     }
 
-    private void renderPassiveSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+    private void renderPassiveSection(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int mx, int my, float a) {
         ClientConfig config = ClientConfig.getInstance();
         int sliderX = x + w - SLIDER_W - 40;
         int toggleX = x + w - TOGGLE_W - 30;
@@ -404,7 +404,7 @@ public class ConfigScreen extends BaseMenuScreen {
         }
     }
 
-    private void renderScentValuesSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+    private void renderScentValuesSection(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int mx, int my, float a) {
         // Sub-filter tabs
         int tabX = x;
         for (ScentSubFilter filter : ScentSubFilter.values()) {
@@ -469,7 +469,7 @@ public class ConfigScreen extends BaseMenuScreen {
         }
     }
 
-    private void renderWebSocketSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+    private void renderWebSocketSection(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int mx, int my, float a) {
         OvrWebSocketClient client = OvrWebSocketClient.getInstance();
         ConnectionState connState = client.getState();
 
@@ -659,7 +659,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
     // --- Widget rendering ---
 
-    private void renderTogglePill(GuiGraphics graphics, int x, int y, boolean on, float a) {
+    private void renderTogglePill(GuiGraphicsExtractor graphics, int x, int y, boolean on, float a) {
         int bgColor = on ? MenuRenderUtils.withAlpha(COL_GREEN, a) : MenuRenderUtils.withAlpha(COL_GRAY, a);
         graphics.fill(x, y, x + TOGGLE_W, y + TOGGLE_H, bgColor);
         // Rounded effect using border
@@ -671,7 +671,7 @@ public class ConfigScreen extends BaseMenuScreen {
         graphics.fill(circleX, circleY, circleX + circleSize, circleY + circleSize, MenuRenderUtils.withAlpha(COL_TEXT, a));
     }
 
-    private void renderSlider(GuiGraphics graphics, int x, int y, int w, float value, float min, float max, float a) {
+    private void renderSlider(GuiGraphicsExtractor graphics, int x, int y, int w, float value, float min, float max, float a) {
         int trackY = y + 4;
         // Track background
         graphics.fill(x, trackY, x + w, trackY + SLIDER_H, MenuRenderUtils.withAlpha(0xFF333333, a));
