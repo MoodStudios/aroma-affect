@@ -127,7 +127,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int titleBarH = 24;
         graphics.fill(panelLeft, panelTop, panelRight, panelTop + titleBarH, MenuRenderUtils.withAlpha(0xDD222244, a));
         Component title = Component.translatable("config.aromaaffect.title");
-        graphics.drawCenteredString(font, title, panelLeft + panelW / 2, panelTop + 8, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.centeredText(font, title, panelLeft + panelW / 2, panelTop + 8, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         // Back button (top-left of title bar)
         int backW = 40;
@@ -137,7 +137,7 @@ public class ConfigScreen extends BaseMenuScreen {
         hoveringBack = mouseX >= backX && mouseX < backX + backW && mouseY >= backY && mouseY < backY + backH;
         int backBg = hoveringBack ? MenuRenderUtils.withAlpha(COL_HOVER, a) : MenuRenderUtils.withAlpha(0x20FFFFFF, a);
         graphics.fill(backX, backY, backX + backW, backY + backH, backBg);
-        graphics.drawCenteredString(font, "< Back", backX + backW / 2, backY + (backH - 8) / 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.centeredText(font, "< Back", backX + backW / 2, backY + (backH - 8) / 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         // Sidebar
         int sidebarLeft = panelLeft;
@@ -167,7 +167,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 case WEBSOCKET -> "config.aromaaffect.section.websocket";
             };
             Component label = Component.translatable(labelKey);
-            graphics.drawString(font, label, sidebarLeft + 12, tabY + (tabH - 8) / 2, MenuRenderUtils.withAlpha(isActive ? COL_TEXT : COL_TEXT_DIM, a));
+            graphics.text(font, label, sidebarLeft + 12, tabY + (tabH - 8) / 2, MenuRenderUtils.withAlpha(isActive ? COL_TEXT : COL_TEXT_DIM, a));
             tabY += tabH + 2;
         }
 
@@ -202,7 +202,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int rowY = y - (int) generalScrollOffset;
 
         // Puff Mode selector
-        graphics.drawString(font, Component.translatable("config.aromaaffect.puff_mode"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.puff_mode"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         int selX = x + w - SELECTOR_BTN_W * 2 - 2;
 
         // Automatic button
@@ -210,7 +210,7 @@ public class ConfigScreen extends BaseMenuScreen {
         boolean hoverAuto = mx >= selX && mx < selX + SELECTOR_BTN_W && my >= rowY && my < rowY + SELECTOR_BTN_H;
         if (hoverAuto && !isAutomatic) autoBg = MenuRenderUtils.withAlpha(0xFF444444, a);
         graphics.fill(selX, rowY, selX + SELECTOR_BTN_W, rowY + SELECTOR_BTN_H, autoBg);
-        graphics.drawCenteredString(font, Component.translatable("config.aromaaffect.puff_mode.automatic"),
+        graphics.centeredText(font, Component.translatable("config.aromaaffect.puff_mode.automatic"),
                 selX + SELECTOR_BTN_W / 2, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         // Manual button
@@ -219,13 +219,13 @@ public class ConfigScreen extends BaseMenuScreen {
         boolean hoverMan = mx >= manSelX && mx < manSelX + SELECTOR_BTN_W && my >= rowY && my < rowY + SELECTOR_BTN_H;
         if (hoverMan && isAutomatic) manBg = MenuRenderUtils.withAlpha(0xFF444444, a);
         graphics.fill(manSelX, rowY, manSelX + SELECTOR_BTN_W, rowY + SELECTOR_BTN_H, manBg);
-        graphics.drawCenteredString(font, Component.translatable("config.aromaaffect.puff_mode.manual"),
+        graphics.centeredText(font, Component.translatable("config.aromaaffect.puff_mode.manual"),
                 manSelX + SELECTOR_BTN_W / 2, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT + 4;
 
         // Manual Puff Key (only visible in manual mode)
         if (!isAutomatic) {
-            graphics.drawString(font, Component.translatable("config.aromaaffect.manual_key"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
+            graphics.text(font, Component.translatable("config.aromaaffect.manual_key"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
             int keyBtnX = x + w - 80;
             int keyBtnW = 80;
             int keyBtnH = 20;
@@ -237,71 +237,71 @@ public class ConfigScreen extends BaseMenuScreen {
             String keyText = capturingKey ? Component.translatable("config.aromaaffect.manual_key.press").getString()
                     : config.getManualPuffKey();
             int keyColor = capturingKey ? MenuRenderUtils.withAlpha(COL_KEY_CAPTURE, a) : MenuRenderUtils.withAlpha(COL_TEXT, a);
-            graphics.drawCenteredString(font, keyText, keyBtnX + keyBtnW / 2, rowY + 6, keyColor);
+            graphics.centeredText(font, keyText, keyBtnX + keyBtnW / 2, rowY + 6, keyColor);
             rowY += ROW_HEIGHT + 4;
         }
 
         // Global Intensity slider
-        graphics.drawString(font, Component.translatable("config.aromaaffect.intensity"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.intensity"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         int sliderX = x + w - SLIDER_W - 40;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, (float) config.getGlobalIntensityMultiplier(), 0f, 1f, a);
         int pct = (int) (config.getGlobalIntensityMultiplier() * 100);
-        graphics.drawString(font, pct + "%", sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, pct + "%", sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT + 4;
 
         // Global Cooldown slider
-        graphics.drawString(font, Component.translatable("config.aromaaffect.cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float cooldownSec = config.getGlobalCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, cooldownSec, 1f, 60f, a);
-        graphics.drawString(font, String.format("%.0fs", cooldownSec), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", cooldownSec), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT + 4;
 
         // 3D Nose Render toggle
-        graphics.drawString(font, Component.translatable("config.aromaaffect.nose_render"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.nose_render"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         int toggleX = x + w - TOGGLE_W - 30;
         renderTogglePill(graphics, toggleX, rowY + 1, config.isNoseRenderEnabled(), a);
         Component toggleLabel = config.isNoseRenderEnabled()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
-        graphics.drawString(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        graphics.text(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         rowY += ROW_HEIGHT + 4;
 
         // Nose Strap toggle (only interactive when 3D Nose Render is enabled)
         boolean strapActive = config.isNoseRenderEnabled() && config.isStrapEnabled();
         int strapTextColor = config.isNoseRenderEnabled() ? COL_TEXT : COL_TEXT_DIM;
-        graphics.drawString(font, Component.translatable("config.aromaaffect.nose_strap"), x, rowY + 4, MenuRenderUtils.withAlpha(strapTextColor, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.nose_strap"), x, rowY + 4, MenuRenderUtils.withAlpha(strapTextColor, a));
         renderTogglePill(graphics, toggleX, rowY + 1, strapActive, a);
         Component strapLabel = strapActive
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
-        graphics.drawString(font, strapLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        graphics.text(font, strapLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         rowY += ROW_HEIGHT + 4;
 
         // Tracking Toast (persistent, outside radial menu)
-        graphics.drawString(font, Component.translatable("config.aromaaffect.tracking_toast_persistent"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.tracking_toast_persistent"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         renderTogglePill(graphics, toggleX, rowY + 1, config.isTrackingToastPersistent(), a);
         Component trackingToastLabel = config.isTrackingToastPersistent()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
-        graphics.drawString(font, trackingToastLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        graphics.text(font, trackingToastLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         rowY += ROW_HEIGHT + 4;
 
         // Passive Puff Overlay toggle
-        graphics.drawString(font, Component.translatable("config.aromaaffect.passive_puff_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive_puff_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         renderTogglePill(graphics, toggleX, rowY + 1, config.isPassivePuffOverlay(), a);
         Component puffOverlayLabel = config.isPassivePuffOverlay()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
-        graphics.drawString(font, puffOverlayLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        graphics.text(font, puffOverlayLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         rowY += ROW_HEIGHT + 4;
 
         // Debug Scent Messages toggle
-        graphics.drawString(font, Component.translatable("config.aromaaffect.debug_scent_messages"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.debug_scent_messages"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         renderTogglePill(graphics, toggleX, rowY + 1, config.isDebugScentMessages(), a);
         Component debugScentLabel = config.isDebugScentMessages()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
-        graphics.drawString(font, debugScentLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        graphics.text(font, debugScentLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
 
         graphics.disableScissor();
 
@@ -331,56 +331,56 @@ public class ConfigScreen extends BaseMenuScreen {
         int rowY = y - (int) passiveScrollOffset;
 
         // Passive Enabled toggle
-        graphics.drawString(font, Component.translatable("config.aromaaffect.passive_enabled"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive_enabled"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         boolean passiveEnabled = PassiveModeManager.isPassiveModeEnabled();
         renderTogglePill(graphics, toggleX, rowY + 1, passiveEnabled, a);
         Component toggleLabel = passiveEnabled
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
-        graphics.drawString(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        graphics.text(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         rowY += ROW_HEIGHT + 8;
 
         // Cooldowns
-        graphics.drawString(font, "Cooldowns", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, "Cooldowns", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
         // Block Cooldown (1s - 30s)
-        graphics.drawString(font, "Block Cooldown", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, "Block Cooldown", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockCd = config.getPassiveBlockCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, blockCd, 1f, 30f, a);
-        graphics.drawString(font, String.format("%.0fs", blockCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", blockCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT;
 
         // Hostile Mob CD (1s - 30s)
-        graphics.drawString(font, "Hostile Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, "Hostile Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobCd = config.getPassiveMobCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, mobCd, 1f, 30f, a);
-        graphics.drawString(font, String.format("%.0fs", mobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", mobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT;
 
         // Passive Mob CD (1s - 30s)
-        graphics.drawString(font, "Passive Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, "Passive Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float passiveMobCd = config.getPassivePassiveMobCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, passiveMobCd, 1f, 30f, a);
-        graphics.drawString(font, String.format("%.0fs", passiveMobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", passiveMobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT + 8;
 
         // Ranges
-        graphics.drawString(font, "Ranges", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, "Ranges", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
         // Block Range (1 - 5 blocks)
-        graphics.drawString(font, "Block Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, "Block Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockRange = (float) config.getPassiveBlockRange();
         renderSlider(graphics, sliderX, rowY, SLIDER_W, blockRange, 1f, 5f, a);
-        graphics.drawString(font, String.format("%.1f", blockRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.1f", blockRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT;
 
         // Mob Range (1 - 15 blocks)
-        graphics.drawString(font, "Mob Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, "Mob Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobRange = (float) config.getPassiveMobRange();
         renderSlider(graphics, sliderX, rowY, SLIDER_W, mobRange, 1f, 15f, a);
-        graphics.drawString(font, String.format("%.1f", mobRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.1f", mobRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT + 8;
 
         // Reset Defaults button
@@ -391,7 +391,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int resetBg = hoverReset ? MenuRenderUtils.withAlpha(0xFF444444, a) : MenuRenderUtils.withAlpha(0xFF333333, a);
         graphics.fill(resetBtnX, rowY, resetBtnX + resetBtnW, rowY + resetBtnH, resetBg);
         MenuRenderUtils.renderOutline(graphics, resetBtnX, rowY, resetBtnW, resetBtnH, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
-        graphics.drawCenteredString(font, "Reset Defaults", resetBtnX + resetBtnW / 2, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.centeredText(font, "Reset Defaults", resetBtnX + resetBtnW / 2, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         graphics.disableScissor();
 
@@ -423,7 +423,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
             int bg = isActive ? MenuRenderUtils.withAlpha(COL_ACCENT, a) : (isHover ? MenuRenderUtils.withAlpha(COL_HOVER, a) : MenuRenderUtils.withAlpha(0x20FFFFFF, a));
             graphics.fill(tabX, y, tabX + tabW, y + tabH, bg);
-            graphics.drawCenteredString(font, label, tabX + tabW / 2, y + 5, MenuRenderUtils.withAlpha(COL_TEXT, a));
+            graphics.centeredText(font, label, tabX + tabW / 2, y + 5, MenuRenderUtils.withAlpha(COL_TEXT, a));
             tabX += tabW + 4;
         }
 
@@ -440,9 +440,9 @@ public class ConfigScreen extends BaseMenuScreen {
         scentScrollOffset = Mth.clamp(scentScrollOffset, 0, maxScroll);
 
         // Header
-        graphics.drawString(font, "Name", x, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-        graphics.drawString(font, "Scent", x + w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-        graphics.drawString(font, "Intensity", x + 2 * w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, "Name", x, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, "Scent", x + w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, "Intensity", x + 2 * w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         listTop += entryH + 2;
         listH -= entryH + 2;
 
@@ -452,9 +452,9 @@ public class ConfigScreen extends BaseMenuScreen {
         for (String[] entry : entries) {
             if (drawY + entryH >= listTop && drawY < listTop + listH) {
                 int textColor = MenuRenderUtils.withAlpha(COL_TEXT_DIM, a);
-                graphics.drawString(font, entry[0], x, drawY, textColor);
-                graphics.drawString(font, entry[1], x + w / 3, drawY, textColor);
-                graphics.drawString(font, entry[2], x + 2 * w / 3, drawY, textColor);
+                graphics.text(font, entry[0], x, drawY, textColor);
+                graphics.text(font, entry[1], x + w / 3, drawY, textColor);
+                graphics.text(font, entry[2], x + 2 * w / 3, drawY, textColor);
             }
             drawY += entryH;
         }
@@ -488,20 +488,20 @@ public class ConfigScreen extends BaseMenuScreen {
             case DISCONNECTED, CONNECTION_FAILED -> 0xFFFF4444;
         };
         graphics.fill(x + cardPad, rowY + 1, x + cardPad + 8, rowY + 9, MenuRenderUtils.withAlpha(dotColor, a));
-        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.status").append(": " + connState.getDisplayName()),
+        graphics.text(font, Component.translatable("config.aromaaffect.ws.status").append(": " + connState.getDisplayName()),
                 x + cardPad + 12, rowY, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += 14;
 
         // Row 2: server URI
         String uri = client.getConfig().getUri();
-        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.server").append(": " + uri),
+        graphics.text(font, Component.translatable("config.aromaaffect.ws.server").append(": " + uri),
                 x + cardPad, rowY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         rowY += 14;
 
         // Row 3: reconnect attempts (only if > 0)
         int attempts = client.getReconnectAttempts();
         if (attempts > 0) {
-            graphics.drawString(font, Component.translatable("config.aromaaffect.ws.attempts").append(": " + attempts),
+            graphics.text(font, Component.translatable("config.aromaaffect.ws.attempts").append(": " + attempts),
                     x + cardPad, rowY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         }
 
@@ -510,7 +510,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int logH = h - cardH - 10;
 
         // Header
-        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.messages"), x, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.ws.messages"), x, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         logTop += 14;
         logH -= 14;
 
@@ -519,17 +519,17 @@ public class ConfigScreen extends BaseMenuScreen {
         int colType = x + 20;
         int colContent = x + 70;
         int colTime = x + w - 50;
-        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.dir"), colDir, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.type"), colType, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.content"), colContent, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-        graphics.drawString(font, Component.translatable("config.aromaaffect.ws.time"), colTime, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.ws.dir"), colDir, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.ws.type"), colType, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.ws.content"), colContent, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.ws.time"), colTime, logTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         logTop += 12;
         logH -= 12;
 
         List<WebSocketMessage> messages = client.getMessageHistory();
 
         if (messages.isEmpty()) {
-            graphics.drawCenteredString(font, Component.translatable("config.aromaaffect.ws.no_messages"),
+            graphics.centeredText(font, Component.translatable("config.aromaaffect.ws.no_messages"),
                     x + w / 2, logTop + logH / 2 - 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
             return;
         }
@@ -547,13 +547,13 @@ public class ConfigScreen extends BaseMenuScreen {
             if (drawY + entryH >= logTop && drawY < logTop + logH) {
                 // Direction arrow
                 if (msg.isOutgoing()) {
-                    graphics.drawString(font, "\u2192", colDir, drawY, MenuRenderUtils.withAlpha(0xFF44FF44, a));
+                    graphics.text(font, "\u2192", colDir, drawY, MenuRenderUtils.withAlpha(0xFF44FF44, a));
                 } else {
-                    graphics.drawString(font, "\u2190", colDir, drawY, MenuRenderUtils.withAlpha(0xFFBB88FF, a));
+                    graphics.text(font, "\u2190", colDir, drawY, MenuRenderUtils.withAlpha(0xFFBB88FF, a));
                 }
 
                 // Type
-                graphics.drawString(font, msg.getType(), colType, drawY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+                graphics.text(font, msg.getType(), colType, drawY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
 
                 // Content (truncated)
                 String payload = msg.getPayload();
@@ -563,11 +563,11 @@ public class ConfigScreen extends BaseMenuScreen {
                     }
                     payload = payload + "...";
                 }
-                graphics.drawString(font, payload, colContent, drawY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+                graphics.text(font, payload, colContent, drawY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
 
                 // Time
                 String time = TIME_FMT.format(msg.getTimestamp());
-                graphics.drawString(font, time, colTime, drawY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+                graphics.text(font, time, colTime, drawY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
             }
             drawY += entryH;
         }

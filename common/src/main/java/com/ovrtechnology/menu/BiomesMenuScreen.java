@@ -263,7 +263,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
             graphics.pose().pushMatrix();
             graphics.pose().translate(iconX, iconY);
             graphics.pose().scale(ICON_SIZE / 16.0f * iconAlpha, ICON_SIZE / 16.0f * iconAlpha);
-            graphics.renderItem(card.icon, 0, 0);
+            graphics.item(card.icon, 0, 0);
             graphics.pose().popMatrix();
         }
 
@@ -272,17 +272,17 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         int nameColor = isTracking
                 ? (int) (255 * animationProgress) << 24 | 0x66FF66
                 : (int) (255 * animationProgress) << 24 | 0xFFFFFF;
-        graphics.drawString(font, card.displayName, textX, y + rowHeight / 2 - 10, nameColor);
+        graphics.text(font, card.displayName, textX, y + rowHeight / 2 - 10, nameColor);
 
         int idColor = (int) (180 * animationProgress) << 24 | 0x888888;
-        graphics.drawString(font, card.id.toString(), textX, y + rowHeight / 2 + 2, idColor);
+        graphics.text(font, card.id.toString(), textX, y + rowHeight / 2 + 2, idColor);
 
         // Tracking indicator or cost section
         if (isTracking) {
             int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
             Component trackingLabel = Component.translatable("menu.aromaaffect.selection.selected");
             int labelWidth = font.width(trackingLabel);
-            graphics.drawString(font, trackingLabel, x + rowWidth - labelWidth - pad,
+            graphics.text(font, trackingLabel, x + rowWidth - labelWidth - pad,
                     y + (rowHeight - 8) / 2, indicatorColor);
         } else {
             renderCostSection(graphics, card, x + rowWidth, y + rowHeight / 2, animationProgress);

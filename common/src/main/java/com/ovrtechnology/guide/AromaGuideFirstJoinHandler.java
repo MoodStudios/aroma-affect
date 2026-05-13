@@ -33,7 +33,7 @@ public final class AromaGuideFirstJoinHandler {
         GuideRecipientData data = overworld.getDataStorage().computeIfAbsent(GuideRecipientData.TYPE);
 
         if (data.addPlayer(player.getUUID())) {
-            ItemStack guide = new ItemStack(AromaGuideRegistry.getAROMA_GUIDE().get());
+            ItemStack guide = new ItemStack(AromaGuideRegistry.getAromaGuide().value());
             player.getInventory().add(guide);
             AromaAffect.LOGGER.info("Gave Aroma Guide to first-time player: {}", player.getName().getString());
         }
@@ -49,7 +49,7 @@ public final class AromaGuideFirstJoinHandler {
         );
 
         static final SavedDataType<GuideRecipientData> TYPE = new SavedDataType<>(
-                AromaAffect.MOD_ID + "_guide_recipients",
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "guide_recipients"),
                 GuideRecipientData::new,
                 CODEC,
                 null

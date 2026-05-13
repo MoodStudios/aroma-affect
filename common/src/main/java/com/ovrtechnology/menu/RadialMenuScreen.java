@@ -427,31 +427,31 @@ public class RadialMenuScreen extends BaseMenuScreen {
             Component passiveLabel = isPassiveEnabled
                     ? Component.translatable("menu.aromaaffect.button.passive.on")
                     : Component.translatable("menu.aromaaffect.button.passive.off");
-            graphics.drawString(font, passiveLabel,
+            graphics.text(font, passiveLabel,
                     tooltipX,
                     toggleY + toggleH / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringConfigGear) {
-            graphics.drawString(font, Component.translatable("config.aromaaffect.button.settings"),
+            graphics.text(font, Component.translatable("config.aromaaffect.button.settings"),
                     tooltipX,
                     gearY + gearBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringGuide) {
-            graphics.drawString(font, Component.translatable("guide.aromaaffect.button"),
+            graphics.text(font, Component.translatable("guide.aromaaffect.button"),
                     tooltipX,
                     guideY + guideBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringShop) {
-            graphics.drawString(font, Component.translatable("shop.aromaaffect.button"),
+            graphics.text(font, Component.translatable("shop.aromaaffect.button"),
                     tooltipX,
                     shopY + shopBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringHistory) {
-            graphics.drawString(font, Component.translatable("history.aromaaffect.button"),
+            graphics.text(font, Component.translatable("history.aromaaffect.button"),
                     tooltipX,
                     histY + histBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
@@ -850,7 +850,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int iconX = panelLeft + pad + 1;
         int iconY = panelTop + (panelHeight - 16) / 2;
         if (ActiveTrackingState.getIcon() != null) {
-            graphics.renderItem(ActiveTrackingState.getIcon(), iconX, iconY);
+            graphics.item(ActiveTrackingState.getIcon(), iconX, iconY);
         }
 
         int textX = iconX + iconSpace;
@@ -864,21 +864,21 @@ public class RadialMenuScreen extends BaseMenuScreen {
             case NOT_FOUND, ERROR -> labelColor = MenuRenderUtils.withAlpha(0xFFFF6B6B, appear);
             default -> labelColor = MenuRenderUtils.withAlpha(0xFF88CC88, appear);
         }
-        graphics.drawString(font, headerText, textX, currentY, labelColor);
+        graphics.text(font, headerText, textX, currentY, labelColor);
         currentY += 11;
 
         // Target name (for SEARCHING and TRACKING)
         if (targetName != null && (status == ActiveTrackingState.TrackingStatus.SEARCHING
                 || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
             int nameColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
-            graphics.drawString(font, targetName, textX, currentY, nameColor);
+            graphics.text(font, targetName, textX, currentY, nameColor);
             currentY += 11;
         }
 
         // Target ID (TRACKING only)
         if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
             int idColor = MenuRenderUtils.withAlpha(0xFF777777, appear);
-            graphics.drawString(font, targetIdStr, textX, currentY, idColor);
+            graphics.text(font, targetIdStr, textX, currentY, idColor);
             currentY += 11;
         }
 
@@ -892,7 +892,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         // Failure reason
         if (failureReason != null) {
             int reasonColor = MenuRenderUtils.withAlpha(0xFFFFAAAA, appear);
-            graphics.drawString(font, failureReason, textX, currentY, reasonColor);
+            graphics.text(font, failureReason, textX, currentY, reasonColor);
         }
 
         // Stop button below panel (only for SEARCHING and TRACKING states)
@@ -922,7 +922,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             MenuRenderUtils.renderOutline(graphics, stopBtnX, stopBtnY, stopBtnW, stopBtnH, stopBorder);
 
             int stopTextColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
-            graphics.drawCenteredString(font, stopLabel, stopBtnX + stopBtnW / 2, stopBtnY + 3, stopTextColor);
+            graphics.centeredText(font, stopLabel, stopBtnX + stopBtnW / 2, stopBtnY + 3, stopTextColor);
 
             // Teleport button (creative mode only, left of stop button)
             var player = Minecraft.getInstance().player;
@@ -945,7 +945,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 MenuRenderUtils.renderOutline(graphics, tpBtnX, tpBtnY, tpBtnW, tpBtnH, tpBorder);
 
                 int tpTextColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
-                graphics.drawCenteredString(font, tpLabel, tpBtnX + tpBtnW / 2, tpBtnY + 3, tpTextColor);
+                graphics.centeredText(font, tpLabel, tpBtnX + tpBtnW / 2, tpBtnY + 3, tpTextColor);
             }
         }
     }
@@ -1031,13 +1031,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
         if (locked) {
             int lockedTitleColor = ((int) (255 * alpha) << 24) | 0x999999;
             int lockedDescColor = ((int) (180 * alpha) << 24) | 0xFF6B6B;
-            graphics.drawCenteredString(font, entry.title, centerX, y, lockedTitleColor);
-            graphics.drawCenteredString(font, Component.translatable("menu.aromaaffect.category.locked"), centerX, y + 12, lockedDescColor);
+            graphics.centeredText(font, entry.title, centerX, y, lockedTitleColor);
+            graphics.centeredText(font, Component.translatable("menu.aromaaffect.category.locked"), centerX, y + 12, lockedDescColor);
         } else {
             int titleColor = ((int) (255 * alpha) << 24) | 0xFFFFFF;
             int descColor = ((int) (200 * alpha) << 24) | 0xD0D0D0;
-            graphics.drawCenteredString(font, entry.title, centerX, y, titleColor);
-            graphics.drawCenteredString(font, entry.description, centerX, y + 12, descColor);
+            graphics.centeredText(font, entry.title, centerX, y, titleColor);
+            graphics.centeredText(font, entry.description, centerX, y + 12, descColor);
         }
     }
 
@@ -1172,7 +1172,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     ) {
         int indicatorColor = TrackingDirectionIndicator.colorForKind(directionKind, color);
         TrackingDirectionIndicator.draw(graphics, x, y, directionKind, indicatorColor);
-        graphics.drawString(font, distanceText, x + TrackingDirectionIndicator.getColumnWidth(), y, indicatorColor, false);
+        graphics.text(font, distanceText, x + TrackingDirectionIndicator.getColumnWidth(), y, indicatorColor, false);
     }
 
     private record RadialEntry(

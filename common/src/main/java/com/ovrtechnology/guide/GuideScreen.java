@@ -245,7 +245,7 @@ public class GuideScreen extends BaseMenuScreen {
         g.pose().pushMatrix();
         g.pose().translate(textLeftX, titleY);
         g.pose().scale(titleScale, titleScale);
-        g.drawString(font, title, 0, 0, applyAlpha(COLOR_TITLE, alpha), true);
+        g.text(font, title, 0, 0, applyAlpha(COLOR_TITLE, alpha), true);
         g.pose().popMatrix();
 
         // Subtitle below the title, aligned to same left edge
@@ -261,7 +261,7 @@ public class GuideScreen extends BaseMenuScreen {
             int gC = Mth.clamp((int) (baseG + (255 - baseG) * shimmer * 0.3f), 0, 255);
             int b = Mth.clamp((int) (baseB + (255 - baseB) * shimmer * 0.3f), 0, 255);
             int shimmerColor = 0xFF000000 | (r << 16) | (gC << 8) | b;
-            g.drawString(font, subtitle, textLeftX, subtitleY, applyAlpha(shimmerColor, alpha), false);
+            g.text(font, subtitle, textLeftX, subtitleY, applyAlpha(shimmerColor, alpha), false);
         }
 
         // Close button â€” circular style, centered vertically
@@ -285,8 +285,8 @@ public class GuideScreen extends BaseMenuScreen {
         int xTextX = closeBtnX + (closeBtnSize - font.width(xChar)) / 2;
         int xTextY = closeBtnY + (closeBtnSize - font.lineHeight) / 2;
         // Draw with shadow (true) for bolder appearance, plus an offset duplicate for extra weight
-        g.drawString(font, xChar, xTextX, xTextY, xColor, true);
-        g.drawString(font, xChar, xTextX + 1, xTextY, xColor, false);
+        g.text(font, xChar, xTextX, xTextY, xColor, true);
+        g.text(font, xChar, xTextX + 1, xTextY, xColor, false);
 
         // Bottom border
         g.fill(left, bottom - 1, right, bottom, applyAlpha(COLOR_BORDER, alpha));
@@ -362,7 +362,7 @@ public class GuideScreen extends BaseMenuScreen {
                 g.pose().pushMatrix();
                 g.pose().translate(iconX, iconY);
                 g.pose().scale(0.75f, 0.75f);
-                g.renderItem(icon.getItemStack(), 0, 0);
+                g.item(icon.getItemStack(), 0, 0);
                 g.pose().popMatrix();
             } else if (icon.isTexture()) {
                 int renderSize = 12;
@@ -373,7 +373,7 @@ public class GuideScreen extends BaseMenuScreen {
                         renderSize, renderSize);
             } else if (icon.isSymbol()) {
                 int symY = y + (h - font.lineHeight) / 2;
-                g.drawString(font, icon.getSymbol(), iconX, symY,
+                g.text(font, icon.getSymbol(), iconX, symY,
                         applyAlpha(icon.getSymbolColor(), alpha), true);
             }
         }
@@ -387,7 +387,7 @@ public class GuideScreen extends BaseMenuScreen {
             catTitleStr = font.plainSubstrByWidth(catTitleStr, maxCatWidth - 10) + "..";
             catTitle = Component.literal(catTitleStr).withStyle(ChatFormatting.BOLD);
         }
-        g.drawString(font, catTitle, textX, y + (h - font.lineHeight) / 2,
+        g.text(font, catTitle, textX, y + (h - font.lineHeight) / 2,
                 applyAlpha(COLOR_CATEGORY_TEXT, alpha), true);
 
         // Animated chevron (rotates from right-pointing to down-pointing)
@@ -460,11 +460,11 @@ public class GuideScreen extends BaseMenuScreen {
             g.pose().pushMatrix();
             g.pose().translate(iconX, iconY);
             g.pose().scale(0.75f, 0.75f);
-            g.renderItem(pageIcon.getItemStack(), 0, 0);
+            g.item(pageIcon.getItemStack(), 0, 0);
             g.pose().popMatrix();
         } else if (pageIcon != null && pageIcon.isSymbol()) {
             int symY = y + (SIDEBAR_ITEM_HEIGHT - font.lineHeight) / 2;
-            g.drawString(font, pageIcon.getSymbol(), iconX, symY,
+            g.text(font, pageIcon.getSymbol(), iconX, symY,
                     applyAlpha(pageIcon.getSymbolColor(), alpha), true);
         } else {
             // Small dot indicator when no icon
@@ -481,7 +481,7 @@ public class GuideScreen extends BaseMenuScreen {
             pageTitle = font.plainSubstrByWidth(pageTitle, maxWidth - 8) + "..";
         }
         int textColor = selected ? COLOR_TITLE : COLOR_SIDEBAR_TEXT;
-        g.drawString(font, pageTitle, textX, y + 7, applyAlpha(textColor, alpha), selected);
+        g.text(font, pageTitle, textX, y + 7, applyAlpha(textColor, alpha), selected);
     }
 
     // â”€â”€ Content Area â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -494,7 +494,7 @@ public class GuideScreen extends BaseMenuScreen {
             String msg = "Select a page from the sidebar";
             int msgX = left + (right - left - font.width(msg)) / 2;
             int msgY = top + (bottom - top) / 2;
-            g.drawString(font, msg, msgX, msgY, applyAlpha(0xFF666688, alpha), false);
+            g.text(font, msg, msgX, msgY, applyAlpha(0xFF666688, alpha), false);
             return;
         }
 
@@ -517,16 +517,16 @@ public class GuideScreen extends BaseMenuScreen {
             g.pose().pushMatrix();
             g.pose().translate(left + 16, top + 8);
             g.pose().scale(0.75f, 0.75f);
-            g.renderItem(pageIcon.getItemStack(), 0, 0);
+            g.item(pageIcon.getItemStack(), 0, 0);
             g.pose().popMatrix();
             titleTextX = left + 32;
         } else if (pageIcon != null && pageIcon.isSymbol()) {
-            g.drawString(font, pageIcon.getSymbol(), left + 16, top + 10,
+            g.text(font, pageIcon.getSymbol(), left + 16, top + 10,
                     applyAlpha(pageIcon.getSymbolColor(), alpha), true);
             titleTextX = left + 16 + font.width(pageIcon.getSymbol()) + 4;
         }
 
-        g.drawString(font, currentPage.getTitle(), titleTextX, top + 10,
+        g.text(font, currentPage.getTitle(), titleTextX, top + 10,
                 applyAlpha(COLOR_TITLE, alpha), true);
 
         // Breadcrumb (category > page)
@@ -534,7 +534,7 @@ public class GuideScreen extends BaseMenuScreen {
             String breadcrumb = cat.getTitle().getString() + " \u203A " + currentPage.getTitle().getString();
             int breadcrumbX = right - 10 - font.width(breadcrumb);
             if (breadcrumbX > titleTextX + font.width(currentPage.getTitle()) + 10) {
-                g.drawString(font, breadcrumb, breadcrumbX, top + 10,
+                g.text(font, breadcrumb, breadcrumbX, top + 10,
                         applyAlpha(0xFF555577, alpha), false);
             }
         }
@@ -585,7 +585,7 @@ public class GuideScreen extends BaseMenuScreen {
             for (Component line : tooltipLines) {
                 clientComponents.add(net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent.create(line.getVisualOrderText()));
             }
-            g.renderTooltip(font, clientComponents, mouseX, mouseY,
+            g.tooltip(font, clientComponents, mouseX, mouseY,
                     net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner.INSTANCE,
                     craftingTooltipItem.get(net.minecraft.core.component.DataComponents.TOOLTIP_STYLE));
         }
@@ -619,7 +619,7 @@ public class GuideScreen extends BaseMenuScreen {
         float scale = 1.5f;
         g.pose().translate(x, y);
         g.pose().scale(scale, scale);
-        g.drawString(font, text, 0, 0, applyAlpha(0xFFFFFFFF, alpha), true);
+        g.text(font, text, 0, 0, applyAlpha(0xFFFFFFFF, alpha), true);
         g.pose().popMatrix();
 
         int textHeight = (int) (font.lineHeight * scale);
@@ -756,7 +756,7 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Draw subheader text in bold
         Component boldText = Component.literal(str).withStyle(ChatFormatting.BOLD);
-        g.drawString(font, boldText, x + 8 + iconOffset, y + 2, applyAlpha(element.getColor(), alpha), true);
+        g.text(font, boldText, x + 8 + iconOffset, y + 2, applyAlpha(element.getColor(), alpha), true);
 
         return font.lineHeight + 6;
     }
@@ -771,7 +771,7 @@ public class GuideScreen extends BaseMenuScreen {
         int totalHeight = 0;
 
         for (FormattedCharSequence line : lines) {
-            g.drawString(font, line, x, y + totalHeight, applyAlpha(element.getColor(), alpha), false);
+            g.text(font, line, x, y + totalHeight, applyAlpha(element.getColor(), alpha), false);
             totalHeight += lineHeight;
         }
 
@@ -788,12 +788,12 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Item at native 16x16 size
         if (element.getItemStack() != null) {
-            g.renderItem(element.getItemStack(), x + 6, y + 6);
+            g.item(element.getItemStack(), x + 6, y + 6);
         }
 
         // Description text
         if (element.getText() != null) {
-            g.drawString(font, element.getText(), x + 28, y + 10,
+            g.text(font, element.getText(), x + 28, y + 10,
                     applyAlpha(element.getColor(), alpha), false);
         }
 
@@ -869,12 +869,12 @@ public class GuideScreen extends BaseMenuScreen {
         g.fill(x + 3, y, x + width, y + 1, applyAlpha(COLOR_TIP_BORDER, alpha * 0.3f));
 
         // Tip icon
-        g.drawString(font, "\u2714", x + 8, y + 6, applyAlpha(0xFF7BD48A, alpha), true);
+        g.text(font, "\u2714", x + 8, y + 6, applyAlpha(0xFF7BD48A, alpha), true);
 
         // Text
         int textY = y + 6;
         for (FormattedCharSequence line : lines) {
-            g.drawString(font, line, x + 20, textY, applyAlpha(element.getColor(), alpha), false);
+            g.text(font, line, x + 20, textY, applyAlpha(element.getColor(), alpha), false);
             textY += lineHeight;
         }
 
@@ -900,7 +900,7 @@ public class GuideScreen extends BaseMenuScreen {
         Component label = element.getText();
         if (label != null && !label.getString().isEmpty()) {
             int labelX = startX + (totalWidth - font.width(label)) / 2;
-            g.drawString(font, label, labelX, y, applyAlpha(0xFFCCCCCC, alpha), false);
+            g.text(font, label, labelX, y, applyAlpha(0xFFCCCCCC, alpha), false);
             labelHeight = font.lineHeight + 8;
         }
 
@@ -936,7 +936,7 @@ public class GuideScreen extends BaseMenuScreen {
                         applyAlpha(0x60FFFFFF, alpha));
 
                 if (item != null && !item.isEmpty()) {
-                    g.renderItem(item, slotX + 1, slotY + 1);
+                    g.item(item, slotX + 1, slotY + 1);
                     // Vanilla-style white hover overlay
                     if (slotHovered) {
                         g.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0x80FFFFFF);
@@ -949,7 +949,7 @@ public class GuideScreen extends BaseMenuScreen {
         // Arrow (centered vertically with grid)
         int arrowX = startX + gridSize + (arrowWidth - font.width("\u2192")) / 2;
         int arrowY = gridY + (gridSize - font.lineHeight) / 2;
-        g.drawString(font, "\u2192", arrowX, arrowY, applyAlpha(0xFFFFFFFF, alpha), true);
+        g.text(font, "\u2192", arrowX, arrowY, applyAlpha(0xFFFFFFFF, alpha), true);
 
         // Result slot (centered vertically with grid)
         int resultX = startX + gridSize + arrowWidth;
@@ -964,7 +964,7 @@ public class GuideScreen extends BaseMenuScreen {
         drawBorder(g, resultX, resultY, resultX + resultSlotSize, resultY + resultSlotSize,
                 applyAlpha(0xAAFFD700, alpha));
 
-        g.renderItem(result, resultX + 3, resultY + 3);
+        g.item(result, resultX + 3, resultY + 3);
 
         if (resultHovered) {
             g.fill(resultX + 3, resultY + 3, resultX + 19, resultY + 19, 0x80FFFFFF);
@@ -989,18 +989,18 @@ public class GuideScreen extends BaseMenuScreen {
         // "â€¢ "
         String bullet = "\u2022 ";
         int bulletWidth = font.width(bullet);
-        g.drawString(font, bullet, x, y, applyAlpha(0xFFD0D0D0, alpha), false);
+        g.text(font, bullet, x, y, applyAlpha(0xFFD0D0D0, alpha), false);
 
         // Ability name
         String nameStr = name.getString();
         int nameWidth = font.width(nameStr);
-        g.drawString(font, nameStr, x + bulletWidth, y, applyAlpha(0xFFD0D0D0, alpha), false);
+        g.text(font, nameStr, x + bulletWidth, y, applyAlpha(0xFFD0D0D0, alpha), false);
 
         // " (inherited)" in bold
         Component inherited = Component.literal(" (inherited)").withStyle(ChatFormatting.BOLD);
         int inheritedWidth = font.width(inherited);
         int inheritedX = x + bulletWidth + nameWidth;
-        g.drawString(font, inherited, inheritedX, y, applyAlpha(0xFFAAAACC, alpha), false);
+        g.text(font, inherited, inheritedX, y, applyAlpha(0xFFAAAACC, alpha), false);
 
         // Link icon (drawn as a small chain/link shape)
         int iconX = inheritedX + inheritedWidth + 3;
@@ -1065,7 +1065,7 @@ public class GuideScreen extends BaseMenuScreen {
             float scale = iconSize / 16.0f;
             g.pose().translate(x, y);
             g.pose().scale(scale, scale);
-            g.renderItem(displayItem, 0, 0);
+            g.item(displayItem, 0, 0);
             g.pose().popMatrix();
         }
 
@@ -1075,7 +1075,7 @@ public class GuideScreen extends BaseMenuScreen {
         int totalHeight = 0;
 
         for (FormattedCharSequence line : lines) {
-            g.drawString(font, line, textX, y + totalHeight + 1, applyAlpha(element.getColor(), alpha), false);
+            g.text(font, line, textX, y + totalHeight + 1, applyAlpha(element.getColor(), alpha), false);
             totalHeight += lineHeight;
         }
 
@@ -1117,7 +1117,7 @@ public class GuideScreen extends BaseMenuScreen {
         // Draw text with underline
         int textX = startX + iconW + 3;
         Component underlined = Component.literal(labelStr).withStyle(ChatFormatting.UNDERLINE);
-        g.drawString(font, underlined, textX, y + 1, textColor, false);
+        g.text(font, underlined, textX, y + 1, textColor, false);
 
         // Register clickable region
         if (element.getTargetPageId() != null) {

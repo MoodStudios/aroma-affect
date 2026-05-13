@@ -46,7 +46,7 @@ public class NoseSmithSpawnItem extends Item {
         
         // Create the Nose Smith using the entity constructor
         NoseSmithEntity noseSmith = new NoseSmithEntity(
-                NoseSmithRegistry.getNOSE_SMITH().get(),
+                NoseSmithRegistry.getNoseSmithType(),
                 serverLevel
         );
         

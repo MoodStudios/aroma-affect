@@ -15,7 +15,7 @@ public final class BlockOutlineRendererFabric {
                     context.worldState().cameraRenderState.pos,
                     context.consumers()
             );
-            BlockOutlineRenderer.renderOutline(
+            BlockOutlineRenderer.outline(
                     context.matrices(),
                     context.worldState().cameraRenderState.pos,
                     context.consumers()

@@ -80,7 +80,7 @@ public class NoseSmithSmellFlowerGoal extends Goal {
             if (!hasSniffed && smellTicks < (SMELL_DURATION_MIN + SMELL_DURATION_MAX) / 2) {
                 hasSniffed = true;
                 Level level = noseSmith.level();
-                level.playSound(null, noseSmith.blockPosition(), ModSounds.SNIFF.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+                level.playSound(null, noseSmith.blockPosition(), ModSounds.SNIFF.value(), SoundSource.NEUTRAL, 1.0F, 1.0F);
                 if (level instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                             ParticleTypes.HAPPY_VILLAGER,

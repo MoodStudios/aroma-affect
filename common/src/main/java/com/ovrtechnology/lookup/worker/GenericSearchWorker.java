@@ -73,9 +73,9 @@ public class GenericSearchWorker extends AbstractStructureSearchWorker<Structure
         // Check current position
         ChunkPos chunkPos = new ChunkPos(currentChunkX, currentChunkZ);
         currentPos = new BlockPos(
-                SectionPos.sectionToBlockCoord(chunkPos.x, 8),
+                SectionPos.sectionToBlockCoord(chunkPos.x(), 8),
                 0,
-                SectionPos.sectionToBlockCoord(chunkPos.z, 8)
+                SectionPos.sectionToBlockCoord(chunkPos.z(), 8)
         );
         
         BlockPos pos = checkStructureAt(chunkPos);

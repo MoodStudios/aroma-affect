@@ -99,7 +99,7 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
         }
 
         @SuppressWarnings("unchecked")
-        EntityType<T> noseSmithType = (EntityType<T>) (EntityType<?>) NoseSmithRegistry.getNOSE_SMITH().get();
+        EntityType<T> noseSmithType = (EntityType<T>) (EntityType<?>) NoseSmithRegistry.getNoseSmithType();
 
         return self.convertTo(noseSmithType, params, entity -> {
             afterConversion.finalizeConversion(entity);

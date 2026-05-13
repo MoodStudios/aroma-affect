@@ -25,7 +25,7 @@ public final class BlockOutlineRendererNeoForge {
                 bufferSource
         );
 
-        BlockOutlineRenderer.renderOutline(
+        BlockOutlineRenderer.outline(
                 event.getPoseStack(),
                 event.getLevelRenderState().cameraRenderState.pos,
                 bufferSource

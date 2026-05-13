@@ -176,11 +176,8 @@ public class ScentItem extends Item {
         // Check cooldown BEFORE consuming — returns FAIL so server is not called
         if (!ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs)) {
             long remaining = ScentTriggerManager.getInstance().getRemainingCooldown(scentName);
-            player.displayClientMessage(
-                Component.translatable("message.aromaaffect.scent_cooldown",
-                    String.format("%.1f", remaining / 1000.0)),
-                true
-            );
+            player.sendOverlayMessage(Component.translatable("message.aromaaffect.scent_cooldown",
+                    String.format("%.1f", remaining / 1000.0)));
             return InteractionResult.FAIL;
         }
 

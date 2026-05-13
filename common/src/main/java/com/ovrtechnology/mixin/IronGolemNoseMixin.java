@@ -129,8 +129,8 @@ public abstract class IronGolemNoseMixin extends AbstractGolem implements IronGo
         );
 
         // Drop Iron Nose item
-        if (NoseSmithRegistry.getIRON_NOSE().isPresent()) {
-            ItemStack noseItem = new ItemStack(NoseSmithRegistry.getIRON_NOSE().get());
+        if ((NoseSmithRegistry.getIronNose() != null && NoseSmithRegistry.getIronNose().isBound())) {
+            ItemStack noseItem = new ItemStack(NoseSmithRegistry.getIronNose().value());
             double spawnX = this.getX();
             double spawnY = this.getEyeY() - 0.3D;
             double spawnZ = this.getZ();

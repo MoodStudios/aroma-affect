@@ -187,7 +187,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         searchBox.setX(listX);
         searchBox.setY(searchY);
         searchBox.setWidth(listWidth);
-        searchBox.render(graphics, mouseX, mouseY, partialTick);
+        searchBox.extractRenderState(graphics, mouseX, mouseY, partialTick);
 
         // Optional filter chips (subclass hook)
         int chipY = searchY + SEARCH_BOX_HEIGHT + 6;
@@ -206,7 +206,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         int textColor = (int) (255 * alpha) << 24 | 0xFFFFFF;
 
         Component title = getTitle();
-        graphics.drawCenteredString(font, title, centerX, 20, textColor);
+        graphics.centeredText(font, title, centerX, 20, textColor);
 
         if (animationProgress > 0.3f) {
             float iconAlpha = (animationProgress - 0.3f) / 0.7f;
@@ -226,7 +226,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
         Component description = category.getDescription();
         int descColor = (int) (200 * alpha) << 24 | 0xAAAAAA;
-        graphics.drawCenteredString(font, description, centerX, 35, descColor);
+        graphics.centeredText(font, description, centerX, 35, descColor);
     }
 
     protected void renderBackButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
@@ -267,7 +267,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         if (filteredCards.isEmpty()) {
             float alpha = animationProgress;
             int textColor = (int) (180 * alpha) << 24 | 0xAAAAAA;
-            graphics.drawCenteredString(font,
+            graphics.centeredText(font,
                     Component.translatable("menu.aromaaffect." + category.getId() + ".no_results"),
                     width / 2, listTop + 20, textColor);
             return;
@@ -387,7 +387,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
                 : (alpha << 24 | 0xFF4444);
 
         costX -= costTextWidth;
-        graphics.drawString(font, costText, costX, rowCenterY - 4, costColor);
+        graphics.text(font, costText, costX, rowCenterY - 4, costColor);
 
         // Nose icon (14x14, rendered from head item)
         int noseIconSize = 14;
@@ -396,7 +396,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             graphics.pose().pushMatrix();
             graphics.pose().translate(costX, rowCenterY - noseIconSize / 2);
             graphics.pose().scale(noseIconSize / 16.0f, noseIconSize / 16.0f);
-            graphics.renderItem(headStack, 0, 0);
+            graphics.item(headStack, 0, 0);
             graphics.pose().popMatrix();
         }
 
@@ -413,7 +413,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
                     : (alpha << 24 | 0xFF4444);
 
             costX -= reqTextWidth;
-            graphics.drawString(font, reqText, costX, rowCenterY - 4, reqColor);
+            graphics.text(font, reqText, costX, rowCenterY - 4, reqColor);
 
             int reqIconSize = 14;
             costX -= reqIconSize + 2;
@@ -421,7 +421,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
                 graphics.pose().pushMatrix();
                 graphics.pose().translate(costX, rowCenterY - reqIconSize / 2);
                 graphics.pose().scale(reqIconSize / 16.0f, reqIconSize / 16.0f);
-                graphics.renderItem(card.requiredItem, 0, 0);
+                graphics.item(card.requiredItem, 0, 0);
                 graphics.pose().popMatrix();
             }
         }

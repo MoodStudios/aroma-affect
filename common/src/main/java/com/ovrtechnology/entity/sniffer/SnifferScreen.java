@@ -22,18 +22,18 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor GuiGraphicsExtractor, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int k = (this.width - this.imageWidth) / 2;
         int l = (this.height - this.imageHeight) / 2;
 
         // Fondo principal (igual que HorseInventoryScreen)
-        GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, k, l, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, k, l, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         // Slot de silla (saddle) - posiciÃ³n k+7, l+17
-        drawSlot(GuiGraphicsExtractor, k + 7, l + 35 - 18);
+        drawSlot(graphics, k + 7, l + 35 - 18);
 
         // Slot de decoraciÃ³n (armor) - posiciÃ³n k+7, l+35
-        drawSlot(GuiGraphicsExtractor, k + 7, l + 35);
+        drawSlot(graphics, k + 7, l + 35);
 
         // Renderizar el Sniffer en la pantalla
         if (this.menu.getSniffer() != null) {
@@ -49,15 +49,15 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
         }
     }
 
-    private void drawSlot(GuiGraphicsExtractor GuiGraphicsExtractor, int x, int y) {
-        GuiGraphicsExtractor.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, x, y, 18, 18);
+    private void drawSlot(GuiGraphicsExtractor graphics, int x, int y) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, x, y, 18, 18);
     }
 
     @Override
-    public void render(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         this.xMouse = (float) mouseX;
         this.yMouse = (float) mouseY;
-        super.render(GuiGraphicsExtractor, mouseX, mouseY, partialTick);
-        this.renderTooltip(GuiGraphicsExtractor, mouseX, mouseY);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        this.extractTooltip(graphics, mouseX, mouseY);
     }
 }

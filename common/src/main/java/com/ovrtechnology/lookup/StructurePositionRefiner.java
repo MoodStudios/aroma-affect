@@ -67,7 +67,7 @@ public final class StructurePositionRefiner {
             }
 
             ChunkPos chunkPos = ChunkPos.containing(approxPos);
-            ChunkAccess chunk = level.getChunk(chunkPos.x, chunkPos.z);
+            ChunkAccess chunk = level.getChunk(chunkPos.x(), chunkPos.z());
 
             StructureStart start = level.structureManager().getStartForStructure(
                     SectionPos.bottomOf(chunk), structure, chunk

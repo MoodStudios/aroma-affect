@@ -107,7 +107,7 @@ public abstract class BaseMenuScreen extends Screen {
     }
     
     @Override
-    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // Calculate interpolated animation progress
         float smoothProgress = getSmoothAnimationProgress(partialTick);
 
@@ -121,7 +121,7 @@ public abstract class BaseMenuScreen extends Screen {
         renderNotification(graphics);
 
         // Render widgets on top
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override
@@ -278,7 +278,7 @@ public abstract class BaseMenuScreen extends Screen {
         // Draw text centered
         int textX = bannerX + padding;
         int textY = bannerY + (bannerHeight - 8) / 2;
-        graphics.drawString(font, notificationMessage, textX, textY, textColor, false);
+        graphics.text(font, notificationMessage, textX, textY, textColor, false);
     }
 
     /**

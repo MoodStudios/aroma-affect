@@ -198,10 +198,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
                     // Message to player
                     if (player instanceof Player) {
-                        player.displayClientMessage(
-                                Component.literal("§aSuccessfully tamed the Sniffer!"),
-                                true
-                        );
+                        player.sendOverlayMessage(Component.literal("§aSuccessfully tamed the Sniffer!"));
                     }
                 } else {
                     // Progress particles
@@ -213,10 +210,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
                     // Progress message
                     if (player instanceof Player) {
-                        player.displayClientMessage(
-                                Component.literal("§6Taming progress: §e" + data.tamingProgress + "§6/§e" + torchflowersNeeded),
-                                true
-                        );
+                        player.sendOverlayMessage(Component.literal("§6Taming progress: §e" + data.tamingProgress + "§6/§e" + torchflowersNeeded));
                     }
                 }
             }

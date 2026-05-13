@@ -83,9 +83,9 @@ public class RandomSpreadSearchWorker extends AbstractStructureSearchWorker<Rand
             
             ChunkPos chunkPos = placement.getPotentialStructureChunk(level.getSeed(), sampleX, sampleZ);
             currentPos = new BlockPos(
-                    SectionPos.sectionToBlockCoord(chunkPos.x, 8),
+                    SectionPos.sectionToBlockCoord(chunkPos.x(), 8),
                     0,
-                    SectionPos.sectionToBlockCoord(chunkPos.z, 8)
+                    SectionPos.sectionToBlockCoord(chunkPos.z(), 8)
             );
             
             BlockPos pos = checkStructureAt(chunkPos);

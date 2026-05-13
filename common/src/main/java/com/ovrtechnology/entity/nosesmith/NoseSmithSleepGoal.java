@@ -87,7 +87,7 @@ public class NoseSmithSleepGoal extends Goal {
     }
 
     private static boolean isNight(Level level) {
-        long dayTime = level.getDayTime() % 24000L;
+        long dayTime = level.getOverworldClockTime() % 24000L;
         return dayTime >= 13000L && dayTime < 23000L;
     }
 

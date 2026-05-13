@@ -89,7 +89,7 @@ public class NoseSmithSniffEntityGoal extends Goal {
 
         if (ticksRemaining == SNIFF_DURATION - SNIFF_TICK) {
             Level level = noseSmith.level();
-            level.playSound(null, noseSmith.blockPosition(), ModSounds.SNIFF.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            level.playSound(null, noseSmith.blockPosition(), ModSounds.SNIFF.value(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         }
 
         if (!hasReacted && ticksRemaining == SNIFF_DURATION - REACTION_TICK) {

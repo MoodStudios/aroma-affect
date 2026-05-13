@@ -176,12 +176,12 @@ public final class TrackingHud {
         // Main text
         int textColor = (a << 24) | accentColor;
         int textX = boxX + 10;
-        graphics.drawString(font, text, textX, boxY + 6, textColor, false);
+        graphics.text(font, text, textX, boxY + 6, textColor, false);
 
         // Target name (smaller, white)
         if (!targetText.isEmpty()) {
             int nameColor = (a << 24) | 0xCCCCCC;
-            graphics.drawString(font, targetText, textX, boxY + 20, nameColor, false);
+            graphics.text(font, targetText, textX, boxY + 20, nameColor, false);
         }
     }
 
@@ -248,22 +248,22 @@ public final class TrackingHud {
         int iconX = panelLeft + pad + 1;
         int iconY = panelTop + (panelHeight - 16) / 2;
         if (ActiveTrackingState.getIcon() != null) {
-            graphics.renderItem(ActiveTrackingState.getIcon(), iconX, iconY);
+            graphics.item(ActiveTrackingState.getIcon(), iconX, iconY);
         }
 
         int textX = iconX + iconSpace;
         int currentY = panelTop + 5;
 
         int labelColor = (status == ActiveTrackingState.TrackingStatus.SEARCHING) ? 0xFFFFCC44 : 0xFF88CC88;
-        graphics.drawString(font, headerText, textX, currentY, labelColor);
+        graphics.text(font, headerText, textX, currentY, labelColor);
         currentY += 11;
 
         if (targetName != null) {
-            graphics.drawString(font, targetName, textX, currentY, 0xFFFFFFFF);
+            graphics.text(font, targetName, textX, currentY, 0xFFFFFFFF);
             currentY += 11;
         }
         if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) {
-            graphics.drawString(font, targetIdStr, textX, currentY, 0xFF777777);
+            graphics.text(font, targetIdStr, textX, currentY, 0xFF777777);
             currentY += 11;
         }
         if (distText != null && dirKind != null) {
@@ -282,6 +282,6 @@ public final class TrackingHud {
         Minecraft mc = Minecraft.getInstance();
         int indicatorColor = TrackingDirectionIndicator.colorForKind(directionKind, color);
         TrackingDirectionIndicator.draw(graphics, x, y, directionKind, indicatorColor);
-        graphics.drawString(mc.font, distanceText, x + TrackingDirectionIndicator.getColumnWidth(), y, indicatorColor, false);
+        graphics.text(mc.font, distanceText, x + TrackingDirectionIndicator.getColumnWidth(), y, indicatorColor, false);
     }
 }

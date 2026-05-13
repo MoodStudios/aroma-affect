@@ -172,7 +172,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
             // CHUNK_LOAD_NEEDED - we MUST load the chunk to verify
             // Explorer's Compass does NOT pass 'false' here - it loads the chunk
             chunkLoadCount++;
-            ChunkAccess chunk = level.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.STRUCTURE_STARTS);
+            ChunkAccess chunk = level.getChunk(chunkPos.x(), chunkPos.z(), ChunkStatus.STRUCTURE_STARTS);
             
             StructureStart structureStart = level.structureManager()
                     .getStartForStructure(SectionPos.bottomOf(chunk), structure, chunk);

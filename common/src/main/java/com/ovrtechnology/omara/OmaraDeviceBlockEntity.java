@@ -260,7 +260,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         state = level.getBlockState(pos);
 
         // Play puff sound (3D spatial, audible nearby)
-        serverLevel.playSound(null, pos, ModSounds.OMARA_PUFF.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+        serverLevel.playSound(null, pos, ModSounds.OMARA_PUFF.value(), SoundSource.BLOCKS, 1.0F, 1.0F);
 
         // Spawn particles
         spawnPuffParticles(serverLevel, pos, state, scentName);

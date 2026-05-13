@@ -172,7 +172,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         // Title
         int titleColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, animationProgress);
-        g.drawCenteredString(font, getTitle(), centerX, 10, titleColor);
+        g.centeredText(font, getTitle(), centerX, 10, titleColor);
 
         // Back button
         renderBackButton(g, mouseX, mouseY, animationProgress);
@@ -186,7 +186,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         searchBox.setX(listX);
         searchBox.setY(searchY);
         searchBox.setWidth(listWidth);
-        searchBox.render(g, mouseX, mouseY, partialTick);
+        searchBox.extractRenderState(g, mouseX, mouseY, partialTick);
 
         // List
         int listTop = searchY + SEARCH_BOX_HEIGHT + 6;
@@ -215,7 +215,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         g.fill(tx, ty, tx + tw, ty + th, MenuRenderUtils.withAlpha(0xF0181820, ap));
         MenuRenderUtils.renderOutline(g, tx, ty, tw, th, MenuRenderUtils.withAlpha(0x889A7CFF, ap));
-        g.drawString(font, text, tx + 4, ty + 3, MenuRenderUtils.withAlpha(0xFFDDDDDD, ap));
+        g.text(font, text, tx + 4, ty + 3, MenuRenderUtils.withAlpha(0xFFDDDDDD, ap));
     }
 
     private void renderBackButton(GuiGraphicsExtractor g, int mouseX, int mouseY, float ap) {
@@ -285,7 +285,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             int textColor = active
                     ? MenuRenderUtils.withAlpha(0xFFFFFFFF, ap)
                     : MenuRenderUtils.withAlpha(0xFFAAAAAA, ap);
-            g.drawCenteredString(font, labels[i],
+            g.centeredText(font, labels[i],
                     tx + tabWidth / 2, tabY + (TAB_HEIGHT - 8) / 2, textColor);
         }
     }
@@ -302,7 +302,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 case SAVED -> Component.translatable("history.aromaaffect.empty.saved");
                 case BLACKLIST -> Component.translatable("history.aromaaffect.empty.blacklist");
             };
-            g.drawCenteredString(font, emptyMsg, width / 2, listTop + 20, textColor);
+            g.centeredText(font, emptyMsg, width / 2, listTop + 20, textColor);
             return;
         }
 
@@ -352,25 +352,25 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         // Name
         int textX = x + 28;
-        g.drawString(font, entry.displayName, textX, y + 4,
+        g.text(font, entry.displayName, textX, y + 4,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
 
         // Category badge + coords
         int badgeColor = getCategoryBadgeColor(entry.categoryId);
         String catLabel = MenuRenderUtils.capitalizeWords(entry.categoryId);
-        g.drawString(font, catLabel, textX, y + 15,
+        g.text(font, catLabel, textX, y + 15,
                 MenuRenderUtils.withAlpha(badgeColor, ap));
 
         String coords = String.format("(%d, %d, %d)", entry.x, entry.y, entry.z);
         int coordsX = textX + font.width(catLabel) + 4;
-        g.drawString(font, coords, coordsX, y + 15,
+        g.text(font, coords, coordsX, y + 15,
                 MenuRenderUtils.withAlpha(0xFF888888, ap));
 
         // Dimension label after coords
         String dimLabel = formatDimension(entry.dimension);
         int dimColor = getDimensionColor(entry.dimension);
         int dimX = coordsX + font.width(coords) + 4;
-        g.drawString(font, dimLabel, dimX, y + 15,
+        g.text(font, dimLabel, dimX, y + 15,
                 MenuRenderUtils.withAlpha(dimColor, ap));
 
         // Status badges after dimension
@@ -383,7 +383,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         }
 
         // Time ago
-        g.drawString(font, formatTimeAgo(entry.timestamp), textX, y + 26,
+        g.text(font, formatTimeAgo(entry.timestamp), textX, y + 26,
                 MenuRenderUtils.withAlpha(0xFF666666, ap));
 
         // Action buttons when hovered
@@ -434,24 +434,24 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         renderEntryIcon(g, iconX, iconY, icon, entry.categoryId, ap);
 
         int textX = x + 28;
-        g.drawString(font, entry.customName, textX, y + 4,
+        g.text(font, entry.customName, textX, y + 4,
                 MenuRenderUtils.withAlpha(0xFFFFCC44, ap));
 
         int badgeColor = getCategoryBadgeColor(entry.categoryId);
         String catLabel = MenuRenderUtils.capitalizeWords(entry.categoryId);
-        g.drawString(font, catLabel, textX, y + 15,
+        g.text(font, catLabel, textX, y + 15,
                 MenuRenderUtils.withAlpha(badgeColor, ap));
 
         String coords = String.format("(%d, %d, %d)", entry.x, entry.y, entry.z);
         int coordsX = textX + font.width(catLabel) + 4;
-        g.drawString(font, coords, coordsX, y + 15,
+        g.text(font, coords, coordsX, y + 15,
                 MenuRenderUtils.withAlpha(0xFF888888, ap));
 
         // Dimension label after coords
         String dimLabel = formatDimension(entry.dimension);
         int dimColor = getDimensionColor(entry.dimension);
         int dimX = coordsX + font.width(coords) + 4;
-        g.drawString(font, dimLabel, dimX, y + 15,
+        g.text(font, dimLabel, dimX, y + 15,
                 MenuRenderUtils.withAlpha(dimColor, ap));
 
         // Status badge if blacklisted
@@ -497,23 +497,23 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         int textX = x + 28;
         String name = entry.displayName != null ? entry.displayName : entry.targetId;
-        g.drawString(font, name, textX, y + 4,
+        g.text(font, name, textX, y + 4,
                 MenuRenderUtils.withAlpha(0xFFFF8888, ap));
 
         int badgeColor = getCategoryBadgeColor(entry.categoryId);
         String catLabel = MenuRenderUtils.capitalizeWords(entry.categoryId);
-        g.drawString(font, catLabel, textX, y + 15,
+        g.text(font, catLabel, textX, y + 15,
                 MenuRenderUtils.withAlpha(badgeColor, ap));
 
         String coords = String.format("(%d, %d, %d)", entry.x, entry.y, entry.z);
         int coordsX = textX + font.width(catLabel) + 4;
-        g.drawString(font, coords, coordsX, y + 15,
+        g.text(font, coords, coordsX, y + 15,
                 MenuRenderUtils.withAlpha(0xFF888888, ap));
 
         // Dimension label after coords
         String dimLabel = formatDimension(entry.dimension);
         int dimColor = getDimensionColor(entry.dimension);
-        g.drawString(font, dimLabel, coordsX + font.width(coords) + 4, y + 15,
+        g.text(font, dimLabel, coordsX + font.width(coords) + 4, y + 15,
                 MenuRenderUtils.withAlpha(dimColor, ap));
 
         if (hovered) {
@@ -578,7 +578,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             String costStr = String.valueOf(retrackCost);
             int costW = font.width(costStr);
             int costColor = MenuRenderUtils.withAlpha(0xFFFFAA00, ap);
-            g.drawString(font, costStr, cx - costW / 2, cy + 6, costColor);
+            g.text(font, costStr, cx - costW / 2, cy + 6, costColor);
         }
 
         // Tooltip
@@ -847,7 +847,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             g.pose().translate(bx + offset, by + offset);
             float scale = itemSize / 16.0f;
             g.pose().scale(scale, scale);
-            g.renderItem(specificIcon, 0, 0);
+            g.item(specificIcon, 0, 0);
             g.pose().popMatrix();
         }
     }
@@ -860,7 +860,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         g.fill(x, y, x + pillW, y + pillH, MenuRenderUtils.withAlpha(bgColor, ap));
         MenuRenderUtils.renderOutline(g, x, y, pillW, pillH,
                 MenuRenderUtils.withAlpha(textColor, ap * 0.4f));
-        g.drawString(font, label, x + 3, y + 1,
+        g.text(font, label, x + 3, y + 1,
                 MenuRenderUtils.withAlpha(textColor, ap));
         return x + pillW + 3;
     }
@@ -883,7 +883,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         Component popupTitle = namePopupIsRename
                 ? Component.translatable("history.aromaaffect.popup.rename")
                 : Component.translatable("history.aromaaffect.popup.save");
-        g.drawCenteredString(font, popupTitle, px + popupW / 2, py + 6,
+        g.centeredText(font, popupTitle, px + popupW / 2, py + 6,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
 
         if (nameEditBox != null) {
@@ -904,7 +904,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                         : MenuRenderUtils.withAlpha(0x8833AA33, ap));
         MenuRenderUtils.renderOutline(g, confirmX, confirmY, confirmW, confirmH,
                 MenuRenderUtils.withAlpha(0x8844FF44, ap));
-        g.drawCenteredString(font, Component.translatable("history.aromaaffect.popup.confirm"),
+        g.centeredText(font, Component.translatable("history.aromaaffect.popup.confirm"),
                 confirmX + confirmW / 2, confirmY + 4,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
 
@@ -916,7 +916,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                         : MenuRenderUtils.withAlpha(0x80AA3333, ap));
         MenuRenderUtils.renderOutline(g, cancelX, confirmY, confirmW, confirmH,
                 MenuRenderUtils.withAlpha(0x88FF4444, ap));
-        g.drawCenteredString(font, Component.translatable("history.aromaaffect.popup.cancel"),
+        g.centeredText(font, Component.translatable("history.aromaaffect.popup.cancel"),
                 cancelX + confirmW / 2, confirmY + 4,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
     }

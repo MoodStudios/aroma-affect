@@ -104,11 +104,11 @@ public class ShopScreen extends BaseMenuScreen {
 
         // Title
         Component title = Component.translatable("shop.aromaaffect.title");
-        graphics.drawCenteredString(font, title, centerX, panelTop + 10, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.centeredText(font, title, centerX, panelTop + 10, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         // Subtitle
         Component subtitle = Component.translatable("shop.aromaaffect.subtitle");
-        graphics.drawCenteredString(font, subtitle, centerX, panelTop + 24, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        graphics.centeredText(font, subtitle, centerX, panelTop + 24, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
 
         // Content area
         int contentTop = panelTop + 40;
@@ -173,7 +173,7 @@ public class ShopScreen extends BaseMenuScreen {
             graphics.fill(btn1X, btnY, btn1X + btnW, btnY + btnH, infoBg);
             MenuRenderUtils.renderOutline(graphics, btn1X, btnY, btnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, btnAlpha));
             Component infoLabel = Component.translatable("shop.aromaaffect.view_info");
-            graphics.drawCenteredString(font, infoLabel, btn1X + btnW / 2, btnY + 7,
+            graphics.centeredText(font, infoLabel, btn1X + btnW / 2, btnY + 7,
                     MenuRenderUtils.withAlpha(COL_TEXT, btnAlpha));
 
             // Buy Now button with pulsing glow
@@ -186,7 +186,7 @@ public class ShopScreen extends BaseMenuScreen {
             graphics.fill(btn2X, btnY, btn2X + btnW, btnY + btnH, buyBg);
             MenuRenderUtils.renderOutline(graphics, btn2X, btnY, btnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, btnAlpha));
             Component buyLabel = Component.translatable("shop.aromaaffect.buy_now");
-            graphics.drawCenteredString(font, buyLabel, btn2X + btnW / 2, btnY + 7,
+            graphics.centeredText(font, buyLabel, btn2X + btnW / 2, btnY + 7,
                     MenuRenderUtils.withAlpha(COL_TEXT, btnAlpha));
         }
 
@@ -229,7 +229,7 @@ public class ShopScreen extends BaseMenuScreen {
             graphics.fill(buyBtnX, buyBtnY, buyBtnX + buyBtnW, buyBtnY + btnH, buyBg);
             MenuRenderUtils.renderOutline(graphics, buyBtnX, buyBtnY, buyBtnW, btnH, MenuRenderUtils.withAlpha(0x66FFFFFF, backAlpha));
             Component buyLabel = Component.translatable("shop.aromaaffect.buy_now");
-            graphics.drawCenteredString(font, buyLabel, buyBtnX + buyBtnW / 2, buyBtnY + 7,
+            graphics.centeredText(font, buyLabel, buyBtnX + buyBtnW / 2, buyBtnY + 7,
                     MenuRenderUtils.withAlpha(COL_TEXT, backAlpha));
         }
 
@@ -250,12 +250,12 @@ public class ShopScreen extends BaseMenuScreen {
 
         // Product name
         Component name = Component.translatable("shop.aromaaffect.product_name");
-        graphics.drawString(font, name, textX, textY, accentColor);
+        graphics.text(font, name, textX, textY, accentColor);
         textY += 14;
 
         // Tagline
         Component tagline = Component.translatable("shop.aromaaffect.tagline");
-        graphics.drawString(font, tagline, textX, textY, textColor);
+        graphics.text(font, tagline, textX, textY, textColor);
         textY += 16;
 
         // Features list
@@ -271,8 +271,8 @@ public class ShopScreen extends BaseMenuScreen {
         for (String key : featureKeys) {
             Component feature = Component.translatable(key);
             // Bullet point
-            graphics.drawString(font, "\u2022", textX, textY, accentColor);
-            graphics.drawString(font, feature, textX + 10, textY, dimColor);
+            graphics.text(font, "\u2022", textX, textY, accentColor);
+            graphics.text(font, feature, textX + 10, textY, dimColor);
             textY += 12;
         }
 
@@ -280,7 +280,7 @@ public class ShopScreen extends BaseMenuScreen {
 
         // Compatible badge
         Component compatible = Component.translatable("shop.aromaaffect.compatible");
-        graphics.drawString(font, compatible, textX, textY, MenuRenderUtils.withAlpha(COL_GREEN, alpha));
+        graphics.text(font, compatible, textX, textY, MenuRenderUtils.withAlpha(COL_GREEN, alpha));
     }
 
     private void renderBackButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {

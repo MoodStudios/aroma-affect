@@ -57,7 +57,7 @@ public class CompassMenuScreen extends BaseMenuScreen {
         // Render title
         int titleColor = MenuRenderUtils.withAlpha(COLOR_TEXT_TITLE, alpha);
         Component title = Component.translatable("menu.aromaaffect.compass.title");
-        graphics.drawCenteredString(font, title, width / 2, panelY + 12, titleColor);
+        graphics.centeredText(font, title, width / 2, panelY + 12, titleColor);
         
         // Render separator line
         graphics.fill(panelX + 10, panelY + 28, panelX + PANEL_WIDTH - 10, panelY + 29, borderColor);
@@ -68,11 +68,11 @@ public class CompassMenuScreen extends BaseMenuScreen {
         
         // Current target (placeholder)
         Component targetLabel = Component.translatable("menu.aromaaffect.compass.target");
-        graphics.drawString(font, targetLabel, panelX + 15, panelY + 40, infoColor);
+        graphics.text(font, targetLabel, panelX + 15, panelY + 40, infoColor);
         
         // Show "No active target" placeholder
         Component noTarget = Component.translatable("menu.aromaaffect.compass.no_target");
-        graphics.drawString(font, noTarget, panelX + 15, panelY + 55, inactiveColor);
+        graphics.text(font, noTarget, panelX + 15, panelY + 55, inactiveColor);
         
         // Render compass direction placeholder
         int compassCenterX = width / 2;
@@ -83,14 +83,14 @@ public class CompassMenuScreen extends BaseMenuScreen {
         drawCircleOutline(graphics, compassCenterX, compassCenterY, compassRadius, borderColor);
         
         // Draw cardinal directions
-        graphics.drawCenteredString(font, "N", compassCenterX, compassCenterY - compassRadius - 10, infoColor);
-        graphics.drawCenteredString(font, "S", compassCenterX, compassCenterY + compassRadius + 4, infoColor);
-        graphics.drawString(font, "W", compassCenterX - compassRadius - 10, compassCenterY - 4, infoColor);
-        graphics.drawString(font, "E", compassCenterX + compassRadius + 4, compassCenterY - 4, infoColor);
+        graphics.centeredText(font, "N", compassCenterX, compassCenterY - compassRadius - 10, infoColor);
+        graphics.centeredText(font, "S", compassCenterX, compassCenterY + compassRadius + 4, infoColor);
+        graphics.text(font, "W", compassCenterX - compassRadius - 10, compassCenterY - 4, infoColor);
+        graphics.text(font, "E", compassCenterX + compassRadius + 4, compassCenterY - 4, infoColor);
         
         // Hint text at bottom
         Component hint = Component.translatable("menu.aromaaffect.compass.hint");
-        graphics.drawCenteredString(font, hint, width / 2, panelY + PANEL_HEIGHT - 15, inactiveColor);
+        graphics.centeredText(font, hint, width / 2, panelY + PANEL_HEIGHT - 15, inactiveColor);
     }
     
     /**

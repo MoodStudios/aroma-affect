@@ -203,7 +203,7 @@ public final class ActivePathManager {
             if (arrived) {
                 // Player has arrived!
                 if (PathSubCommand.isVerbose()) {
-                    player.sendSystemMessage(Component.literal(
+                    player.sendOverlayMessage(Component.literal(
                             "Â§6[Aroma Affect] Â§aYou have arrived at your destination!"
                     ));
                 }

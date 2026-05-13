@@ -78,7 +78,7 @@ public final class ActiveTrackingState {
         // Play random sniff sound
         var player = Minecraft.getInstance().player;
         if (player != null) {
-            player.playSound(ModSounds.SNIFF.get(), 0.8f, 1.0f);
+            player.playSound(ModSounds.SNIFF.value(), 0.8f, 1.0f);
         }
     }
 

@@ -159,27 +159,27 @@ public final class NoseSmithDialogueScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         int left = BOX_MARGIN;
         int right = this.width - BOX_MARGIN;
         int bottom = this.height - BOX_MARGIN;
         int top = bottom - BOX_HEIGHT;
 
-        GuiGraphicsExtractor.fill(left, top, right, bottom, COLOR_BOX_BG);
-        GuiGraphicsExtractor.fill(left, top, right, top + HEADER_HEIGHT, COLOR_HEADER_BG);
+        graphics.fill(left, top, right, bottom, COLOR_BOX_BG);
+        graphics.fill(left, top, right, top + HEADER_HEIGHT, COLOR_HEADER_BG);
 
-        drawBorder(GuiGraphicsExtractor, left, top, right, bottom, COLOR_BORDER);
+        drawBorder(graphics, left, top, right, bottom, COLOR_BORDER);
 
         int headerTextX = left + PADDING;
         int headerTextY = top + 5;
-        GuiGraphicsExtractor.drawString(this.font, this.title, headerTextX, headerTextY, COLOR_TEXT, true);
+        graphics.text(this.font, this.title, headerTextX, headerTextY, COLOR_TEXT, true);
 
         Block flowerBlock = getRequestedFlowerBlock();
         if (lastHasNose && flowerBlock != null) {
             ItemStack flowerStack = new ItemStack(flowerBlock.asItem());
             int iconX = right - PADDING - 16;
             int iconY = top + 1;
-            GuiGraphicsExtractor.renderItem(flowerStack, iconX, iconY);
+            graphics.item(flowerStack, iconX, iconY);
         }
 
         int portraitLeft = left + PADDING;
@@ -205,9 +205,9 @@ public final class NoseSmithDialogueScreen extends Screen {
         int textTop = portraitTop;
         int textWidth = (right - PADDING) - textLeft;
 
-        drawTypewriterText(GuiGraphicsExtractor, textLeft, textTop, textWidth);
+        drawTypewriterText(graphics, textLeft, textTop, textWidth);
 
-        super.render(GuiGraphicsExtractor, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
     private void sendTalkingState(boolean talking) {
@@ -219,7 +219,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         NoseSmithDialogueNetworking.sendDialogueState(minecraft.level.registryAccess(), noseSmith.getId(), talking);
     }
 
-    private void drawTypewriterText(GuiGraphicsExtractor GuiGraphicsExtractor, int x, int y, int width) {
+    private void drawTypewriterText(GuiGraphicsExtractor graphics, int x, int y, int width) {
         if (wrappedLines.isEmpty()) {
             return;
         }
@@ -234,7 +234,7 @@ public final class NoseSmithDialogueScreen extends Screen {
             }
 
             FormattedCharSequence partial = take(wrappedLines.get(i), toShow);
-            GuiGraphicsExtractor.drawString(this.font, partial, x, lineY, COLOR_TEXT, true);
+            graphics.text(this.font, partial, x, lineY, COLOR_TEXT, true);
             remaining -= toShow;
             lineY += this.font.lineHeight + 2;
 
@@ -400,11 +400,11 @@ public final class NoseSmithDialogueScreen extends Screen {
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
     }
 
-    private static void drawBorder(GuiGraphicsExtractor GuiGraphicsExtractor, int left, int top, int right, int bottom, int color) {
-        GuiGraphicsExtractor.fill(left, top, right, top + 1, color);
-        GuiGraphicsExtractor.fill(left, bottom - 1, right, bottom, color);
-        GuiGraphicsExtractor.fill(left, top, left + 1, bottom, color);
-        GuiGraphicsExtractor.fill(right - 1, top, right, bottom, color);
+    private static void drawBorder(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int color) {
+        graphics.fill(left, top, right, top + 1, color);
+        graphics.fill(left, bottom - 1, right, bottom, color);
+        graphics.fill(left, top, left + 1, bottom, color);
+        graphics.fill(right - 1, top, right, bottom, color);
     }
 
     private static int countCodepoints(FormattedCharSequence sequence) {

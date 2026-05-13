@@ -585,8 +585,9 @@ public class NoseSmithEntity extends Villager {
         setHasNose(false);
         this.noseRemovedGameTime = serverLevel.getGameTime();
 
-        ItemStack noseItem = NoseRegistry.getNoseSupplier("foragers_nose")
-                .map(supplier -> new ItemStack(supplier.get()))
+        ItemStack noseItem = NoseRegistry.getNoseHolder("foragers_nose")
+                .filter(net.minecraft.core.Holder::isBound)
+                .map(holder -> new ItemStack(holder.value()))
                 .orElse(ItemStack.EMPTY);
 
         if (!noseItem.isEmpty()) {
@@ -835,19 +836,19 @@ public class NoseSmithEntity extends Villager {
         MerchantOffers offers = new MerchantOffers();
 
         // Omara Device: 10 emeralds -> 1 Omara Device
-        if (OmaraDeviceRegistry.OMARA_DEVICE_ITEM.isPresent()) {
+        if (OmaraDeviceRegistry.OMARA_DEVICE_ITEM != null && OmaraDeviceRegistry.OMARA_DEVICE_ITEM.isBound()) {
             offers.add(new MerchantOffer(
                     new ItemCost(Items.EMERALD, 10),
-                    new ItemStack(OmaraDeviceRegistry.OMARA_DEVICE_ITEM.get()),
+                    new ItemStack(OmaraDeviceRegistry.OMARA_DEVICE_ITEM.value()),
                     Integer.MAX_VALUE, 0, 0.0F
             ));
         }
 
         // Special Rose: 1 iron block -> 1 Special Rose
-        if (NoseSmithRegistry.SPECIAL_ROSE.isPresent()) {
+        if (NoseSmithRegistry.getSpecialRose() != null && NoseSmithRegistry.getSpecialRose().isBound()) {
             offers.add(new MerchantOffer(
                     new ItemCost(Items.IRON_BLOCK, 1),
-                    new ItemStack(NoseSmithRegistry.SPECIAL_ROSE.get()),
+                    new ItemStack(NoseSmithRegistry.getSpecialRose().value()),
                     Integer.MAX_VALUE, 0, 0.0F
             ));
         }

@@ -40,26 +40,26 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor GuiGraphicsExtractor, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
-        GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override
-    public void render(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
-        super.render(GuiGraphicsExtractor, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
 
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
-        renderInfoPanel(GuiGraphicsExtractor, x, y);
-        renderModeButton(GuiGraphicsExtractor, x, y, mouseX, mouseY);
+        renderInfoPanel(graphics, x, y);
+        renderModeButton(graphics, x, y, mouseX, mouseY);
         if (this.menu.getMode() == 0) {
-            renderIntervalButton(GuiGraphicsExtractor, x, y, mouseX, mouseY);
+            renderIntervalButton(graphics, x, y, mouseX, mouseY);
         }
 
-        this.renderTooltip(GuiGraphicsExtractor, mouseX, mouseY);
+        this.extractTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         // Truncate name to fit within GUI bounds
         int maxNamePx = (x + this.imageWidth - 4) - (infoX + 6);
         String displayName = trimToWidth(fallbackName, maxNamePx);
-        g.drawString(this.font, displayName, infoX + 6, row1Y, 0xFFFFFFFF, true);
+        g.text(this.font, displayName, infoX + 6, row1Y, 0xFFFFFFFF, true);
 
         // â”€â”€ Row 2: Charges bar (no text) â”€â”€
         int row2Y = y + 36;
@@ -154,7 +154,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         drawClockIcon(g, infoX, row3Y);
 
         if (cooldownTicks <= 0) {
-            g.drawString(this.font,
+            g.text(this.font,
                     Component.translatable("gui.aromaaffect.omara_device.ready"),
                     infoX + 8, row3Y, 0xFF55FF55, true);
         } else {
@@ -165,7 +165,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
             } else {
                 text = String.format("%.0fs", secs);
             }
-            g.drawString(this.font, text, infoX + 8, row3Y, 0xFFFFAA00, true);
+            g.text(this.font, text, infoX + 8, row3Y, 0xFFFFAA00, true);
 
             // Progress bar
             int pBarX = infoX + 8;
@@ -200,7 +200,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
 
         // Center text in button
         int textW = this.font.width(label);
-        g.drawString(this.font, label, bx + (BTN_W - textW) / 2, by + 2, textColor, true);
+        g.text(this.font, label, bx + (BTN_W - textW) / 2, by + 2, textColor, true);
     }
 
     private void renderIntervalButton(GuiGraphicsExtractor g, int x, int y, int mouseX, int mouseY) {
@@ -216,7 +216,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
                 : "gui.aromaaffect.omara_device.interval.5min");
 
         int textW = this.font.width(label);
-        g.drawString(this.font, label, bx + (BTN_W - textW) / 2, by + 2, 0xFFFFFFFF, true);
+        g.text(this.font, label, bx + (BTN_W - textW) / 2, by + 2, 0xFFFFFFFF, true);
     }
 
     private void drawButton(GuiGraphicsExtractor g, int bx, int by, int w, int h, boolean hovered) {
