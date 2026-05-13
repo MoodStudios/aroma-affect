@@ -1,10 +1,10 @@
 package com.ovrtechnology.nose.accessory.neoforge;
 
 import com.ovrtechnology.nose.accessory.NoseAccessory;
+import net.blay09.mods.balm.Balm;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.ModList;
 
 /**
  * NeoForge platform impl. Curios is an optional dependency: when present, the
@@ -15,14 +15,17 @@ import net.neoforged.fml.ModList;
  * <p>All Curios API calls go through {@link CuriosBridge}, an inner class that
  * is only loaded if {@code curios} is on the modlist — keeping the JVM from
  * resolving {@code top.theillusivec4.*} symbols when the mod is missing.</p>
+ *
+ * <p>Resolved through {@link NoseAccessory}'s {@code Balm.platformProxy()}.</p>
  */
-public final class NoseAccessoryImpl {
+public final class NoseAccessoryImpl implements NoseAccessory.Provider {
 
-    private static final boolean CURIOS_LOADED = ModList.get().isLoaded("curios");
+    private static final boolean CURIOS_LOADED = Balm.platform().isModLoaded("curios");
 
-    private NoseAccessoryImpl() {}
+    public NoseAccessoryImpl() {}
 
-    public static ItemStack getEquipped(Player player) {
+    @Override
+    public ItemStack getEquipped(Player player) {
         if (player == null) return ItemStack.EMPTY;
         if (CURIOS_LOADED) {
             ItemStack curios = CuriosBridge.get(player);
@@ -32,7 +35,8 @@ public final class NoseAccessoryImpl {
         return head == null ? ItemStack.EMPTY : head;
     }
 
-    public static ItemStack equip(Player player, ItemStack stack) {
+    @Override
+    public ItemStack equip(Player player, ItemStack stack) {
         if (player == null) return stack;
         if (CURIOS_LOADED) {
             ItemStack previous = CuriosBridge.equip(player, stack);
@@ -43,7 +47,8 @@ public final class NoseAccessoryImpl {
         return previous == null ? ItemStack.EMPTY : previous;
     }
 
-    public static boolean hasSlot(Player player) {
+    @Override
+    public boolean hasSlot(Player player) {
         return player != null;
     }
 

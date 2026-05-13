@@ -86,11 +86,11 @@ public final class NoseSmithRegistry {
     }
 
     /**
-     * Phase 7 platform proxy hook will call this after attributes are wired.
+     * Delegates to the platform-specific attribute registrar resolved through
+     * {@link NoseSmithAttributesRegistrar#INSTANCE}.
      */
     public static void registerAttributes() {
-        // No-op stub; the actual registration is platform-specific and gets
-        // injected via NoseSmithAttributesRegistrar in phase 7.
+        NoseSmithAttributesRegistrar.INSTANCE.registerNoseSmithAttributes();
     }
 
     public static Identifier getNoseSmithLocation() {

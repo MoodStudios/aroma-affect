@@ -1,9 +1,8 @@
-package com.ovrtechnology.history;
+﻿package com.ovrtechnology.history;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.platform.Platform;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +24,7 @@ public final class TrackingHistoryData {
 
     /**
      * The world ID that the current instance was loaded for.
-     * Used to detect when the world changes (e.g. "unknown" → real world).
+     * Used to detect when the world changes (e.g. "unknown" â†’ real world).
      */
     private static String loadedWorldId;
 
@@ -66,7 +65,7 @@ public final class TrackingHistoryData {
         loadedWorldId = null;
     }
 
-    // ── History ──────────────────────────────────────────────────────────
+    // â”€â”€ History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public List<HistoryEntry> getHistory() {
         return history;
@@ -87,7 +86,7 @@ public final class TrackingHistoryData {
         }
     }
 
-    // ── Saved ────────────────────────────────────────────────────────────
+    // â”€â”€ Saved â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public List<SavedEntry> getSaved() {
         return saved;
@@ -120,7 +119,7 @@ public final class TrackingHistoryData {
         }
     }
 
-    // ── Blacklist ────────────────────────────────────────────────────────
+    // â”€â”€ Blacklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public List<BlacklistEntry> getBlacklist() {
         return blacklist;
@@ -192,12 +191,12 @@ public final class TrackingHistoryData {
         return false;
     }
 
-    // ── Persistence ──────────────────────────────────────────────────────
+    // â”€â”€ Persistence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static TrackingHistoryData load() {
         String worldId = WorldIdentifier.getCurrentWorldId();
 
-        // World not ready yet — return empty, non-persisted instance.
+        // World not ready yet â€” return empty, non-persisted instance.
         // getInstance() will detect the world ID change and reload once it's available.
         if ("unknown".equals(worldId)) {
             AromaAffect.LOGGER.debug("World not ready yet, returning empty tracking history");
@@ -212,7 +211,7 @@ public final class TrackingHistoryData {
         }
 
         // Migrate legacy global file once (rename it after migration so it never repeats)
-        Path legacyPath = Platform.getConfigFolder().resolve(LEGACY_CONFIG_FILE_NAME);
+        Path legacyPath = java.nio.file.Path.of("config").resolve(LEGACY_CONFIG_FILE_NAME);
         if (Files.exists(legacyPath)) {
             TrackingHistoryData data = loadFrom(legacyPath);
             if (data != null) {
@@ -273,7 +272,7 @@ public final class TrackingHistoryData {
 
     private static Path getConfigPath() {
         String worldId = WorldIdentifier.getCurrentWorldId();
-        return Platform.getConfigFolder()
+        return java.nio.file.Path.of("config")
                 .resolve("aromaaffect")
                 .resolve("history_" + worldId + ".json");
     }

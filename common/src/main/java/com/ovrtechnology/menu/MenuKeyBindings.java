@@ -1,10 +1,10 @@
-﻿package com.ovrtechnology.menu;
+package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.keybind.AromaAffectKeyCategory;
 import com.ovrtechnology.trigger.ScentTriggerManager;
+import net.blay09.mods.balm.client.BalmKeyMappingRegistrar;
 import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
-import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -12,33 +12,21 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * Handles keybinding registration and input handling for Aroma Affect menus.
- * 
- * <p>This class uses Architectury's cross-platform keybinding API to register
- * and handle menu hotkeys on both Fabric and NeoForge.</p>
- * 
- * <h3>Default Keybindings:</h3>
- * <ul>
- *   <li><b>Radial Menu</b>: R - Opens the main radial menu for selecting tracking categories</li>
- *   <li><b>Config Menu</b>: C (with Shift) - Opens the configuration screen</li>
- * </ul>
- * 
- * <p>All keybindings are configurable through Minecraft's controls menu under the "Aroma Affect" category.</p>
+ *
+ * <p>Keymapping registration goes through Balm's {@link BalmKeyMappingRegistrar}
+ * (called by AromaAffectClient.initialize via the client registrars). The tick
+ * handler that polls the keybinds is registered separately via
+ * {@link #initTickHandler()}.</p>
  */
 public final class MenuKeyBindings {
-    
-    /**
-     * Keybinding for opening the radial menu.
-     */
+
     public static final KeyMapping OPEN_RADIAL_MENU = new KeyMapping(
             "key.aromaaffect.open_radial_menu",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_R,
             AromaAffectKeyCategory.CATEGORY
     );
-    
-    /**
-     * Keybinding for opening the configuration menu.
-     */
+
     public static final KeyMapping OPEN_CONFIG_MENU = new KeyMapping(
             "key.aromaaffect.open_config_menu",
             InputConstants.Type.KEYSYM,
@@ -46,117 +34,82 @@ public final class MenuKeyBindings {
             AromaAffectKeyCategory.CATEGORY
     );
 
-    /**
-     * Keybinding for resetting all cooldowns.
-     */
     public static final KeyMapping RESET_COOLDOWNS = new KeyMapping(
             "key.aromaaffect.reset_cooldowns",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_X,
             AromaAffectKeyCategory.CATEGORY
     );
-    
+
+    private static boolean tickHandlerInitialized = false;
+
+    private MenuKeyBindings() {}
+
     /**
-     * Whether the key bindings have been initialized.
+     * Balm key-mapping registrar callback. Wire from
+     * {@code AromaAffectClient.initialize} via
+     * {@code registrars.keyMappings(MenuKeyBindings::register)}.
      */
-    private static boolean initialized = false;
-    
-    private MenuKeyBindings() {
-        // Utility class
+    public static void register(BalmKeyMappingRegistrar keyMappings) {
+        keyMappings.register(OPEN_RADIAL_MENU);
+        keyMappings.register(OPEN_CONFIG_MENU);
+        keyMappings.register(RESET_COOLDOWNS);
+        AromaAffect.LOGGER.info("Menu keybindings registered");
     }
-    
+
     /**
-     * Initializes the menu keybindings.
-     * Should be called during client-side mod initialization.
+     * Registers the client tick handler that polls the keybinds. Idempotent.
      */
-    public static void init() {
-        if (initialized) {
-            AromaAffect.LOGGER.warn("MenuKeyBindings.init() called multiple times!");
+    public static void initTickHandler() {
+        if (tickHandlerInitialized) {
             return;
         }
-        
-        AromaAffect.LOGGER.info("Initializing menu keybindings...");
-        
-        // Register keybindings using Architectury API
-        KeyMappingRegistry.register(OPEN_RADIAL_MENU);
-        KeyMappingRegistry.register(OPEN_CONFIG_MENU);
-        KeyMappingRegistry.register(RESET_COOLDOWNS);
-        
-        // Register tick handler to check for key presses
-        ClientTickCallback.AFTER.register(instance -> {
-            handleKeyInputs();
-        });
-        
-        initialized = true;
-        AromaAffect.LOGGER.info("Menu keybindings initialized");
+        tickHandlerInitialized = true;
+        ClientTickCallback.AFTER.register(instance -> handleKeyInputs());
     }
-    
-    /**
-     * Handles key input checks during client tick.
-     * Called every client tick to check for keybinding presses.
-     */
+
     private static void handleKeyInputs() {
         Minecraft minecraft = Minecraft.getInstance();
-        
-        // Don't process keybindings if no player or a screen is already open
+
         if (minecraft.player == null) {
             return;
         }
-        
-        // Check for radial menu key
+
         while (OPEN_RADIAL_MENU.consumeClick()) {
             if (minecraft.screen == null) {
-                // Open radial menu when no screen is open
                 MenuManager.openRadialMenu();
             } else if (minecraft.screen instanceof RadialMenuScreen) {
-                // Close radial menu if it's already open (toggle behavior)
                 minecraft.setScreen(null);
             }
         }
-        
-        // Check for config menu key (only when holding Shift)
+
         while (OPEN_CONFIG_MENU.consumeClick()) {
             if (minecraft.screen == null && isShiftDown()) {
                 MenuManager.openConfigMenu();
             }
         }
 
-        // Check for reset cooldowns key
         while (RESET_COOLDOWNS.consumeClick()) {
             if (minecraft.screen == null) {
                 ScentTriggerManager.getInstance().resetCooldowns();
             }
         }
     }
-    
-    /**
-     * Checks if the Shift key is currently held.
-     */
+
     private static boolean isShiftDown() {
         var window = Minecraft.getInstance().getWindow();
         return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_SHIFT) ||
                InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
-    
-    /**
-     * Checks if the radial menu keybinding is pressed.
-     * Useful for external checks without consuming the click.
-     */
+
     public static boolean isRadialMenuKeyDown() {
         return OPEN_RADIAL_MENU.isDown();
     }
-    
-    /**
-     * Gets the display name of the radial menu keybinding.
-     * Useful for displaying the key in tooltips or instructions.
-     */
+
     public static String getRadialMenuKeyName() {
         return OPEN_RADIAL_MENU.getTranslatedKeyMessage().getString();
     }
-    
-    /**
-     * Gets the display name of the config menu keybinding.
-     */
+
     public static String getConfigMenuKeyName() {
         return OPEN_CONFIG_MENU.getTranslatedKeyMessage().getString();
     }

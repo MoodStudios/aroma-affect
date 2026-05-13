@@ -51,11 +51,11 @@ public final class AromaAffectClient {
         // Initialize Sniffer menu screen
         SnifferMenuRegistry.initClient();
 
-        // Initialize menu keybindings
-        MenuKeyBindings.init();
-        
-        // Initialize search keybindings (for activating search with Nose equipped)
-        SearchKeyBindings.init();
+        // Register menu + search keybinds via Balm and start the polling tick handler
+        registrars.keyMappings(MenuKeyBindings::register);
+        registrars.keyMappings(SearchKeyBindings::register);
+        MenuKeyBindings.initTickHandler();
+        SearchKeyBindings.initTickHandler();
 
         // Sync nose render state from persisted config
         com.ovrtechnology.trigger.config.ClientConfig clientCfg = com.ovrtechnology.trigger.config.ClientConfig.getInstance();

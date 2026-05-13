@@ -3,7 +3,6 @@ package com.ovrtechnology.trigger.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.platform.Platform;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -87,6 +86,9 @@ public final class PassiveModeConfig {
      * Gets the path to the config file.
      */
     private static Path getConfigPath() {
-        return Platform.getConfigFolder().resolve(CONFIG_FILE_NAME);
+        // Balm 26.1 does not expose a getConfigFolder() helper; the working
+        // directory is set to the game dir by both loaders, so `config/` resolves
+        // to the same place Platform.getConfigFolder() returned previously.
+        return Path.of("config").resolve(CONFIG_FILE_NAME);
     }
 }
