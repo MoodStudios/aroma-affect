@@ -8,6 +8,7 @@
     "EntityRenderStateMixin",
     "EntityRendererMixin",
     "LivingEntityRendererMixin",
+    "ScreenInvoker",
     "SnifferRendererMixin",
     "SnifferModelMixin",
     "IronGolemModelMixin",
