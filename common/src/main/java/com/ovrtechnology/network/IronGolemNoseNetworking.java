@@ -2,7 +2,7 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.irongolem.IronGolemNoseTracker;
-import dev.architectury.networking.NetworkManager;
+import net.blay09.mods.balm.Balm;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -40,10 +40,11 @@ public final class IronGolemNoseNetworking {
         }
         initialized = true;
 
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, IronGolemNoseSyncS2C.TYPE, IronGolemNoseSyncS2C.STREAM_CODEC,
-                (payload, context) -> {
-                    context.queue(() -> IronGolemNoseTracker.setHasNose(payload.golemUUID(), payload.hasNose()));
-                });
+        Balm.networking().registerClientboundPacket(
+                IronGolemNoseSyncS2C.TYPE,
+                IronGolemNoseSyncS2C.class,
+                IronGolemNoseSyncS2C.STREAM_CODEC,
+                (player, payload) -> IronGolemNoseTracker.setHasNose(payload.golemUUID(), payload.hasNose()));
 
         AromaAffect.LOGGER.info("IronGolemNoseNetworking initialized");
     }
@@ -52,11 +53,7 @@ public final class IronGolemNoseNetworking {
      * Sends the Iron Golem nose state to a specific player.
      */
     public static void sendNoseSync(ServerPlayer player, UUID golemUUID, boolean hasNose) {
-        if (!NetworkManager.canPlayerReceive(player, IronGolemNoseSyncS2C.TYPE)) {
-            return;
-        }
-
-        NetworkManager.sendToPlayer(player, new IronGolemNoseSyncS2C(golemUUID, hasNose));
+        Balm.networking().sendTo(player, new IronGolemNoseSyncS2C(golemUUID, hasNose));
     }
 
     /**

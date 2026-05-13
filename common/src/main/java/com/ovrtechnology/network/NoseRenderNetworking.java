@@ -1,9 +1,9 @@
-﻿package com.ovrtechnology.network;
+package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
+import net.blay09.mods.balm.Balm;
 import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -55,10 +55,6 @@ public final class NoseRenderNetworking {
     private NoseRenderNetworking() {
     }
 
-    /**
-     * Initializes the networking handler.
-     * Must be called on both client and server during mod initialization.
-     */
     public static void init() {
         if (initialized) {
             return;
@@ -66,45 +62,46 @@ public final class NoseRenderNetworking {
         initialized = true;
 
         // S2C: Server tells client about a player's nose preferences
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, NosePrefsS2C.TYPE, NosePrefsS2C.STREAM_CODEC,
-                (payload, context) -> {
-                    context.queue(() -> {
-                        UUID localUuid = net.minecraft.client.Minecraft.getInstance().player != null
-                                ? net.minecraft.client.Minecraft.getInstance().player.getUUID() : null;
-                        boolean isSelf = localUuid != null && payload.playerUuid().equals(localUuid);
+        Balm.networking().registerClientboundPacket(
+                NosePrefsS2C.TYPE,
+                NosePrefsS2C.class,
+                NosePrefsS2C.STREAM_CODEC,
+                (player, payload) -> {
+                    UUID localUuid = net.minecraft.client.Minecraft.getInstance().player != null
+                            ? net.minecraft.client.Minecraft.getInstance().player.getUUID() : null;
+                    boolean isSelf = localUuid != null && payload.playerUuid().equals(localUuid);
 
-                        // Local player preferences are authoritative on this client.
-                        // Ignore echoed server packets for self to avoid desync when toggling rapidly.
-                        if (isSelf) {
-                            return;
-                        }
-                        NoseRenderPreferencesManager.setClientPrefs(payload.playerUuid(), payload.noseEnabled(), payload.strapEnabled());
-                    });
+                    // Local player preferences are authoritative on this client.
+                    // Ignore echoed server packets for self to avoid desync when toggling rapidly.
+                    if (isSelf) {
+                        return;
+                    }
+                    NoseRenderPreferencesManager.setClientPrefs(payload.playerUuid(), payload.noseEnabled(), payload.strapEnabled());
                 });
 
         // C2S: Client tells server their nose preferences
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NosePrefsC2S.TYPE, NosePrefsC2S.STREAM_CODEC,
-                (payload, context) -> {
-                    context.queue(() -> {
-                        if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
-                            UUID uuid = serverPlayer.getUUID();
-                            NoseRenderPreferencesManager.setServerPrefs(uuid, payload.noseEnabled(), payload.strapEnabled());
+        Balm.networking().registerServerboundPacket(
+                NosePrefsC2S.TYPE,
+                NosePrefsC2S.class,
+                NosePrefsC2S.STREAM_CODEC,
+                (serverPlayer, payload) -> {
+                    UUID uuid = serverPlayer.getUUID();
+                    NoseRenderPreferencesManager.setServerPrefs(uuid, payload.noseEnabled(), payload.strapEnabled());
 
-                            // Broadcast to all connected players
-                            MinecraftServer server = serverPlayer.level().getServer();
-                            if (server != null) {
-                                broadcastPrefs(server, uuid, payload.noseEnabled(), payload.strapEnabled());
-                            }
-                        }
-                    });
+                    MinecraftServer server = serverPlayer.level().getServer();
+                    if (server != null) {
+                        broadcastPrefs(server, uuid, payload.noseEnabled(), payload.strapEnabled());
+                    }
                 });
 
         // When a player joins, send them all existing player preferences
         ServerPlayerCallback.Join.EVENT.register(serverPlayer -> {
             for (Map.Entry<UUID, NoseRenderPreferencesManager.NosePrefs> entry
                     : NoseRenderPreferencesManager.getAllServerPrefs()) {
-                sendPrefsToPlayer(serverPlayer, entry.getKey(),
-                        entry.getValue().noseEnabled(), entry.getValue().strapEnabled());
+                Balm.networking().sendTo(serverPlayer, new NosePrefsS2C(
+                        entry.getKey(),
+                        entry.getValue().noseEnabled(),
+                        entry.getValue().strapEnabled()));
             }
         });
 
@@ -116,28 +113,15 @@ public final class NoseRenderNetworking {
         AromaAffect.LOGGER.info("NoseRenderNetworking initialized");
     }
 
-    /**
-     * Sends the local player's nose preferences to the server.
-     * Called from the client when preferences change or when joining a world.
-     */
     public static void sendPrefsToServer(net.minecraft.core.RegistryAccess registryAccess,
                                           boolean noseEnabled, boolean strapEnabled) {
-        NetworkManager.sendToServer(new NosePrefsC2S(noseEnabled, strapEnabled));
+        Balm.networking().sendToServer(new NosePrefsC2S(noseEnabled, strapEnabled));
     }
 
     private static void broadcastPrefs(MinecraftServer server, UUID playerUuid,
                                          boolean noseEnabled, boolean strapEnabled) {
         for (ServerPlayer target : server.getPlayerList().getPlayers()) {
-            sendPrefsToPlayer(target, playerUuid, noseEnabled, strapEnabled);
+            Balm.networking().sendTo(target, new NosePrefsS2C(playerUuid, noseEnabled, strapEnabled));
         }
-    }
-
-    private static void sendPrefsToPlayer(ServerPlayer target, UUID playerUuid,
-                                            boolean noseEnabled, boolean strapEnabled) {
-        if (!NetworkManager.canPlayerReceive(target, NosePrefsS2C.TYPE)) {
-            return;
-        }
-
-        NetworkManager.sendToPlayer(target, new NosePrefsS2C(playerUuid, noseEnabled, strapEnabled));
     }
 }

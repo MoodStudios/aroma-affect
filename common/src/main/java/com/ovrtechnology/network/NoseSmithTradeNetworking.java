@@ -2,15 +2,13 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
-import dev.architectury.networking.NetworkManager;
+import net.blay09.mods.balm.Balm;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 
 public final class NoseSmithTradeNetworking {
 
@@ -35,29 +33,25 @@ public final class NoseSmithTradeNetworking {
         }
         initialized = true;
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NoseSmithOpenShopC2S.TYPE, NoseSmithOpenShopC2S.STREAM_CODEC,
-                (payload, context) -> {
-                    context.queue(() -> {
-                        Player player = context.getPlayer();
-                        if (!(player instanceof ServerPlayer serverPlayer)) {
-                            return;
-                        }
+        Balm.networking().registerServerboundPacket(
+                NoseSmithOpenShopC2S.TYPE,
+                NoseSmithOpenShopC2S.class,
+                NoseSmithOpenShopC2S.STREAM_CODEC,
+                (serverPlayer, payload) -> {
+                    Entity entity = serverPlayer.level().getEntity(payload.entityId());
+                    if (!(entity instanceof NoseSmithEntity noseSmith)) {
+                        return;
+                    }
 
-                        Entity entity = serverPlayer.level().getEntity(payload.entityId());
-                        if (!(entity instanceof NoseSmithEntity noseSmith)) {
-                            return;
-                        }
+                    if (serverPlayer.distanceToSqr(noseSmith) > 8.0 * 8.0) {
+                        return;
+                    }
 
-                        if (serverPlayer.distanceToSqr(noseSmith) > 8.0 * 8.0) {
-                            return;
-                        }
-
-                        noseSmith.openShop(serverPlayer);
-                    });
+                    noseSmith.openShop(serverPlayer);
                 });
     }
 
     public static void sendOpenShop(RegistryAccess registryAccess, int noseSmithEntityId) {
-        NetworkManager.sendToServer(new NoseSmithOpenShopC2S(noseSmithEntityId));
+        Balm.networking().sendToServer(new NoseSmithOpenShopC2S(noseSmithEntityId));
     }
 }

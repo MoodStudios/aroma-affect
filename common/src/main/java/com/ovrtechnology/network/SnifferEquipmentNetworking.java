@@ -2,7 +2,7 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
-import dev.architectury.networking.NetworkManager;
+import net.blay09.mods.balm.Balm;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -49,55 +49,33 @@ public final class SnifferEquipmentNetworking {
     private SnifferEquipmentNetworking() {
     }
 
-    /**
-     * Initializes the networking handler.
-     * Must be called on both client and server during mod initialization.
-     */
     public static void init() {
         if (initialized) {
             return;
         }
         initialized = true;
 
-        // Register client-side receiver for equipment sync packets (S2C)
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SnifferEquipmentSyncS2C.TYPE, SnifferEquipmentSyncS2C.STREAM_CODEC,
-                (payload, context) -> {
-            context.queue(() -> {
-                SnifferTamingData data = SnifferTamingData.get(payload.snifferUUID());
-                data.ownerUUID = payload.ownerUUID();
-                data.saddleItem = payload.saddleItem();
-                data.decorationItem = payload.decorationItem();
-                AromaAffect.LOGGER.debug("Received sniffer equipment sync for {}: owner={}, saddle={}, decoration={}",
-                        payload.snifferUUID(), payload.ownerUUID(), !payload.saddleItem().isEmpty(), !payload.decorationItem().isEmpty());
-            });
-        });
+        Balm.networking().registerClientboundPacket(
+                SnifferEquipmentSyncS2C.TYPE,
+                SnifferEquipmentSyncS2C.class,
+                SnifferEquipmentSyncS2C.STREAM_CODEC,
+                (player, payload) -> {
+                    SnifferTamingData data = SnifferTamingData.get(payload.snifferUUID());
+                    data.ownerUUID = payload.ownerUUID();
+                    data.saddleItem = payload.saddleItem();
+                    data.decorationItem = payload.decorationItem();
+                    AromaAffect.LOGGER.debug("Received sniffer equipment sync for {}: owner={}, saddle={}, decoration={}",
+                            payload.snifferUUID(), payload.ownerUUID(), !payload.saddleItem().isEmpty(), !payload.decorationItem().isEmpty());
+                });
 
         AromaAffect.LOGGER.info("SnifferEquipmentNetworking initialized");
     }
 
-    /**
-     * Sends sniffer equipment data to a specific player.
-     *
-     * @param player      the player to send the sync to
-     * @param snifferUUID the sniffer's UUID
-     * @param data        the sniffer's taming data
-     */
     public static void sendEquipmentSync(ServerPlayer player, UUID snifferUUID, SnifferTamingData data) {
-        if (!NetworkManager.canPlayerReceive(player, SnifferEquipmentSyncS2C.TYPE)) {
-            return;
-        }
-
-        NetworkManager.sendToPlayer(player, new SnifferEquipmentSyncS2C(
+        Balm.networking().sendTo(player, new SnifferEquipmentSyncS2C(
                 snifferUUID, data.ownerUUID, data.saddleItem, data.decorationItem));
     }
 
-    /**
-     * Sends sniffer equipment data to all players tracking the sniffer.
-     *
-     * @param snifferUUID the sniffer's UUID
-     * @param data        the sniffer's taming data
-     * @param players     iterable of players to send to
-     */
     public static void broadcastEquipmentSync(UUID snifferUUID, SnifferTamingData data, Iterable<ServerPlayer> players) {
         for (ServerPlayer player : players) {
             sendEquipmentSync(player, snifferUUID, data);

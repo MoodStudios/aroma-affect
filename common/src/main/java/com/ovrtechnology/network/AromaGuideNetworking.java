@@ -3,7 +3,7 @@ package com.ovrtechnology.network;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.guide.AromaGuideTracker;
-import dev.architectury.networking.NetworkManager;
+import net.blay09.mods.balm.Balm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -20,9 +20,6 @@ import java.util.List;
 
 /**
  * Syncs Aroma Guide targets from server to client.
- *
- * <p>Client requests an update while holding the guide. Server computes nearest
- * village (and nearby Nose Smith target) and sends positions back.</p>
  */
 public final class AromaGuideNetworking {
 
@@ -67,32 +64,28 @@ public final class AromaGuideNetworking {
         }
         initialized = true;
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, GuideRequestC2S.TYPE, GuideRequestC2S.STREAM_CODEC,
-                (payload, context) -> context.queue(() -> {
-                    if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
-                        sendGuideTarget(serverPlayer);
-                    }
-                }));
+        Balm.networking().registerServerboundPacket(
+                GuideRequestC2S.TYPE,
+                GuideRequestC2S.class,
+                GuideRequestC2S.STREAM_CODEC,
+                (serverPlayer, payload) -> sendGuideTarget(serverPlayer));
 
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, GuideTargetS2C.TYPE, GuideTargetS2C.STREAM_CODEC,
-                (payload, context) -> context.queue(() ->
-                        AromaGuideTracker.applyServerTarget(payload.villagePos(), payload.compassTarget())));
+        Balm.networking().registerClientboundPacket(
+                GuideTargetS2C.TYPE,
+                GuideTargetS2C.class,
+                GuideTargetS2C.STREAM_CODEC,
+                (player, payload) -> AromaGuideTracker.applyServerTarget(payload.villagePos(), payload.compassTarget()));
 
         AromaAffect.LOGGER.info("AromaGuideNetworking initialized");
     }
 
     public static void requestGuideTarget(net.minecraft.core.RegistryAccess registryAccess) {
-        NetworkManager.sendToServer(new GuideRequestC2S());
+        Balm.networking().sendToServer(new GuideRequestC2S());
     }
 
     private static void sendGuideTarget(ServerPlayer player) {
         GuideTarget target = findGuideTarget(player);
-
-        if (!NetworkManager.canPlayerReceive(player, GuideTargetS2C.TYPE)) {
-            return;
-        }
-
-        NetworkManager.sendToPlayer(player, new GuideTargetS2C(target.nearestVillagePos, target.compassTargetPos));
+        Balm.networking().sendTo(player, new GuideTargetS2C(target.nearestVillagePos, target.compassTargetPos));
     }
 
     private static GuideTarget findGuideTarget(ServerPlayer player) {

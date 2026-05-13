@@ -2,15 +2,13 @@ package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
-import dev.architectury.networking.NetworkManager;
+import net.blay09.mods.balm.Balm;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 
 public final class NoseSmithDialogueNetworking {
 
@@ -38,29 +36,25 @@ public final class NoseSmithDialogueNetworking {
         }
         initialized = true;
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NoseSmithDialogueC2S.TYPE, NoseSmithDialogueC2S.STREAM_CODEC,
-                (payload, context) -> {
-                    context.queue(() -> {
-                        Player player = context.getPlayer();
-                        if (!(player instanceof ServerPlayer serverPlayer)) {
-                            return;
-                        }
+        Balm.networking().registerServerboundPacket(
+                NoseSmithDialogueC2S.TYPE,
+                NoseSmithDialogueC2S.class,
+                NoseSmithDialogueC2S.STREAM_CODEC,
+                (serverPlayer, payload) -> {
+                    Entity entity = serverPlayer.level().getEntity(payload.entityId());
+                    if (!(entity instanceof NoseSmithEntity noseSmith)) {
+                        return;
+                    }
 
-                        Entity entity = serverPlayer.level().getEntity(payload.entityId());
-                        if (!(entity instanceof NoseSmithEntity noseSmith)) {
-                            return;
-                        }
-
-                        if (payload.talking()) {
-                            noseSmith.keepDialogueAlive(serverPlayer);
-                        } else {
-                            noseSmith.endDialogue(serverPlayer);
-                        }
-                    });
+                    if (payload.talking()) {
+                        noseSmith.keepDialogueAlive(serverPlayer);
+                    } else {
+                        noseSmith.endDialogue(serverPlayer);
+                    }
                 });
     }
 
     public static void sendDialogueState(RegistryAccess registryAccess, int noseSmithEntityId, boolean talking) {
-        NetworkManager.sendToServer(new NoseSmithDialogueC2S(noseSmithEntityId, talking));
+        Balm.networking().sendToServer(new NoseSmithDialogueC2S(noseSmithEntityId, talking));
     }
 }
