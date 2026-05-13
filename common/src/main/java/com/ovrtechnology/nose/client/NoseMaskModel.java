@@ -14,6 +14,12 @@ import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 /**
  * Nose mask model exported from Blockbench and adapted for HumanoidModel.
  * Uses Box UV layout with 32x32 texture.
+ *
+ * <p>Body/arms/legs parts are declared empty in {@link #createLayer()} so they
+ * render nothing even when {@code .visible} is true. Older versions of this
+ * code called {@code setAllVisible(false)} defensively before enabling head +
+ * hat; that helper was removed in MC 26.1, but the empty-part design makes
+ * the call a no-op anyway.</p>
  */
 public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
     private static final int TEXTURE_WIDTH = 32;

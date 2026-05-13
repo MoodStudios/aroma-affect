@@ -2,16 +2,19 @@ package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.AromaAffect;
 import net.blay09.mods.balm.Balm;
-import net.blay09.mods.balm.core.BalmRegistrar;
+import net.blay09.mods.balm.world.BalmMenuFactory;
+import net.blay09.mods.balm.world.BalmMenuProvider;
+import net.blay09.mods.balm.world.inventory.BalmMenuTypeRegistrar;
 import net.minecraft.core.Holder;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 
@@ -27,27 +30,18 @@ import net.minecraft.world.inventory.MenuType;
  */
 public class SnifferMenuRegistry {
 
-    public static Holder<MenuType<?>> SNIFFER_MENU;
+    public static Holder<MenuType<SnifferMenu>> SNIFFER_MENU;
 
-    public static void registerMenus(BalmRegistrar.Scoped<MenuType<?>> menus) {
-        // TODO(balm-26.1): the MenuType(MenuSupplier, FeatureFlagSet) constructor
-        // is package-private in 26.1; we need a public factory (likely a Balm
-        // helper or IMenuTypeExtension.create on NeoForge) to wire the sniffer
-        // entity-id extra-data channel. SNIFFER_MENU is left null for now so the
-        // rest of the bootstrap compiles; openSnifferMenu below still works via
-        // a Balm MenuProvider that closes over the live Sniffer instance.
-        AromaAffect.LOGGER.warn("SnifferMenuRegistry.registerMenus stubbed -- needs public MenuType factory");
+    public static void registerMenus(BalmMenuTypeRegistrar menus) {
+        // Balm wraps the package-private MenuType constructor. Payload is the
+        // sniffer's entity id (varint) so the client can resolve the live
+        // Sniffer reference -- SnifferScreen reads menu.getSniffer() to render
+        // the entity preview.
+        SNIFFER_MENU = menus.<SnifferMenu, Integer>register("sniffer", new SnifferMenuFactory()).asHolder();
     }
 
-    private static SnifferMenu createMenu(int containerId, Inventory inventory) {
-        // Default constructor — the actual sniffer reference is hydrated by
-        // openSnifferMenu via a Balm MenuProvider that supplies extra data.
-        return new SnifferMenu(containerId, inventory, new SnifferContainer(null), null);
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public static void openSnifferMenu(ServerPlayer player, Sniffer sniffer) {
-        Balm.networking().openMenu(player, new MenuProvider() {
+        Balm.networking().openMenu(player, new BalmMenuProvider<Integer>() {
             @Override
             public Component getDisplayName() {
                 return Component.literal("Sniffer Inventory");
@@ -57,12 +51,37 @@ public class SnifferMenuRegistry {
             public AbstractContainerMenu createMenu(int containerId, Inventory inv, Player p) {
                 return new SnifferMenu(containerId, inv, new SnifferContainer(sniffer), sniffer);
             }
+
+            @Override
+            public Integer getScreenOpeningData(ServerPlayer p) {
+                return sniffer.getId();
+            }
+
+            @Override
+            public StreamCodec<RegistryFriendlyByteBuf, Integer> getScreenStreamCodec() {
+                return StreamCodec.of(
+                        (buf, id) -> buf.writeVarInt(id),
+                        buf -> buf.readVarInt()
+                );
+            }
         });
-        // Phase 6: when Balm.openMenu is invoked the framework writes an extra-data buffer.
-        // The sniffer reference is passed via a side channel (entity id sent in the menu
-        // payload). For now we rely on `openMenu` directly carrying the Sniffer reference
-        // through the MenuProvider; if the menu has to be re-instantiated client-side we'll
-        // attach the sniffer id via Balm's extra-data hook in phase 6.
+    }
+
+    public static final class SnifferMenuFactory implements BalmMenuFactory<SnifferMenu, Integer> {
+        @Override
+        public SnifferMenu create(int containerId, Inventory inventory, Integer snifferId) {
+            Entity e = inventory.player.level().getEntity(snifferId);
+            Sniffer sniffer = e instanceof Sniffer s ? s : null;
+            return new SnifferMenu(containerId, inventory, new SnifferContainer(sniffer), sniffer);
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Integer> getStreamCodec() {
+            return StreamCodec.of(
+                    (buf, id) -> buf.writeVarInt(id),
+                    buf -> buf.readVarInt()
+            );
+        }
     }
 
     public static void initClient() {

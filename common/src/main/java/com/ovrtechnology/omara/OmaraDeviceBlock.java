@@ -1,11 +1,19 @@
 package com.ovrtechnology.omara;
 
 import com.mojang.serialization.MapCodec;
+import net.blay09.mods.balm.Balm;
+import net.blay09.mods.balm.world.BalmMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -144,7 +152,30 @@ public class OmaraDeviceBlock extends BaseEntityBlock {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof OmaraDeviceBlockEntity omaraDevice) {
-                serverPlayer.openMenu(omaraDevice);
+                Balm.networking().openMenu(serverPlayer, new BalmMenuProvider<BlockPos>() {
+                    @Override
+                    public Component getDisplayName() {
+                        return omaraDevice.getDisplayName();
+                    }
+
+                    @Override
+                    public AbstractContainerMenu createMenu(int containerId, Inventory inv, Player p) {
+                        return new OmaraDeviceMenu(containerId, inv, omaraDevice, new SimpleContainerData(4));
+                    }
+
+                    @Override
+                    public BlockPos getScreenOpeningData(ServerPlayer sp) {
+                        return pos;
+                    }
+
+                    @Override
+                    public StreamCodec<RegistryFriendlyByteBuf, BlockPos> getScreenStreamCodec() {
+                        return StreamCodec.of(
+                                (buf, p) -> buf.writeBlockPos(p),
+                                buf -> buf.readBlockPos()
+                        );
+                    }
+                });
             }
         }
         return InteractionResult.SUCCESS;

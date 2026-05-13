@@ -55,10 +55,10 @@ public final class AromaAffectClient {
         // populated by phase 4 registrar callbacks earlier in the bootstrap.
         registrars.menuScreens(menus -> {
             menus.register(
-                    castMenuHolder(com.ovrtechnology.entity.sniffer.SnifferMenuRegistry.SNIFFER_MENU),
+                    com.ovrtechnology.entity.sniffer.SnifferMenuRegistry.SNIFFER_MENU,
                     com.ovrtechnology.entity.sniffer.SnifferScreen::new);
             menus.register(
-                    castMenuHolder(com.ovrtechnology.omara.OmaraDeviceRegistry.OMARA_DEVICE_MENU),
+                    com.ovrtechnology.omara.OmaraDeviceRegistry.OMARA_DEVICE_MENU,
                     com.ovrtechnology.omara.OmaraDeviceScreen::new);
         });
 

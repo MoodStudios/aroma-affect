@@ -82,14 +82,14 @@ public final class AromaAffect {
 
         // Blocks + block entities
         registrars.registrar(Registries.BLOCK, OmaraDeviceRegistry::registerBlocks);
-        registrars.registrar(Registries.BLOCK_ENTITY_TYPE, OmaraDeviceRegistry::registerBlockEntities);
+        registrars.blockEntityTypes(OmaraDeviceRegistry::registerBlockEntities);
 
         // Entity types
         registrars.registrar(Registries.ENTITY_TYPE, NoseSmithRegistry::registerEntities);
 
         // Menus
-        registrars.registrar(Registries.MENU, SnifferMenuRegistry::registerMenus);
-        registrars.registrar(Registries.MENU, OmaraDeviceRegistry::registerMenus);
+        registrars.menuTypes(SnifferMenuRegistry::registerMenus);
+        registrars.menuTypes(OmaraDeviceRegistry::registerMenus);
 
         // Sounds
         registrars.registrar(Registries.SOUND_EVENT, ModSounds::register);

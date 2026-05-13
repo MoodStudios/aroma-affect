@@ -25,7 +25,7 @@ public class OmaraDeviceMenu extends AbstractContainerMenu {
 
     // Server-side constructor
     public OmaraDeviceMenu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-        super(((net.minecraft.world.inventory.MenuType<com.ovrtechnology.omara.OmaraDeviceMenu>) (Object) OmaraDeviceRegistry.OMARA_DEVICE_MENU.value()), containerId);
+        super(OmaraDeviceRegistry.OMARA_DEVICE_MENU.value(), containerId);
         this.container = container;
         this.data = data;
         this.access = container instanceof OmaraDeviceBlockEntity be && be.getLevel() != null
