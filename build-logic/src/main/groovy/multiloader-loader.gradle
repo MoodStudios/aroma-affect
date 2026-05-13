@@ -36,6 +36,14 @@ processResources {
 tasks.named('javadoc', Javadoc).configure {
     dependsOn(configurations.commonJava)
     source(configurations.commonJava)
+    // Mixin javadocs use custom @reason / @author / @at tags the
+    // standard doclet does not recognise. Don't fail the build on
+    // those -- jar production is more important than javadoc purity.
+    failOnError = false
+    options {
+        addBooleanOption('Xdoclint:none', true)
+        addStringOption('quiet', '-quiet')
+    }
 }
 
 tasks.named("sourcesJar", Jar) {
