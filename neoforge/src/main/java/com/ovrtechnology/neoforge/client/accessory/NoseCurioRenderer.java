@@ -35,14 +35,14 @@ public final class NoseCurioRenderer implements ICurioRenderer {
         var entityModels = Minecraft.getInstance().getEntityModels();
 
         visibleNoStrapModel = new NoseMaskModel(entityModels.bakeLayer(NoseModelLayers.NOSE_MASK));
-        visibleNoStrapModel.setAllVisible(false);
+        /* TODO(balm-26.1): HumanoidModel.setAllVisible removed in 26.1; rely on per-part .visible flags below. */ // visibleNoStrapModel.setAllVisible(false);
         visibleNoStrapModel.head.visible = true;
         visibleNoStrapModel.hat.visible = true;
         visibleNoStrapModel.setNoseMaskVisible(true);
         visibleNoStrapModel.setStrapVisible(false);
 
         visibleWithStrapModel = new NoseMaskModel(entityModels.bakeLayer(NoseModelLayers.NOSE_MASK));
-        visibleWithStrapModel.setAllVisible(false);
+        /* TODO(balm-26.1): HumanoidModel.setAllVisible removed in 26.1; rely on per-part .visible flags below. */ // visibleWithStrapModel.setAllVisible(false);
         visibleWithStrapModel.head.visible = true;
         visibleWithStrapModel.hat.visible = true;
         visibleWithStrapModel.setNoseMaskVisible(true);

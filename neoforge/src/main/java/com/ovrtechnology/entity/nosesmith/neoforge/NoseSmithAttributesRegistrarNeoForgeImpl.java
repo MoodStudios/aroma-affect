@@ -15,7 +15,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
  * the event fires. {@link #registerNoseSmithAttributes()} is a no-op stub --
  * the actual wiring happens through the static event handler below.
  */
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber
 public final class NoseSmithAttributesRegistrarNeoForgeImpl implements NoseSmithAttributesRegistrar {
 
     public NoseSmithAttributesRegistrarNeoForgeImpl() {}
