@@ -1,12 +1,11 @@
 package com.ovrtechnology.omara;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.registry.registries.DeferredRegister;
-import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.experimental.UtilityClass;
+import net.blay09.mods.balm.core.BalmRegistrar;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -20,50 +19,35 @@ public final class OmaraDeviceRegistry {
 
     private static final String OMARA_DEVICE_ID = "omara_device";
 
-    private static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(AromaAffect.MOD_ID, Registries.BLOCK);
+    public static Holder<Block> OMARA_DEVICE;
+    public static Holder<BlockEntityType<?>> OMARA_DEVICE_BLOCK_ENTITY;
+    public static Holder<Item> OMARA_DEVICE_ITEM;
+    public static Holder<MenuType<?>> OMARA_DEVICE_MENU;
 
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
-            DeferredRegister.create(AromaAffect.MOD_ID, Registries.BLOCK_ENTITY_TYPE);
+    public static void registerBlocks(BalmRegistrar.Scoped<Block> blocks) {
+        OMARA_DEVICE = blocks.register(OMARA_DEVICE_ID, id -> new OmaraDeviceBlock(BlockBehaviour.Properties.of()
+                .strength(3.5F)
+                .requiresCorrectToolForDrops()
+                .noOcclusion()
+                .setId(ResourceKey.create(Registries.BLOCK, id))));
+    }
 
-    private static final DeferredRegister<Item> ITEMS =
-            DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
+    public static void registerItems(BalmRegistrar.Scoped<Item> items) {
+        OMARA_DEVICE_ITEM = items.register(OMARA_DEVICE_ID, id -> new BlockItem(
+                (Block) OMARA_DEVICE.value(),
+                new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id))));
+    }
 
-    private static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(AromaAffect.MOD_ID, Registries.MENU);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void registerBlockEntities(BalmRegistrar.Scoped<BlockEntityType<?>> blockEntities) {
+        OMARA_DEVICE_BLOCK_ENTITY = blockEntities.register(OMARA_DEVICE_ID, id ->
+                new BlockEntityType(OmaraDeviceBlockEntity::new, java.util.Set.of((Block) OMARA_DEVICE.value())));
+    }
 
-    public static final RegistrySupplier<Block> OMARA_DEVICE = BLOCKS.register(OMARA_DEVICE_ID,
-            () -> new OmaraDeviceBlock(BlockBehaviour.Properties.of()
-                    .strength(3.5F)
-                    .requiresCorrectToolForDrops()
-                    .noOcclusion()
-                    .setId(ResourceKey.create(
-                            Registries.BLOCK,
-                            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
-                    ))
-            ));
-
-    public static final RegistrySupplier<BlockEntityType<OmaraDeviceBlockEntity>> OMARA_DEVICE_BLOCK_ENTITY =
-            BLOCK_ENTITY_TYPES.register(OMARA_DEVICE_ID,
-                    () -> new BlockEntityType<>(OmaraDeviceBlockEntity::new, java.util.Set.of(OMARA_DEVICE.get())));
-
-    public static final RegistrySupplier<Item> OMARA_DEVICE_ITEM = ITEMS.register(OMARA_DEVICE_ID,
-            () -> new BlockItem(OMARA_DEVICE.get(), new Item.Properties()
-                    .setId(ResourceKey.create(
-                            Registries.ITEM,
-                            Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, OMARA_DEVICE_ID)
-                    ))
-            ));
-
-    public static final RegistrySupplier<MenuType<OmaraDeviceMenu>> OMARA_DEVICE_MENU =
-            MENUS.register(OMARA_DEVICE_ID,
-                    () -> new MenuType<>(OmaraDeviceMenu::new, FeatureFlags.DEFAULT_FLAGS));
-
-    public static void init() {
-        BLOCKS.register();
-        BLOCK_ENTITY_TYPES.register();
-        ITEMS.register();
-        MENUS.register();
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void registerMenus(BalmRegistrar.Scoped<MenuType<?>> menus) {
+        OMARA_DEVICE_MENU = menus.register(OMARA_DEVICE_ID, id ->
+                new MenuType(OmaraDeviceMenu::new, FeatureFlags.DEFAULT_FLAGS));
         AromaAffect.LOGGER.info("OmaraDeviceRegistry initialized");
     }
 }

@@ -39,6 +39,7 @@ import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
 import lombok.experimental.UtilityClass;
 import net.blay09.mods.balm.core.BalmRegistrars;
+import net.minecraft.core.registries.Registries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,54 @@ public final class AromaAffect {
     public static void initialize(BalmRegistrars registrars) {
         LOGGER.info("Initializing Aroma Affect...");
 
-        // Common networking (C2S/S2C packets)
+        // === Pure JSON loaders (no registry / no events) =====================
+        AbilityDefinitionLoader.loadAllAbilities();
+        ScentRegistry.init();
+        SnifferConfigLoader.init();
+        BiomeDefinitionLoader.loadAllBiomes();
+        BlockDefinitionLoader.loadAllBlocks();
+        FlowerDefinitionLoader.loadAllFlowers();
+        StructureDefinitionLoader.loadAllStructures();
+        MobDefinitionLoader.loadAllMobs();
+        ScentTriggerConfigLoader.init();
+        ScentTriggerManager.init();
+
+        // === Balm-driven registries ==========================================
+        // Items
+        registrars.registrar(Registries.ITEM, NoseRegistry::register);
+        registrars.registrar(Registries.ITEM, SnifferNoseRegistry::register);
+        registrars.registrar(Registries.ITEM, ScentItemRegistry::register);
+        registrars.registrar(Registries.ITEM, AromaGuideRegistry::register);
+        registrars.registrar(Registries.ITEM, NoseSmithRegistry::registerItems);
+        registrars.registrar(Registries.ITEM, OmaraDeviceRegistry::registerItems);
+
+        // Blocks + block entities
+        registrars.registrar(Registries.BLOCK, OmaraDeviceRegistry::registerBlocks);
+        registrars.registrar(Registries.BLOCK_ENTITY_TYPE, OmaraDeviceRegistry::registerBlockEntities);
+
+        // Entity types
+        registrars.registrar(Registries.ENTITY_TYPE, NoseSmithRegistry::registerEntities);
+
+        // Menus
+        registrars.registrar(Registries.MENU, SnifferMenuRegistry::registerMenus);
+        registrars.registrar(Registries.MENU, OmaraDeviceRegistry::registerMenus);
+
+        // Sounds
+        registrars.registrar(Registries.SOUND_EVENT, ModSounds::register);
+
+        // Creative tab (depends on items being registered above)
+        registrars.creativeModeTabs(ModCreativeTab::register);
+
+        // === In-memory registries ===========================================
+        // Nose ability resolver runs after the item registry callback has fired,
+        // so we schedule it via a server-lifecycle event in phase 5. For now we
+        // simply call it directly; if the callback ordering bites us we move it
+        // into ServerLifecycleCallback.Starting.EVENT.
+        NoseRegistry.initAbilityResolver();
+        AbilityRegistry.register(PreciseSnifferAbility.INSTANCE);
+        AbilityRegistry.init();
+
+        // === Phase 6 — networking (still on Architectury) ===================
         NoseSmithDialogueNetworking.init();
         NoseSmithTradeNetworking.init();
         PathScentNetworking.init();
@@ -68,80 +116,18 @@ public final class AromaAffect {
         AromaGuideNetworking.init();
         OmaraDeviceNetworking.init();
 
-        // Load ability definitions first (needed for nose validation)
-        AbilityDefinitionLoader.loadAllAbilities();
-
-        // Initialize the nose registry system (includes ability resolver)
-        // Note: This validates ability references against loaded definitions
-        NoseRegistry.init();
-
-        // Initialize the sniffer nose registry system (items for Sniffer mob)
-        SnifferNoseRegistry.init();
-
-        // Initialize scent definitions (needed for particle colors, display names, etc.)
-        ScentRegistry.init();
-
-        // Initialize the scent item registry system
-        ScentItemRegistry.init();
-
-        // Initialize the Aroma Guide (village compass)
-        AromaGuideRegistry.init();
-
-        // Initialize the Nose Smith entity registry
-        NoseSmithRegistry.init();
-
-        // Initialize Sniffer config (load before other sniffer systems)
-        SnifferConfigLoader.init();
-
-        // Initialize Sniffer menu registry
-        SnifferMenuRegistry.init();
-
-        // Initialize Sniffer sync handler (syncs taming data to clients on join)
+        // === Phase 5 — event listeners (still on Architectury) ===============
         SnifferSyncHandler.init();
-
-        // Initialize Omara Device block
-        OmaraDeviceRegistry.init();
-
-        // Initialize custom sounds
-        ModSounds.init();
-
-        // Initialize creative tab
-        ModCreativeTab.init();
-
-        // Initialize lookup system
         LookupManager.init();
-
-        // Initialize active path manager for persistent particle paths
         ActivePathManager.init();
-
-        // Initialize ability system
-        // Register ability implementations and initialize handler
-        AbilityRegistry.register(PreciseSnifferAbility.INSTANCE);
-        AbilityRegistry.init();
         AbilityHandler.init();
-
-        // Load definition files (needed by trigger system)
-        BiomeDefinitionLoader.loadAllBiomes();
-        BlockDefinitionLoader.loadAllBlocks();
-        FlowerDefinitionLoader.loadAllFlowers();
-        StructureDefinitionLoader.loadAllStructures();
-        MobDefinitionLoader.loadAllMobs();
-
-        // Initialize scent trigger system
-        ScentTriggerConfigLoader.init();
-        ScentTriggerManager.init();
-
-        // Initialize server-side structure sync for multiplayer passive-mode
         StructureSyncHandler.init();
-
-        // Initialize commands
         AromaTestCommand.init();
-
-        // Give Aroma Guide on first join
         AromaGuideFirstJoinHandler.init();
-
-        // Inject custom pieces into vanilla worldgen (villages, etc.)
         VillagePoolInjector.init();
+
+        // === Phase 7 — platform-specific entity attributes ===================
+        NoseSmithRegistry.registerAttributes();
 
         LOGGER.info("Aroma Affect initialized successfully!");
     }

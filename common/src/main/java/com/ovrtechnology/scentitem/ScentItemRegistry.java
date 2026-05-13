@@ -1,235 +1,124 @@
 package com.ovrtechnology.scentitem;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.registry.registries.DeferredRegister;
-import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
-import net.minecraft.core.registries.Registries;
+import net.blay09.mods.balm.core.BalmRegistrar;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 
 import java.util.*;
 
 /**
  * Central registry for all scent items in Aroma Affect.
- * 
- * <p>This class handles:</p>
- * <ul>
- *   <li>Loading scent item definitions from JSON</li>
- *   <li>Registering scent items with Minecraft's registry system</li>
- *   <li>Providing access to registered scent items</li>
- * </ul>
- * 
- * <p>Usage example:</p>
- * <pre>
- * // Initialize during mod startup
- * ScentItemRegistry.init();
- * 
- * // Get a scent item by ID
- * Optional&lt;ScentItem&gt; item = ScentItemRegistry.getScentItem("winter_scent");
- * 
- * // Get all scent items
- * List&lt;ScentItem&gt; allItems = ScentItemRegistry.getAllScentItemsAsList();
- * </pre>
+ *
+ * <p>Registered through {@code registrars.registrar(Registries.ITEM, ScentItemRegistry::register)}
+ * from {@link AromaAffect#initialize(net.blay09.mods.balm.core.BalmRegistrars)}.</p>
  */
 public final class ScentItemRegistry {
-    
-    /**
-     * Deferred register for scent items
-     */
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
-    
-    /**
-     * Map of scent item ID to registered item supplier
-     */
+
     @Getter
-    private static final Map<String, RegistrySupplier<ScentItem>> scentItems = new LinkedHashMap<>();
-    
-    /**
-     * Map of scent item ID to its definition
-     */
+    private static final Map<String, Holder<Item>> scentItems = new LinkedHashMap<>();
+
     @Getter
     private static final Map<String, ScentItemDefinition> scentItemDefinitions = new LinkedHashMap<>();
-    
-    /**
-     * Whether the registry has been initialized
-     */
+
     @Getter
     private static boolean initialized = false;
-    
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private ScentItemRegistry() {
-        throw new UnsupportedOperationException("ScentItemRegistry is a static utility class");
-    }
-    
-    /**
-     * Initialize the scent item registry.
-     * This loads scent item definitions from JSON and registers items.
-     * Must be called during mod initialization.
-     */
-    public static void init() {
+
+    private ScentItemRegistry() {}
+
+    public static void register(BalmRegistrar.Scoped<Item> items) {
         if (initialized) {
-            AromaAffect.LOGGER.warn("ScentItemRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("ScentItemRegistry.register() called multiple times!");
             return;
         }
-        
+
         AromaAffect.LOGGER.info("Initializing ScentItemRegistry...");
-        
-        // Load scent item definitions from JSON
+
         List<ScentItemDefinition> definitions = ScentItemDefinitionLoader.loadAllScentItems();
-        
-        // Register each scent item
         for (ScentItemDefinition definition : definitions) {
-            registerScentItem(definition);
+            registerScentItem(items, definition);
         }
-        
-        // Register the deferred register with Architectury
-        ITEMS.register();
-        
+
         initialized = true;
         AromaAffect.LOGGER.info("ScentItemRegistry initialized with {} scent items", scentItems.size());
     }
-    
-    /**
-     * Register a single scent item from its definition.
-     */
-    private static void registerScentItem(ScentItemDefinition definition) {
+
+    private static void registerScentItem(BalmRegistrar.Scoped<Item> items, ScentItemDefinition definition) {
         String id = definition.getId();
-        
+
         if (scentItems.containsKey(id)) {
             AromaAffect.LOGGER.warn("Duplicate scent item ID: {}, skipping...", id);
             return;
         }
-        
-        // Store the definition
+
         scentItemDefinitions.put(id, definition);
-        
-        // Register the item
+
         final String itemId = id;
-        RegistrySupplier<ScentItem> supplier = ITEMS.register(id, () -> new ScentItem(definition, itemId));
-        scentItems.put(id, supplier);
-        
+        Holder<Item> holder = items.register(id, identifier -> new ScentItem(definition, itemId));
+        scentItems.put(id, holder);
+
         AromaAffect.LOGGER.debug("Registered scent item: {}", id);
     }
-    
-    /**
-     * Get a registered scent item by ID.
-     * 
-     * @param id The scent item ID
-     * @return Optional containing the scent item if found
-     */
+
     public static Optional<ScentItem> getScentItem(String id) {
-        RegistrySupplier<ScentItem> supplier = scentItems.get(id);
-        if (supplier != null && supplier.isPresent()) {
-            return Optional.of(supplier.get());
+        Holder<Item> holder = scentItems.get(id);
+        if (holder != null && holder.isBound() && holder.value() instanceof ScentItem scentItem) {
+            return Optional.of(scentItem);
         }
         return Optional.empty();
     }
-    
-    /**
-     * Get the supplier for a scent item.
-     * 
-     * @param id The scent item ID
-     * @return Optional containing the supplier if found
-     */
-    public static Optional<RegistrySupplier<ScentItem>> getScentItemSupplier(String id) {
+
+    public static Optional<Holder<Item>> getScentItemHolder(String id) {
         return Optional.ofNullable(scentItems.get(id));
     }
-    
-    /**
-     * Get a scent item definition by ID.
-     * 
-     * @param id The scent item ID
-     * @return Optional containing the definition if found
-     */
+
     public static Optional<ScentItemDefinition> getDefinition(String id) {
         return Optional.ofNullable(scentItemDefinitions.get(id));
     }
-    
-    /**
-     * Get all registered scent item IDs.
-     * 
-     * @return Iterable of all scent item IDs
-     */
+
     public static Iterable<String> getAllScentItemIds() {
         return Collections.unmodifiableSet(scentItems.keySet());
     }
-    
-    /**
-     * Get all registered scent items.
-     * 
-     * @return Iterable of all scent item suppliers
-     */
-    public static Iterable<RegistrySupplier<ScentItem>> getAllScentItems() {
+
+    public static Iterable<Holder<Item>> getAllScentItems() {
         return Collections.unmodifiableCollection(scentItems.values());
     }
-    
-    /**
-     * Get all registered scent items as a list.
-     * 
-     * @return A list of all registered scent items
-     */
+
     public static List<ScentItem> getAllScentItemsAsList() {
         List<ScentItem> result = new ArrayList<>();
-        for (RegistrySupplier<ScentItem> supplier : scentItems.values()) {
-            if (supplier.isPresent()) {
-                result.add(supplier.get());
-            }
-        }
-        return result;
-    }
-    
-    /**
-     * Get all registered scent items that are aroma capsules.
-     *
-     * @return A list of all capsule-type scent items
-     */
-    public static List<ScentItem> getCapsuleItems() {
-        List<ScentItem> result = new ArrayList<>();
-        for (Map.Entry<String, RegistrySupplier<ScentItem>> entry : scentItems.entrySet()) {
-            ScentItemDefinition def = scentItemDefinitions.get(entry.getKey());
-            if (def != null && def.isCapsule() && entry.getValue().isPresent()) {
-                result.add(entry.getValue().get());
+        for (Holder<Item> holder : scentItems.values()) {
+            if (holder.isBound() && holder.value() instanceof ScentItem scentItem) {
+                result.add(scentItem);
             }
         }
         return result;
     }
 
-    /**
-     * Get the number of registered scent items.
-     * 
-     * @return The scent item count
-     */
+    public static List<ScentItem> getCapsuleItems() {
+        List<ScentItem> result = new ArrayList<>();
+        for (Map.Entry<String, Holder<Item>> entry : scentItems.entrySet()) {
+            ScentItemDefinition def = scentItemDefinitions.get(entry.getKey());
+            if (def != null && def.isCapsule()
+                    && entry.getValue().isBound()
+                    && entry.getValue().value() instanceof ScentItem scentItem) {
+                result.add(scentItem);
+            }
+        }
+        return result;
+    }
+
     public static int getScentItemCount() {
         return scentItems.size();
     }
-    
-    /**
-     * Check if a scent item with the given ID is registered.
-     * 
-     * @param id The scent item ID to check
-     * @return true if the scent item exists
-     */
+
     public static boolean hasScentItem(String id) {
         return scentItems.containsKey(id);
     }
-    
-    /**
-     * Get scent items sorted by priority (highest first).
-     * 
-     * @return List of scent items sorted by priority descending
-     */
+
     public static List<ScentItem> getScentItemsSortedByPriority() {
         List<ScentItem> result = getAllScentItemsAsList();
         result.sort((a, b) -> Integer.compare(b.getPriority(), a.getPriority()));
         return result;
-    }
-    
-    /**
-     * Get the deferred register (for internal use).
-     */
-    static DeferredRegister<Item> getItemRegister() {
-        return ITEMS;
     }
 }

@@ -1,196 +1,140 @@
 package com.ovrtechnology.nose;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.registry.registries.DeferredRegister;
-import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
-import net.minecraft.core.registries.Registries;
+import net.blay09.mods.balm.core.BalmRegistrar;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 
 import java.util.*;
 
 /**
  * Central registry for all nose items in Aroma Affect.
- * 
- * This class handles:
- * - Loading nose definitions from JSON
- * - Registering nose items with Minecraft's registry system
- * - Providing access to registered nose items
- * - Initializing the ability resolver for inheritance
- * 
- * Note: Recipes are loaded from data/aromaaffect/recipe/ as standard Minecraft recipe JSON files.
+ *
+ * <p>Registered through {@code registrars.registrar(Registries.ITEM, NoseRegistry::register)}
+ * from {@link AromaAffect#initialize(net.blay09.mods.balm.core.BalmRegistrars)}.
+ * Holders are populated when the registrar callback runs; subsequent calls go via
+ * {@link Holder#value()}.</p>
+ *
+ * <p>Recipes are loaded from {@code data/aromaaffect/recipe/} as standard Minecraft
+ * recipe JSON files.</p>
  */
 public final class NoseRegistry {
-    
-    /**
-     * Deferred register for nose items
-     */
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
-    
-    /**
-     * Map of nose ID to registered item supplier
-     */
+
     @Getter
-    private static final Map<String, RegistrySupplier<NoseItem>> noseItems = new HashMap<>();
-    
-    /**
-     * Map of nose ID to its definition
-     */
+    private static final Map<String, Holder<Item>> noseItems = new LinkedHashMap<>();
+
     @Getter
-    private static final Map<String, NoseDefinition> noseDefinitions = new HashMap<>();
-    
+    private static final Map<String, NoseDefinition> noseDefinitions = new LinkedHashMap<>();
+
     /**
-     * Legacy alias suppliers (old IDs pointing to equivalent items).
+     * Legacy alias holders (old IDs pointing to equivalent items).
      * Used by renderers to register the custom model for old-world items.
      */
     @Getter
-    private static final List<RegistrySupplier<NoseItem>> legacyItems = new ArrayList<>();
+    private static final List<Holder<Item>> legacyItems = new ArrayList<>();
 
-    /**
-     * Whether the registry has been initialized
-     */
     @Getter
     private static boolean initialized = false;
-    
-    /**
-     * Initialize the nose registry.
-     * This loads nose definitions from JSON and registers items.
-     * Must be called during mod initialization.
-     */
-    public static void init() {
+
+    private NoseRegistry() {}
+
+    public static void register(BalmRegistrar.Scoped<Item> items) {
         if (initialized) {
-            AromaAffect.LOGGER.warn("NoseRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("NoseRegistry.register() called multiple times!");
             return;
         }
-        
-        AromaAffect.LOGGER.info("Initializing NoseRegistry...");
-        
-        // Load nose definitions from JSON
-        List<NoseDefinition> definitions = NoseDefinitionLoader.loadAllNoses();
-        
-        // Register each nose as an item
-        for (NoseDefinition definition : definitions) {
-            registerNose(definition);
-        }
-        
-        // Register legacy aliases so old worlds keep their items
-        registerLegacyAliases();
 
-        // Register the deferred register with Architectury
-        ITEMS.register();
-        
-        // Initialize the ability resolver (handles inheritance and caching)
-        NoseAbilityResolver.init();
-        
+        AromaAffect.LOGGER.info("Initializing NoseRegistry...");
+
+        List<NoseDefinition> definitions = NoseDefinitionLoader.loadAllNoses();
+        for (NoseDefinition definition : definitions) {
+            registerNose(items, definition);
+        }
+
+        registerLegacyAliases(items);
+
         initialized = true;
         AromaAffect.LOGGER.info("NoseRegistry initialized with {} noses", noseItems.size());
     }
-    
+
     /**
-     * Register a single nose from its definition
+     * Initialize the ability resolver after registries are bound.
+     * Called from AromaAffect.initialize after the registrar callback.
      */
-    private static void registerNose(NoseDefinition definition) {
+    public static void initAbilityResolver() {
+        NoseAbilityResolver.init();
+    }
+
+    private static void registerNose(BalmRegistrar.Scoped<Item> items, NoseDefinition definition) {
         String id = definition.getId();
-        
+
         if (noseItems.containsKey(id)) {
             AromaAffect.LOGGER.warn("Duplicate nose ID: {}, skipping...", id);
             return;
         }
-        
-        // Store the definition
+
         noseDefinitions.put(id, definition);
-        
-        // Register the item - pass the ID for ResourceKey creation
-        final String itemId = id; // Capture for lambda
-        RegistrySupplier<NoseItem> supplier = ITEMS.register(id, () -> new NoseItem(definition, itemId));
-        noseItems.put(id, supplier);
-        
+
+        final String itemId = id;
+        Holder<Item> holder = items.register(id, identifier -> new NoseItem(definition, itemId));
+        noseItems.put(id, holder);
+
         AromaAffect.LOGGER.debug("Registered nose item: {}", id);
     }
-    
-    /**
-     * Registers old nose IDs as aliases pointing to the same definitions.
-     * This ensures items in old worlds are preserved when loaded.
-     * Legacy items won't appear in creative tabs or the guide.
-     */
-    private static void registerLegacyAliases() {
+
+    private static void registerLegacyAliases(BalmRegistrar.Scoped<Item> items) {
         for (Map.Entry<String, String> entry : NoseIdRemapper.getMappings().entrySet()) {
             String oldId = entry.getKey();
             String newId = entry.getValue();
             NoseDefinition def = noseDefinitions.get(newId);
             if (def == null) continue;
 
-            RegistrySupplier<NoseItem> supplier = ITEMS.register(oldId, () -> new NoseItem(def, oldId));
-            legacyItems.add(supplier);
+            Holder<Item> holder = items.register(oldId, identifier -> new NoseItem(def, oldId));
+            legacyItems.add(holder);
             AromaAffect.LOGGER.debug("Registered legacy alias: {} -> {}", oldId, newId);
         }
     }
 
-    /**
-     * Get a registered nose item by ID
-     */
     public static Optional<NoseItem> getNose(String id) {
-        RegistrySupplier<NoseItem> supplier = noseItems.get(id);
-        if (supplier != null && supplier.isPresent()) {
-            return Optional.of(supplier.get());
+        Holder<Item> holder = noseItems.get(id);
+        if (holder != null && holder.isBound() && holder.value() instanceof NoseItem noseItem) {
+            return Optional.of(noseItem);
         }
         return Optional.empty();
     }
-    
-    /**
-     * Get the supplier for a nose item
-     */
-    public static Optional<RegistrySupplier<NoseItem>> getNoseSupplier(String id) {
+
+    public static Optional<Holder<Item>> getNoseHolder(String id) {
         return Optional.ofNullable(noseItems.get(id));
     }
-    
-    /**
-     * Get a nose definition by ID
-     */
+
     public static Optional<NoseDefinition> getDefinition(String id) {
         return Optional.ofNullable(noseDefinitions.get(id));
     }
-    
-    /**
-     * Get all registered nose IDs
-     */
+
     public static Iterable<String> getAllNoseIds() {
         return noseItems.keySet();
     }
-    
-    /**
-     * Get all registered nose items
-     */
-    public static Iterable<RegistrySupplier<NoseItem>> getAllNoses() {
+
+    public static Iterable<Holder<Item>> getAllNoses() {
         return noseItems.values();
     }
 
-    /**
-     * Get all registered nose items as a list.
-     * @return A list of all registered nose items.
-     */
     public static List<NoseItem> getAllNosesAsList() {
-        return new ArrayList<>(noseItems.values()).stream().map(RegistrySupplier::get).toList();
+        List<NoseItem> result = new ArrayList<>();
+        for (Holder<Item> holder : noseItems.values()) {
+            if (holder.isBound() && holder.value() instanceof NoseItem noseItem) {
+                result.add(noseItem);
+            }
+        }
+        return result;
     }
 
-    /**
-     * Get the number of registered noses
-     */
     public static int getNoseCount() {
         return noseItems.size();
     }
-    
-    /**
-     * Check if a nose with the given ID is registered
-     */
+
     public static boolean hasNose(String id) {
         return noseItems.containsKey(id);
-    }
-    
-    /**
-     * Get the deferred register (for internal use)
-     */
-    static DeferredRegister<Item> getItemRegister() {
-        return ITEMS;
     }
 }

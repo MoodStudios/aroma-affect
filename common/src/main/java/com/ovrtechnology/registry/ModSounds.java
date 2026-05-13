@@ -1,34 +1,31 @@
 package com.ovrtechnology.registry;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.registry.registries.DeferredRegister;
-import dev.architectury.registry.registries.RegistrySupplier;
+import net.blay09.mods.balm.core.BalmRegistrar;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 /**
  * Registry for custom sound events used by Aroma Affect.
+ *
+ * <p>Registered through {@code registrars.registrar(Registries.SOUND_EVENT, ModSounds::register)}
+ * from {@link AromaAffect#initialize(net.blay09.mods.balm.core.BalmRegistrars)}.</p>
  */
 public final class ModSounds {
-
-    private static final DeferredRegister<SoundEvent> SOUNDS =
-            DeferredRegister.create(AromaAffect.MOD_ID, Registries.SOUND_EVENT);
 
     /**
      * Sniff sound played when a tracking target is selected.
      * Minecraft automatically picks a random variant from sounds.json.
      */
-    public static final RegistrySupplier<SoundEvent> SNIFF = SOUNDS.register("sniff",
-            () -> SoundEvent.createVariableRangeEvent(
-                    Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "sniff")));
+    public static Holder<SoundEvent> SNIFF;
 
-    public static final RegistrySupplier<SoundEvent> OMARA_PUFF = SOUNDS.register("omara_puff",
-            () -> SoundEvent.createVariableRangeEvent(
-                    Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "omara_puff")));
+    public static Holder<SoundEvent> OMARA_PUFF;
 
-    public static void init() {
-        SOUNDS.register();
+    public static void register(BalmRegistrar.Scoped<SoundEvent> sounds) {
+        SNIFF = sounds.register("sniff", SoundEvent::createVariableRangeEvent);
+        OMARA_PUFF = sounds.register("omara_puff", SoundEvent::createVariableRangeEvent);
         AromaAffect.LOGGER.debug("Registered custom sound events");
     }
 

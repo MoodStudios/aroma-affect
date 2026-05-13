@@ -1,179 +1,108 @@
 package com.ovrtechnology.sniffernose;
 
 import com.ovrtechnology.AromaAffect;
-import dev.architectury.registry.registries.DeferredRegister;
-import dev.architectury.registry.registries.RegistrySupplier;
 import lombok.Getter;
-import net.minecraft.core.registries.Registries;
+import net.blay09.mods.balm.core.BalmRegistrar;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 
 import java.util.*;
 
 /**
  * Central registry for all sniffer nose items in Aroma Affect.
- * 
- * <p>This class handles:</p>
- * <ul>
- *   <li>Loading sniffer nose definitions from JSON</li>
- *   <li>Registering sniffer nose items with Minecraft's registry system</li>
- *   <li>Providing access to registered sniffer nose items</li>
- * </ul>
- * 
- * <p>Sniffer noses are separate from regular player-equippable noses.
- * They are designed for the Sniffer mob.</p>
+ *
+ * <p>Registered through {@code registrars.registrar(Registries.ITEM, SnifferNoseRegistry::register)}
+ * from {@link AromaAffect#initialize(net.blay09.mods.balm.core.BalmRegistrars)}.</p>
+ *
+ * <p>Sniffer noses are separate from regular player-equippable noses; they are designed
+ * for the Sniffer mob.</p>
  */
 public final class SnifferNoseRegistry {
-    
-    /**
-     * Deferred register for sniffer nose items
-     */
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(AromaAffect.MOD_ID, Registries.ITEM);
-    
-    /**
-     * Map of sniffer nose ID to registered item supplier
-     */
+
     @Getter
-    private static final Map<String, RegistrySupplier<SnifferNoseItem>> snifferNoseItems = new LinkedHashMap<>();
-    
-    /**
-     * Map of sniffer nose ID to its definition
-     */
+    private static final Map<String, Holder<Item>> snifferNoseItems = new LinkedHashMap<>();
+
     @Getter
     private static final Map<String, SnifferNoseDefinition> snifferNoseDefinitions = new LinkedHashMap<>();
-    
-    /**
-     * Whether the registry has been initialized
-     */
+
     @Getter
     private static boolean initialized = false;
-    
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private SnifferNoseRegistry() {
-        throw new UnsupportedOperationException("SnifferNoseRegistry is a static utility class");
-    }
-    
-    /**
-     * Initialize the sniffer nose registry.
-     * This loads sniffer nose definitions from JSON and registers items.
-     * Must be called during mod initialization.
-     */
-    public static void init() {
+
+    private SnifferNoseRegistry() {}
+
+    public static void register(BalmRegistrar.Scoped<Item> items) {
         if (initialized) {
-            AromaAffect.LOGGER.warn("SnifferNoseRegistry.init() called multiple times!");
+            AromaAffect.LOGGER.warn("SnifferNoseRegistry.register() called multiple times!");
             return;
         }
-        
+
         AromaAffect.LOGGER.info("Initializing SnifferNoseRegistry...");
-        
-        // Load sniffer nose definitions from JSON
+
         List<SnifferNoseDefinition> definitions = SnifferNoseDefinitionLoader.loadAllSnifferNoses();
-        
-        // Register each sniffer nose as an item
         for (SnifferNoseDefinition definition : definitions) {
-            registerSnifferNose(definition);
+            registerSnifferNose(items, definition);
         }
-        
-        // Register the deferred register with Architectury
-        ITEMS.register();
-        
+
         initialized = true;
         AromaAffect.LOGGER.info("SnifferNoseRegistry initialized with {} sniffer noses", snifferNoseItems.size());
     }
-    
-    /**
-     * Register a single sniffer nose from its definition
-     */
-    private static void registerSnifferNose(SnifferNoseDefinition definition) {
+
+    private static void registerSnifferNose(BalmRegistrar.Scoped<Item> items, SnifferNoseDefinition definition) {
         String id = definition.getId();
-        
+
         if (snifferNoseItems.containsKey(id)) {
             AromaAffect.LOGGER.warn("Duplicate sniffer nose ID: {}, skipping...", id);
             return;
         }
-        
-        // Store the definition
+
         snifferNoseDefinitions.put(id, definition);
-        
-        // Register the item
+
         final String itemId = id;
-        RegistrySupplier<SnifferNoseItem> supplier = ITEMS.register(id, () -> new SnifferNoseItem(definition, itemId));
-        snifferNoseItems.put(id, supplier);
-        
+        Holder<Item> holder = items.register(id, identifier -> new SnifferNoseItem(definition, itemId));
+        snifferNoseItems.put(id, holder);
+
         AromaAffect.LOGGER.debug("Registered sniffer nose item: {}", id);
     }
-    
-    /**
-     * Get a registered sniffer nose item by ID
-     */
+
     public static Optional<SnifferNoseItem> getSnifferNose(String id) {
-        RegistrySupplier<SnifferNoseItem> supplier = snifferNoseItems.get(id);
-        if (supplier != null && supplier.isPresent()) {
-            return Optional.of(supplier.get());
+        Holder<Item> holder = snifferNoseItems.get(id);
+        if (holder != null && holder.isBound() && holder.value() instanceof SnifferNoseItem noseItem) {
+            return Optional.of(noseItem);
         }
         return Optional.empty();
     }
-    
-    /**
-     * Get the supplier for a sniffer nose item
-     */
-    public static Optional<RegistrySupplier<SnifferNoseItem>> getSnifferNoseSupplier(String id) {
+
+    public static Optional<Holder<Item>> getSnifferNoseHolder(String id) {
         return Optional.ofNullable(snifferNoseItems.get(id));
     }
-    
-    /**
-     * Get a sniffer nose definition by ID
-     */
+
     public static Optional<SnifferNoseDefinition> getDefinition(String id) {
         return Optional.ofNullable(snifferNoseDefinitions.get(id));
     }
-    
-    /**
-     * Get all registered sniffer nose IDs
-     */
+
     public static Iterable<String> getAllSnifferNoseIds() {
-        return Collections.unmodifiableSet(snifferNoseItems.keySet());
+        return snifferNoseItems.keySet();
     }
-    
-    /**
-     * Get all registered sniffer nose items
-     */
-    public static Iterable<RegistrySupplier<SnifferNoseItem>> getAllSnifferNoses() {
-        return Collections.unmodifiableCollection(snifferNoseItems.values());
+
+    public static Iterable<Holder<Item>> getAllSnifferNoses() {
+        return snifferNoseItems.values();
     }
-    
-    /**
-     * Get all registered sniffer nose items as a list
-     */
+
     public static List<SnifferNoseItem> getAllSnifferNosesAsList() {
         List<SnifferNoseItem> result = new ArrayList<>();
-        for (RegistrySupplier<SnifferNoseItem> supplier : snifferNoseItems.values()) {
-            if (supplier.isPresent()) {
-                result.add(supplier.get());
+        for (Holder<Item> holder : snifferNoseItems.values()) {
+            if (holder.isBound() && holder.value() instanceof SnifferNoseItem noseItem) {
+                result.add(noseItem);
             }
         }
         return result;
     }
-    
-    /**
-     * Get the number of registered sniffer noses
-     */
+
     public static int getSnifferNoseCount() {
         return snifferNoseItems.size();
     }
-    
-    /**
-     * Check if a sniffer nose with the given ID is registered
-     */
+
     public static boolean hasSnifferNose(String id) {
         return snifferNoseItems.containsKey(id);
-    }
-    
-    /**
-     * Get the deferred register (for internal use)
-     */
-    static DeferredRegister<Item> getItemRegister() {
-        return ITEMS;
     }
 }
