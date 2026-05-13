@@ -1,18 +1,19 @@
 {
   "schemaVersion": 1,
-  "id": "aromaaffect",
+  "id": "${mod_id}",
   "version": "${version}",
-  "name": "Aroma Affect",
-  "description": "A Minecraft mod that brings the sense of smell to your gameplay through OVR scent hardware integration.",
+  "name": "${mod_name}",
+  "description": "${description}",
   "authors": [
     "Mood Studios",
     "OVR Technology"
   ],
   "contact": {
-    "homepage": "https://ovrtechnology.com/",
-    "sources": "https://github.com/MoodStudios/aroma-affect"
+    "homepage": "${homepage}",
+    "sources": "${sources}",
+    "issues": "${issues}"
   },
-  "license": "MIT",
+  "license": "${license}",
   "icon": "assets/aromaaffect/icon.png",
   "environment": "*",
   "entrypoints": {
@@ -23,18 +24,15 @@
       "com.ovrtechnology.fabric.client.ExampleModFabricClient"
     ]
   },
-  "accessWidener": "aromaaffect.accesswidener",
+  "accessWidener": "${mod_id}.classtweaker",
   "mixins": [
-    "aromaaffect.mixins.json"
+    "${mod_id}.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.18.6",
-    "minecraft": "~1.21.11",
-    "java": ">=21",
-    "architectury": ">=19.0.0",
-    "fabric-api": "*"
-  },
-  "suggests": {
-    "another-mod": "*"
+    "java": ">=${java_version}",
+    "minecraft": "${fabric_minecraft_version_range}",
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": ">=${fabric_api_version}",
+    "balm-fabric": ">=${balm_version}"
   }
 }

@@ -1,0 +1,8 @@
+dependencies {
+    implementation(libs.balmFabric) {
+        changing = libs.versions.balm.get().contains("SNAPSHOT")
+    }
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+}

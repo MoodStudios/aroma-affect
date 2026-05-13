@@ -1,0 +1,17 @@
+dependencies {
+    implementation(libs.balmCommon) {
+        changing = libs.versions.balm.get().endsWith("SNAPSHOT")
+    }
+    accessTransformers(libs.balmCommon)
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    implementation libs.jakartaAnnotation
+
+    testImplementation libs.junitJupiter
+    testImplementation libs.assertjCore
+    testRuntimeOnly libs.junitPlatformLauncher
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+}

@@ -1,0 +1,5 @@
+classTweaker v1 official
+
+# Grant access to the protected BlockEntityType constructor used by OmaraDeviceRegistry.
+# May become unused once registrations are fully migrated to BalmBlockEntityTypeRegistrar.
+accessible method net/minecraft/world/level/block/entity/BlockEntityType <init> (Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V

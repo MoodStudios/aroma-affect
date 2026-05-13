@@ -1,0 +1,45 @@
+[versions]
+# See https://maven.twelveiterations.com/service/rest/repository/browse/maven-public/net/blay09/mods/balm-common/
+balm = "26.1.1.2"
+minecraft = "26.1.2"
+# See https://projects.neoforged.net/neoforged/neoform
+neoForm = "26.1.2-1"
+# See https://projects.neoforged.net/neoforged/neoforge
+neoForge = "26.1.2.0-beta"
+# See https://fabricmc.net/develop/
+fabricApi = "0.145.4+26.1.2"
+fabricLoader = "0.19.1"
+# https://www.curseforge.com/minecraft/mc-mods/curios
+curios = "26.1.2-beta"
+lombok = "1.18.42"
+junit = "5.10.2"
+assertj = "3.25.3"
+jakartaAnnotation = "3.0.0"
+
+[libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+# Parchment adds human-readable names to parameters. You can find the latest version at: https://parchmentmc.org/docs/getting-started
+parchment = { module = "org.parchmentmc.data:parchment-1.21.10", version = "2025.10.12" }
+
+balmCommon = { module = "net.blay09.mods:balm-common", version.ref = "balm" }
+balmNeoForge = { module = "net.blay09.mods:balm-neoforge", version.ref = "balm" }
+balmFabric = { module = "net.blay09.mods:balm-fabric", version.ref = "balm" }
+
+neoForm = { module = "net.neoforged:neoform", version.ref = "neoForm" }
+neoForge = { module = "net.neoforged:neoforge", version.ref = "neoForge" }
+fabricApi = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabricApi" }
+fabricLoader = { module = "net.fabricmc:fabric-loader", version.ref = "fabricLoader" }
+
+curiosNeoForge = { module = "top.theillusivec4.curios:curios-neoforge", version.ref = "curios" }
+
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jakartaAnnotation = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakartaAnnotation" }
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "1.10.2" }
+assertjCore = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+mixin = { module = "org.spongepowered:mixin", version = "0.8.7" }
+
+[plugins]
+fabricLoom = { id = "net.fabricmc.fabric-loom", version = "1.14-SNAPSHOT" }
+modDevGradle = { id = "net.neoforged.moddev", version = "2.0.141" }

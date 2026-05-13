@@ -1,0 +1,11 @@
+dependencies {
+    implementation(libs.balmNeoForge) {
+        changing = libs.versions.balm.get().contains("SNAPSHOT")
+    }
+
+    // Curios — accessory slot API for NeoForge (optional at runtime, required for compile)
+    implementation libs.curiosNeoForge
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+}
