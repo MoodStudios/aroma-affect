@@ -29,11 +29,8 @@ public final class NoseStrapToggleButton extends ImageButton {
         setTooltip(Tooltip.create(Component.translatable("gui.aromaaffect.nose_strap.tooltip")));
     }
 
-    // TODO(balm-26.1): AbstractButton.extractWidgetRenderState is final or has a
-    // different signature in 26.1. The strap-toggle sprite is no longer custom-painted;
-    // we rely on the WidgetSprites passed to super(). Custom sprite swap on click
-    // toggle is currently lost -- revisit when widget render hooks stabilise.
-    public void renderCustomSprite(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    @Override
+    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         Identifier sprite = NoseRenderToggles.isStrapEnabled() ? STRAP_ON : STRAP_OFF;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, getX(), getY(), width, height);
     }

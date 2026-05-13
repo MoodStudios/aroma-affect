@@ -78,18 +78,6 @@ public class StructureLookupStrategy implements LookupStrategy {
             );
         }
         
-        // Check if structure generation is enabled
-        // TODO(balm-26.1): WorldData.worldGenOptions() was reshaped; structure-generation guard stubbed to always allow.
-        if (false) {
-            return LookupResult.failure(
-                    target,
-                    level.dimension(),
-                    origin,
-                    0,
-                    LookupResult.FailureReason.NOT_FOUND
-            );
-        }
-        
         // For sync lookup, we use a blocking approach with a CompletableFuture
         // This is NOT recommended but maintains compatibility
         CompletableFuture<LookupResult> future = new CompletableFuture<>();
@@ -167,19 +155,6 @@ public class StructureLookupStrategy implements LookupStrategy {
             int maxRadius,
             Consumer<LookupResult> callback
     ) {
-        // Check if structure generation is enabled
-        // TODO(balm-26.1): WorldData.worldGenOptions() was reshaped; structure-generation guard stubbed to always allow.
-        if (false) {
-            callback.accept(LookupResult.failure(
-                    target,
-                    level.dimension(),
-                    origin,
-                    0,
-                    LookupResult.FailureReason.NOT_FOUND
-            ));
-            return false;
-        }
-        
         int effectiveRadius = Math.min(maxRadius > 0 ? maxRadius : DEFAULT_RADIUS, MAX_RADIUS);
         
         try {

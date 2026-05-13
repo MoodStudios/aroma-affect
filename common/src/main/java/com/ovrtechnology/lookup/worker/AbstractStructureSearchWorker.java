@@ -68,11 +68,6 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
         this.currentPos = startPos;
         this.startTimeMs = System.currentTimeMillis();
         
-        // Check if structures are even enabled
-        // TODO(balm-26.1): WorldData.worldGenOptions() was reshaped; structure-generation guard stubbed to always allow.
-        if (false) {
-            this.finished = true;
-        }
     }
     
     @Override

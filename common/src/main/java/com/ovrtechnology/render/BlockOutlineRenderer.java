@@ -1,26 +1,19 @@
 package com.ovrtechnology.render;
 
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-// TODO(balm-26.1): RenderPipeline$Builder no longer exposes withBlend or
-// withDepthTestFunction directly; both were consolidated into
-// withColorTargetState(ColorTargetState) / withDepthStencilState(DepthStencilState)
-// per the NeoForged 26.1 migration primer. The pipeline below is built without
-// those flags, so the outline currently renders with default depth testing (i.e.
-// hidden behind blocks). Re-apply the no-depth-test + translucent state once we
-// commit a proper DepthStencilState/ColorTargetState wiring.
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.menu.MenuCategory;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.LayeringTransform;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
@@ -36,20 +29,23 @@ import net.minecraft.world.phys.shapes.Shapes;
  */
 public final class BlockOutlineRenderer {
 
-    private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipeline.builder()
-            .withLocation("aromaaffect/pipeline/lines_no_depth")
-            .withVertexShader("core/rendertype_lines")
-            .withFragmentShader("core/rendertype_lines")
-            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
-            .withUniform("Globals", UniformType.UNIFORM_BUFFER)
+    /**
+     * X-ray pipeline: lines that draw through walls (no depth test) with
+     * translucent blending so distant outlines fade with alpha. Built from
+     * vanilla {@code RenderPipelines.LINES_SNIPPET} (shaders, uniforms,
+     * vertex format) plus our two overrides.
+     */
+    private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+            .withLocation("aromaaffect:pipeline/lines_no_depth")
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .withCull(false)
-            // .withBlend / .withDepthTestFunction removed in MC 26.1; see TODO above.
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES)
             .build();
 
-    private static final RenderType LINES_NO_DEPTH = XRayRenderType.createLinesNoDepth();
+    public static final RenderType LINES_NO_DEPTH = RenderType.create(
+            "aromaaffect:lines_no_depth",
+            RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).bufferSize(256).createRenderSetup()
+    );
 
     private BlockOutlineRenderer() {}
 
@@ -132,18 +128,4 @@ public final class BlockOutlineRenderer {
         return null;
     }
 
-    /**
-     * Helper class to create custom RenderType with no-depth lines.
-     */
-    private static final class XRayRenderType {
-        private XRayRenderType() {}
-
-        static RenderType createLinesNoDepth() {
-            // TODO(balm-26.1): RenderType.create(String, RenderSetup) is
-            // package-private in 26.1. Fallback to vanilla RenderType.lines()
-            // which has default depth testing -- outline no longer renders
-            // through walls. Revisit with proper public factory in 26.1.
-            return net.minecraft.client.renderer.rendertype.RenderTypes.LINES;
-        }
-    }
 }

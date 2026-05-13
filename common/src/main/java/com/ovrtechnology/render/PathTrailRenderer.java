@@ -1,15 +1,12 @@
 package com.ovrtechnology.render;
 
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-// TODO(balm-26.1): see BlockOutlineRenderer for the same 26.1 RenderPipeline
-// builder migration. The trail pipeline below temporarily loses translucent
-// blending and the no-depth-test flag until DepthStencilState/ColorTargetState
-// wiring is added.
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.menu.MenuCategory;
@@ -26,8 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.LayeringTransform;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.BlockPos;
@@ -129,17 +125,17 @@ public final class PathTrailRenderer {
 
     // ── Pipeline (shared by both glow and core render types) ────────────
 
-    private static final RenderPipeline TRAIL_PIPELINE = RenderPipeline.builder()
-            .withLocation("aromaaffect/pipeline/trail_no_depth")
-            .withVertexShader("core/rendertype_lines")
-            .withFragmentShader("core/rendertype_lines")
-            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
-            .withUniform("Globals", UniformType.UNIFORM_BUFFER)
+    /**
+     * Translucent no-depth-test pipeline for the path trail glow. Line width
+     * is now a per-vertex attribute (POSITION_COLOR_NORMAL_LINE_WIDTH baked
+     * into LINES_SNIPPET), so glow vs. core differentiation happens at the
+     * VertexConsumer call site -- both render types share this pipeline.
+     */
+    private static final RenderPipeline TRAIL_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+            .withLocation("aromaaffect:pipeline/trail_no_depth")
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .withCull(false)
-            // .withBlend / .withDepthTestFunction removed in MC 26.1; see TODO above.
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES)
             .build();
 
     // ── Render types (different line widths) ─────────────────────────────
@@ -842,11 +838,15 @@ public final class PathTrailRenderer {
         private TrailRenderType() {}
 
         static RenderType create(String name, double lineWidth) {
-            // TODO(balm-26.1): RenderType.create(String, RenderSetup) is
-            // package-private in 26.1. Fallback to vanilla RenderType.lines() --
-            // trail loses x-ray + custom line width. Restore with proper public
-            // factory once available.
-            return net.minecraft.client.renderer.rendertype.RenderTypes.LINES;
+            // Line width is a per-vertex attribute in 26.1 (LINES_SNIPPET uses
+            // POSITION_COLOR_NORMAL_LINE_WIDTH); width parameter is recorded
+            // here only so callers can distinguish the two render types by
+            // name. The actual width gets written into the vertex stream by
+            // the trail-drawing code below.
+            return RenderType.create(
+                    "aromaaffect:" + name,
+                    RenderSetup.builder(TRAIL_PIPELINE).bufferSize(1536).createRenderSetup()
+            );
         }
     }
 }

@@ -3,3 +3,12 @@ classTweaker v1 official
 # Grant access to the protected BlockEntityType constructor used by OmaraDeviceRegistry.
 # May become unused once registrations are fully migrated to BalmBlockEntityTypeRegistrar.
 accessible method net/minecraft/world/level/block/entity/BlockEntityType <init> (Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V
+
+# Grant access to the package-private LINES snippet so the x-ray render
+# pipelines in BlockOutlineRenderer / PathTrailRenderer can extend it
+# instead of redeclaring all shaders + uniforms + vertex format inline.
+accessible field net/minecraft/client/renderer/RenderPipelines LINES_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+
+# Grant access to the package-private RenderType.create(String, RenderSetup)
+# factory used by the x-ray BlockOutlineRenderer + PathTrailRenderer.
+accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;

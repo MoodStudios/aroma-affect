@@ -1085,30 +1085,55 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     private void submitRadialRenderState(GuiGraphicsExtractor graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
-        // TODO(balm-26.1): re-implement the curved radial ring against MC 26.1's
-        // new GuiGraphicsExtractor render-state pipeline. The previous
-        // implementation built a custom GuiElementRenderState with VertexConsumer
-        // vertex emission; the GuiRenderState / GuiElementRenderState types
-        // were removed from net.minecraft.client.gui.render.state in 26.1.
-        // For now we fall back to a square bounding box so the menu remains
-        // usable but visually degraded — labels, icons, and hit detection
-        // continue to work because they are drawn separately.
+        // Scanline annulus: GuiElementRenderState was removed in 26.1 along with
+        // the custom VertexConsumer fan path, so we approximate the curved ring
+        // with axis-aligned one-pixel-tall horizontal strips derived from the
+        // circle equation x = sqrt(r^2 - y^2). Pixel-accurate to within one
+        // pixel at the edges and visually reads as a circular ring.
         int baseColor = MenuRenderUtils.withAlpha(COLOR_RING_BASE, animationProgress);
         int borderColor = MenuRenderUtils.withAlpha(COLOR_RING_BORDER, animationProgress);
-        int outerRadiusInt = outerRadius;
-        graphics.fill(centerX - outerRadiusInt, centerY - outerRadiusInt,
-                centerX + outerRadiusInt, centerY + outerRadiusInt, baseColor);
-        graphics.fill(centerX - (int) innerRadius, centerY - (int) innerRadius,
-                centerX + (int) innerRadius, centerY + (int) innerRadius, 0);
-        // outer border (1-pixel rect) and inner border
-        int rectLeft = centerX - outerRadiusInt;
-        int rectTop = centerY - outerRadiusInt;
-        int rectRight = centerX + outerRadiusInt;
-        int rectBottom = centerY + outerRadiusInt;
-        graphics.fill(rectLeft, rectTop, rectRight, rectTop + 1, borderColor);
-        graphics.fill(rectLeft, rectBottom - 1, rectRight, rectBottom, borderColor);
-        graphics.fill(rectLeft, rectTop, rectLeft + 1, rectBottom, borderColor);
-        graphics.fill(rectRight - 1, rectTop, rectRight, rectBottom, borderColor);
+
+        int outerR = outerRadius;
+        float innerR = innerRadius;
+        float outerR2 = (float) outerR * outerR;
+        float innerR2 = innerR * innerR;
+        float outerEdge = outerR - 1f;
+        float outerEdge2 = outerEdge * outerEdge;
+        float innerEdge = innerR - 1f;
+        float innerEdge2 = innerEdge * innerEdge;
+
+        for (int dy = -outerR; dy < outerR; dy++) {
+            float dy2 = (float) dy * dy;
+            if (dy2 >= outerR2) continue;
+            int xOuter = (int) Math.sqrt(outerR2 - dy2);
+            int y = centerY + dy;
+
+            if (dy2 < innerR2) {
+                int xInner = (int) Math.sqrt(innerR2 - dy2);
+                graphics.fill(centerX - xOuter, y, centerX - xInner, y + 1, baseColor);
+                graphics.fill(centerX + xInner, y, centerX + xOuter, y + 1, baseColor);
+            } else {
+                graphics.fill(centerX - xOuter, y, centerX + xOuter, y + 1, baseColor);
+            }
+
+            if (dy2 >= outerEdge2) {
+                graphics.fill(centerX - xOuter, y, centerX + xOuter, y + 1, borderColor);
+            } else {
+                int xOuterEdge = (int) Math.sqrt(outerEdge2 - dy2);
+                graphics.fill(centerX - xOuter, y, centerX - xOuterEdge, y + 1, borderColor);
+                graphics.fill(centerX + xOuterEdge, y, centerX + xOuter, y + 1, borderColor);
+            }
+
+            if (dy2 < innerR2 && dy2 >= innerEdge2) {
+                int xInner = (int) Math.sqrt(innerR2 - dy2);
+                graphics.fill(centerX - xInner, y, centerX + xInner, y + 1, borderColor);
+            } else if (dy2 < innerEdge2) {
+                int xInner = (int) Math.sqrt(innerR2 - dy2);
+                int xInnerEdge = (int) Math.sqrt(innerEdge2 - dy2);
+                graphics.fill(centerX - xInner, y, centerX - xInnerEdge, y + 1, borderColor);
+                graphics.fill(centerX + xInnerEdge, y, centerX + xInner, y + 1, borderColor);
+            }
+        }
     }
 
     private static int computeOuterRadiusPx(int width, int height) {

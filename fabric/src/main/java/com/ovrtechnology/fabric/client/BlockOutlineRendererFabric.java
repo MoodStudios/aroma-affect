@@ -1,18 +1,34 @@
 package com.ovrtechnology.fabric.client;
 
-import com.ovrtechnology.AromaAffect;
-// TODO(balm-26.1): Fabric API 26.1 removed/relocated WorldRenderEvents from
-// net.fabricmc.fabric.api.client.rendering.v1 (and from .v1.world). The
-// X-ray block outline + path trail hooks are temporarily stubbed; restore
-// once the new Fabric 26.1 rendering event is identified (likely a
-// LevelRenderer extension via ClientLifecycleEvents or a new render-stage
-// callback).
+import com.ovrtechnology.render.BlockOutlineRenderer;
+import com.ovrtechnology.render.PathTrailRenderer;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 
 public final class BlockOutlineRendererFabric {
 
     private BlockOutlineRendererFabric() {}
 
     public static void init() {
-        AromaAffect.LOGGER.warn("BlockOutlineRendererFabric stubbed -- Fabric 26.1 render-event API still being resolved");
+        LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(BlockOutlineRendererFabric::onAfterTranslucent);
+    }
+
+    private static void onAfterTranslucent(net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext ctx) {
+        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+
+        PathTrailRenderer.renderTrail(
+                ctx.poseStack(),
+                ctx.levelState().cameraRenderState.pos,
+                bufferSource
+        );
+
+        BlockOutlineRenderer.renderOutline(
+                ctx.poseStack(),
+                ctx.levelState().cameraRenderState.pos,
+                bufferSource
+        );
+
+        bufferSource.endLastBatch();
     }
 }
