@@ -1,8 +1,8 @@
 package com.ovrtechnology.ability;
 
 import com.ovrtechnology.AromaAffect;
-import net.minecraft.world.InteractionResult;
 import net.blay09.mods.balm.platform.event.callback.BlockCallback;
+import net.blay09.mods.balm.platform.event.callback.InteractionEventResult;
 import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,7 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.core.Direction;
+import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -86,23 +86,25 @@ public final class AbilityHandler {
      * @param direction the face of the block that was clicked
      * @return InteractionResult indicating whether to cancel vanilla behavior
      */
-    private static InteractionResult onRightClickBlock(
+    private static InteractionEventResult onRightClickBlock(
             Player player,
+            Level level,
             InteractionHand hand,
-            BlockPos pos,
-            Direction direction) {
+            BlockHitResult hitResult) {
+
+        BlockPos pos = hitResult.getBlockPos();
 
         // Only process main hand to avoid double triggering
         if (hand != InteractionHand.MAIN_HAND) {
-            return InteractionResult.PASS;
+            return InteractionEventResult.PASS;
         }
 
         if (player.level().isClientSide()) {
-            return InteractionResult.PASS;
+            return InteractionEventResult.PASS;
         }
 
         if (!(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResult.PASS;
+            return InteractionEventResult.PASS;
         }
 
         Block block = player.level().getBlockState(pos).getBlock();
@@ -114,7 +116,6 @@ public final class AbilityHandler {
             }
 
             if (!ability.canUse(serverPlayer)) {
-                // Check if on cooldown and show feedback
                 long cooldown = ability.getRemainingCooldown(serverPlayer);
                 if (cooldown > 0) {
                     AromaAffect.LOGGER.debug("Player {} on cooldown for {} ({} more ticks)",
@@ -123,21 +124,18 @@ public final class AbilityHandler {
                 continue;
             }
 
-            // Start tracking this interaction
             ACTIVE_INTERACTIONS.put(player.getUUID(), new ActiveInteraction(pos, ability));
 
-            // Process the first tick
             boolean completed = ability.onInteract(serverPlayer, pos);
 
             if (completed) {
                 ACTIVE_INTERACTIONS.remove(player.getUUID());
             }
 
-            // Interrupt vanilla behavior
-            return InteractionResult.SUCCESS;
+            return InteractionEventResult.SUCCESS;
         }
 
-        return InteractionResult.PASS;
+        return InteractionEventResult.PASS;
     }
 
     /**

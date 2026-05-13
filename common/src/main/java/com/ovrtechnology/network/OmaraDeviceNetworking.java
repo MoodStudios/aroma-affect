@@ -83,7 +83,7 @@ public final class OmaraDeviceNetworking {
                                 scentName, intensityPercent);
                             net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
                             if (mc.player != null) {
-                                mc.player.displayClientMessage(Component.literal(message), false);
+                                mc.player.sendSystemMessage(Component.literal(message));
                             }
                         }
                     }

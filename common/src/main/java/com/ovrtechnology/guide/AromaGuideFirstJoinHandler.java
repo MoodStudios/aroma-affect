@@ -6,6 +6,7 @@ import com.ovrtechnology.AromaAffect;
 import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;

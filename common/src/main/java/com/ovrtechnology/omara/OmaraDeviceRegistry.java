@@ -38,16 +38,16 @@ public final class OmaraDeviceRegistry {
                 new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id))));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void registerBlockEntities(BalmRegistrar.Scoped<BlockEntityType<?>> blockEntities) {
-        OMARA_DEVICE_BLOCK_ENTITY = blockEntities.register(OMARA_DEVICE_ID, id ->
-                new BlockEntityType(OmaraDeviceBlockEntity::new, java.util.Set.of((Block) OMARA_DEVICE.value())));
+        // TODO(balm-26.1): BlockEntityType.BlockEntitySupplier is package-private
+        // in 26.1; the access widener wasn't honored. Use a Balm or
+        // mod-loader specific factory instead. Stubbed for compile.
+        AromaAffect.LOGGER.warn("OmaraDeviceRegistry.registerBlockEntities stubbed -- needs accessible BlockEntityType factory");
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void registerMenus(BalmRegistrar.Scoped<MenuType<?>> menus) {
-        OMARA_DEVICE_MENU = menus.register(OMARA_DEVICE_ID, id ->
-                new MenuType(OmaraDeviceMenu::new, FeatureFlags.DEFAULT_FLAGS));
-        AromaAffect.LOGGER.info("OmaraDeviceRegistry initialized");
+        // TODO(balm-26.1): MenuType constructor is package-private in 26.1.
+        // Need a public factory for the open-menu pipeline. Stubbed.
+        AromaAffect.LOGGER.warn("OmaraDeviceRegistry.registerMenus stubbed -- needs accessible MenuType factory");
     }
 }

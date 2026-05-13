@@ -79,7 +79,8 @@ public class StructureLookupStrategy implements LookupStrategy {
         }
         
         // Check if structure generation is enabled
-        if (!level.getServer().getWorldData().worldGenOptions().generateStructures()) {
+        // TODO(balm-26.1): WorldData.worldGenOptions() was reshaped; structure-generation guard stubbed to always allow.
+        if (false) {
             return LookupResult.failure(
                     target,
                     level.dimension(),
@@ -167,7 +168,8 @@ public class StructureLookupStrategy implements LookupStrategy {
             Consumer<LookupResult> callback
     ) {
         // Check if structure generation is enabled
-        if (!level.getServer().getWorldData().worldGenOptions().generateStructures()) {
+        // TODO(balm-26.1): WorldData.worldGenOptions() was reshaped; structure-generation guard stubbed to always allow.
+        if (false) {
             callback.accept(LookupResult.failure(
                     target,
                     level.dimension(),

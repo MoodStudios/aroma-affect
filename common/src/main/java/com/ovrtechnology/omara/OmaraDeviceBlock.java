@@ -161,7 +161,7 @@ public class OmaraDeviceBlock extends BaseEntityBlock {
         if (level.isClientSide()) {
             return null;
         }
-        return type == OmaraDeviceRegistry.OMARA_DEVICE_BLOCK_ENTITY.get()
+        return type == OmaraDeviceRegistry.OMARA_DEVICE_BLOCK_ENTITY.value()
                 ? (lvl, pos, st, be) -> OmaraDeviceBlockEntity.serverTick(lvl, pos, st, (OmaraDeviceBlockEntity) be)
                 : null;
     }

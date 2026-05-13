@@ -17,7 +17,7 @@ public class SnifferMenu extends AbstractContainerMenu {
     private final Sniffer sniffer;
 
     public SnifferMenu(int containerId, Inventory playerInventory, SnifferContainer snifferContainer, Sniffer sniffer) {
-        super(SnifferMenuRegistry.SNIFFER_MENU.get(), containerId);
+        super(((net.minecraft.world.inventory.MenuType<com.ovrtechnology.entity.sniffer.SnifferMenu>) (Object) SnifferMenuRegistry.SNIFFER_MENU.value()), containerId);
         this.snifferContainer = snifferContainer;
         this.sniffer = sniffer;
 

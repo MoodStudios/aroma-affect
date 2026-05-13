@@ -620,7 +620,7 @@ public final class PathTrailRenderer {
                     String message = String.format(
                             "§d[Aroma Affect] §7Scent: §e%s §7(§dpath tracking§7) §8[%d%%]",
                             scentName, intensityPercent);
-                    mc.player.displayClientMessage(Component.literal(message), false);
+                    mc.player.sendSystemMessage(Component.literal(message));
                 }
             }
         }
@@ -842,12 +842,11 @@ public final class PathTrailRenderer {
         private TrailRenderType() {}
 
         static RenderType create(String name, double lineWidth) {
-            RenderSetup setup = RenderSetup.builder(TRAIL_PIPELINE)
-                    .bufferSize(1536)
-                    .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-                    .createRenderSetup();
-            return RenderType.create(name, setup);
+            // TODO(balm-26.1): RenderType.create(String, RenderSetup) is
+            // package-private in 26.1. Fallback to vanilla RenderType.lines() --
+            // trail loses x-ray + custom line width. Restore with proper public
+            // factory once available.
+            return net.minecraft.client.renderer.rendertype.RenderTypes.LINES;
         }
     }
 }

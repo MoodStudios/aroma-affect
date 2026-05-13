@@ -82,7 +82,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
     };
 
     public OmaraDeviceBlockEntity(BlockPos pos, BlockState state) {
-        super(OmaraDeviceRegistry.OMARA_DEVICE_BLOCK_ENTITY.get(), pos, state);
+        super(OmaraDeviceRegistry.OMARA_DEVICE_BLOCK_ENTITY.value(), pos, state);
     }
 
     public int getMaxCooldownForCurrentMode() {

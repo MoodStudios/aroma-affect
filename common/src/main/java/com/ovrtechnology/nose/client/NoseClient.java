@@ -35,7 +35,7 @@ public final class NoseClient {
      * {@code clientRegistrars.modelLayers(NoseClient::registerModelLayers)}.
      */
     public static void registerModelLayers(BalmModelLayerRegistrar modelLayers) {
-        modelLayers.register(NoseModelLayers.NOSE_MASK.getModel(), NoseMaskModel::createLayer);
+        modelLayers.register(NoseModelLayers.NOSE_MASK.model(), NoseMaskModel::createLayer);
         AromaAffect.LOGGER.info("Nose client rendering initialized");
     }
 

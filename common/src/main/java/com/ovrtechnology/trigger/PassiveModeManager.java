@@ -735,7 +735,7 @@ public final class PassiveModeManager {
             }
 
             // Send chat message to player
-            player.displayClientMessage(Component.literal(message), false);
+            player.sendSystemMessage(Component.literal(message));
         }
 
         AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {})",

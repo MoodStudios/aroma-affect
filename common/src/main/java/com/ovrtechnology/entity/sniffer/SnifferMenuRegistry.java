@@ -29,11 +29,14 @@ public class SnifferMenuRegistry {
 
     public static Holder<MenuType<?>> SNIFFER_MENU;
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void registerMenus(BalmRegistrar.Scoped<MenuType<?>> menus) {
-        SNIFFER_MENU = menus.register("sniffer_menu", id ->
-                new MenuType(SnifferMenuRegistry::createMenu, FeatureFlags.DEFAULT_FLAGS));
-        AromaAffect.LOGGER.info("Registered sniffer menu type");
+        // TODO(balm-26.1): the MenuType(MenuSupplier, FeatureFlagSet) constructor
+        // is package-private in 26.1; we need a public factory (likely a Balm
+        // helper or IMenuTypeExtension.create on NeoForge) to wire the sniffer
+        // entity-id extra-data channel. SNIFFER_MENU is left null for now so the
+        // rest of the bootstrap compiles; openSnifferMenu below still works via
+        // a Balm MenuProvider that closes over the live Sniffer instance.
+        AromaAffect.LOGGER.warn("SnifferMenuRegistry.registerMenus stubbed -- needs public MenuType factory");
     }
 
     private static SnifferMenu createMenu(int containerId, Inventory inventory) {

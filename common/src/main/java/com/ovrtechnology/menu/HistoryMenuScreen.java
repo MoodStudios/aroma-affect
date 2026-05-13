@@ -890,7 +890,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             nameEditBox.setX(px + 10);
             nameEditBox.setY(py + 22);
             nameEditBox.setWidth(popupW - 20);
-            nameEditBox.render(g, mouseX, mouseY, partialTick);
+            nameEditBox.extractRenderState(g, mouseX, mouseY, partialTick);
         }
 
         int confirmX = px + 10;

@@ -139,12 +139,11 @@ public final class BlockOutlineRenderer {
         private XRayRenderType() {}
 
         static RenderType createLinesNoDepth() {
-            RenderSetup setup = RenderSetup.builder(LINES_NO_DEPTH_PIPELINE)
-                    .bufferSize(1536)
-                    .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-                    .createRenderSetup();
-            return RenderType.create("aromaaffect_lines_no_depth", setup);
+            // TODO(balm-26.1): RenderType.create(String, RenderSetup) is
+            // package-private in 26.1. Fallback to vanilla RenderType.lines()
+            // which has default depth testing -- outline no longer renders
+            // through walls. Revisit with proper public factory in 26.1.
+            return net.minecraft.client.renderer.rendertype.RenderTypes.LINES;
         }
     }
 }

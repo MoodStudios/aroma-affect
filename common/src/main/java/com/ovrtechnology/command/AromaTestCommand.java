@@ -62,11 +62,7 @@ public final class AromaTestCommand {
     /**
      * Registers the /aromatest command with all subcommands.
      */
-    private static void registerCommands(
-            CommandDispatcher<CommandSourceStack> dispatcher,
-            CommandBuildContext registry,
-            Commands.CommandSelection selection
-    ) {
+    private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest");
         
         // Add all registered subcommands

@@ -188,8 +188,8 @@ public final class NoseSmithDialogueScreen extends Screen {
         int portraitBottom = bottom - PADDING;
 
         int portraitScale = Math.min(portraitRight - portraitLeft, portraitBottom - portraitTop) - 8;
-        InventoryScreen.renderEntityInInventoryFollowsMouse(
-                GuiGraphicsExtractor,
+        InventoryScreen.extractEntityInInventoryFollowsMouse(
+                graphics,
                 portraitLeft,
                 portraitTop,
                 portraitRight,

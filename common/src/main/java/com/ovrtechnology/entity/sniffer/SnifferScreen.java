@@ -22,7 +22,7 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         int k = (this.width - this.imageWidth) / 2;
         int l = (this.height - this.imageHeight) / 2;
 
@@ -37,8 +37,8 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
 
         // Renderizar el Sniffer en la pantalla
         if (this.menu.getSniffer() != null) {
-            InventoryScreen.renderEntityInInventoryFollowsMouse(
-                    GuiGraphicsExtractor,
+            InventoryScreen.extractEntityInInventoryFollowsMouse(
+                    graphics,
                     k + 26, l + 18,
                     k + 78, l + 70,
                     17,
