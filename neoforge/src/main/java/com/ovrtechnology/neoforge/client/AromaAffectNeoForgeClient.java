@@ -10,10 +10,10 @@ import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * NeoForge-specific client initialization for Aroma Affect.
@@ -33,9 +33,20 @@ public final class AromaAffectNeoForgeClient {
 
         modEventBus.addListener(this::onRegisterClientExtensions);
 
+        // Curios renderer registration must run on the main thread during
+        // FMLClientSetupEvent. Only attach the listener if Curios is loaded.
+        if (ModList.get().isLoaded("curios")) {
+            modEventBus.addListener(this::onClientSetup);
+        }
+
         // BlockOutlineRendererNeoForge listens to RenderLevelStageEvent.AfterTranslucentBlocks
         // on NeoForge's main event bus; matches the pre-migration behaviour.
         BlockOutlineRendererNeoForge.init();
+    }
+
+    private void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(
+                com.ovrtechnology.neoforge.client.accessory.CuriosClientIntegration::init);
     }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {

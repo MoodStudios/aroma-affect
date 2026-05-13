@@ -2,9 +2,10 @@ package com.ovrtechnology.neoforge.accessory;
 
 import com.ovrtechnology.nose.NoseItem;
 import com.ovrtechnology.nose.NoseRegistry;
-import dev.architectury.registry.registries.RegistrySupplier;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import top.theillusivec4.curios.api.CuriosCapability;
@@ -16,11 +17,15 @@ public final class CuriosIntegration {
     private CuriosIntegration() {}
 
     public static void register(RegisterCapabilitiesEvent event) {
-        for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getAllNoses()) {
-            event.registerItem(CuriosCapability.ITEM, CuriosIntegration::createCurio, supplier.get());
+        for (Holder<Item> holder : NoseRegistry.getAllNoses()) {
+            if (holder.isBound() && holder.value() instanceof NoseItem noseItem) {
+                event.registerItem(CuriosCapability.ITEM, CuriosIntegration::createCurio, noseItem);
+            }
         }
-        for (RegistrySupplier<NoseItem> supplier : NoseRegistry.getLegacyItems()) {
-            event.registerItem(CuriosCapability.ITEM, CuriosIntegration::createCurio, supplier.get());
+        for (Holder<Item> holder : NoseRegistry.getLegacyItems()) {
+            if (holder.isBound() && holder.value() instanceof NoseItem noseItem) {
+                event.registerItem(CuriosCapability.ITEM, CuriosIntegration::createCurio, noseItem);
+            }
         }
     }
 
