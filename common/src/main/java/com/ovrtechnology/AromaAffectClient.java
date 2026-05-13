@@ -18,30 +18,28 @@ import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketConfig;
 import dev.architectury.event.events.client.ClientTickEvent;
 import lombok.experimental.UtilityClass;
+import net.blay09.mods.balm.client.BalmClientRegistrars;
 import net.minecraft.client.Minecraft;
 
 /**
  * Client-side initialization for the Aroma Affect mod.
  * This handles all client-only systems like menus, rendering, and keybindings.
- * 
- * <p>This should be called from each platform's client initialization:</p>
- * <ul>
- *   <li>Fabric: {@code AromaAffectFabricClient.onInitializeClient()}</li>
- *   <li>NeoForge: FMLClientSetupEvent handler</li>
- * </ul>
+ *
+ * <p>Invoked via {@code BalmClient.initializeMod(MOD_ID, loadContext, AromaAffectClient::initialize)}
+ * from each platform client entry point.</p>
  */
 @UtilityClass
 public final class AromaAffectClient {
-    
+
     private static boolean initialized = false;
-    
+
     /**
      * Initializes all client-side systems.
      * Should be called during client mod initialization.
      */
-    public static void init() {
+    public static void initialize(BalmClientRegistrars registrars) {
         if (initialized) {
-            AromaAffect.LOGGER.warn("AromaAffectClient.init() called multiple times!");
+            AromaAffect.LOGGER.warn("AromaAffectClient.initialize() called multiple times!");
             return;
         }
         
