@@ -1,9 +1,8 @@
 package com.ovrtechnology.nose.client;
 
-import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
 import net.blay09.mods.balm.client.platform.event.callback.ScreenCallback;
-import dev.architectury.hooks.client.screen.ScreenAccess;
 import com.ovrtechnology.mixin.AbstractContainerScreenAccessor;
+import com.ovrtechnology.mixin.ScreenInvoker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -36,7 +35,7 @@ public final class NoseInventoryUi {
         initialized = true;
     }
 
-    private static void onInitPost(Screen screen, ScreenAccess access) {
+    private static void onInitPost(Screen screen) {
         if (!(screen instanceof AbstractContainerScreen<?> containerScreen)) {
             return;
         }
@@ -45,24 +44,29 @@ public final class NoseInventoryUi {
         }
 
         NoseStrapToggleButton button = new NoseStrapToggleButton(0, 0, b -> NoseRenderToggles.toggleStrapEnabled());
-        access.addRenderableWidget(button);
+        // Balm's ScreenCallback.Init.After doesn't expose the Architectury-style
+        // ScreenAccess helper; we go through the @Invoker mixin instead.
+        ((ScreenInvoker) screen).aromaaffect$addRenderableWidget(button);
         strapButtons.put(screen, button);
         positionButton(containerScreen, button);
     }
 
     private static void onRenderContainerForeground(
-            AbstractContainerScreen<?> screen,
+            Screen screen,
             GuiGraphicsExtractor graphics,
             int mouseX,
             int mouseY,
             float delta
     ) {
+        if (!(screen instanceof AbstractContainerScreen<?> containerScreen)) {
+            return;
+        }
         NoseStrapToggleButton button = strapButtons.get(screen);
         if (button == null) {
             return;
         }
 
-        positionButton(screen, button);
+        positionButton(containerScreen, button);
     }
 
     private static void positionButton(AbstractContainerScreen<?> screen, NoseStrapToggleButton button) {

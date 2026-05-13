@@ -1,8 +1,10 @@
 package com.ovrtechnology.render;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+// TODO(balm-26.1): see BlockOutlineRenderer for the same 26.1 RenderPipeline
+// builder migration. The trail pipeline below temporarily loses translucent
+// blending and the no-depth-test flag until DepthStencilState/ColorTargetState
+// wiring is added.
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -135,9 +137,8 @@ public final class PathTrailRenderer {
             .withUniform("Projection", UniformType.UNIFORM_BUFFER)
             .withUniform("Fog", UniformType.UNIFORM_BUFFER)
             .withUniform("Globals", UniformType.UNIFORM_BUFFER)
-            .withBlend(BlendFunction.TRANSLUCENT)
             .withCull(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            // .withBlend / .withDepthTestFunction removed in MC 26.1; see TODO above.
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES)
             .build();
 

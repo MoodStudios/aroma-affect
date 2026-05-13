@@ -1,8 +1,13 @@
 package com.ovrtechnology.render;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+// TODO(balm-26.1): RenderPipeline$Builder no longer exposes withBlend or
+// withDepthTestFunction directly; both were consolidated into
+// withColorTargetState(ColorTargetState) / withDepthStencilState(DepthStencilState)
+// per the NeoForged 26.1 migration primer. The pipeline below is built without
+// those flags, so the outline currently renders with default depth testing (i.e.
+// hidden behind blocks). Re-apply the no-depth-test + translucent state once we
+// commit a proper DepthStencilState/ColorTargetState wiring.
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -39,9 +44,8 @@ public final class BlockOutlineRenderer {
             .withUniform("Projection", UniformType.UNIFORM_BUFFER)
             .withUniform("Fog", UniformType.UNIFORM_BUFFER)
             .withUniform("Globals", UniformType.UNIFORM_BUFFER)
-            .withBlend(BlendFunction.TRANSLUCENT)
             .withCull(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            // .withBlend / .withDepthTestFunction removed in MC 26.1; see TODO above.
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES)
             .build();
 

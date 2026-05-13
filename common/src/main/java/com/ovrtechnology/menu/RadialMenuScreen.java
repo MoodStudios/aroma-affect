@@ -12,8 +12,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+// MC 26.1: net.minecraft.client.gui.render.state.{GuiElementRenderState,GuiRenderState}
+// were removed during the GuiGraphics->GuiGraphicsExtractor refactor. The custom
+// RadialRingRenderState that used those types was simplified to a fillGradient stub;
+// re-implement against the new render-state API as a follow-up.
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
@@ -64,8 +66,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final int COLOR_INDICATOR = 0xEEFFFFFF;
 
     private static final TextureSetup NO_TEXTURE = TextureSetup.noTexture();
-
-    private static final Field GUI_RENDER_STATE_FIELD = findGuiRenderStateField();
 
     private final List<RadialEntry> entries = new ArrayList<>();
     private float[] selectionProgress = new float[0];
@@ -1085,38 +1085,30 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     private void submitRadialRenderState(GuiGraphicsExtractor graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
+        // TODO(balm-26.1): re-implement the curved radial ring against MC 26.1's
+        // new GuiGraphicsExtractor render-state pipeline. The previous
+        // implementation built a custom GuiElementRenderState with VertexConsumer
+        // vertex emission; the GuiRenderState / GuiElementRenderState types
+        // were removed from net.minecraft.client.gui.render.state in 26.1.
+        // For now we fall back to a square bounding box so the menu remains
+        // usable but visually degraded — labels, icons, and hit detection
+        // continue to work because they are drawn separately.
         int baseColor = MenuRenderUtils.withAlpha(COLOR_RING_BASE, animationProgress);
-        int selectedColor = MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, animationProgress);
         int borderColor = MenuRenderUtils.withAlpha(COLOR_RING_BORDER, animationProgress);
-        int separatorColor = MenuRenderUtils.withAlpha(COLOR_RING_SEPARATOR, animationProgress);
-        int indicatorColor = MenuRenderUtils.withAlpha(COLOR_INDICATOR, animationProgress);
-
-        int boundsPadding = 4;
-        int boundsLeft = centerX - outerRadius - boundsPadding;
-        int boundsTop = centerY - outerRadius - boundsPadding;
-        int boundsSize = (outerRadius + boundsPadding) * 2;
-
-        ScreenRectangle bounds = new ScreenRectangle(boundsLeft, boundsTop, boundsSize, boundsSize);
-        GuiRenderState renderState = getGuiRenderState(graphics);
-        renderState.submitGuiElement(new RadialRingRenderState(
-                RenderPipelines.GUI,
-                NO_TEXTURE,
-                new Matrix3x2f(graphics.pose()),
-                centerX,
-                centerY,
-                innerRadius,
-                outerRadius,
-                baseColor,
-                selectedColor,
-                borderColor,
-                separatorColor,
-                indicatorColor,
-                START_ANGLE_RAD,
-                selectedIndex,
-                selectionProgress,
-                bounds,
-                null
-        ));
+        int outerRadiusInt = outerRadius;
+        graphics.fill(centerX - outerRadiusInt, centerY - outerRadiusInt,
+                centerX + outerRadiusInt, centerY + outerRadiusInt, baseColor);
+        graphics.fill(centerX - (int) innerRadius, centerY - (int) innerRadius,
+                centerX + (int) innerRadius, centerY + (int) innerRadius, 0);
+        // outer border (1-pixel rect) and inner border
+        int rectLeft = centerX - outerRadiusInt;
+        int rectTop = centerY - outerRadiusInt;
+        int rectRight = centerX + outerRadiusInt;
+        int rectBottom = centerY + outerRadiusInt;
+        graphics.fill(rectLeft, rectTop, rectRight, rectTop + 1, borderColor);
+        graphics.fill(rectLeft, rectBottom - 1, rectRight, rectBottom, borderColor);
+        graphics.fill(rectLeft, rectTop, rectLeft + 1, rectBottom, borderColor);
+        graphics.fill(rectRight - 1, rectTop, rectRight, rectBottom, borderColor);
     }
 
     private static int computeOuterRadiusPx(int width, int height) {
@@ -1170,24 +1162,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    private static GuiRenderState getGuiRenderState(GuiGraphicsExtractor graphics) {
-        try {
-            return (GuiRenderState) GUI_RENDER_STATE_FIELD.get(graphics);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to access GuiGraphicsExtractor GuiRenderState", e);
-        }
-    }
-
-    private static Field findGuiRenderStateField() {
-        for (Field field : GuiGraphicsExtractor.class.getDeclaredFields()) {
-            if (GuiRenderState.class.isAssignableFrom(field.getType())) {
-                field.setAccessible(true);
-                return field;
-            }
-        }
-        throw new IllegalStateException("Unable to locate GuiRenderState field on GuiGraphicsExtractor");
-    }
-
     private void drawDistanceLine(
             GuiGraphicsExtractor graphics,
             int x,
@@ -1210,193 +1184,4 @@ public class RadialMenuScreen extends BaseMenuScreen {
     ) {
     }
 
-    private record RadialRingRenderState(
-            RenderPipeline pipeline,
-            TextureSetup textureSetup,
-            Matrix3x2f pose,
-            int centerX,
-            int centerY,
-            float innerRadius,
-            float outerRadius,
-            int baseColor,
-            int selectedColor,
-            int borderColor,
-            int separatorColor,
-            int indicatorColor,
-            float startAngleRad,
-            int selectedIndex,
-            float[] selectionProgress,
-            ScreenRectangle bounds,
-            ScreenRectangle scissorArea
-    ) implements GuiElementRenderState {
-
-        @Override
-        public void buildVertices(VertexConsumer consumer) {
-            int segments = selectionProgress.length;
-            if (segments <= 0) {
-                return;
-            }
-
-            float segmentAngle = TWO_PI / segments;
-            int fullSteps = computeFullArcSteps(outerRadius);
-            int stepsPerSegment = Math.max(8, fullSteps / segments);
-
-            // Base + selected blend per segment.
-            for (int i = 0; i < segments; i++) {
-                float t = selectionProgress[i];
-                int fillColor = lerpColor(baseColor, selectedColor, t);
-                float start = startAngleRad + i * segmentAngle;
-                addRingArc(consumer, centerX, centerY, innerRadius, outerRadius, start, segmentAngle, stepsPerSegment, fillColor);
-            }
-
-            // Borders (inner + outer).
-            addRingArc(consumer, centerX, centerY, outerRadius - BORDER_THICKNESS_PX, outerRadius, startAngleRad, TWO_PI, fullSteps, borderColor);
-            addRingArc(consumer, centerX, centerY, innerRadius, innerRadius + BORDER_THICKNESS_PX, startAngleRad, TWO_PI, fullSteps, borderColor);
-
-            // Separators between segments.
-            for (int i = 0; i < segments; i++) {
-                float angle = startAngleRad + i * segmentAngle;
-                addRadialQuad(consumer, centerX, centerY, innerRadius, outerRadius, angle, SEPARATOR_THICKNESS_PX, separatorColor);
-            }
-
-            // Center logo is rendered via blit in renderContent, not here.
-        }
-
-        private void addCenterArrow(VertexConsumer consumer, float centerX, float centerY, float innerRadius, float angleRad, int color) {
-            // Unfilled arrow head (two lines) pointing at the selected segment.
-            // This matches the design mock more closely and avoids relying on degenerate triangles in QUADS mode.
-            float dirX = (float) Math.cos(angleRad);
-            float dirY = (float) Math.sin(angleRad);
-            float perpX = -dirY;
-            float perpY = dirX;
-
-            float tipR = innerRadius - 10.0f;
-            // For a true 90Â° "L" corner, keep length == width so the two segments are perpendicular.
-            float headLength = 13.0f;
-            float headWidth = 13.0f;
-
-            float tipX = centerX + dirX * tipR;
-            float tipY = centerY + dirY * tipR;
-
-            float baseCenterX = tipX - dirX * headLength;
-            float baseCenterY = tipY - dirY * headLength;
-
-            float leftX = baseCenterX + perpX * headWidth;
-            float leftY = baseCenterY + perpY * headWidth;
-            float rightX = baseCenterX - perpX * headWidth;
-            float rightY = baseCenterY - perpY * headWidth;
-
-            addLineQuad(consumer, tipX, tipY, leftX, leftY, CENTER_ARROW_THICKNESS_PX, color);
-            addLineQuad(consumer, tipX, tipY, rightX, rightY, CENTER_ARROW_THICKNESS_PX, color);
-        }
-
-        private void addRingArc(VertexConsumer consumer, float centerX, float centerY, float innerR, float outerR,
-                               float startAngle, float arcAngle, int steps, int color) {
-            if (steps <= 0) {
-                return;
-            }
-
-            float stepAngle = arcAngle / steps;
-            double cosStep = Math.cos(stepAngle);
-            double sinStep = Math.sin(stepAngle);
-
-            double cos = Math.cos(startAngle);
-            double sin = Math.sin(startAngle);
-
-            for (int i = 0; i < steps; i++) {
-                double cosNext = cos * cosStep - sin * sinStep;
-                double sinNext = sin * cosStep + cos * sinStep;
-
-                float xInner0 = centerX + (float) (innerR * cos);
-                float yInner0 = centerY + (float) (innerR * sin);
-                float xOuter0 = centerX + (float) (outerR * cos);
-                float yOuter0 = centerY + (float) (outerR * sin);
-
-                float xOuter1 = centerX + (float) (outerR * cosNext);
-                float yOuter1 = centerY + (float) (outerR * sinNext);
-                float xInner1 = centerX + (float) (innerR * cosNext);
-                float yInner1 = centerY + (float) (innerR * sinNext);
-
-                addQuad(consumer, xInner0, yInner0, xOuter0, yOuter0, xOuter1, yOuter1, xInner1, yInner1, color);
-
-                cos = cosNext;
-                sin = sinNext;
-            }
-        }
-
-        private void addRadialQuad(VertexConsumer consumer, float centerX, float centerY,
-                                   float innerR, float outerR, float angleRad, float thicknessPx, int color) {
-            float dirX = (float) Math.cos(angleRad);
-            float dirY = (float) Math.sin(angleRad);
-
-            float perpX = -dirY;
-            float perpY = dirX;
-            float halfT = thicknessPx * 0.5f;
-
-            float x0 = centerX + dirX * innerR;
-            float y0 = centerY + dirY * innerR;
-            float x1 = centerX + dirX * outerR;
-            float y1 = centerY + dirY * outerR;
-
-            float ax = x0 + perpX * halfT;
-            float ay = y0 + perpY * halfT;
-            float bx = x0 - perpX * halfT;
-            float by = y0 - perpY * halfT;
-            float cx = x1 - perpX * halfT;
-            float cy = y1 - perpY * halfT;
-            float dx = x1 + perpX * halfT;
-            float dy = y1 + perpY * halfT;
-
-            addQuad(consumer, ax, ay, bx, by, cx, cy, dx, dy, color);
-        }
-
-        private void addLineQuad(VertexConsumer consumer,
-                                 float x0, float y0,
-                                 float x1, float y1,
-                                 float thicknessPx,
-                                 int color) {
-            float dx = x1 - x0;
-            float dy = y1 - y0;
-            float lenSq = dx * dx + dy * dy;
-            if (lenSq < 0.0001f) {
-                return;
-            }
-
-            float invLen = Mth.invSqrt(lenSq);
-            float nx = dx * invLen;
-            float ny = dy * invLen;
-
-            float perpX = -ny;
-            float perpY = nx;
-            float halfT = thicknessPx * 0.5f;
-
-            float ax = x0 + perpX * halfT;
-            float ay = y0 + perpY * halfT;
-            float bx = x0 - perpX * halfT;
-            float by = y0 - perpY * halfT;
-            float cx = x1 - perpX * halfT;
-            float cy = y1 - perpY * halfT;
-            float dx2 = x1 + perpX * halfT;
-            float dy2 = y1 + perpY * halfT;
-
-            addQuad(consumer, ax, ay, bx, by, cx, cy, dx2, dy2, color);
-        }
-
-        private void addQuad(VertexConsumer consumer,
-                             float x0, float y0,
-                             float x1, float y1,
-                             float x2, float y2,
-                             float x3, float y3,
-                             int color) {
-            // Match vanilla GUI quad winding (culling may be enabled on GUI pipelines).
-            consumer.addVertexWith2DPose(pose, x0, y0).setColor(color);
-            consumer.addVertexWith2DPose(pose, x3, y3).setColor(color);
-            consumer.addVertexWith2DPose(pose, x2, y2).setColor(color);
-            consumer.addVertexWith2DPose(pose, x1, y1).setColor(color);
-        }
-
-        private static int computeFullArcSteps(float outerRadius) {
-            return Mth.clamp((int) (outerRadius * 0.75f), 48, 96);
-        }
-    }
 }
