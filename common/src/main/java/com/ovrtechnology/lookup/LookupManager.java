@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.lookup;
+package com.ovrtechnology.lookup;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.strategy.BiomeLookupStrategy;

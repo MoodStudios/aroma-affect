@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.entity.sniffer;
+package com.ovrtechnology.entity.sniffer;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;

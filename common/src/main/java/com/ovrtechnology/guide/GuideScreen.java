@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.guide;
+package com.ovrtechnology.guide;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.BaseMenuScreen;

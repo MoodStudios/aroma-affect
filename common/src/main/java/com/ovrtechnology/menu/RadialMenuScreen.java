@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.menu;
+package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.mojang.blaze3d.pipeline.RenderPipeline;

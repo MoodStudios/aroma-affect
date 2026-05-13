@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.trigger.client;
+package com.ovrtechnology.trigger.client;
 
 import com.ovrtechnology.AromaAffect;
 import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;

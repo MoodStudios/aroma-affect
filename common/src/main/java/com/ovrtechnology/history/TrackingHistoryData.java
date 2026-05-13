@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.history;
+package com.ovrtechnology.history;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.command;
+package com.ovrtechnology.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;

@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.nose.client;
+package com.ovrtechnology.nose.client;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

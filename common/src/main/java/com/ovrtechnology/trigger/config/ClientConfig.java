@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.trigger.config;
+package com.ovrtechnology.trigger.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

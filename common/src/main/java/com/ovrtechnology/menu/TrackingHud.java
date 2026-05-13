@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.menu;
+package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;

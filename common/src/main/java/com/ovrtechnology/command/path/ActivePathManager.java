@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.command.path;
+package com.ovrtechnology.command.path;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.command.sub.PathSubCommand;

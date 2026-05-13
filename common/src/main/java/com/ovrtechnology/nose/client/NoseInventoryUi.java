@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.nose.client;
+package com.ovrtechnology.nose.client;
 
 import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
 import net.blay09.mods.balm.client.platform.event.callback.ScreenCallback;

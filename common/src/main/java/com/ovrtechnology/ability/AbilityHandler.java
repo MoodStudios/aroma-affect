@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.ability;
+package com.ovrtechnology.ability;
 
 import com.ovrtechnology.AromaAffect;
 import net.minecraft.world.InteractionResult;

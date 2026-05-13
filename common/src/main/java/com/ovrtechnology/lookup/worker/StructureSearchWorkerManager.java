@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.lookup.worker;
+package com.ovrtechnology.lookup.worker;
 
 import com.ovrtechnology.AromaAffect;
 import net.blay09.mods.balm.platform.event.callback.ServerLifecycleCallback;

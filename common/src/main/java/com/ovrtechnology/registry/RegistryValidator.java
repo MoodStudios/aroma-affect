@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.registry;
+package com.ovrtechnology.registry;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.biome.BiomeDefinition;

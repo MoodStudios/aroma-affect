@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.menu;
+package com.ovrtechnology.menu;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

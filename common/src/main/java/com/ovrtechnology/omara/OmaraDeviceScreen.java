@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.omara;
+package com.ovrtechnology.omara;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.MenuRenderUtils;

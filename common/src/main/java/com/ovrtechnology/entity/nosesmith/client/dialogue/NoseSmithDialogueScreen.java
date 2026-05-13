@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.entity.nosesmith.client.dialogue;
+package com.ovrtechnology.entity.nosesmith.client.dialogue;
 
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.network.NoseSmithDialogueNetworking;

@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.entity.sniffer;
+package com.ovrtechnology.entity.sniffer;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;

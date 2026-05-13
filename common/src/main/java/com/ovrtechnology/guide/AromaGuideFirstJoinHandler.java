@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.guide;
+package com.ovrtechnology.guide;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

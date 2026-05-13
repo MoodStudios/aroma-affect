@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.worldgen;
+package com.ovrtechnology.worldgen;
 
 import com.mojang.datafixers.util.Pair;
 import com.ovrtechnology.AromaAffect;

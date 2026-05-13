@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.trigger.client;
+package com.ovrtechnology.trigger.client;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.trigger.PassiveModeManager;

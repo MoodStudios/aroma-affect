@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology;
+package com.ovrtechnology;
 
 import com.ovrtechnology.entity.nosesmith.client.NoseSmithClientRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;

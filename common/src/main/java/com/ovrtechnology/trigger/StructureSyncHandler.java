@@ -1,4 +1,4 @@
-﻿package com.ovrtechnology.trigger;
+package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
