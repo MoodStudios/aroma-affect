@@ -3,7 +3,7 @@ package com.ovrtechnology.nose.client;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.nose.NoseIdRemapper;
 import com.ovrtechnology.nose.NoseItem;
-import dev.architectury.registry.client.level.entity.EntityModelLayerRegistry;
+import net.blay09.mods.balm.client.model.geom.BalmModelLayerRegistrar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class NoseClient {
-    private static boolean initialized = false;
 
     /** Animated entity texture frame counts (nose ID → number of frames). */
     private static final Map<String, Integer> ANIMATED_FRAME_COUNTS = Map.of(
@@ -30,15 +29,13 @@ public final class NoseClient {
     private NoseClient() {
     }
 
-    public static void init() {
-        if (initialized) {
-            AromaAffect.LOGGER.warn("NoseClient.init() called multiple times!");
-            return;
-        }
-
-        EntityModelLayerRegistry.register(NoseModelLayers.NOSE_MASK, NoseMaskModel::createLayer);
-
-        initialized = true;
+    /**
+     * Balm model-layer registrar callback. Wire from
+     * {@code AromaAffectClient.initialize} via
+     * {@code clientRegistrars.modelLayers(NoseClient::registerModelLayers)}.
+     */
+    public static void registerModelLayers(BalmModelLayerRegistrar modelLayers) {
+        modelLayers.register(NoseModelLayers.NOSE_MASK.getModel(), NoseMaskModel::createLayer);
         AromaAffect.LOGGER.info("Nose client rendering initialized");
     }
 

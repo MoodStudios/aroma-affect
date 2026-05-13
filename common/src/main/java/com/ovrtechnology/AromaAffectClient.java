@@ -44,12 +44,23 @@ public final class AromaAffectClient {
         }
         
         AromaAffect.LOGGER.info("Initializing Aroma Affect client...");
-        
-        // Initialize entity renderers
-        NoseSmithClientRegistry.init();
 
-        // Initialize Sniffer menu screen
-        SnifferMenuRegistry.initClient();
+        // Model layers (NoseMaskModel) — must be registered before any render call
+        registrars.modelLayers(com.ovrtechnology.nose.client.NoseClient::registerModelLayers);
+
+        // Entity renderers (NoseSmith)
+        registrars.entityRenderers(NoseSmithClientRegistry::register);
+
+        // Menu screens (Sniffer + Omara device). The MenuType holders were
+        // populated by phase 4 registrar callbacks earlier in the bootstrap.
+        registrars.menuScreens(menus -> {
+            menus.register(
+                    castMenuHolder(com.ovrtechnology.entity.sniffer.SnifferMenuRegistry.SNIFFER_MENU),
+                    com.ovrtechnology.entity.sniffer.SnifferScreen::new);
+            menus.register(
+                    castMenuHolder(com.ovrtechnology.omara.OmaraDeviceRegistry.OMARA_DEVICE_MENU),
+                    com.ovrtechnology.omara.OmaraDeviceScreen::new);
+        });
 
         // Register menu + search keybinds via Balm and start the polling tick handler
         registrars.keyMappings(MenuKeyBindings::register);
@@ -94,6 +105,19 @@ public final class AromaAffectClient {
         
         initialized = true;
         AromaAffect.LOGGER.info("Aroma Affect client initialized successfully!");
+    }
+
+    /**
+     * Helper to bridge {@code Holder<MenuType<?>>} (the wildcard form stored in
+     * registries) with {@code Holder<MenuType<TMenu>>} required by
+     * {@code BalmMenuScreenRegistrar.register}. Safe because the menu type was
+     * built with the matching menu class in phase 4.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static <TMenu extends net.minecraft.world.inventory.AbstractContainerMenu>
+            net.minecraft.core.Holder<net.minecraft.world.inventory.MenuType<TMenu>>
+            castMenuHolder(net.minecraft.core.Holder<net.minecraft.world.inventory.MenuType<?>> holder) {
+        return (net.minecraft.core.Holder) holder;
     }
     
     /**
