@@ -1085,55 +1085,163 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     private void submitRadialRenderState(GuiGraphicsExtractor graphics, int centerX, int centerY, float innerRadius, int outerRadius, float animationProgress) {
-        // Scanline annulus: GuiElementRenderState was removed in 26.1 along with
-        // the custom VertexConsumer fan path, so we approximate the curved ring
-        // with axis-aligned one-pixel-tall horizontal strips derived from the
-        // circle equation x = sqrt(r^2 - y^2). Pixel-accurate to within one
-        // pixel at the edges and visually reads as a circular ring.
+        // GuiElementRenderState was removed in 26.1, so we cannot submit a
+        // GPU-rasterized triangle fan like the pre-26.1 branches did. Instead,
+        // the annulus is composed of axis-aligned one-pixel-tall strips
+        // derived from x = sqrt(r^2 - y^2), with per-slice tinting (left/right
+        // halves of each row map to the upper/lower slice pair), coverage-based
+        // alpha on the curved edges to soften the staircase, and radial bars
+        // at the cardinal axes for the slice separators. Visually matches the
+        // pre-26.1 ring within 1px.
         int baseColor = MenuRenderUtils.withAlpha(COLOR_RING_BASE, animationProgress);
+        int selectedColor = MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, animationProgress);
         int borderColor = MenuRenderUtils.withAlpha(COLOR_RING_BORDER, animationProgress);
+        int separatorColor = MenuRenderUtils.withAlpha(COLOR_RING_SEPARATOR, animationProgress);
+
+        // Per-slice tint: lerp(base, selected, selectionProgress[i]).
+        // Layout for the 4-slice cardinal-aligned ring (START_ANGLE_RAD=-PI):
+        // 0=top-left, 1=top-right, 2=bottom-right, 3=bottom-left.
+        int numSlices = Math.max(1, selectionProgress.length);
+        int[] sliceColors = new int[numSlices];
+        for (int i = 0; i < numSlices; i++) {
+            sliceColors[i] = lerpColor(baseColor, selectedColor, selectionProgress[i]);
+        }
+        boolean hasFourQuadrants = numSlices == 4;
 
         int outerR = outerRadius;
         float innerR = innerRadius;
         float outerR2 = (float) outerR * outerR;
         float innerR2 = innerR * innerR;
-        float outerEdge = outerR - 1f;
+        float outerEdge = outerR - BORDER_THICKNESS_PX;
         float outerEdge2 = outerEdge * outerEdge;
-        float innerEdge = innerR - 1f;
+        float innerEdge = innerR + BORDER_THICKNESS_PX;
         float innerEdge2 = innerEdge * innerEdge;
 
         for (int dy = -outerR; dy < outerR; dy++) {
             float dy2 = (float) dy * dy;
             if (dy2 >= outerR2) continue;
-            int xOuter = (int) Math.sqrt(outerR2 - dy2);
             int y = centerY + dy;
 
-            if (dy2 < innerR2) {
-                int xInner = (int) Math.sqrt(innerR2 - dy2);
-                graphics.fill(centerX - xOuter, y, centerX - xInner, y + 1, baseColor);
-                graphics.fill(centerX + xInner, y, centerX + xOuter, y + 1, baseColor);
+            // Floating-point x extents for sub-pixel coverage.
+            float xOuter = (float) Math.sqrt(outerR2 - dy2);
+            int xOuterI = (int) Math.floor(xOuter);
+            float outerFrac = xOuter - xOuterI;
+
+            boolean hasHole = dy2 < innerR2;
+            float xInner = hasHole ? (float) Math.sqrt(innerR2 - dy2) : 0f;
+            int xInnerI = hasHole ? (int) Math.ceil(xInner) : 0;
+            float innerFrac = hasHole ? (xInnerI - xInner) : 0f;
+
+            // Pick slice tints for this row. 4-slice ring: top half = 0/1,
+            // bottom half = 3/2; other counts fall back to baseColor.
+            int leftFill;
+            int rightFill;
+            if (hasFourQuadrants) {
+                if (dy < 0) {
+                    leftFill = sliceColors[0];
+                    rightFill = sliceColors[1];
+                } else {
+                    leftFill = sliceColors[3];
+                    rightFill = sliceColors[2];
+                }
             } else {
-                graphics.fill(centerX - xOuter, y, centerX + xOuter, y + 1, baseColor);
+                leftFill = baseColor;
+                rightFill = baseColor;
             }
 
+            // ── Solid annulus fill ────────────────────────────────────────
+            if (hasHole) {
+                if (xInnerI <= xOuterI) {
+                    graphics.fill(centerX + xInnerI, y, centerX + xOuterI, y + 1, rightFill);
+                    graphics.fill(centerX - xOuterI, y, centerX - xInnerI, y + 1, leftFill);
+                }
+            } else {
+                graphics.fill(centerX, y, centerX + xOuterI, y + 1, rightFill);
+                graphics.fill(centerX - xOuterI, y, centerX, y + 1, leftFill);
+            }
+
+            // ── Coverage-AA on the outer curve ───────────────────────────
+            if (outerFrac > 0.01f) {
+                graphics.fill(centerX + xOuterI, y, centerX + xOuterI + 1, y + 1, scaleAlpha(rightFill, outerFrac));
+                graphics.fill(centerX - xOuterI - 1, y, centerX - xOuterI, y + 1, scaleAlpha(leftFill, outerFrac));
+            }
+
+            // ── Coverage-AA on the inner curve ───────────────────────────
+            if (hasHole && innerFrac > 0.01f && xInnerI > 0) {
+                graphics.fill(centerX + xInnerI - 1, y, centerX + xInnerI, y + 1, scaleAlpha(rightFill, innerFrac));
+                graphics.fill(centerX - xInnerI, y, centerX - xInnerI + 1, y + 1, scaleAlpha(leftFill, innerFrac));
+            }
+
+            // ── Outer border band ────────────────────────────────────────
             if (dy2 >= outerEdge2) {
-                graphics.fill(centerX - xOuter, y, centerX + xOuter, y + 1, borderColor);
+                graphics.fill(centerX - xOuterI, y, centerX + xOuterI, y + 1, borderColor);
+                if (outerFrac > 0.01f) {
+                    int aa = scaleAlpha(borderColor, outerFrac);
+                    graphics.fill(centerX + xOuterI, y, centerX + xOuterI + 1, y + 1, aa);
+                    graphics.fill(centerX - xOuterI - 1, y, centerX - xOuterI, y + 1, aa);
+                }
             } else {
-                int xOuterEdge = (int) Math.sqrt(outerEdge2 - dy2);
-                graphics.fill(centerX - xOuter, y, centerX - xOuterEdge, y + 1, borderColor);
-                graphics.fill(centerX + xOuterEdge, y, centerX + xOuter, y + 1, borderColor);
+                float xOuterEdge = (float) Math.sqrt(outerEdge2 - dy2);
+                int xOuterEdgeI = (int) Math.floor(xOuterEdge);
+                if (xOuterEdgeI < xOuterI) {
+                    graphics.fill(centerX + xOuterEdgeI, y, centerX + xOuterI, y + 1, borderColor);
+                    graphics.fill(centerX - xOuterI, y, centerX - xOuterEdgeI, y + 1, borderColor);
+                }
+                if (outerFrac > 0.01f) {
+                    int aa = scaleAlpha(borderColor, outerFrac);
+                    graphics.fill(centerX + xOuterI, y, centerX + xOuterI + 1, y + 1, aa);
+                    graphics.fill(centerX - xOuterI - 1, y, centerX - xOuterI, y + 1, aa);
+                }
             }
 
-            if (dy2 < innerR2 && dy2 >= innerEdge2) {
-                int xInner = (int) Math.sqrt(innerR2 - dy2);
-                graphics.fill(centerX - xInner, y, centerX + xInner, y + 1, borderColor);
-            } else if (dy2 < innerEdge2) {
-                int xInner = (int) Math.sqrt(innerR2 - dy2);
-                int xInnerEdge = (int) Math.sqrt(innerEdge2 - dy2);
-                graphics.fill(centerX - xInner, y, centerX - xInnerEdge, y + 1, borderColor);
-                graphics.fill(centerX + xInnerEdge, y, centerX + xInner, y + 1, borderColor);
+            // ── Inner border band ────────────────────────────────────────
+            if (hasHole && dy2 < innerEdge2) {
+                float xInnerEdge = (float) Math.sqrt(innerEdge2 - dy2);
+                int xInnerEdgeI = (int) Math.floor(xInnerEdge);
+                if (xInnerEdgeI > xInnerI) {
+                    graphics.fill(centerX + xInnerI, y, centerX + xInnerEdgeI, y + 1, borderColor);
+                    graphics.fill(centerX - xInnerEdgeI, y, centerX - xInnerI, y + 1, borderColor);
+                }
+            } else if (hasHole) {
+                // Row straddles inside of the inner border band entirely.
+                graphics.fill(centerX - xInnerI, y, centerX + xInnerI, y + 1, borderColor);
             }
         }
+
+        // ── Radial separators (cardinal axes for the 4-slice layout) ─────
+        if (hasFourQuadrants) {
+            drawRadialSeparator(graphics, centerX, centerY, innerR, outerR, true, separatorColor);
+            drawRadialSeparator(graphics, centerX, centerY, innerR, outerR, false, separatorColor);
+        }
+    }
+
+    /**
+     * Draws a vertical (axis=true) or horizontal (axis=false) separator bar
+     * spanning the annulus along the corresponding cardinal axis.
+     */
+    private static void drawRadialSeparator(GuiGraphicsExtractor graphics, int centerX, int centerY,
+                                             float innerR, float outerR, boolean vertical, int color) {
+        int halfThick = Math.max(1, (int) Math.ceil(SEPARATOR_THICKNESS_PX * 0.5f));
+        int innerI = (int) Math.ceil(innerR);
+        int outerI = (int) Math.floor(outerR);
+        if (vertical) {
+            // Two segments: above and below the inner radius.
+            graphics.fill(centerX - halfThick, centerY - outerI, centerX + halfThick, centerY - innerI, color);
+            graphics.fill(centerX - halfThick, centerY + innerI, centerX + halfThick, centerY + outerI, color);
+        } else {
+            graphics.fill(centerX - outerI, centerY - halfThick, centerX - innerI, centerY + halfThick, color);
+            graphics.fill(centerX + innerI, centerY - halfThick, centerX + outerI, centerY + halfThick, color);
+        }
+    }
+
+    /**
+     * Multiplies the alpha channel of an ARGB color by the given coverage
+     * factor in [0, 1]. Used for sub-pixel AA on the curved ring edges.
+     */
+    private static int scaleAlpha(int argb, float coverage) {
+        int a = (argb >>> 24) & 0xFF;
+        int newA = Math.max(0, Math.min(255, Math.round(a * coverage)));
+        return (newA << 24) | (argb & 0x00FFFFFF);
     }
 
     private static int computeOuterRadiusPx(int width, int height) {

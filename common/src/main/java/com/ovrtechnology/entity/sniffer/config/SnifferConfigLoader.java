@@ -2,6 +2,7 @@ package com.ovrtechnology.entity.sniffer.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 
@@ -47,8 +48,19 @@ public final class SnifferConfigLoader {
                 config = GSON.fromJson(json, SnifferConfig.class);
                 AromaAffect.LOGGER.info("Loaded sniffer config from external file: {}", externalConfig);
                 return;
-            } catch (IOException e) {
-                AromaAffect.LOGGER.warn("Failed to load external sniffer config, using default", e);
+            } catch (IOException | JsonParseException e) {
+                // External config exists but is unreadable or has a stale schema
+                // (e.g. produced by an older mod version). Back it up so the user
+                // can recover their hand edits, then regenerate from defaults.
+                AromaAffect.LOGGER.warn("External sniffer config invalid ({}); backing up and regenerating from defaults", e.toString());
+                try {
+                    Path backup = externalConfig.resolveSibling(externalConfig.getFileName() + ".broken");
+                    Files.deleteIfExists(backup);
+                    Files.move(externalConfig, backup);
+                    AromaAffect.LOGGER.warn("Old sniffer config moved to {}", backup);
+                } catch (IOException backupErr) {
+                    AromaAffect.LOGGER.warn("Could not back up broken sniffer config", backupErr);
+                }
             }
         }
 

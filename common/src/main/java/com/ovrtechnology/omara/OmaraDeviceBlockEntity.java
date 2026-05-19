@@ -85,6 +85,17 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         super(OmaraDeviceRegistry.OMARA_DEVICE_BLOCK_ENTITY.value(), pos, state);
     }
 
+    /**
+     * Exposes the live bridge between menu data slots and this BlockEntity's
+     * fields. Anyone constructing an {@link OmaraDeviceMenu} server-side MUST
+     * pass this instance (not a fresh {@code SimpleContainerData}) or
+     * {@code clickMenuButton} writes vanish into a throwaway buffer and never
+     * touch the BE's {@code mode} / {@code cooldownTicks}.
+     */
+    public ContainerData getDataAccess() {
+        return this.dataAccess;
+    }
+
     public int getMaxCooldownForCurrentMode() {
         return mode == MODE_AUTO ? INTERVAL_TICKS[intervalIndex] : REDSTONE_COOLDOWN;
     }

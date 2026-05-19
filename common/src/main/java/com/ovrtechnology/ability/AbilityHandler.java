@@ -74,17 +74,20 @@ public final class AbilityHandler {
 
     /**
      * Handles right-click block interactions.
-     * 
-     * <p>
-     * This method checks all registered block interaction abilities and activates
-     * the first one that can handle the interaction.
-     * </p>
-     * 
-     * @param player    the player interacting
-     * @param hand      the hand used
-     * @param pos       the block position
-     * @param direction the face of the block that was clicked
-     * @return InteractionResult indicating whether to cancel vanilla behavior
+     *
+     * <p>Checks all registered block interaction abilities and activates the
+     * first one that matches.</p>
+     *
+     * <p>Returns {@link InteractionEventResult#DEFAULT} for the "no match"
+     * paths, NOT {@code PASS}: in NeoForge, Balm binds this callback to
+     * {@code PlayerInteractEvent.RightClickBlock} via {@code bindCancelable}
+     * which cancels the event whenever the result's {@code interactionResult()}
+     * is present. {@code PASS} carries {@code Optional.of(InteractionResult.PASS)}
+     * and would therefore cancel the right-click on NeoForge, silently breaking
+     * vanilla block placement for every block (the symptom was: right-clicking
+     * with any block produced no animation, no sound, and no placement).
+     * {@code DEFAULT} carries {@code Optional.empty()} so the event is left
+     * untouched and vanilla proceeds.</p>
      */
     private static InteractionEventResult onRightClickBlock(
             Player player,
@@ -96,15 +99,15 @@ public final class AbilityHandler {
 
         // Only process main hand to avoid double triggering
         if (hand != InteractionHand.MAIN_HAND) {
-            return InteractionEventResult.PASS;
+            return InteractionEventResult.DEFAULT;
         }
 
         if (player.level().isClientSide()) {
-            return InteractionEventResult.PASS;
+            return InteractionEventResult.DEFAULT;
         }
 
         if (!(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionEventResult.PASS;
+            return InteractionEventResult.DEFAULT;
         }
 
         Block block = player.level().getBlockState(pos).getBlock();
@@ -135,7 +138,7 @@ public final class AbilityHandler {
             return InteractionEventResult.SUCCESS;
         }
 
-        return InteractionEventResult.PASS;
+        return InteractionEventResult.DEFAULT;
     }
 
     /**

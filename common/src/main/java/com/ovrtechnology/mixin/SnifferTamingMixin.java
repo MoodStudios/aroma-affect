@@ -471,13 +471,23 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
     @Inject(method = "canDig(Lnet/minecraft/core/BlockPos;)Z", at = @At("HEAD"), cancellable = true)
     private void aromaaffect$canDigEnhanced(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+        // In MC 26.1 vanilla's canDig(BlockPos) receives the position of
+        // the block to dig directly (the no-arg canDig() call site is now
+        // canDig(getHeadBlock().below())). The pre-26.1 contract passed the
+        // head position and canDig had to descend, so the mixin used
+        // pos.below() to land on the actual dig target. Carrying that
+        // pos.below() forward into 26.1 makes us check ONE BLOCK TOO LOW
+        // (typically air or the block under the actual dig target), so
+        // every solid-block check fails and the enhanced sniffer never
+        // gets to dig anything beyond vanilla moss/grass. Use `pos`
+        // directly -- it already is the dig target.
         Sniffer self = (Sniffer) (Object) this;
         SnifferTamingData data = SnifferTamingData.get(self.getUUID());
         SnifferContainer container = new SnifferContainer(self);
 
         // If it has a nose equipped, it can dig on any solid block
         if (data.ownerUUID != null && container.hasSnifferNose()) {
-            BlockState blockState = self.level().getBlockState(pos.below());
+            BlockState blockState = self.level().getBlockState(pos);
             if (blockState.isSolid()) {
                 cir.setReturnValue(true);
                 return;
@@ -485,7 +495,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
 
         // Any sniffer can dig on Nether/End blocks (to obtain scents)
-        BlockState blockState = self.level().getBlockState(pos.below());
+        BlockState blockState = self.level().getBlockState(pos);
         if (blockState.is(ENHANCED_SNIFFER_DIGGABLE)) {
             cir.setReturnValue(true);
         }

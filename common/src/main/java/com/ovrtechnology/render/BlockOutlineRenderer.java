@@ -16,10 +16,11 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 
 
@@ -36,7 +37,7 @@ public final class BlockOutlineRenderer {
      * vertex format) plus our two overrides.
      */
     private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-            .withLocation("aromaaffect:pipeline/lines_no_depth")
+            .withLocation(Identifier.fromNamespaceAndPath("aromaaffect", "pipeline/lines_no_depth"))
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .withCull(false)
@@ -46,6 +47,12 @@ public final class BlockOutlineRenderer {
             "aromaaffect:lines_no_depth",
             RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).bufferSize(256).createRenderSetup()
     );
+
+    /**
+     * Line width baked into every vertex. Matches the visual weight of the
+     * pre-26.1 lines render type used in the 1.21.x branches.
+     */
+    private static final float OUTLINE_LINE_WIDTH = 2.5f;
 
     private BlockOutlineRenderer() {}
 
@@ -88,14 +95,51 @@ public final class BlockOutlineRenderer {
 
         VertexConsumer lineConsumer = consumers.getBuffer(LINES_NO_DEPTH);
 
-        // Pack RGB into a single int color (RRGGBB)
-        int color = ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255);
-        ShapeRenderer.renderShape(
-                poseStack, lineConsumer,
-                Shapes.block(),
-                dx, dy, dz,
-                color, alpha
-        );
+        // Vanilla's ShapeRenderer.renderShape emits POSITION_COLOR_NORMAL
+        // vertices, but LINES_SNIPPET in 26.1 requires
+        // POSITION_COLOR_NORMAL_LINE_WIDTH -- every vertex must call
+        // setLineWidth() or BufferBuilder.endLastVertex throws "Missing
+        // elements in vertex: LineWidth". Inline the edge iteration so we
+        // can add the per-vertex line width vanilla skips.
+        int red = (int) (r * 255);
+        int green = (int) (g * 255);
+        int blue = (int) (b * 255);
+        int alpha8 = (int) (alpha * 255);
+        renderShapeWithLineWidth(poseStack, lineConsumer, Shapes.block(),
+                dx, dy, dz, red, green, blue, alpha8, OUTLINE_LINE_WIDTH);
+    }
+
+    private static void renderShapeWithLineWidth(
+            PoseStack poseStack,
+            VertexConsumer consumer,
+            VoxelShape shape,
+            double offsetX, double offsetY, double offsetZ,
+            int red, int green, int blue, int alpha,
+            float lineWidth) {
+        PoseStack.Pose pose = poseStack.last();
+        shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
+            float nx = (float) (x2 - x1);
+            float ny = (float) (y2 - y1);
+            float nz = (float) (z2 - z1);
+            float invLen = (float) (1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz));
+            nx *= invLen;
+            ny *= invLen;
+            nz *= invLen;
+            consumer.addVertex(pose,
+                            (float) (x1 + offsetX),
+                            (float) (y1 + offsetY),
+                            (float) (z1 + offsetZ))
+                    .setColor(red, green, blue, alpha)
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
+            consumer.addVertex(pose,
+                            (float) (x2 + offsetX),
+                            (float) (y2 + offsetY),
+                            (float) (z2 + offsetZ))
+                    .setColor(red, green, blue, alpha)
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
+        });
     }
 
     private static float[] resolveColor() {

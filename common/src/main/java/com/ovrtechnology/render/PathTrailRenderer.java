@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -132,19 +133,27 @@ public final class PathTrailRenderer {
      * VertexConsumer call site -- both render types share this pipeline.
      */
     private static final RenderPipeline TRAIL_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-            .withLocation("aromaaffect:pipeline/trail_no_depth")
+            .withLocation(Identifier.fromNamespaceAndPath("aromaaffect", "pipeline/trail_no_depth"))
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .withCull(false)
             .build();
 
     // ── Render types (different line widths) ─────────────────────────────
+    // Line width is a per-vertex attribute in 26.1 (LINES_SNIPPET uses
+    // POSITION_COLOR_NORMAL_LINE_WIDTH), so the width travels alongside the
+    // RenderType as a sibling constant rather than baked into the pipeline.
 
-    private static final RenderType TRAIL_GLOW = TrailRenderType.create("aromaaffect_trail_glow", 5.0);
-    private static final RenderType TRAIL_CORE = TrailRenderType.create("aromaaffect_trail_core", 1.5);
+    private static final float TRAIL_GLOW_WIDTH = 5.0f;
+    private static final float TRAIL_CORE_WIDTH = 1.5f;
+    private static final float TRAIL_GLOW_POWER_WIDTH = 8.0f;
+    private static final float TRAIL_CORE_POWER_WIDTH = 2.5f;
 
-    private static final RenderType TRAIL_GLOW_POWER = TrailRenderType.create("aromaaffect_trail_glow_power", 8.0);
-    private static final RenderType TRAIL_CORE_POWER = TrailRenderType.create("aromaaffect_trail_core_power", 2.5);
+    private static final RenderType TRAIL_GLOW = TrailRenderType.create("aromaaffect_trail_glow");
+    private static final RenderType TRAIL_CORE = TrailRenderType.create("aromaaffect_trail_core");
+
+    private static final RenderType TRAIL_GLOW_POWER = TrailRenderType.create("aromaaffect_trail_glow_power");
+    private static final RenderType TRAIL_CORE_POWER = TrailRenderType.create("aromaaffect_trail_core_power");
 
     private PathTrailRenderer() {}
 
@@ -247,12 +256,14 @@ public final class PathTrailRenderer {
             if (now - lastPointReach < WAKE_VISIBLE_MS + WAKE_FADE_MS) {
                 RenderType prevGlow = prevPulseIsPower ? TRAIL_GLOW_POWER : TRAIL_GLOW;
                 RenderType prevCore = prevPulseIsPower ? TRAIL_CORE_POWER : TRAIL_CORE;
+                float prevGlowWidth = prevPulseIsPower ? TRAIL_GLOW_POWER_WIDTH : TRAIL_GLOW_WIDTH;
+                float prevCoreWidth = prevPulseIsPower ? TRAIL_CORE_POWER_WIDTH : TRAIL_CORE_WIDTH;
                 float prevGlowAlpha = prevPulseIsPower ? 0.20f : 0.12f;
                 float prevCoreAlpha = prevPulseIsPower ? 0.75f : 0.55f;
-                renderLayer(pose, cameraPos, consumers.getBuffer(prevGlow),
+                renderLayer(pose, cameraPos, consumers.getBuffer(prevGlow), prevGlowWidth,
                         adjustedPrev, r, g, b, prevGlowAlpha * breathe,
                         now, prevPulseStart, 0, prevPulseDurationMs, prevTotalLen, true, prevPulseIsPower);
-                renderLayer(pose, cameraPos, consumers.getBuffer(prevCore),
+                renderLayer(pose, cameraPos, consumers.getBuffer(prevCore), prevCoreWidth,
                         adjustedPrev, r, g, b, prevCoreAlpha * breathe,
                         now, prevPulseStart, 0, prevPulseDurationMs, prevTotalLen, false, prevPulseIsPower);
             } else {
@@ -264,12 +275,14 @@ public final class PathTrailRenderer {
         // ── Render current path (current pulse only) ──
         RenderType curGlow = currentPulseIsPower ? TRAIL_GLOW_POWER : TRAIL_GLOW;
         RenderType curCore = currentPulseIsPower ? TRAIL_CORE_POWER : TRAIL_CORE;
+        float curGlowWidth = currentPulseIsPower ? TRAIL_GLOW_POWER_WIDTH : TRAIL_GLOW_WIDTH;
+        float curCoreWidth = currentPulseIsPower ? TRAIL_CORE_POWER_WIDTH : TRAIL_CORE_WIDTH;
         float curGlowAlpha = currentPulseIsPower ? 0.20f : 0.12f;
         float curCoreAlpha = currentPulseIsPower ? 0.75f : 0.55f;
-        renderLayer(pose, cameraPos, consumers.getBuffer(curGlow),
+        renderLayer(pose, cameraPos, consumers.getBuffer(curGlow), curGlowWidth,
                 renderPoints, r, g, b, curGlowAlpha * breathe,
                 now, lastPulseStart, 0, currentPulseDurationMs, totalLen, true, currentPulseIsPower);
-        renderLayer(pose, cameraPos, consumers.getBuffer(curCore),
+        renderLayer(pose, cameraPos, consumers.getBuffer(curCore), curCoreWidth,
                 renderPoints, r, g, b, curCoreAlpha * breathe,
                 now, lastPulseStart, 0, currentPulseDurationMs, totalLen, false, currentPulseIsPower);
 
@@ -411,6 +424,7 @@ public final class PathTrailRenderer {
     // ── Layer rendering ─────────────────────────────────────────────────
 
     private static void renderLayer(PoseStack.Pose pose, Vec3 cam, VertexConsumer consumer,
+                                     float lineWidth,
                                      List<Vec3> points, float r, float g, float b,
                                      float baseAlpha, long now, long pulseStart,
                                      long prevPulse, long pulseDurationMs, double totalLen, boolean isGlow,
@@ -465,12 +479,18 @@ public final class PathTrailRenderer {
             float by = (float) (next.y - cam.y);
             float bz = (float) (next.z - cam.z);
 
+            // LINES_SNIPPET vertex format is POSITION_COLOR_NORMAL_LINE_WIDTH
+            // in 26.1, so every vertex MUST set the line width before the next
+            // addVertex call or BufferBuilder.endLastVertex throws
+            // "Missing elements in vertex: LineWidth".
             consumer.addVertex(pose, ax, ay, az)
                     .setColor(rA, gA, bA, alphaA)
-                    .setNormal(pose, nx, ny, nz);
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
             consumer.addVertex(pose, bx, by, bz)
                     .setColor(rB, gB, bB, alphaB)
-                    .setNormal(pose, nx, ny, nz);
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
 
             accumulated += segLen;
         }
@@ -837,12 +857,7 @@ public final class PathTrailRenderer {
     private static final class TrailRenderType {
         private TrailRenderType() {}
 
-        static RenderType create(String name, double lineWidth) {
-            // Line width is a per-vertex attribute in 26.1 (LINES_SNIPPET uses
-            // POSITION_COLOR_NORMAL_LINE_WIDTH); width parameter is recorded
-            // here only so callers can distinguish the two render types by
-            // name. The actual width gets written into the vertex stream by
-            // the trail-drawing code below.
+        static RenderType create(String name) {
             return RenderType.create(
                     "aromaaffect:" + name,
                     RenderSetup.builder(TRAIL_PIPELINE).bufferSize(1536).createRenderSetup()

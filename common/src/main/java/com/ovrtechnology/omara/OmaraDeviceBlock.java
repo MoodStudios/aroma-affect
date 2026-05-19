@@ -160,7 +160,13 @@ public class OmaraDeviceBlock extends BaseEntityBlock {
 
                     @Override
                     public AbstractContainerMenu createMenu(int containerId, Inventory inv, Player p) {
-                        return new OmaraDeviceMenu(containerId, inv, omaraDevice, new SimpleContainerData(4));
+                        // Use the BE's live dataAccess so button clicks
+                        // actually mutate mode / cooldownTicks. A fresh
+                        // SimpleContainerData would only update the menu's
+                        // local copy and the BE would stay stuck in AUTO
+                        // with zero cooldown forever, silently ignoring
+                        // redstone pulses.
+                        return new OmaraDeviceMenu(containerId, inv, omaraDevice, omaraDevice.getDataAccess());
                     }
 
                     @Override
@@ -188,12 +194,20 @@ public class OmaraDeviceBlock extends BaseEntityBlock {
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) {
             return null;
         }
-        return type == OmaraDeviceRegistry.OMARA_DEVICE_BLOCK_ENTITY.value()
-                ? (lvl, pos, st, be) -> OmaraDeviceBlockEntity.serverTick(lvl, pos, st, (OmaraDeviceBlockEntity) be)
-                : null;
+        // OmaraDeviceBlock only ever has OmaraDeviceBlockEntity, so we can
+        // skip the reference check on the BlockEntityType. The check was
+        // unreliable under Balm 26.1 because the deferred Holder.value()
+        // could resolve to a different instance than the BE's runtime type
+        // depending on registration timing, which would silently return
+        // null and the BE would never tick (no auto puff, no redstone
+        // reaction). Cast back to the parameter type T -- safe because the
+        // BE backing this block is always OmaraDeviceBlockEntity.
+        return (BlockEntityTicker<T>) (BlockEntityTicker<OmaraDeviceBlockEntity>)
+                OmaraDeviceBlockEntity::serverTick;
     }
 }
