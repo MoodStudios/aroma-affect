@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  JAVA_VERSION: '21'
+  JAVA_VERSION: '25'
   JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
@@ -268,7 +268,7 @@ jobs:
           ## 📋 Requirements
 
           - **Minecraft:** ${{ needs.validate.outputs.minecraft_version }}
-          - **Java:** 21+
+          - **Java:** 25+
           - **NeoForge:** ${{ needs.validate.outputs.neoforge_version }}+ (for NeoForge version)
           - **Fabric Loader:** ${{ needs.validate.outputs.fabric_loader_version }}+ (for Fabric version)
           - **Fabric API:** ${{ needs.validate.outputs.fabric_api_version }}+ (for Fabric version)
