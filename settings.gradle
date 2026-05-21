@@ -43,6 +43,20 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            version('minecraft', providers.gradleProperty('minecraft_version').get())
+            version('neoForge', providers.gradleProperty('neoforge_version').get())
+            version('neoForm', providers.gradleProperty('neoform_version').get())
+            version('fabricApi', providers.gradleProperty('fabric_api_version').get())
+            version('fabricLoader', providers.gradleProperty('fabric_loader_version').get())
+            version('balm', providers.gradleProperty('balm_version').get())
+            version('curios', providers.gradleProperty('curios_version').get())
+        }
+    }
+}
+
 rootProject.name = 'aromaaffect'
 
 includeBuild('build-logic')

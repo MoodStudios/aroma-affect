@@ -4,7 +4,7 @@ plugins {
 }
 
 base {
-    archivesName = "${mod_id}-${project.name}-${libs.minecraft.get().version}"
+    archivesName = "${mod_id}-${project.name}"
 }
 
 java {
