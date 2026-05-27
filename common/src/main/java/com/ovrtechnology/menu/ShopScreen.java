@@ -4,6 +4,8 @@ import com.ovrtechnology.util.Colors;
 import com.ovrtechnology.util.Ids;
 import com.ovrtechnology.util.Texts;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -384,6 +386,14 @@ public class ShopScreen extends BaseMenuScreen {
                 iconSize);
     }
 
+    private static String buildBuyUrl() {
+        String modpackName = ModpackConfig.getInstance().getModpackName();
+        if (modpackName == null || modpackName.isBlank()) {
+            return BUY_URL;
+        }
+        return BUY_URL + "&modpack=" + URLEncoder.encode(modpackName.trim(), StandardCharsets.UTF_8);
+    }
+
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
         if (button != 0) return false;
@@ -394,7 +404,7 @@ public class ShopScreen extends BaseMenuScreen {
         }
 
         if (isHoveringBuy) {
-            Util.getPlatform().openUri(URI.create(BUY_URL));
+            Util.getPlatform().openUri(URI.create(buildBuyUrl()));
             return true;
         }
 

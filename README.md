@@ -9,6 +9,7 @@
   <a href="#features">Features</a> •
   <a href="#requirements">Requirements</a> •
   <a href="#installation">Installation</a> •
+  <a href="#for-modpack-creators">Modpack Creators</a> •
   <a href="#building-from-source">Building</a> •
   <a href="#contributing">Contributing</a> •
   <a href="#license">License</a>
@@ -68,6 +69,30 @@ To experience real-world scents with OVR hardware, you'll need the **OVR Bridge*
 2. Download the latest Aroma Affect release for your loader
 3. Place the `.jar` file in your `mods` folder
 4. Launch Minecraft
+
+## For Modpack Creators
+
+If you're bundling Aroma Affect into a modpack, you can tag your pack so that visits to the in-game store (the **Shop** entry in the radial menu) are attributed to your modpack.
+
+1. Add Aroma Affect to your pack and launch the game once. This generates `config/aromaaffect_modpack.json`:
+
+   ```json
+   {
+     "modpackName": ""
+   }
+   ```
+
+2. Set `modpackName` to your modpack's name, for example:
+
+   ```json
+   {
+     "modpackName": "My Awesome Pack"
+   }
+   ```
+
+3. When exporting your modpack (CurseForge, Modrinth, etc.), include this file in your pack's `overrides/config/` folder so it ships preconfigured.
+
+When a player opens the Shop and clicks **Buy**, the modpack name is added to the Omara store URL so the visit can be attributed to your pack. If `modpackName` is left empty, the store link works exactly as normal — no name is sent.
 
 ## Project Structure
 
