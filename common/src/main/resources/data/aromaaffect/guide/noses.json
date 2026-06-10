@@ -66,30 +66,30 @@
       ]
     },
     {
-      "id": "jewelers_nose",
-      "title": { "translate": "guide.aromaaffect.noses.jewelers_nose.title" },
-      "icon": { "type": "item", "item": "aromaaffect:jewelers_nose" },
+      "id": "gemseekers_nose",
+      "title": { "translate": "guide.aromaaffect.noses.gemseekers_nose.title" },
+      "icon": { "type": "item", "item": "aromaaffect:gemseekers_nose" },
       "elements": [
-        { "type": "header", "translate": "guide.aromaaffect.noses.jewelers_nose.header" },
+        { "type": "header", "translate": "guide.aromaaffect.noses.gemseekers_nose.header" },
         { "type": "spacer", "height": 4 },
-        { "type": "item_showcase", "item": "aromaaffect:jewelers_nose", "translate": "guide.aromaaffect.noses.jewelers_nose.stats" },
+        { "type": "item_showcase", "item": "aromaaffect:gemseekers_nose", "translate": "guide.aromaaffect.noses.gemseekers_nose.stats" },
         { "type": "spacer", "height": 6 },
-        { "type": "text", "translate": "guide.aromaaffect.noses.jewelers_nose.desc" },
+        { "type": "text", "translate": "guide.aromaaffect.noses.gemseekers_nose.desc" },
         { "type": "spacer", "height": 8 },
-        { "type": "subheader", "translate": "guide.aromaaffect.noses.jewelers_nose.detects_header" },
-        { "type": "detection_label", "translate": "guide.aromaaffect.noses.jewelers_nose.detects_blocks" },
-        { "type": "icon_text", "translate": "guide.aromaaffect.noses.jewelers_nose.detect_diamond", "items": ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore"] },
-        { "type": "icon_text", "translate": "guide.aromaaffect.noses.jewelers_nose.detect_spawner", "items": ["minecraft:spawner"] },
+        { "type": "subheader", "translate": "guide.aromaaffect.noses.gemseekers_nose.detects_header" },
+        { "type": "detection_label", "translate": "guide.aromaaffect.noses.gemseekers_nose.detects_blocks" },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.gemseekers_nose.detect_diamond", "items": ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore"] },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.gemseekers_nose.detect_spawner", "items": ["minecraft:spawner"] },
         { "type": "spacer", "height": 4 },
-        { "type": "detection_label", "translate": "guide.aromaaffect.noses.jewelers_nose.detects_biomes" },
-        { "type": "icon_text", "translate": "guide.aromaaffect.noses.jewelers_nose.detect_biome_overworld", "items": ["minecraft:grass_block", "minecraft:oak_log", "minecraft:pale_oak_log", "minecraft:sand", "minecraft:spruce_log"] },
-        { "type": "icon_text", "translate": "guide.aromaaffect.noses.jewelers_nose.detect_biome_cold_and_wet", "items": ["minecraft:snow_block", "minecraft:lily_pad", "minecraft:water_bucket"] },
-        { "type": "icon_text", "translate": "guide.aromaaffect.noses.jewelers_nose.detect_biome_meadow_jungle", "items": ["minecraft:oxeye_daisy", "minecraft:jungle_log"] },
+        { "type": "detection_label", "translate": "guide.aromaaffect.noses.gemseekers_nose.detects_biomes" },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.gemseekers_nose.detect_biome_overworld", "items": ["minecraft:grass_block", "minecraft:oak_log", "minecraft:pale_oak_log", "minecraft:sand", "minecraft:spruce_log"] },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.gemseekers_nose.detect_biome_cold_and_wet", "items": ["minecraft:snow_block", "minecraft:lily_pad", "minecraft:water_bucket"] },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.gemseekers_nose.detect_biome_meadow_jungle", "items": ["minecraft:oxeye_daisy", "minecraft:jungle_log"] },
         { "type": "spacer", "height": 4 },
-        { "type": "detection_label", "translate": "guide.aromaaffect.noses.jewelers_nose.detects_structures" },
-        { "type": "icon_text", "translate": "guide.aromaaffect.noses.jewelers_nose.detect_village", "items": ["minecraft:bell", "minecraft:hay_block", "minecraft:composter"] },
+        { "type": "detection_label", "translate": "guide.aromaaffect.noses.gemseekers_nose.detects_structures" },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.gemseekers_nose.detect_village", "items": ["minecraft:bell", "minecraft:hay_block", "minecraft:composter"] },
         { "type": "spacer", "height": 8 },
-        { "type": "subheader", "translate": "guide.aromaaffect.noses.jewelers_nose.recipe_header" },
+        { "type": "subheader", "translate": "guide.aromaaffect.noses.gemseekers_nose.recipe_header" },
         { "type": "spacer", "height": 4 },
         {
           "type": "crafting_grid",
@@ -98,8 +98,8 @@
             "minecraft:diamond", "aromaaffect:prospectors_nose", "minecraft:diamond",
             "minecraft:string", "minecraft:bone_meal", "minecraft:string"
           ],
-          "result": "aromaaffect:jewelers_nose",
-          "translate": "guide.aromaaffect.noses.jewelers_nose.recipe_label"
+          "result": "aromaaffect:gemseekers_nose",
+          "translate": "guide.aromaaffect.noses.gemseekers_nose.recipe_label"
         }
       ]
     },
@@ -126,7 +126,7 @@
           "type": "crafting_grid",
           "grid": [
             "minecraft:blaze_powder", "minecraft:blaze_powder", "minecraft:blaze_powder",
-            "minecraft:blaze_powder", "aromaaffect:jewelers_nose", "minecraft:blaze_powder",
+            "minecraft:blaze_powder", "aromaaffect:gemseekers_nose", "minecraft:blaze_powder",
             "minecraft:flint", "minecraft:ender_pearl", "minecraft:flint"
           ],
           "result": "aromaaffect:dimensional_nose",
