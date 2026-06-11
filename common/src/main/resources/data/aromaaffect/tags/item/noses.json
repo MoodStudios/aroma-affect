@@ -2,7 +2,7 @@
   "values": [
     "aromaaffect:foragers_nose",
     "aromaaffect:prospectors_nose",
-    "aromaaffect:jewelers_nose",
+    "aromaaffect:gemseekers_nose",
     "aromaaffect:dimensional_nose",
     "aromaaffect:ancient_nose",
     "aromaaffect:dragon_nose",
@@ -11,6 +11,7 @@
     "aromaaffect:basic_nose",
     "aromaaffect:gold_nose",
     "aromaaffect:diamond_nose",
+    "aromaaffect:jewelers_nose",
     "aromaaffect:blaze_nose",
     "aromaaffect:netherite_nose",
     "aromaaffect:ultimate_nose"
