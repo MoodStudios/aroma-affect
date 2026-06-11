@@ -86,8 +86,8 @@
       }
     },
     {
-      "id": "jewelers_nose",
-      "image": "item/jewelers_nose",
+      "id": "gemseekers_nose",
+      "image": "item/gemseekers_nose",
       "model": "minecraft:diamond_helmet",
       "tier": 3,
       "durability": 500,
@@ -145,7 +145,7 @@
         "flowers": [],
         "abilities": [],
         "noses": [
-          "jewelers_nose"
+          "gemseekers_nose"
         ]
       }
     },
