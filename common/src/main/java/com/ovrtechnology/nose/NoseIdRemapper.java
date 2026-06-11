@@ -8,7 +8,8 @@ public final class NoseIdRemapper {
             Map.of(
                     "basic_nose", "foragers_nose",
                     "gold_nose", "prospectors_nose",
-                    "diamond_nose", "jewelers_nose",
+                    "diamond_nose", "gemseekers_nose",
+                    "jewelers_nose", "gemseekers_nose",
                     "blaze_nose", "dimensional_nose",
                     "netherite_nose", "ancient_nose",
                     "ultimate_nose", "dragon_nose");
