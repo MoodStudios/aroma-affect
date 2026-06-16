@@ -19,7 +19,9 @@
     "IronGolemNoseMixin",
     "FishingHookRetrieveMixin",
     "AnvilOnTakeMixin",
-    "MerchantNotifyTradeMixin"
+    "MerchantNotifyTradeMixin",
+    "FlintUseServerMixin",
+    "SeedPlantServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
