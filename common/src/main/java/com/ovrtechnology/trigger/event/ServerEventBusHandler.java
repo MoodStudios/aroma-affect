@@ -22,7 +22,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class ServerEventBusHandler {
@@ -37,6 +39,14 @@ public final class ServerEventBusHandler {
     public static final String TT_TRADE_COMPLETED = "TRADE_COMPLETED";
     public static final String TT_ANVIL_USED = "ANVIL_USED";
     public static final String TT_SNIFFER_DUG = "SNIFFER_DUG";
+    public static final String TT_FLINT_USED = "FLINT_USED";
+    public static final String TT_SEED_PLANTED = "SEED_PLANTED";
+
+    /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
+    private static final Set<Item> SEED_ITEMS = Set.of(
+            Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS,
+            Items.CARROT, Items.POTATO, Items.NETHER_WART, Items.TORCHFLOWER_SEEDS,
+            Items.PITCHER_POD, Items.SWEET_BERRIES);
 
     private static final Map<UUID, Map<String, Long>> serverCooldowns = new HashMap<>();
 
@@ -134,6 +144,18 @@ public final class ServerEventBusHandler {
             }
         }
         return EventConditionUtils.getBoolean(conditions, "default", false);
+    }
+
+    /** Flint &amp; steel used. */
+    public static void onFlintUsed(ServerPlayer player) {
+        fireSimpleEvent(player, TT_FLINT_USED);
+    }
+
+    /** A seed/crop item was placed (planting). Filtered to {@link #SEED_ITEMS}. */
+    public static void onSeedPlanted(ServerPlayer player, ItemStack stack) {
+        if (player == null || stack == null || stack.isEmpty()) return;
+        if (!SEED_ITEMS.contains(stack.getItem())) return;
+        fireSimpleEvent(player, TT_SEED_PLANTED);
     }
 
     public static void fireSimpleEvent(ServerPlayer player, String triggerType) {

@@ -1,0 +1,11 @@
+{
+  "event_id": "aromaaffect:flint_use",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "FLINT_USED",
+  "scent_id": "smoky",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": { "default": true }
+}
