@@ -11,6 +11,8 @@ import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.MobTriggerDefinition;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
+import com.ovrtechnology.trigger.event.EventTriggersConfig;
+import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.websocket.ConnectionState;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketMessage;
@@ -36,7 +38,23 @@ public class ConfigScreen extends BaseMenuScreen {
     private static final Identifier ICON_CONFIG = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
 
-    private enum Section { GENERAL, PASSIVE, SCENT_VALUES, WEBSOCKET }
+    private enum Section { GENERAL, PASSIVE, EVENTS, SCENT_VALUES, WEBSOCKET }
+
+    /** Event categories shown in the Events tab. */
+    private static final String[] EVENT_CATEGORIES = {
+        EventTriggersConfig.CATEGORY_WEATHER,
+        EventTriggersConfig.CATEGORY_PLAYER_STATE,
+        EventTriggersConfig.CATEGORY_PLAYER_PROGRESS,
+        EventTriggersConfig.CATEGORY_PLAYER_ACTION,
+        EventTriggersConfig.CATEGORY_COMBAT,
+        EventTriggersConfig.CATEGORY_CRAFT_INTERACT,
+        EventTriggersConfig.CATEGORY_DIMENSION,
+        EventTriggersConfig.CATEGORY_BLOCK_BREAK
+    };
+
+    private static String categoryLabelKey(String category) {
+        return "config.aromaaffect.events.category." + category.toLowerCase();
+    }
     private enum ScentSubFilter { BLOCKS, FLOWERS, BIOMES, STRUCTURES, MOBS }
 
     private Section activeSection = Section.GENERAL;
@@ -47,6 +65,7 @@ public class ConfigScreen extends BaseMenuScreen {
     private double scentScrollOffset = 0;
     private double wsScrollOffset = 0;
     private double passiveScrollOffset = 0;
+    private double eventsScrollOffset = 0;
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
@@ -163,6 +182,7 @@ public class ConfigScreen extends BaseMenuScreen {
             String labelKey = switch (section) {
                 case GENERAL -> "config.aromaaffect.section.general";
                 case PASSIVE -> "config.aromaaffect.section.passive";
+                case EVENTS -> "config.aromaaffect.section.events";
                 case SCENT_VALUES -> "config.aromaaffect.section.scent_values";
                 case WEBSOCKET -> "config.aromaaffect.section.websocket";
             };
@@ -180,6 +200,7 @@ public class ConfigScreen extends BaseMenuScreen {
         switch (activeSection) {
             case GENERAL -> renderGeneralSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case PASSIVE -> renderPassiveSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
+            case EVENTS -> renderEventsSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case SCENT_VALUES -> renderScentValuesSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
             case WEBSOCKET -> renderWebSocketSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
         }
@@ -402,6 +423,73 @@ public class ConfigScreen extends BaseMenuScreen {
             int scrollBarY = y + (int) ((float) passiveScrollOffset / maxScroll * (h - scrollBarH));
             graphics.fill(scrollBarX, scrollBarY, scrollBarX + 3, scrollBarY + scrollBarH, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
         }
+    }
+
+    private void renderEventsSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
+        EventTriggersConfig config = EventTriggersConfig.getInstance();
+        int toggleX = x + w - TOGGLE_W - 30;
+
+        int totalContentH = (ROW_HEIGHT + 4) + 16 + EVENT_CATEGORIES.length * (ROW_HEIGHT + 4) + 8;
+        int maxScroll = Math.max(0, totalContentH - h);
+        eventsScrollOffset = Mth.clamp(eventsScrollOffset, 0, maxScroll);
+
+        graphics.enableScissor(x, y, x + w, y + h);
+        int rowY = y - (int) eventsScrollOffset;
+
+        // Master enable toggle
+        graphics.drawString(font, Texts.tr("config.aromaaffect.events.master_enabled"), x, rowY + 4,
+                MenuRenderUtils.withAlpha(COL_TEXT, a));
+        boolean masterEnabled = config.isEventTriggersEnabled();
+        renderTogglePill(graphics, toggleX, rowY + 1, masterEnabled, a);
+        graphics.drawString(font,
+                masterEnabled ? Texts.tr("config.aromaaffect.on") : Texts.tr("config.aromaaffect.off"),
+                toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        rowY += ROW_HEIGHT + 4;
+
+        // Categories header
+        graphics.drawString(font, Texts.tr("config.aromaaffect.events.categories_header"), x, rowY + 2,
+                MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        rowY += 16;
+
+        // Per-category toggles
+        for (String category : EVENT_CATEGORIES) {
+            graphics.drawString(font, Texts.tr(categoryLabelKey(category)), x + 8, rowY + 4,
+                    MenuRenderUtils.withAlpha(COL_TEXT, a));
+            renderTogglePill(graphics, toggleX, rowY + 1, config.isCategoryEnabled(category), a);
+            rowY += ROW_HEIGHT + 4;
+        }
+
+        graphics.disableScissor();
+    }
+
+    private boolean handleEventsClick(int mx, int my, int x, int y, int w) {
+        EventTriggersConfig config = EventTriggersConfig.getInstance();
+        int toggleX = x + w - TOGGLE_W - 30;
+        int adjustedMy = my + (int) eventsScrollOffset;
+        int rowY = y;
+
+        // Master enable toggle
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
+            config.setEventTriggersEnabled(!config.isEventTriggersEnabled());
+            config.save();
+            MenuRenderUtils.playToggleSound(config.isEventTriggersEnabled());
+            return true;
+        }
+        rowY += ROW_HEIGHT + 4;
+        rowY += 16;
+
+        // Per-category toggles
+        for (String category : EVENT_CATEGORIES) {
+            if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
+                boolean current = config.isCategoryEnabled(category);
+                config.setCategoryEnabled(category, !current);
+                config.save();
+                MenuRenderUtils.playToggleSound(!current);
+                return true;
+            }
+            rowY += ROW_HEIGHT + 4;
+        }
+        return false;
     }
 
     private void renderScentValuesSection(GuiGraphics graphics, int x, int y, int w, int h, int mx, int my, float a) {
@@ -775,6 +863,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 generalScrollOffset = 0;
                 scentScrollOffset = 0;
                 passiveScrollOffset = 0;
+                eventsScrollOffset = 0;
                 capturingKey = false;
                 return true;
             }
@@ -790,6 +879,8 @@ public class ConfigScreen extends BaseMenuScreen {
             return handleGeneralClick(mx, my, contentLeft, contentTop, contentW);
         } else if (activeSection == Section.PASSIVE) {
             return handlePassiveClick(mx, my, contentLeft, contentTop, contentW);
+        } else if (activeSection == Section.EVENTS) {
+            return handleEventsClick(mx, my, contentLeft, contentTop, contentW);
         } else if (activeSection == Section.SCENT_VALUES) {
             return handleScentFilterClick(mx, my, contentLeft, contentTop, contentW);
         }
@@ -1049,6 +1140,10 @@ public class ConfigScreen extends BaseMenuScreen {
         }
         if (activeSection == Section.PASSIVE) {
             passiveScrollOffset -= scrollY * 14;
+            return true;
+        }
+        if (activeSection == Section.EVENTS) {
+            eventsScrollOffset -= scrollY * 14;
             return true;
         }
         if (activeSection == Section.SCENT_VALUES) {
