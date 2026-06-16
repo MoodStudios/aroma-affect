@@ -1,0 +1,21 @@
+{
+  "event_id": "aromaaffect:player_food_savory",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_FOOD_EATEN",
+  "scent_id": "savory_spice",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:cooked_beef",
+      "minecraft:cooked_porkchop",
+      "minecraft:cooked_chicken",
+      "minecraft:cooked_mutton",
+      "minecraft:cooked_rabbit",
+      "minecraft:rabbit_stew",
+      "minecraft:steak"
+    ]
+  }
+}

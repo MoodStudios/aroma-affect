@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:sniffer_dug",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "SNIFFER_DUG",
+  "scent_id": "floral",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "default": true
+  }
+}

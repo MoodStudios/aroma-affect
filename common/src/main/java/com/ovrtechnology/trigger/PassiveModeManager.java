@@ -10,6 +10,7 @@ import com.ovrtechnology.trigger.config.ClientConfig;
 import com.ovrtechnology.trigger.config.PassiveModeConfig;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
+import com.ovrtechnology.trigger.event.EventTriggersConfig;
 
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import net.minecraft.core.BlockPos;
@@ -946,8 +947,27 @@ public final class PassiveModeManager {
      */
     public static void setPassiveModeEnabled(boolean enabled) {
         PassiveModeConfig config = PassiveModeConfig.getInstance();
+        if (config.isPassiveModeEnabled() == enabled) {
+            return;
+        }
         config.setPassiveModeEnabled(enabled);
+
+        // Passive mode and event mode are mutually exclusive: enabling passive
+        // disables events (remembering their prior state); disabling passive
+        // restores events to that prior state.
+        EventTriggersConfig events = EventTriggersConfig.getInstance();
+        if (!enabled) {
+            if (config.getEventEnabledBeforeDisable() == null) {
+                config.setEventEnabledBeforeDisable(events.isEventTriggersEnabled());
+            }
+            events.setEventTriggersEnabled(false);
+        } else if (config.getEventEnabledBeforeDisable() != null) {
+            events.setEventTriggersEnabled(config.getEventEnabledBeforeDisable());
+            config.setEventEnabledBeforeDisable(null);
+        }
+
         config.save();
+        events.save();
 
         if (!enabled) {
             stopPassiveMode();

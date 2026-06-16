@@ -1,0 +1,41 @@
+{
+  "event_id": "aromaaffect:item_crafted_metal",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "ITEM_CRAFTED",
+  "scent_id": "terra_silva",
+  "intensity": 0.7,
+  "priority": "MEDLOW",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 10000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:iron_pickaxe",
+      "minecraft:iron_sword",
+      "minecraft:iron_axe",
+      "minecraft:iron_shovel",
+      "minecraft:iron_hoe",
+      "minecraft:iron_helmet",
+      "minecraft:iron_chestplate",
+      "minecraft:iron_leggings",
+      "minecraft:iron_boots",
+      "minecraft:diamond_pickaxe",
+      "minecraft:diamond_sword",
+      "minecraft:diamond_axe",
+      "minecraft:diamond_shovel",
+      "minecraft:diamond_hoe",
+      "minecraft:diamond_helmet",
+      "minecraft:diamond_chestplate",
+      "minecraft:diamond_leggings",
+      "minecraft:diamond_boots",
+      "minecraft:netherite_pickaxe",
+      "minecraft:netherite_sword",
+      "minecraft:netherite_axe",
+      "minecraft:netherite_helmet",
+      "minecraft:netherite_chestplate",
+      "minecraft:netherite_leggings",
+      "minecraft:netherite_boots",
+      "minecraft:bucket",
+      "minecraft:shears"
+    ]
+  }
+}

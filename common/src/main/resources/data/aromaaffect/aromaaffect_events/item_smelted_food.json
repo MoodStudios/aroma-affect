@@ -1,0 +1,23 @@
+{
+  "event_id": "aromaaffect:item_smelted_food",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "ITEM_SMELTED",
+  "scent_id": "savory_spice",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:cooked_beef",
+      "minecraft:cooked_porkchop",
+      "minecraft:cooked_chicken",
+      "minecraft:cooked_mutton",
+      "minecraft:cooked_rabbit",
+      "minecraft:cooked_cod",
+      "minecraft:cooked_salmon",
+      "minecraft:baked_potato",
+      "minecraft:bread"
+    ]
+  }
+}
