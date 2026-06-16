@@ -28,7 +28,8 @@
     "LivingDeathServerMixin",
     "CraftResultServerMixin",
     "SmeltResultServerMixin",
-    "AnimalTameServerMixin"
+    "AnimalTameServerMixin",
+    "AdvancementServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
