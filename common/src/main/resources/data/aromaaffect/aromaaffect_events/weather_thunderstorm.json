@@ -1,0 +1,14 @@
+{
+  "event_id": "aromaaffect:weather_thunderstorm",
+  "category": "WEATHER",
+  "trigger_type": "WEATHER_THUNDERING",
+  "scent_id": "petrichor",
+  "intensity": 0.95,
+  "priority": "MEDIUM",
+  "duration_mode": "CONTINUOUS",
+  "cooldown_ms": 15000,
+  "conditions": {
+    "exclude_biome_paths": ["desert", "badlands", "nether_wastes", "crimson_forest", "warped_forest", "soul_sand_valley", "basalt_deltas", "the_end"],
+    "requires_sky_visible": true
+  }
+}

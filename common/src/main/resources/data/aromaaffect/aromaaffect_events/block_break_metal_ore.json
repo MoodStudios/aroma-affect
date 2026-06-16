@@ -1,0 +1,20 @@
+{
+  "event_id": "aromaaffect:block_break_metal_ore",
+  "category": "BLOCK_BREAK",
+  "trigger_type": "BLOCK_BROKEN",
+  "scent_id": "terra_silva",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "block_tags": [
+      "#minecraft:iron_ores",
+      "#minecraft:gold_ores",
+      "#minecraft:diamond_ores",
+      "#minecraft:emerald_ores",
+      "#minecraft:lapis_ores",
+      "#minecraft:copper_ores"
+    ]
+  }
+}
