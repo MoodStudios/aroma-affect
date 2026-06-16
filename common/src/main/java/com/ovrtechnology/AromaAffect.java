@@ -22,6 +22,7 @@ import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.AromaGuideNetworking;
 import com.ovrtechnology.network.IronGolemNoseNetworking;
 import com.ovrtechnology.network.OmaraDeviceNetworking;
+import com.ovrtechnology.network.EventScentNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -36,6 +37,8 @@ import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.trigger.event.EventScentHandlers;
+import com.ovrtechnology.trigger.event.EventTriggerConfigLoader;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
@@ -63,6 +66,7 @@ public final class AromaAffect {
         NoseRenderNetworking.init();
         AromaGuideNetworking.init();
         OmaraDeviceNetworking.init();
+        EventScentNetworking.init();
 
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();
@@ -126,6 +130,10 @@ public final class AromaAffect {
         // Initialize scent trigger system
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
+
+        // Initialize event/action scent hooks (passive-mode gameplay triggers)
+        EventTriggerConfigLoader.init();
+        EventScentHandlers.init();
 
         // Initialize server-side structure sync for multiplayer passive-mode
         StructureSyncHandler.init();

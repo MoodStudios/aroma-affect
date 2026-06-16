@@ -79,5 +79,13 @@ public enum ScentTriggerSource {
      * Omara Device - area-of-effect scent emission from a placed device block.
      * Affects all players within a 3x3 block radius of the device.
      */
-    OMARA_DEVICE
+    OMARA_DEVICE,
+
+    /**
+     * Event/action hooks - scent emitted in response to a gameplay action or
+     * world event (mining ore, eating, fishing, rain, etc.) rather than
+     * proximity. Detected server-side and gated client-side by passive mode.
+     * Configured via {@code data/aromaaffect/scents/event_triggers.json}.
+     */
+    EVENT
 }

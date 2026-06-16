@@ -1,0 +1,17 @@
+{
+  "event_triggers": [
+    { "id": "rain_exposure",     "scent": "Petrichor",    "intensity": 1.0, "cooldown_ms": 15000, "priority": "MEDLOW", "duration_ticks": 100, "enabled": true },
+    { "id": "water_touch",       "scent": "Marine",       "intensity": 1.0, "cooldown_ms": 10000, "priority": "MEDLOW", "duration_ticks": 100, "enabled": true },
+    { "id": "ore_mined",         "scent": "Terra Silva",  "intensity": 1.0, "cooldown_ms": 10000, "priority": "MEDIUM", "duration_ticks": 100, "enabled": true },
+    { "id": "nether_gold_mined", "scent": "Smoky",        "intensity": 1.0, "cooldown_ms": 10000, "priority": "MEDIUM", "duration_ticks": 100, "enabled": true },
+    { "id": "flower_pickup",     "scent": "Floral",       "intensity": 1.0, "cooldown_ms": 10000, "priority": "MEDIUM", "duration_ticks": 100, "enabled": true },
+    { "id": "eat_sweet",         "scent": "Sweet",        "intensity": 1.0, "cooldown_ms": 5000,  "priority": "HIGH",   "duration_ticks": 200, "enabled": true },
+    { "id": "eat_savory",        "scent": "Savory Spice", "intensity": 1.0, "cooldown_ms": 5000,  "priority": "HIGH",   "duration_ticks": 200, "enabled": true },
+    { "id": "flint_use",         "scent": "Smoky",        "intensity": 1.0, "cooldown_ms": 5000,  "priority": "HIGH",   "duration_ticks": 200, "enabled": true },
+    { "id": "cooking",           "scent": "Savory Spice", "intensity": 1.0, "cooldown_ms": 5000,  "priority": "MEDIUM", "duration_ticks": 200, "enabled": true },
+    { "id": "cooking_start",     "scent": "Smoky",        "intensity": 1.0, "cooldown_ms": 5000,  "priority": "MEDIUM", "duration_ticks": 200, "enabled": true },
+    { "id": "horse_feed",        "scent": "Barnyard",     "intensity": 1.0, "cooldown_ms": 5000,  "priority": "MEDIUM", "duration_ticks": 200, "enabled": true },
+    { "id": "plant_seeds",       "scent": "Terra Silva",  "intensity": 1.0, "cooldown_ms": 10000, "priority": "MEDIUM", "duration_ticks": 100, "enabled": true },
+    { "id": "fishing",           "scent": "Marine",       "intensity": 1.0, "cooldown_ms": 5000,  "priority": "MEDIUM", "duration_ticks": 200, "enabled": true }
+  ]
+}

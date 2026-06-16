@@ -18,7 +18,9 @@
     "JigsawPriorityMixin",
     "AnvilRepairMixin",
     "ZombieVillagerConversionMixin",
-    "IronGolemNoseMixin"
+    "IronGolemNoseMixin",
+    "PlayerEatMixin",
+    "FishingCatchMixin"
   ],
   "injectors": {
     "defaultRequire": 1
