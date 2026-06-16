@@ -1,0 +1,10 @@
+{
+  "event_id": "aromaaffect:player_level_up",
+  "category": "PLAYER_PROGRESS",
+  "trigger_type": "PLAYER_LEVEL_UP",
+  "scent_id": "sweet",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 10000
+}

@@ -1,0 +1,19 @@
+{
+  "event_id": "aromaaffect:player_food_floral",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_FOOD_EATEN",
+  "scent_id": "floral",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:apple",
+      "minecraft:sweet_berries",
+      "minecraft:glow_berries",
+      "minecraft:melon_slice",
+      "minecraft:chorus_fruit"
+    ]
+  }
+}

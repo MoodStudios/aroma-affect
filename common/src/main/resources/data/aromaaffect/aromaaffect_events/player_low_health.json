@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:player_low_health",
+  "category": "PLAYER_STATE",
+  "trigger_type": "PLAYER_HEALTH_THRESHOLD",
+  "scent_id": "machina",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "CONTINUOUS",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "max_hp_ratio": 0.30
+  }
+}
