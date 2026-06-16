@@ -29,7 +29,9 @@
     "CraftResultServerMixin",
     "SmeltResultServerMixin",
     "AnimalTameServerMixin",
-    "AdvancementServerMixin"
+    "AdvancementServerMixin",
+    "FlintUseServerMixin",
+    "SeedPlantServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
