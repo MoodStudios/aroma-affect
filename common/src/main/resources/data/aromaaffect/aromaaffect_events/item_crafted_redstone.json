@@ -1,0 +1,27 @@
+{
+  "event_id": "aromaaffect:item_crafted_redstone",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "ITEM_CRAFTED",
+  "scent_id": "machina",
+  "intensity": 0.8,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 10000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:repeater",
+      "minecraft:comparator",
+      "minecraft:piston",
+      "minecraft:sticky_piston",
+      "minecraft:dispenser",
+      "minecraft:dropper",
+      "minecraft:observer",
+      "minecraft:hopper",
+      "minecraft:redstone_torch",
+      "minecraft:redstone_lamp",
+      "minecraft:tnt",
+      "minecraft:clock",
+      "minecraft:compass"
+    ]
+  }
+}

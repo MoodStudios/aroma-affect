@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.trigger.event.PlayerStateTickHandler;
 import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 
 /**
@@ -52,6 +53,8 @@ public final class ScentTriggerHandler {
                 // Process passive-mode detection (only if player exists)
                 if (minecraft.player != null) {
                     PassiveModeManager.tick(minecraft.player);
+                    // Process client-side event state (weather, health, hunger, etc.)
+                    PlayerStateTickHandler.tick(minecraft.player);
                 }
             });
             

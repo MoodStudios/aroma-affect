@@ -1,0 +1,38 @@
+{
+  "event_id": "aromaaffect:mob_killed_hostile",
+  "category": "COMBAT",
+  "trigger_type": "MOB_KILLED",
+  "scent_id": "smoky",
+  "intensity": 0.7,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "entity_ids": [
+      "minecraft:creeper",
+      "minecraft:spider",
+      "minecraft:cave_spider",
+      "minecraft:enderman",
+      "minecraft:blaze",
+      "minecraft:ghast",
+      "minecraft:magma_cube",
+      "minecraft:slime",
+      "minecraft:piglin",
+      "minecraft:piglin_brute",
+      "minecraft:hoglin",
+      "minecraft:zoglin",
+      "minecraft:vex",
+      "minecraft:vindicator",
+      "minecraft:evoker",
+      "minecraft:pillager",
+      "minecraft:ravager",
+      "minecraft:guardian",
+      "minecraft:silverfish",
+      "minecraft:endermite",
+      "minecraft:shulker",
+      "minecraft:witch",
+      "minecraft:breeze",
+      "minecraft:bogged"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "event_id": "aromaaffect:player_food_petrichor",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_FOOD_EATEN",
+  "scent_id": "petrichor",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:mushroom_stew",
+      "minecraft:suspicious_stew",
+      "minecraft:beetroot_soup"
+    ]
+  }
+}

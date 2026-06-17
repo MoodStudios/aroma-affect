@@ -28,6 +28,14 @@ public final class PassiveModeConfig {
     @Setter
     private boolean passiveModeEnabled = true;
 
+    /**
+     * Remembers whether event triggers were enabled before passive mode
+     * disabled them, so they can be restored when passive mode turns off.
+     */
+    @Getter
+    @Setter
+    private Boolean eventEnabledBeforeDisable = null;
+
     private PassiveModeConfig() {
     }
 

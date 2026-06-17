@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:trade_completed",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "TRADE_COMPLETED",
+  "scent_id": "kindred",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "default": true
+  }
+}

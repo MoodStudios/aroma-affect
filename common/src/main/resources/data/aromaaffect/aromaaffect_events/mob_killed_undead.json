@@ -1,0 +1,23 @@
+{
+  "event_id": "aromaaffect:mob_killed_undead",
+  "category": "COMBAT",
+  "trigger_type": "MOB_KILLED",
+  "scent_id": "smoky",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "entity_tags": ["#minecraft:undead", "#minecraft:zombies", "#minecraft:skeletons"],
+    "entity_ids": [
+      "minecraft:zombie",
+      "minecraft:skeleton",
+      "minecraft:wither_skeleton",
+      "minecraft:husk",
+      "minecraft:drowned",
+      "minecraft:zombified_piglin",
+      "minecraft:stray",
+      "minecraft:phantom"
+    ]
+  }
+}
