@@ -1,0 +1,20 @@
+{
+  "event_id": "aromaaffect:player_food_marine",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "PLAYER_FOOD_EATEN",
+  "scent_id": "marine",
+  "intensity": 0.9,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:cooked_cod",
+      "minecraft:cooked_salmon",
+      "minecraft:tropical_fish",
+      "minecraft:pufferfish",
+      "minecraft:cod",
+      "minecraft:salmon"
+    ]
+  }
+}

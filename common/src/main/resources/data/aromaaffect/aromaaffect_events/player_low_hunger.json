@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:player_low_hunger",
+  "category": "PLAYER_STATE",
+  "trigger_type": "PLAYER_HUNGER_THRESHOLD",
+  "scent_id": "savory_spice",
+  "intensity": 0.4,
+  "priority": "LOW",
+  "duration_mode": "CONTINUOUS",
+  "cooldown_ms": 30000,
+  "conditions": {
+    "max_food_level": 4
+  }
+}

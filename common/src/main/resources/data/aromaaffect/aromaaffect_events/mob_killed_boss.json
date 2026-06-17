@@ -1,0 +1,18 @@
+{
+  "event_id": "aromaaffect:mob_killed_boss",
+  "category": "COMBAT",
+  "trigger_type": "MOB_KILLED",
+  "scent_id": "machina",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 0,
+  "conditions": {
+    "entity_ids": [
+      "minecraft:ender_dragon",
+      "minecraft:wither",
+      "minecraft:warden",
+      "minecraft:elder_guardian"
+    ]
+  }
+}
