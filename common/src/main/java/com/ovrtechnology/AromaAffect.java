@@ -22,6 +22,7 @@ import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.network.AromaGuideNetworking;
 import com.ovrtechnology.network.IronGolemNoseNetworking;
 import com.ovrtechnology.network.OmaraDeviceNetworking;
+import com.ovrtechnology.network.ScentEventNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -36,7 +37,12 @@ import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.trigger.event.EventReloadListener;
+import com.ovrtechnology.trigger.event.EventTriggersConfig;
+import com.ovrtechnology.trigger.event.ServerEventBusHandler;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
+import dev.architectury.registry.ReloadListenerRegistry;
+import net.minecraft.server.packs.PackType;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +69,7 @@ public final class AromaAffect {
         NoseRenderNetworking.init();
         AromaGuideNetworking.init();
         OmaraDeviceNetworking.init();
+        ScentEventNetworking.init();
 
         // Load ability definitions first (needed for nose validation)
         AbilityDefinitionLoader.loadAllAbilities();
@@ -129,6 +136,12 @@ public final class AromaAffect {
 
         // Initialize server-side structure sync for multiplayer passive-mode
         StructureSyncHandler.init();
+
+        // Initialize event/action scent triggers (loaded via datapack reload listener)
+        EventTriggersConfig.getInstance();
+        ServerEventBusHandler.init();
+        ReloadListenerRegistry.register(
+                PackType.SERVER_DATA, new EventReloadListener(), EventReloadListener.ID);
 
         // Initialize commands
         AromaTestCommand.init();

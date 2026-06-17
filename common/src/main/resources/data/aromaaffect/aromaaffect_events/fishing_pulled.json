@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:fishing_pulled",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "FISHING_PULLED",
+  "scent_id": "marine",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "default": true
+  }
+}

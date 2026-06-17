@@ -11,14 +11,20 @@
     "SnifferRendererMixin",
     "SnifferModelMixin",
     "IronGolemModelMixin",
-    "IronGolemRendererMixin"
+    "IronGolemRendererMixin",
+    "LocalPlayerCompleteUseItemMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",
     "JigsawPriorityMixin",
     "AnvilRepairMixin",
     "ZombieVillagerConversionMixin",
-    "IronGolemNoseMixin"
+    "IronGolemNoseMixin",
+    "AnvilOnTakeMixin",
+    "FishingHookRetrieveMixin",
+    "MerchantNotifyTradeMixin",
+    "FlintUseServerMixin",
+    "SeedPlantServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
