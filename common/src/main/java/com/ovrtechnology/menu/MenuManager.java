@@ -105,6 +105,17 @@ public final class MenuManager {
         minecraft.setScreen(new ShopScreen());
     }
 
+    public static void openFeedbackMenu() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaAffect.LOGGER.debug("Cannot open feedback menu: no player");
+            return;
+        }
+
+        AromaAffect.LOGGER.debug("Opening feedback menu");
+        minecraft.setScreen(new FeedbackScreen());
+    }
+
     public static void returnToRadialMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         AromaAffect.LOGGER.debug("Returning to radial menu");
