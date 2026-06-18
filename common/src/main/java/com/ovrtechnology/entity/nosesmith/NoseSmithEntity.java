@@ -8,6 +8,7 @@ import com.ovrtechnology.scentitem.ScentItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -823,7 +824,29 @@ public class NoseSmithEntity extends Villager {
         // Always persist
         return true;
     }
-    
+
+    @Override
+    protected void dropCustomDeathLoot(ServerLevel level, DamageSource damageSource, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, damageSource, recentlyHit);
+
+        if (!hasNose()) {
+            return;
+        }
+
+        ItemStack noseItem = NoseRegistry.getNoseHolder("foragers_nose")
+                .filter(Holder::isBound)
+                .map(holder -> new ItemStack(holder.value()))
+                .orElse(ItemStack.EMPTY);
+
+        if (noseItem.isEmpty()) {
+            AromaAffect.LOGGER.warn("Nose Smith died with nose but foragers_nose item is not registered");
+            return;
+        }
+
+        this.spawnAtLocation(level, noseItem);
+        setHasNose(false);
+    }
+
     public void openShop(ServerPlayer serverPlayer) {
         endDialogue(serverPlayer);
 
