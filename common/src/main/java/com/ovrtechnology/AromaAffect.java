@@ -33,9 +33,14 @@ import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferSyncHandler;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
+import com.ovrtechnology.data.ResourceManagerDataSource;
+import com.ovrtechnology.network.ScentEventNetworking;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import com.ovrtechnology.trigger.event.EventDefinitionLoader;
+import com.ovrtechnology.trigger.event.EventTriggersConfig;
+import com.ovrtechnology.trigger.event.ServerEventBusHandler;
 import com.ovrtechnology.worldgen.VillagePoolInjector;
 import lombok.experimental.UtilityClass;
 import net.blay09.mods.balm.core.BalmRegistrars;
@@ -115,6 +120,21 @@ public final class AromaAffect {
         NoseRenderNetworking.init();
         AromaGuideNetworking.init();
         OmaraDeviceNetworking.init();
+        ScentEventNetworking.init();
+
+        // === Event-trigger scent system =====================================
+        EventTriggersConfig.getInstance();
+        ServerEventBusHandler.init();
+        // Event definitions live in a directory and are enumerated via the
+        // ResourceManager, so load them on server-data reload (world load + /reload).
+        registrars.resourceReloadListeners(
+                reg ->
+                        reg.register(
+                                "event_reload",
+                                (net.minecraft.server.packs.resources.ResourceManager rm) -> {
+                                    EventDefinitionLoader.loadAllEvents(
+                                            new ResourceManagerDataSource(rm));
+                                }));
 
         // === Phase 5 — event listeners (still on Architectury) ===============
         SnifferSyncHandler.init();

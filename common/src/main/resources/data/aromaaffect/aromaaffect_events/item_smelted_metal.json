@@ -1,0 +1,18 @@
+{
+  "event_id": "aromaaffect:item_smelted_metal",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "ITEM_SMELTED",
+  "scent_id": "terra_silva",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "item_ids": [
+      "minecraft:iron_ingot",
+      "minecraft:gold_ingot",
+      "minecraft:copper_ingot",
+      "minecraft:netherite_scrap"
+    ]
+  }
+}

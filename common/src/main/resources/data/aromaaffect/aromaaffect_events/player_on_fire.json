@@ -1,0 +1,10 @@
+{
+  "event_id": "aromaaffect:player_on_fire",
+  "category": "PLAYER_STATE",
+  "trigger_type": "PLAYER_ON_FIRE",
+  "scent_id": "smoky",
+  "intensity": 0.9,
+  "priority": "HIGH",
+  "duration_mode": "CONTINUOUS",
+  "cooldown_ms": 5000
+}

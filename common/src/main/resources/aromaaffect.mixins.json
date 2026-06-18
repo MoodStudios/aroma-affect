@@ -12,14 +12,26 @@
     "SnifferRendererMixin",
     "SnifferModelMixin",
     "IronGolemModelMixin",
-    "IronGolemRendererMixin"
+    "IronGolemRendererMixin",
+    "LocalPlayerCompleteUseItemMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",
     "JigsawPriorityMixin",
     "AnvilRepairMixin",
     "ZombieVillagerConversionMixin",
-    "IronGolemNoseMixin"
+    "IronGolemNoseMixin",
+    "AnvilOnTakeMixin",
+    "FishingHookRetrieveMixin",
+    "MerchantNotifyTradeMixin",
+    "BlockBreakServerMixin",
+    "LivingDeathServerMixin",
+    "CraftResultServerMixin",
+    "SmeltResultServerMixin",
+    "AnimalTameServerMixin",
+    "AdvancementServerMixin",
+    "FlintUseServerMixin",
+    "SeedPlantServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
