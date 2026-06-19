@@ -10,14 +10,10 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.client.Minecraft;
+import net.minecraft.SharedConstants;
 
 /**
  * Sends mod feedback to an OVR/OMARA backend.
- *
- * <p>The endpoint is a placeholder until the backend is finalized; swap {@link #FEEDBACK_ENDPOINT}
- * once the real URL and contract are available. Requests are fired asynchronously so the client
- * thread never blocks on the network.
  */
 public final class FeedbackClient {
 
@@ -104,7 +100,7 @@ public final class FeedbackClient {
 
     private static String mcVersion() {
         try {
-            return Minecraft.getInstance().getLaunchedVersion();
+            return SharedConstants.getCurrentVersion().name();
         } catch (RuntimeException e) {
             return "unknown";
         }
