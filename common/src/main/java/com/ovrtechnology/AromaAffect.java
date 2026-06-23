@@ -77,6 +77,12 @@ public final class AromaAffect {
         ScentTriggerManager.init();
 
         // === Balm-driven registries ==========================================
+        // Blocks + block entities must register before items: the Omara Device
+        // BlockItem (and its BlockEntity) dereference OMARA_DEVICE.value() at
+        // registration time, so the block holder must already be populated.
+        registrars.registrar(Registries.BLOCK, OmaraDeviceRegistry::registerBlocks);
+        registrars.blockEntityTypes(OmaraDeviceRegistry::registerBlockEntities);
+
         // Items
         registrars.registrar(Registries.ITEM, NoseRegistry::register);
         registrars.registrar(Registries.ITEM, SnifferNoseRegistry::register);
@@ -84,10 +90,6 @@ public final class AromaAffect {
         registrars.registrar(Registries.ITEM, AromaGuideRegistry::register);
         registrars.registrar(Registries.ITEM, NoseSmithRegistry::registerItems);
         registrars.registrar(Registries.ITEM, OmaraDeviceRegistry::registerItems);
-
-        // Blocks + block entities
-        registrars.registrar(Registries.BLOCK, OmaraDeviceRegistry::registerBlocks);
-        registrars.blockEntityTypes(OmaraDeviceRegistry::registerBlockEntities);
 
         // Entity types
         registrars.registrar(Registries.ENTITY_TYPE, NoseSmithRegistry::registerEntities);
