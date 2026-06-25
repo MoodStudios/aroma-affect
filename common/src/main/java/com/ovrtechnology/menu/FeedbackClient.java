@@ -8,17 +8,25 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import net.minecraft.SharedConstants;
 
-/**
- * Sends mod feedback to an OVR/OMARA backend.
- */
+/** Sends mod feedback to an OVR/OMARA backend. */
 public final class FeedbackClient {
 
     // TODO: replace with the real OVR/OMARA feedback endpoint once available.
     private static final String FEEDBACK_ENDPOINT = "https://omara.ovrtechnology.com/api/feedback";
+
+    // Shared secret used to sign requests; must match FEEDBACK_HMAC_SECRET on the
+    // backend.
+    private static final String FEEDBACK_HMAC_SECRET = "change-me-to-match-backend";
+
+    private static final String TIMESTAMP_HEADER = "X-Aroma-Timestamp";
+    private static final String SIGNATURE_HEADER = "X-Aroma-Signature";
 
     private static final Gson GSON = new Gson();
 
@@ -39,10 +47,11 @@ public final class FeedbackClient {
     /**
      * Submits feedback asynchronously.
      *
-     * @return a future resolving to {@code true} on a 2xx response, {@code false} otherwise (network
-     *     error, timeout, or non-2xx status). Never completes exceptionally.
+     * @return a future resolving to {@code true} on a 2xx response, {@code false} otherwise
+     *     (network error, timeout, or non-2xx status). Never completes exceptionally.
      */
-    public static CompletableFuture<Boolean> submit(String feedback, String name, boolean anonymous) {
+    public static CompletableFuture<Boolean> submit(
+            String feedback, String name, boolean anonymous) {
         FeedbackPayload payload =
                 new FeedbackPayload(
                         feedback,
@@ -53,12 +62,16 @@ public final class FeedbackClient {
                         mcVersion());
 
         String json = GSON.toJson(payload);
+        String timestamp = Long.toString(System.currentTimeMillis());
+        String signature = sign(timestamp, json);
 
         HttpRequest request =
                 HttpRequest.newBuilder()
                         .uri(URI.create(FEEDBACK_ENDPOINT))
                         .timeout(Duration.ofSeconds(15))
                         .header("Content-Type", "application/json")
+                        .header(TIMESTAMP_HEADER, timestamp)
+                        .header(SIGNATURE_HEADER, signature)
                         .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                         .build();
 
@@ -79,6 +92,32 @@ public final class FeedbackClient {
                                     "Failed to submit feedback: {}", throwable.getMessage());
                             return false;
                         });
+    }
+
+    /**
+     * Computes the request signature the backend verifies: {@code hex(HMAC-SHA256(secret, timestamp
+     * + "." + body))}, over the exact JSON body bytes that are sent.
+     */
+    private static String sign(String timestamp, String body) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(
+                    new SecretKeySpec(
+                            FEEDBACK_HMAC_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] digest = mac.doFinal((timestamp + "." + body).getBytes(StandardCharsets.UTF_8));
+            return toHex(digest);
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("Unable to sign feedback request", e);
+        }
+    }
+
+    private static String toHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            sb.append(Character.forDigit((b >> 4) & 0xF, 16));
+            sb.append(Character.forDigit(b & 0xF, 16));
+        }
+        return sb.toString();
     }
 
     private static String blankToNull(String value) {
