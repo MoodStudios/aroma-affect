@@ -1,0 +1,11 @@
+{
+  "event_id": "aromaaffect:totem_use",
+  "category": "PLAYER_STATE",
+  "trigger_type": "TOTEM_USE",
+  "scent_id": "BEACH",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "CONTINUOUS",
+  "cooldown_ms": 8000,
+  "conditions": { "default": true }
+}
