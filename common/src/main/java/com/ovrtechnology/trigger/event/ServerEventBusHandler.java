@@ -43,6 +43,7 @@ public final class ServerEventBusHandler {
     public static final String TT_ANIMAL_TAMED = "ANIMAL_TAMED";
     public static final String TT_ITEM_CRAFTED = "ITEM_CRAFTED";
     public static final String TT_ITEM_SMELTED = "ITEM_SMELTED";
+    public static final String TT_ITEM_EQUIPPED = "ITEM_EQUIPPED";
     public static final String TT_FISHING_PULLED = "FISHING_PULLED";
     public static final String TT_TRADE_COMPLETED = "TRADE_COMPLETED";
     public static final String TT_ANVIL_USED = "ANVIL_USED";
@@ -144,6 +145,18 @@ public final class ServerEventBusHandler {
         if (!stack.has(DataComponents.JUKEBOX_PLAYABLE) || state.getValue(JukeboxBlock.HAS_RECORD)) return;
 
         fireSimpleEvent(player, TT_DISC_JUKEBOX);
+    }
+
+    /**  */
+    public static void onEquippedItem(ServerPlayer player, ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return;
+        Identifier itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        String itemKey = itemId.toString();
+
+        dispatch(
+                player,
+                TT_ITEM_EQUIPPED,
+                def -> matchesItemSimple(def.getConditions(), itemKey));
     }
 
     /** A seed/crop item was placed (planting). Filtered to {@link #SEED_ITEMS}. */

@@ -31,7 +31,8 @@
     "AnimalTameServerMixin",
     "AdvancementServerMixin",
     "FlintUseServerMixin",
-    "JukeboxUseMixin",
+    "JukeboxUseServerMixin",
+    "ItemEquippedServerMixin",
     "SeedPlantServerMixin"
   ],
   "injectors": {

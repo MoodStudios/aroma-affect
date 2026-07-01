@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(JukeboxBlock.class)
-public abstract class JukeboxUseMixin {
+public abstract class JukeboxUseServerMixin {
     @Inject(method = "useItemOn", at = @At("RETURN"), require = 0)
     private void aromaaffect$onJukeboxUse(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
         if (!(player instanceof ServerPlayer sPlayer)) return;
