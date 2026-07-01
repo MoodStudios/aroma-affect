@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,9 +19,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DiscFragmentItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -46,6 +49,7 @@ public final class ServerEventBusHandler {
     public static final String TT_SNIFFER_DUG = "SNIFFER_DUG";
     public static final String TT_FLINT_USED = "FLINT_USED";
     public static final String TT_SEED_PLANTED = "SEED_PLANTED";
+    public static final String TT_DISC_JUKEBOX = "DISC_JUKEBOX";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -132,6 +136,14 @@ public final class ServerEventBusHandler {
     /** Flint &amp; steel used. */
     public static void onFlintUsed(ServerPlayer player) {
         fireSimpleEvent(player, TT_FLINT_USED);
+    }
+
+    /** When Jukebox gets a music disc placed into it */
+    public static void onJukeboxUsed(ServerPlayer player, BlockState state, ItemStack stack) {
+        if (player == null || stack == null || stack.isEmpty() ) return;
+        if (!stack.has(DataComponents.JUKEBOX_PLAYABLE) || state.getValue(JukeboxBlock.HAS_RECORD)) return;
+
+        fireSimpleEvent(player, TT_DISC_JUKEBOX);
     }
 
     /** A seed/crop item was placed (planting). Filtered to {@link #SEED_ITEMS}. */
