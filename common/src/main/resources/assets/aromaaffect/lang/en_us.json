@@ -585,5 +585,12 @@
   "history.aromaaffect.wrong_dimension": "Wrong dimension — travel there first",
 
   "config.aromaaffect.passive_puff_overlay": "Passive Puff Overlay",
-  "config.aromaaffect.debug_scent_messages": "Debug Scent Messages"
+  "config.aromaaffect.debug_scent_messages": "Debug Scent Messages",
+
+  "aromaaffect.bridge.title": "Omara Device: %s",
+  "aromaaffect.state.disconnected": "Disconnected",
+  "aromaaffect.state.connecting": "Connecting...",
+  "aromaaffect.state.connected": "Connected",
+  "aromaaffect.state.connection_failed": "Connection Failed",
+  "aromaaffect.state.reconnecting": "Reconnecting..."
 }

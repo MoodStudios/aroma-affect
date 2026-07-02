@@ -1,5 +1,6 @@
 package com.ovrtechnology;
 
+import com.ovrtechnology.client.ClientHooks;
 import com.ovrtechnology.entity.nosesmith.client.NoseSmithClientRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.menu.MenuKeyBindings;
@@ -44,6 +45,8 @@ public final class AromaAffectClient {
         }
         
         AromaAffect.LOGGER.info("Initializing Aroma Affect client...");
+
+        ClientHooks.init();
 
         // Model layers (NoseMaskModel) — must be registered before any render call
         registrars.modelLayers(com.ovrtechnology.nose.client.NoseClient::registerModelLayers);
