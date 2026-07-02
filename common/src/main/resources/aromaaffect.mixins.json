@@ -34,7 +34,8 @@
     "TotemTriggerServerMixin",
     "JukeboxUseServerMixin",
     "ItemEquippedServerMixin",
-    "SeedPlantServerMixin"
+    "SeedPlantServerMixin",
+    "ShoulderRidingServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

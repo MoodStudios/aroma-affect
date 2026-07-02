@@ -52,6 +52,7 @@ public final class ServerEventBusHandler {
     public static final String TT_SEED_PLANTED = "SEED_PLANTED";
     public static final String TT_DISC_JUKEBOX = "DISC_JUKEBOX";
     public static final String TT_TOTEM_USE = "TOTEM_USE";
+    public static final String TT_ENTITY_RIDE_SHOULDER = "RIDE_SHOULDER";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(

@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:animal_ride_shoulder",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "RIDE_SHOULDER",
+  "scent_id": "kindred",
+  "intensity": 0.7,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 10000,
+  "conditions": {
+    "default": true
+  }
+}
