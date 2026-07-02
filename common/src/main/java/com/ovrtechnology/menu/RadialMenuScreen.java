@@ -116,6 +116,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final Identifier ICON_BLOCKS = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
     private static final Identifier ICON_FLOWERS = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
     private static final Identifier ICON_CONFIG = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
+    private static final Identifier ICON_DISCORD = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/discord.png");
 
     private static final Identifier ICON_PASSIVE = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
     private static final Identifier ICON_CENTER_LOGO = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/ovr_isologo_part1.png");
@@ -229,6 +230,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private boolean isHoveringGuide = false;
     private boolean isHoveringShop = false;
     private boolean isHoveringHistory = false;
+    private boolean isHoveringDiscord = false;
     private boolean isHoveringPanelStop = false;
     private boolean isHoveringPanelTeleport = false;
 
@@ -394,8 +396,34 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.fill(cx - 3, cy + 5, cx - 1, cy + 7, iconColor);
         graphics.fill(cx + 1, cy + 5, cx + 3, cy + 7, iconColor);
 
-        // History button (right of shop, same height)
-        int histX = shopX + shopBtnSize + 4;
+        // Discord button (right of shop, same height)
+        int discordX = shopX + shopBtnSize + 4;
+        int discordY = CORNER_BUTTON_PADDING;
+        int discordBtnSize = toggleH;
+
+        isHoveringDiscord = isInBounds(mouseX, mouseY, discordX, discordY, discordBtnSize, discordBtnSize);
+
+        int discordBg = isHoveringDiscord
+                ? MenuRenderUtils.withAlpha(0xcc7289da, appear)
+                : MenuRenderUtils.withAlpha(0x807289da, appear);
+        graphics.fill(discordX, discordY, discordX + discordBtnSize, discordY + discordBtnSize, discordBg);
+        MenuRenderUtils.renderOutline(graphics, discordX, discordY, discordBtnSize, discordBtnSize, MenuRenderUtils.withAlpha(0x877289da, appear));
+
+        // Render discord icon scaled to fit inside the button with 2px padding
+        int discordIconSize = discordBtnSize - 4;
+        int discordIconX = discordX + 2;
+        int discordIconY = discordY + 2;
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                ICON_DISCORD,
+                discordIconX, discordIconY,
+                0.0f, 0.0f,
+                discordIconSize, discordIconSize,
+                discordIconSize, discordIconSize
+        );
+
+        // History button (right of discord, same height)
+        int histX = discordX + discordBtnSize + 4;
         int histY = CORNER_BUTTON_PADDING;
         int histBtnSize = toggleH;
 
@@ -450,6 +478,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     shopY + shopBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
+        if (isHoveringDiscord) {
+            graphics.text(font, Component.translatable("discord.aromaaffect.button"),
+                    tooltipX,
+                    discordY + discordBtnSize / 2 - 4,
+                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+        }
         if (isHoveringHistory) {
             graphics.text(font, Component.translatable("history.aromaaffect.button"),
                     tooltipX,
@@ -491,6 +525,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             AromaAffect.LOGGER.debug("Shop button clicked");
             MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
             MenuManager.openShopMenu();
+            return true;
+        }
+        if (isHoveringDiscord) {
+            AromaAffect.LOGGER.debug("Discord button clicked");
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
+            MenuManager.openDiscord();
             return true;
         }
         if (isHoveringHistory) {
