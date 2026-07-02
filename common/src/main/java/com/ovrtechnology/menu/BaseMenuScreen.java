@@ -49,7 +49,7 @@ public abstract class BaseMenuScreen extends Screen {
      */
     protected int backgroundColor = 0x80000000;
 
-    // â”€â”€ Notification System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Notification System ──────────────────────────────────────────────
 
     /**
      * Duration in milliseconds before notifications auto-hide.
@@ -193,7 +193,7 @@ public abstract class BaseMenuScreen extends Screen {
     protected abstract void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                                           float partialTick, float animationProgress);
 
-    // â”€â”€ Notification Methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Notification Methods ─────────────────────────────────────────────
 
     /**
      * Shows an error notification at the top of the screen.

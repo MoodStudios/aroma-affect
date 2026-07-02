@@ -97,7 +97,7 @@ public final class TrackingHud {
             return;
         }
 
-        // Don't render if radial menu (or any BaseMenuScreen) is open â€” it has its own panel
+        // Don't render if radial menu (or any BaseMenuScreen) is open — it has its own panel
         if (mc.screen instanceof BaseMenuScreen) {
             return;
         }
@@ -203,10 +203,10 @@ public final class TrackingHud {
         if (status == ActiveTrackingState.TrackingStatus.SEARCHING) {
             headerText = Component.translatable("tracking.aromaaffect.status.searching").getString();
         } else {
-            MenuCategory cat = ActiveTrackingState.getCategory();
+            TrackingCategory cat = ActiveTrackingState.getCategory();
             headerText = Component.translatable("menu.aromaaffect.tracking.label").getString();
             if (cat != null) {
-                headerText += " Â· " + cat.getDisplayName().getString();
+                headerText += " · " + cat.getDisplayName().getString();
             }
         }
 

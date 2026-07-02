@@ -111,10 +111,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     // Texture locations for radial menu icons
-    private static final Identifier ICON_STRUCTURES = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_structures.png");
-    private static final Identifier ICON_BIOMES = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_biomes.png");
-    private static final Identifier ICON_BLOCKS = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_blocks.png");
-    private static final Identifier ICON_FLOWERS = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_flowers.png");
     private static final Identifier ICON_CONFIG = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
 
     private static final Identifier ICON_PASSIVE = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_passive.png");
@@ -131,40 +127,16 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private void initializeEntries() {
         entries.clear();
 
-        // 4-slice layout matching the design:
-        // 0: structures (top-left), 1: biomes (top-right), 2: blocks (bottom-right), 3: flowers (bottom-left)
-        entries.add(new RadialEntry(
-                "structures",
-                Component.translatable("menu.aromaaffect.category.structures"),
-                Component.translatable("menu.aromaaffect.category.structures.description"),
-                ICON_STRUCTURES,
-                () -> MenuManager.openStructuresMenu()
-        ));
-
-        entries.add(new RadialEntry(
-                "biomes",
-                Component.translatable("menu.aromaaffect.category.biomes"),
-                Component.translatable("menu.aromaaffect.category.biomes.description"),
-                ICON_BIOMES,
-                () -> MenuManager.openBiomesMenu()
-        ));
-
-        entries.add(new RadialEntry(
-                "blocks",
-                Component.translatable("menu.aromaaffect.category.blocks"),
-                Component.translatable("menu.aromaaffect.category.blocks.description"),
-                ICON_BLOCKS,
-                () -> MenuManager.openBlocksMenu()
-        ));
-
-        // 4th slice: Flowers/Flora
-        entries.add(new RadialEntry(
-                "flowers",
-                Component.translatable("menu.aromaaffect.category.flowers"),
-                Component.translatable("menu.aromaaffect.category.flowers.description"),
-                ICON_FLOWERS,
-                () -> MenuManager.openFlowersMenu()
-        ));
+        for (TrackingCategory category : TrackingCategoryRegistry.all()) {
+            entries.add(new RadialEntry(
+                    category.getId(),
+                    category.getDisplayName(),
+                    category.getDescription(),
+                    category.getRadialIcon(),
+                    () -> MenuManager.openMenuForCategory(category),
+                    category
+            ));
+        }
     }
 
     @Override
@@ -767,7 +739,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         // Build header
-        MenuCategory cat = ActiveTrackingState.getCategory();
+        TrackingCategory cat = ActiveTrackingState.getCategory();
         String headerText;
         switch (status) {
             case SEARCHING -> headerText = Component.translatable("tracking.aromaaffect.status.searching").getString();
@@ -1006,13 +978,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
         NoseAbilityResolver.ResolvedAbilities abilities = EquippedNoseHelper.getEquippedAbilities(player);
 
         for (int i = 0; i < entries.size(); i++) {
-            locked[i] = switch (entries.get(i).id()) {
-                case "structures" -> abilities.getStructures().isEmpty();
-                case "biomes" -> abilities.getBiomes().isEmpty();
-                case "blocks" -> abilities.getBlocks().isEmpty();
-                case "flowers" -> abilities.getFlowers().isEmpty();
-                default -> false;
-            };
+            TrackingCategory category = entries.get(i).category();
+            locked[i] = category != null && category.detectableFor(abilities).isEmpty();
         }
 
         return locked;
@@ -1206,7 +1173,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
             Component title,
             Component description,
             Identifier icon,
-            Runnable onSelect
+            Runnable onSelect,
+            TrackingCategory category
     ) {
     }
 

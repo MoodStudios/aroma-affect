@@ -162,13 +162,19 @@ public final class MenuManager {
      * 
      * @param category the category to open a menu for
      */
-    public static void openMenuForCategory(MenuCategory category) {
-        switch (category) {
-            case BLOCKS -> openBlocksMenu();
-            case BIOMES -> openBiomesMenu();
-            case STRUCTURES -> openStructuresMenu();
-            case FLOWERS -> openFlowersMenu();
+    public static void openMenuForCategory(TrackingCategory category) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaAffect.LOGGER.debug("Cannot open category menu: no player");
+            return;
         }
+        if (category == null) {
+            AromaAffect.LOGGER.debug("Cannot open category menu: null category");
+            return;
+        }
+
+        AromaAffect.LOGGER.debug("Opening menu for category {}", category.getId());
+        minecraft.setScreen(category.createScreen());
     }
     
     /**

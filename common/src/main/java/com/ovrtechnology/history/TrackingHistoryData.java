@@ -24,7 +24,7 @@ public final class TrackingHistoryData {
 
     /**
      * The world ID that the current instance was loaded for.
-     * Used to detect when the world changes (e.g. "unknown" â†’ real world).
+     * Used to detect when the world changes (e.g. "unknown" → real world).
      */
     private static String loadedWorldId;
 
@@ -65,7 +65,7 @@ public final class TrackingHistoryData {
         loadedWorldId = null;
     }
 
-    // â”€â”€ History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── History ──────────────────────────────────────────────────────────
 
     public List<HistoryEntry> getHistory() {
         return history;
@@ -86,7 +86,7 @@ public final class TrackingHistoryData {
         }
     }
 
-    // â”€â”€ Saved â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Saved ────────────────────────────────────────────────────────────
 
     public List<SavedEntry> getSaved() {
         return saved;
@@ -119,7 +119,7 @@ public final class TrackingHistoryData {
         }
     }
 
-    // â”€â”€ Blacklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Blacklist ────────────────────────────────────────────────────────
 
     public List<BlacklistEntry> getBlacklist() {
         return blacklist;
@@ -191,12 +191,12 @@ public final class TrackingHistoryData {
         return false;
     }
 
-    // â”€â”€ Persistence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Persistence ──────────────────────────────────────────────────────
 
     private static TrackingHistoryData load() {
         String worldId = WorldIdentifier.getCurrentWorldId();
 
-        // World not ready yet â€” return empty, non-persisted instance.
+        // World not ready yet — return empty, non-persisted instance.
         // getInstance() will detect the world ID change and reload once it's available.
         if ("unknown".equals(worldId)) {
             AromaAffect.LOGGER.debug("World not ready yet, returning empty tracking history");

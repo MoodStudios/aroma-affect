@@ -14,7 +14,7 @@
  * From there, players can navigate to specific category menus to select what their equipped Nose should track.</p>
  * 
  * @see com.ovrtechnology.menu.MenuManager
- * @see com.ovrtechnology.menu.MenuCategory
+ * @see com.ovrtechnology.menu.TrackingCategory
  */
 package com.ovrtechnology.menu;
 

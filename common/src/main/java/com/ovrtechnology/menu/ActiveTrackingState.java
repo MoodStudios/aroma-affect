@@ -40,7 +40,7 @@ public final class ActiveTrackingState {
     private static Identifier targetId;
     private static Component displayName;
     private static ItemStack icon;
-    private static MenuCategory category;
+    private static TrackingCategory category;
     private static int distance = -1;
     private static BlockPos destination;
 
@@ -65,7 +65,7 @@ public final class ActiveTrackingState {
      * @param itemIcon item icon for the target
      * @param cat      the category this target belongs to
      */
-    public static void set(Identifier id, Component name, ItemStack itemIcon, MenuCategory cat) {
+    public static void set(Identifier id, Component name, ItemStack itemIcon, TrackingCategory cat) {
         targetId = id;
         displayName = name;
         icon = itemIcon;
@@ -227,7 +227,7 @@ public final class ActiveTrackingState {
         return icon;
     }
 
-    public static MenuCategory getCategory() {
+    public static TrackingCategory getCategory() {
         return category;
     }
 
@@ -252,6 +252,6 @@ public final class ActiveTrackingState {
         return (status == TrackingStatus.TRACKING || status == TrackingStatus.ARRIVED)
                 && destination != null
                 && distance >= 0 && distance <= 32
-                && (category == MenuCategory.BLOCKS || category == MenuCategory.FLOWERS || category == MenuCategory.STRUCTURES);
+                && category != null && category.hasWorldOutline();
     }
 }
