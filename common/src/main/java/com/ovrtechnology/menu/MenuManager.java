@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.guide.GuideManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.util.Util;
 
 /**
  * Central manager for opening and managing Aroma Affect menus.
@@ -141,6 +142,20 @@ public final class MenuManager {
 
         AromaAffect.LOGGER.debug("Opening shop menu");
         minecraft.setScreen(new ShopScreen());
+    }
+
+    /**
+     * Invites player to Discord
+     */
+    public static void openDiscord() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaAffect.LOGGER.debug("Cannot join Discord: no player");
+            return;
+        }
+
+        AromaAffect.LOGGER.debug("Joining Discord");
+        Util.getPlatform().openUri("https://discord.com/invite/ovr-omara");
     }
 
     /**

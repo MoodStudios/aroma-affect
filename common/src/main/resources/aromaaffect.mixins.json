@@ -31,7 +31,11 @@
     "AnimalTameServerMixin",
     "AdvancementServerMixin",
     "FlintUseServerMixin",
-    "SeedPlantServerMixin"
+    "TotemTriggerServerMixin",
+    "JukeboxUseServerMixin",
+    "ItemEquippedServerMixin",
+    "SeedPlantServerMixin",
+    "ShoulderRidingServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

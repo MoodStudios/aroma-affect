@@ -1,5 +1,6 @@
 package com.ovrtechnology;
 
+import com.ovrtechnology.client.ClientHooks;
 import com.ovrtechnology.entity.nosesmith.client.NoseSmithClientRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.menu.MenuKeyBindings;
@@ -45,6 +46,7 @@ public final class AromaAffectClient {
         
         AromaAffect.LOGGER.info("Initializing Aroma Affect client...");
 
+        ClientHooks.init();
         // Register the built-in tracking categories before any menu/radial use
         com.ovrtechnology.menu.TrackingCategories.bootstrap();
 
