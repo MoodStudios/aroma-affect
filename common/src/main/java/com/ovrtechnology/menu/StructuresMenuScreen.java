@@ -82,10 +82,10 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
     }
 
     public StructuresMenuScreen() {
-        super(MenuCategory.STRUCTURES);
+        super(TrackingCategories.STRUCTURES);
     }
 
-    // â”€â”€ SelectionMenuScreen hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── SelectionMenuScreen hooks ────────────────────────────────────────
 
     @Override
     protected int getRowHeight() {

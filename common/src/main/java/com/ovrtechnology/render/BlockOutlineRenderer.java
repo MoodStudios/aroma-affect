@@ -9,7 +9,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.menu.ActiveTrackingState;
-import com.ovrtechnology.menu.MenuCategory;
+import com.ovrtechnology.menu.TrackingCategory;
+import com.ovrtechnology.menu.TrailDomain;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -165,7 +166,8 @@ public final class BlockOutlineRenderer {
         }
 
         // Fallback for structures: gold/amber color
-        if (ActiveTrackingState.getCategory() == MenuCategory.STRUCTURES) {
+        TrackingCategory cat = ActiveTrackingState.getCategory();
+        if (cat != null && cat.getTrailDomain() == TrailDomain.STRUCTURE) {
             return new float[]{1.0f, 0.8f, 0.2f};
         }
 

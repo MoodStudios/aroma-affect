@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class GuideScreen extends BaseMenuScreen {
 
-    // â”€â”€ Layout Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Layout Constants ───────────────────────────────────────────
     private static final int WINDOW_MARGIN = 16;
     private static final int SIDEBAR_WIDTH = 150;
     private static final int SIDEBAR_ITEM_HEIGHT = 22;
@@ -40,7 +40,7 @@ public class GuideScreen extends BaseMenuScreen {
     private static final int SCROLLBAR_WIDTH = 6;
     private static final int PAGE_TITLE_BAR_HEIGHT = 28;
 
-    // â”€â”€ Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Colors ─────────────────────────────────────────────────────
     private static final int COLOR_WINDOW_BG = 0xF0101020;
     private static final int COLOR_SIDEBAR_BG = 0xF0141430;
     private static final int COLOR_HEADER_BG = 0xF01A1A3A;
@@ -71,7 +71,7 @@ public class GuideScreen extends BaseMenuScreen {
     private int closeBtnX, closeBtnY, closeBtnSize;
     private boolean hoveringClose = false;
 
-    // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── State ──────────────────────────────────────────────────────
     private final GuideBook book;
     @Nullable
     private GuidePage currentPage;
@@ -139,7 +139,7 @@ public class GuideScreen extends BaseMenuScreen {
 
     @Override
     public void onClose() {
-        // Close instantly â€” no fade-out animation
+        // Close instantly — no fade-out animation
         if (this.minecraft != null) {
             this.minecraft.setScreen(null);
         }
@@ -187,7 +187,7 @@ public class GuideScreen extends BaseMenuScreen {
         }
     }
 
-    // â”€â”€ Rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Rendering ──────────────────────────────────────────────────
 
     @Override
     protected void renderContent(GuiGraphicsExtractor g, int mouseX, int mouseY,
@@ -264,7 +264,7 @@ public class GuideScreen extends BaseMenuScreen {
             g.text(font, subtitle, textLeftX, subtitleY, applyAlpha(shimmerColor, alpha), false);
         }
 
-        // Close button â€” circular style, centered vertically
+        // Close button — circular style, centered vertically
         closeBtnSize = 16;
         closeBtnX = right - closeBtnSize - 10;
         closeBtnY = top + (HEADER_HEIGHT - closeBtnSize) / 2 + 2;
@@ -279,7 +279,7 @@ public class GuideScreen extends BaseMenuScreen {
         g.fill(closeBtnX, closeBtnY + 1, closeBtnX + 1, closeBtnY + closeBtnSize - 1, btnBg);
         g.fill(closeBtnX + closeBtnSize - 1, closeBtnY + 1, closeBtnX + closeBtnSize, closeBtnY + closeBtnSize - 1, btnBg);
 
-        // Ã— using font character, drawn with shadow for a bold look
+        // × using font character, drawn with shadow for a bold look
         String xChar = "\u00D7";
         int xColor = hoveringClose ? applyAlpha(0xFFFFFFFF, alpha) : applyAlpha(0xFFBBBBBB, alpha);
         int xTextX = closeBtnX + (closeBtnSize - font.width(xChar)) / 2;
@@ -292,7 +292,7 @@ public class GuideScreen extends BaseMenuScreen {
         g.fill(left, bottom - 1, right, bottom, applyAlpha(COLOR_BORDER, alpha));
     }
 
-    // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Sidebar ────────────────────────────────────────────────────
 
     private void renderSidebar(GuiGraphicsExtractor g, int left, int top, int right, int bottom,
                                int mouseX, int mouseY, float alpha) {
@@ -484,7 +484,7 @@ public class GuideScreen extends BaseMenuScreen {
         g.text(font, pageTitle, textX, y + 7, applyAlpha(textColor, alpha), selected);
     }
 
-    // â”€â”€ Content Area â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Content Area ───────────────────────────────────────────────
 
     private void renderContentArea(GuiGraphicsExtractor g, int left, int top, int right, int bottom,
                                    int mouseX, int mouseY, float alpha) {
@@ -971,7 +971,7 @@ public class GuideScreen extends BaseMenuScreen {
             hoveredItem = result;
         }
 
-        // Render tooltip last (on top of everything) â€” deferred via stored field
+        // Render tooltip last (on top of everything) — deferred via stored field
         if (!hoveredItem.isEmpty()) {
             this.craftingTooltipItem = hoveredItem;
         }
@@ -986,7 +986,7 @@ public class GuideScreen extends BaseMenuScreen {
 
         int lineHeight = font.lineHeight + 2;
 
-        // "â€¢ "
+        // "• "
         String bullet = "\u2022 ";
         int bulletWidth = font.width(bullet);
         g.text(font, bullet, x, y, applyAlpha(0xFFD0D0D0, alpha), false);
@@ -1127,7 +1127,7 @@ public class GuideScreen extends BaseMenuScreen {
         return lineHeight;
     }
 
-    // â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Scrollbar ──────────────────────────────────────────────────
 
     private void renderScrollbar(GuiGraphicsExtractor g, int x, int y, int w, int h,
                                  double scrollOffset, int totalHeight, int visibleHeight, float alpha) {
@@ -1145,7 +1145,7 @@ public class GuideScreen extends BaseMenuScreen {
                 applyAlpha(COLOR_SCROLLBAR_THUMB, alpha));
     }
 
-    // â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Input ──────────────────────────────────────────────────────
 
     @Override
     protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
@@ -1311,7 +1311,7 @@ public class GuideScreen extends BaseMenuScreen {
         return false;
     }
 
-    // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Navigation ─────────────────────────────────────────────────
 
     private void navigateToPage(GuidePage page) {
         // Save current page scroll position
@@ -1329,7 +1329,7 @@ public class GuideScreen extends BaseMenuScreen {
         contentScrollTarget = savedScroll;
     }
 
-    // â”€â”€ Sounds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Sounds ─────────────────────────────────────────────────────
 
     private void playClickSound() {
         Minecraft mc = Minecraft.getInstance();
@@ -1347,7 +1347,7 @@ public class GuideScreen extends BaseMenuScreen {
         }
     }
 
-    // â”€â”€ Sidebar Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Sidebar Data ───────────────────────────────────────────────
 
     private void rebuildSidebar() {
         sidebarEntries.clear();
@@ -1361,7 +1361,7 @@ public class GuideScreen extends BaseMenuScreen {
         }
     }
 
-    // â”€â”€ Utility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Utility ────────────────────────────────────────────────────
 
     private static int applyAlpha(int color, float alpha) {
         int a = (color >> 24) & 0xFF;
@@ -1376,7 +1376,7 @@ public class GuideScreen extends BaseMenuScreen {
         g.fill(right - 1, top, right, bottom, color);
     }
 
-    // â”€â”€ Inner Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Inner Classes ──────────────────────────────────────────────
 
     private static final class SidebarEntry {
         final boolean isCategory;

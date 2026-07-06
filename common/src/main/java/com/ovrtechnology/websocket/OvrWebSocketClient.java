@@ -697,7 +697,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
             delay = config.getInitialReconnectDelayMs();
         }
 
-        // Apply jitter (Â±10%)
+        // Apply jitter (±10%)
         double jitter = 0.9 + (Math.random() * 0.2);
         delay = (long) (delay * jitter);
 

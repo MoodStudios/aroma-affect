@@ -91,10 +91,10 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
     private int hoveredFilterIndex = -1;
 
     public FlowersMenuScreen() {
-        super(MenuCategory.FLOWERS);
+        super(TrackingCategories.FLOWERS);
     }
 
-    // â”€â”€ SelectionMenuScreen hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── SelectionMenuScreen hooks ────────────────────────────────────────
 
     @Override
     protected int getRowHeight() {
@@ -304,7 +304,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         }
     }
 
-    // â”€â”€ Flower filter enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Flower filter enum ───────────────────────────────────────────────
 
     enum FlowerFilter {
         ALL("menu.aromaaffect.flowers.filter.all"),

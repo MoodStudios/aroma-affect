@@ -117,7 +117,7 @@ public class ShopScreen extends BaseMenuScreen {
         // Interpolated transition value for smooth lerp
         float t = easeOutCubic(infoTransition);
 
-        // Image area â€” slides from center to left
+        // Image area — slides from center to left
         int imgMaxW = Math.min(160, panelW / 2 - 20);
         int imgH = (int) (imgMaxW * 1.0f); // square-ish
         int imgCenterX = centerX; // product view: centered

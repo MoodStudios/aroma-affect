@@ -174,7 +174,7 @@ public final class ActivePathManager {
             BlockPos playerPos = player.blockPosition();
             BlockPos destination = path.destination();
 
-            // Check if player has arrived (3D distance â€” prevents false arrival above underground targets)
+            // Check if player has arrived (3D distance — prevents false arrival above underground targets)
             double distanceToDestination = Math.sqrt(
                     Math.pow(playerPos.getX() - destination.getX(), 2) +
                     Math.pow(playerPos.getY() - destination.getY(), 2) +
@@ -204,7 +204,7 @@ public final class ActivePathManager {
                 // Player has arrived!
                 if (PathSubCommand.isVerbose()) {
                     player.sendOverlayMessage(Component.literal(
-                            "Â§6[Aroma Affect] Â§aYou have arrived at your destination!"
+                            "§6[Aroma Affect] §aYou have arrived at your destination!"
                     ));
                 }
                 PathScentNetworking.sendPathArrived(player);

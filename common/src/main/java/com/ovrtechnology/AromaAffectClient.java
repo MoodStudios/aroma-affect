@@ -47,6 +47,8 @@ public final class AromaAffectClient {
         AromaAffect.LOGGER.info("Initializing Aroma Affect client...");
 
         ClientHooks.init();
+        // Register the built-in tracking categories before any menu/radial use
+        com.ovrtechnology.menu.TrackingCategories.bootstrap();
 
         // Model layers (NoseMaskModel) — must be registered before any render call
         registrars.modelLayers(com.ovrtechnology.nose.client.NoseClient::registerModelLayers);

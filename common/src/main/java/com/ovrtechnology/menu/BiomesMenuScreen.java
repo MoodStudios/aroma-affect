@@ -134,10 +134,10 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
     }
 
     public BiomesMenuScreen() {
-        super(MenuCategory.BIOMES);
+        super(TrackingCategories.BIOMES);
     }
 
-    // â”€â”€ SelectionMenuScreen hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── SelectionMenuScreen hooks ────────────────────────────────────────
 
     @Override
     protected int getRowHeight() {

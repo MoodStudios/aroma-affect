@@ -62,7 +62,14 @@ public final class ScentPuffOverlay {
         }
         initialized = true;
 
-        RenderCallback.Gui.AFTER.register((graphics, window) -> render(graphics));
+        // Draw the scent mask BEFORE the HUD so the border/vignette sits behind
+        // the hotbar, health, hunger, etc. instead of covering them. Returning
+        // true lets the vanilla GUI render proceed (returning false would cancel
+        // the entire HUD render).
+        RenderCallback.Gui.BEFORE.register((graphics, window) -> {
+            render(graphics);
+            return true;
+        });
         AromaAffect.LOGGER.info("ScentPuffOverlay initialized");
     }
 

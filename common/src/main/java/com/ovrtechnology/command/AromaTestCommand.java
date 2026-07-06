@@ -75,12 +75,12 @@ public final class AromaTestCommand {
         // Default execution (no subcommand) shows available subcommands
         builder.executes(context -> {
             context.getSource().sendSuccess(
-                    () -> Component.literal("Â§6[Aroma Affect] Â§7Available subcommands:"),
+                    () -> Component.literal("§6[Aroma Affect] §7Available subcommands:"),
                     false
             );
             for (SubCommand subCommand : SUB_COMMANDS.values()) {
                 context.getSource().sendSuccess(
-                        () -> Component.literal("Â§7  - Â§e/aromatest " + subCommand.getName() + " Â§8- " + subCommand.getDescription()),
+                        () -> Component.literal("§7  - §e/aromatest " + subCommand.getName() + " §8- " + subCommand.getDescription()),
                         false
                 );
             }

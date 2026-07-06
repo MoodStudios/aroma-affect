@@ -122,7 +122,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         }
         int scentColor = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
 
-        // â”€â”€ Row 1: Scent name with color dot â”€â”€
+        // ── Row 1: Scent name with color dot ──
         int row1Y = y + 24;
         g.fill(infoX, row1Y + 1, infoX + 4, row1Y + 5, scentColor);
 
@@ -131,7 +131,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         String displayName = trimToWidth(fallbackName, maxNamePx);
         g.text(this.font, displayName, infoX + 6, row1Y, 0xFFFFFFFF, true);
 
-        // â”€â”€ Row 2: Charges bar (no text) â”€â”€
+        // ── Row 2: Charges bar (no text) ──
         int row2Y = y + 36;
         drawBatteryIcon(g, infoX, row2Y, scentColor);
 
@@ -146,7 +146,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
             g.fill(barX, row2Y, barX + fillW, row2Y + BAR_H, scentColor);
         }
 
-        // â”€â”€ Row 3: Cooldown timer â”€â”€
+        // ── Row 3: Cooldown timer ──
         int row3Y = y + 48;
         int cooldownTicks = this.menu.getCooldownTicks();
         int maxCooldownTicks = this.menu.getMaxCooldownTicks();

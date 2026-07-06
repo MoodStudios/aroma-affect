@@ -63,10 +63,10 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
     private int hoveredFilterIndex = -1;
 
     public BlocksMenuScreen() {
-        super(MenuCategory.BLOCKS);
+        super(TrackingCategories.BLOCKS);
     }
 
-    // â”€â”€ SelectionMenuScreen hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── SelectionMenuScreen hooks ────────────────────────────────────────
 
     @Override
     protected int getRowHeight() {
@@ -280,7 +280,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         }
     }
 
-    // â”€â”€ Block filter enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Block filter enum ────────────────────────────────────────────────
 
     enum BlockFilter {
         ALL("menu.aromaaffect.blocks.filter.all"),

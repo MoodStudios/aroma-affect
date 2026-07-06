@@ -37,8 +37,7 @@ public final class OmaraDeviceRegistry {
 
     public static void registerBlocks(BalmRegistrar.Scoped<Block> blocks) {
         OMARA_DEVICE = blocks.register(OMARA_DEVICE_ID, id -> new OmaraDeviceBlock(BlockBehaviour.Properties.of()
-                .strength(3.5F)
-                .requiresCorrectToolForDrops()
+                .strength(1.0F)
                 .noOcclusion()
                 .setId(ResourceKey.create(Registries.BLOCK, id))));
     }

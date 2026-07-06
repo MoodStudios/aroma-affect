@@ -9,7 +9,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.menu.ActiveTrackingState;
-import com.ovrtechnology.menu.MenuCategory;
+import com.ovrtechnology.menu.TrackingCategory;
+import com.ovrtechnology.menu.TrailDomain;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.ScentTrigger;
@@ -649,16 +650,17 @@ public final class PathTrailRenderer {
     private static String resolveScentName() {
         String targetId = ActiveTrackingState.getTargetId() != null
                 ? ActiveTrackingState.getTargetId().toString() : null;
-        MenuCategory cat = ActiveTrackingState.getCategory();
-        if (targetId == null) return null;
+        TrackingCategory cat = ActiveTrackingState.getCategory();
+        if (targetId == null || cat == null) return null;
 
-        if (cat == MenuCategory.BLOCKS || cat == MenuCategory.FLOWERS) {
+        TrailDomain domain = cat.getTrailDomain();
+        if (domain == TrailDomain.BLOCK) {
             var blockTrigger = ScentTriggerConfigLoader.getBlockTrigger(targetId);
             if (blockTrigger.isPresent()) return blockTrigger.get().getScentName();
-        } else if (cat == MenuCategory.BIOMES) {
+        } else if (domain == TrailDomain.BIOME) {
             var biomeTrigger = ScentTriggerConfigLoader.getBiomeTrigger(targetId);
             if (biomeTrigger.isPresent()) return biomeTrigger.get().getScentName();
-        } else if (cat == MenuCategory.STRUCTURES) {
+        } else if (domain == TrailDomain.STRUCTURE) {
             var structureTrigger = ScentTriggerConfigLoader.getStructureTrigger(targetId);
             if (structureTrigger.isPresent()) return structureTrigger.get().getScentName();
         }
@@ -673,25 +675,25 @@ public final class PathTrailRenderer {
     private static double resolveScentIntensity() {
         String targetId = ActiveTrackingState.getTargetId() != null
                 ? ActiveTrackingState.getTargetId().toString() : null;
-        MenuCategory cat = ActiveTrackingState.getCategory();
+        TrackingCategory cat = ActiveTrackingState.getCategory();
         TriggerSettings settings = ScentTriggerConfigLoader.getSettings();
+        TrailDomain domain = cat != null ? cat.getTrailDomain() : TrailDomain.BLOCK;
 
         if (targetId != null) {
-            if (cat == MenuCategory.BLOCKS || cat == MenuCategory.FLOWERS) {
+            if (domain == TrailDomain.BLOCK) {
                 var blockTrigger = ScentTriggerConfigLoader.getBlockTrigger(targetId);
                 if (blockTrigger.isPresent()) return blockTrigger.get().getIntensityOrDefault(settings.getBlockIntensity());
-            } else if (cat == MenuCategory.BIOMES) {
+            } else if (domain == TrailDomain.BIOME) {
                 var biomeTrigger = ScentTriggerConfigLoader.getBiomeTrigger(targetId);
                 if (biomeTrigger.isPresent()) return biomeTrigger.get().getIntensityOrDefault(settings.getBiomeIntensity());
-            } else if (cat == MenuCategory.STRUCTURES) {
+            } else if (domain == TrailDomain.STRUCTURE) {
                 var structureTrigger = ScentTriggerConfigLoader.getStructureTrigger(targetId);
                 if (structureTrigger.isPresent()) return structureTrigger.get().getIntensityOrDefault(settings.getStructureIntensity());
             }
         }
 
-        // Fallback to category defaults
-        if (cat == MenuCategory.BIOMES) return settings.getBiomeIntensity();
-        if (cat == MenuCategory.STRUCTURES) return settings.getStructureIntensity();
+        if (domain == TrailDomain.BIOME) return settings.getBiomeIntensity();
+        if (domain == TrailDomain.STRUCTURE) return settings.getStructureIntensity();
         return settings.getBlockIntensity();
     }
 
@@ -700,7 +702,7 @@ public final class PathTrailRenderer {
     private static float[] resolveColor() {
         String targetId = ActiveTrackingState.getTargetId() != null
                 ? ActiveTrackingState.getTargetId().toString() : null;
-        MenuCategory cat = ActiveTrackingState.getCategory();
+        TrackingCategory cat = ActiveTrackingState.getCategory();
 
         if (targetId != null) {
             var blockDef = BlockRegistry.getBlock(targetId);
@@ -736,11 +738,8 @@ public final class PathTrailRenderer {
             }
         }
 
-        if (cat == MenuCategory.STRUCTURES) {
-            return new float[]{1.0f, 0.8f, 0.2f};
-        }
-        if (cat == MenuCategory.BIOMES) {
-            return new float[]{0.3f, 0.9f, 0.5f};
+        if (cat != null) {
+            return cat.getTrailDomain().fallbackTrailColor();
         }
 
         return new float[]{0.8f, 0.85f, 1.0f};

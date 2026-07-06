@@ -29,10 +29,10 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
         // Fondo principal (igual que HorseInventoryScreen)
         graphics.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, k, l, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
-        // Slot de silla (saddle) - posiciÃ³n k+7, l+17
+        // Slot de silla (saddle) - posición k+7, l+17
         drawSlot(graphics, k + 7, l + 35 - 18);
 
-        // Slot de decoraciÃ³n (armor) - posiciÃ³n k+7, l+35
+        // Slot de decoración (armor) - posición k+7, l+35
         drawSlot(graphics, k + 7, l + 35);
 
         // Renderizar el Sniffer en la pantalla
