@@ -18,12 +18,11 @@ import net.minecraft.SharedConstants;
 /** Sends mod feedback to an OVR/OMARA backend. */
 public final class FeedbackClient {
 
-    // TODO: replace with the real OVR/OMARA feedback endpoint once available.
-    private static final String FEEDBACK_ENDPOINT = "https://omara.ovrtechnology.com/api/feedback";
+    // Endpoint and shared secret are injected at build time (see common/build.gradle);
+    // Override for local emulator testing with -PfeedbackEndpoint / -PfeedbackHmacSecret.
+    private static final String FEEDBACK_ENDPOINT = FeedbackConfig.ENDPOINT;
 
-    // Shared secret used to sign requests; must match FEEDBACK_HMAC_SECRET on the
-    // backend.
-    private static final String FEEDBACK_HMAC_SECRET = "change-me-to-match-backend";
+    private static final String FEEDBACK_HMAC_SECRET = FeedbackConfig.HMAC_SECRET;
 
     private static final String TIMESTAMP_HEADER = "X-Aroma-Timestamp";
     private static final String SIGNATURE_HEADER = "X-Aroma-Signature";
