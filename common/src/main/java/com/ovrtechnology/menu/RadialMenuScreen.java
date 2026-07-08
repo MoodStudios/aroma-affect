@@ -198,6 +198,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private boolean isHoveringGuide = false;
     private boolean isHoveringShop = false;
     private boolean isHoveringHistory = false;
+    private boolean isHoveringFeedback = false;
     private boolean isHoveringPanelStop = false;
     private boolean isHoveringPanelTeleport = false;
 
@@ -425,7 +426,37 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.fill(hx, hy - 4, hx + 1, hy + 1, clockColor);
         graphics.fill(hx, hy, hx + 3, hy + 1, clockColor);
 
-        int tooltipX = histX + histBtnSize + 8;
+        int fbX = histX + histBtnSize + 4;
+        int fbY = CORNER_BUTTON_PADDING;
+        int fbBtnSize = toggleH;
+
+        isHoveringFeedback = isInBounds(mouseX, mouseY, fbX, fbY, fbBtnSize, fbBtnSize);
+
+        int fbBg =
+                isHoveringFeedback
+                        ? MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, appear)
+                        : MenuRenderUtils.withAlpha(Colors.OVERLAY_WHITE_STRONG, appear);
+        graphics.fill(fbX, fbY, fbX + fbBtnSize, fbY + fbBtnSize, fbBg);
+        MenuRenderUtils.renderOutline(
+                graphics,
+                fbX,
+                fbY,
+                fbBtnSize,
+                fbBtnSize,
+                MenuRenderUtils.withAlpha(COLOR_RING_BORDER, appear));
+
+        int fcx = fbX + fbBtnSize / 2;
+        int fcy = fbY + fbBtnSize / 2;
+        int bubbleColor = MenuRenderUtils.withAlpha(Colors.WHITE, appear);
+
+        graphics.fill(fcx - 6, fcy - 5, fcx + 6, fcy + 2, bubbleColor);
+        graphics.fill(fcx - 5, fcy + 2, fcx - 1, fcy + 5, bubbleColor);
+
+        int lineColorFb = MenuRenderUtils.withAlpha(COLOR_RING_SELECTED, appear);
+        graphics.fill(fcx - 4, fcy - 3, fcx + 4, fcy - 2, lineColorFb);
+        graphics.fill(fcx - 4, fcy - 1, fcx + 2, fcy, lineColorFb);
+
+        int tooltipX = fbX + fbBtnSize + 8;
         if (isHoveringPassiveToggle) {
             Component passiveLabel =
                     isPassiveEnabled
@@ -468,6 +499,14 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     Texts.tr("history.aromaaffect.button"),
                     tooltipX,
                     histY + histBtnSize / 2 - 4,
+                    MenuRenderUtils.withAlpha(Colors.WHITE, appear));
+        }
+        if (isHoveringFeedback) {
+            graphics.drawString(
+                    font,
+                    Texts.tr("feedback.aromaaffect.button"),
+                    tooltipX,
+                    fbY + fbBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(Colors.WHITE, appear));
         }
     }
@@ -513,6 +552,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             AromaAffect.LOGGER.debug("History button clicked");
             MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
             MenuManager.openHistoryMenu();
+            return true;
+        }
+        if (isHoveringFeedback) {
+            AromaAffect.LOGGER.debug("Feedback button clicked");
+            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+            MenuManager.openFeedbackMenu();
             return true;
         }
         if (isHoveringPanelStop) {

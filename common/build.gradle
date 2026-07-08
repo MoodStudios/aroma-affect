@@ -28,6 +28,64 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
 }
 
+// -----------------------------------------------------------------------------
+// Feedback backend config, injected at build time (never committed).
+//
+// The HMAC secret must NOT live in this open-source repo. Supply it only for the
+// release build via one of (highest priority first):
+//   * Gradle property:  ./gradlew build -PfeedbackHmacSecret=THE_SECRET
+//   * Env var:          FEEDBACK_HMAC_SECRET=THE_SECRET ./gradlew build
+//   * ~/.gradle/gradle.properties (untracked):  feedbackHmacSecret=THE_SECRET
+// Dev builds default to an empty secret (feedback simply fails with 401), and the
+// endpoint defaults to production. For local emulator testing, override both, e.g.
+//   -PfeedbackEndpoint=http://127.0.0.1:5001/demo-aroma-affect/us-central1/feedback \
+//   -PfeedbackHmacSecret=demo-emulator-secret-not-for-production
+// -----------------------------------------------------------------------------
+def feedbackEndpoint = (project.findProperty('feedbackEndpoint')
+        ?: System.getenv('FEEDBACK_ENDPOINT')
+        ?: 'https://us-central1-ovr-aroma-affect-feedback-prod.cloudfunctions.net/feedback').toString()
+def feedbackSecret = (project.findProperty('feedbackHmacSecret')
+        ?: System.getenv('FEEDBACK_HMAC_SECRET')
+        ?: '').toString()
+
+def javaEscape = { String s ->
+    s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r')
+}
+
+def generatedFeedbackDir = layout.buildDirectory.dir('generated/feedback')
+
+def generateFeedbackConfig = tasks.register('generateFeedbackConfig') {
+    // Re-run whenever the injected values change so the release secret is baked in.
+    inputs.property 'endpoint', feedbackEndpoint
+    inputs.property 'secret', feedbackSecret
+    outputs.dir generatedFeedbackDir
+    doLast {
+        if (feedbackSecret.isEmpty()) {
+            logger.lifecycle('generateFeedbackConfig: no HMAC secret supplied; ' +
+                    'feedback requests from this build will be rejected by the backend.')
+        }
+        def pkgDir = generatedFeedbackDir.get().dir('com/ovrtechnology/menu').asFile
+        pkgDir.mkdirs()
+        new File(pkgDir, 'FeedbackConfig.java').text = """\
+package com.ovrtechnology.menu;
+
+/** Generated at build time from Gradle properties / env vars. Do not edit or commit. */
+public final class FeedbackConfig {
+
+    public static final String ENDPOINT = "${javaEscape(feedbackEndpoint)}";
+
+    public static final String HMAC_SECRET = "${javaEscape(feedbackSecret)}";
+
+    private FeedbackConfig() {}
+}
+"""
+    }
+}
+
+// Registering the task provider as a source dir wires the task dependency for both
+// compileJava and sourcesJar automatically.
+sourceSets.main.java.srcDir(generateFeedbackConfig)
+
 test {
     useJUnitPlatform()
     

@@ -552,6 +552,22 @@
   "shop.aromaaffect.view_info": "View Info",
   "shop.aromaaffect.buy_now": "Pre Order",
 
+  "feedback.aromaaffect.button": "Feedback",
+  "feedback.aromaaffect.title": "Help Shape Aroma Affect",
+  "feedback.aromaaffect.description": "Have an idea? Found something broken? Think something could be more fun? Aroma Affect is still evolving, and community feedback helps shape what comes next. We'd love to hear from you.",
+  "feedback.aromaaffect.feedback_label": "Feedback:",
+  "feedback.aromaaffect.feedback_placeholder": "Share your idea, bug report, or suggestion...",
+  "feedback.aromaaffect.name_label": "What name should we use if we'd like to credit or recognize your contribution? (optional)",
+  "feedback.aromaaffect.name_hint": "Your name (optional)",
+  "feedback.aromaaffect.anonymous": "Submit anonymously",
+  "feedback.aromaaffect.footer": "Many of the best features in Aroma Affect started as community ideas.",
+  "feedback.aromaaffect.submit": "Send Feedback",
+  "feedback.aromaaffect.submitting": "Sending...",
+  "feedback.aromaaffect.error": "Couldn't send feedback. Please try again later.",
+  "feedback.aromaaffect.thanks_title": "Thank you!",
+  "feedback.aromaaffect.thanks_body": "Your feedback has been sent. We appreciate you helping shape Aroma Affect.",
+  "feedback.aromaaffect.close": "Close",
+
   "block.aromaaffect.omara_device": "Omara Device",
   "item.aromaaffect.omara_device": "Omara Device",
 
