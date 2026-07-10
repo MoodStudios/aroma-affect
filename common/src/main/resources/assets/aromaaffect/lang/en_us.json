@@ -547,6 +547,8 @@
   "history.aromaaffect.popup.confirm": "Confirm",
   "history.aromaaffect.popup.cancel": "Cancel",
 
+  "discord.aromaaffect.button": "Discord",
+
   "shop.aromaaffect.button": "Shop",
   "shop.aromaaffect.title": "OVR Shop",
   "shop.aromaaffect.subtitle": "Enhance your Minecraft experience with real scents",
@@ -586,11 +588,10 @@
 
   "config.aromaaffect.passive_puff_overlay": "Passive Puff Overlay",
   "config.aromaaffect.debug_scent_messages": "Debug Scent Messages",
+  "config.aromaaffect.omara_status_overlay": "Omara Status Overlay",
 
-  "aromaaffect.bridge.title": "Omara Device: %s",
-  "aromaaffect.state.disconnected": "Disconnected",
-  "aromaaffect.state.connecting": "Connecting...",
-  "aromaaffect.state.connected": "Connected",
-  "aromaaffect.state.connection_failed": "Connection Failed",
-  "aromaaffect.state.reconnecting": "Reconnecting..."
+  "aromaaffect.bridge.connected": "Connected to",
+  "aromaaffect.bridge.reconnecting": "Reconnecting to",
+  "aromaaffect.bridge.ready": "Ready for",
+  "aromaaffect.bridge.info": "Omara is an optional scent device that works with Aroma Affect to let you physically smell Minecraft while you play. The mod is fully playable without it."
 }

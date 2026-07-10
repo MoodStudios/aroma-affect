@@ -32,6 +32,7 @@ import com.ovrtechnology.scentitem.ScentItemRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferSyncHandler;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
+import com.ovrtechnology.sniffer.loot.SnifferLootRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import com.ovrtechnology.data.ResourceManagerDataSource;
 import com.ovrtechnology.network.ScentEventNetworking;
@@ -127,15 +128,24 @@ public final class AromaAffect {
         // === Event-trigger scent system =====================================
         EventTriggersConfig.getInstance();
         ServerEventBusHandler.init();
-        // Event definitions live in a directory and are enumerated via the
-        // ResourceManager, so load them on server-data reload (world load + /reload).
+        // Trackable content + event definitions live in per-file directories and
+        // are enumerated via the ResourceManager, so they load on server-data reload
+        // (world load + /reload). This is what picks up modpack datapack additions.
         registrars.resourceReloadListeners(
                 reg ->
                         reg.register(
-                                "event_reload",
+                                "aromaaffect_data_reload",
                                 (net.minecraft.server.packs.resources.ResourceManager rm) -> {
-                                    EventDefinitionLoader.loadAllEvents(
-                                            new ResourceManagerDataSource(rm));
+                                    var ds = new ResourceManagerDataSource(rm);
+                                    ScentRegistry.reload(ds);
+                                    AbilityDefinitionLoader.loadAllAbilities(ds);
+                                    BiomeDefinitionLoader.loadAllBiomes(ds);
+                                    BlockDefinitionLoader.loadAllBlocks(ds);
+                                    FlowerDefinitionLoader.loadAllFlowers(ds);
+                                    StructureDefinitionLoader.loadAllStructures(ds);
+                                    MobDefinitionLoader.loadAllMobs(ds);
+                                    SnifferLootRegistry.reload(ds);
+                                    EventDefinitionLoader.loadAllEvents(ds);
                                 }));
 
         // === Phase 5 — event listeners (still on Architectury) ===============

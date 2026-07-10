@@ -11,7 +11,8 @@
   "contact": {
     "homepage": "${homepage}",
     "sources": "${sources}",
-    "issues": "${issues}"
+    "issues": "${issues}",
+    "discord": "https://discord.com/invite/ovr-omara"
   },
   "license": "${license}",
   "icon": "assets/aromaaffect/icon.png",

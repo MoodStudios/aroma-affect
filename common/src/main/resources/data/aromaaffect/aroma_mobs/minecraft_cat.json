@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:cat",
+  "scent_id": "kindred",
+  "fallback_name": "Cat",
+  "color_html": "#EFC88E",
+  "range": 3,
+  "priority": "MEDLOW"
+}

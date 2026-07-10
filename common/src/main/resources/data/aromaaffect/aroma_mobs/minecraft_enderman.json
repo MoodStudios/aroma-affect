@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:enderman",
+  "scent_id": "machina",
+  "fallback_name": "Enderman",
+  "color_html": "#161616",
+  "range": 10,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

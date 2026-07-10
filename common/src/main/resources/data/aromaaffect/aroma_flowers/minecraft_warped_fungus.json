@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:warped_fungus",
+  "scent_id": "floral",
+  "fallback_name": "Warped Fungus",
+  "color_html": "#14B485",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:crafting_table",
+  "color_html": "#B8945F",
+  "scent_id": "savory_spice",
+  "fallback_name": "Crafting Table",
+  "range": 3,
+  "track_cost": 5
+}

@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:bee_nest",
+  "color_html": "#D4A537",
+  "scent_id": "sweet",
+  "fallback_name": "Bee Nest",
+  "range": 4,
+  "track_cost": 5
+}

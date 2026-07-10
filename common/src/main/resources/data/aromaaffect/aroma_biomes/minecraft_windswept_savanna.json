@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:windswept_savanna",
+  "image": "biome/savanna",
+  "fallback_name": "Windswept Savanna",
+  "color_html": "#8DB360",
+  "scent_id": "savory_spice",
+  "track_cost": 10
+}

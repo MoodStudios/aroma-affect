@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:basalt_deltas",
+  "image": "biome/basalt_deltas",
+  "fallback_name": "Basalt Deltas",
+  "color_html": "#403636",
+  "scent_id": "smoky",
+  "track_cost": 25
+}

@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:bee",
+  "scent_id": "sweet",
+  "fallback_name": "Bee",
+  "color_html": "#EDD35F",
+  "range": 3,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

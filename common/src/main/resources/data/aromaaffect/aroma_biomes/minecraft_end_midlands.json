@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:end_midlands",
+  "image": "biome/end_midlands",
+  "fallback_name": "End Midlands",
+  "color_html": "#8080A0",
+  "scent_id": "floral",
+  "track_cost": 50
+}

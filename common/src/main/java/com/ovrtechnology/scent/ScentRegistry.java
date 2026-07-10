@@ -1,6 +1,7 @@
 package com.ovrtechnology.scent;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.data.DataSource;
 import lombok.Getter;
 
 import java.util.*;
@@ -234,12 +235,24 @@ public final class ScentRegistry {
     public static void reload() {
         AromaAffect.LOGGER.info("Reloading ScentRegistry...");
         scentDefinitions.clear();
-        
+
         List<ScentDefinition> definitions = ScentDefinitionLoader.reload();
         for (ScentDefinition definition : definitions) {
             registerScent(definition);
         }
-        
+
+        AromaAffect.LOGGER.info("ScentRegistry reloaded with {} scents", scentDefinitions.size());
+    }
+
+    public static void reload(DataSource dataSource) {
+        AromaAffect.LOGGER.info("Reloading ScentRegistry...");
+        scentDefinitions.clear();
+
+        List<ScentDefinition> definitions = ScentDefinitionLoader.loadAllScents(dataSource);
+        for (ScentDefinition definition : definitions) {
+            registerScent(definition);
+        }
+
         AromaAffect.LOGGER.info("ScentRegistry reloaded with {} scents", scentDefinitions.size());
     }
     

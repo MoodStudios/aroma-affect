@@ -213,7 +213,7 @@ public class ConfigScreen extends BaseMenuScreen {
         boolean isAutomatic = "automatic".equals(config.getPuffMode());
 
         // Calculate total content height
-        int totalContentH = (ROW_HEIGHT + 4) * 7 + (ROW_HEIGHT + 4); // 8 rows always visible
+        int totalContentH = (ROW_HEIGHT + 4) * 8 + (ROW_HEIGHT + 4); // 9 rows always visible
         if (!isAutomatic) totalContentH += (ROW_HEIGHT + 4); // manual key row
 
         int maxScroll = Math.max(0, totalContentH - h);
@@ -325,6 +325,15 @@ public class ConfigScreen extends BaseMenuScreen {
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.text(font, debugScentLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        rowY += ROW_HEIGHT + 4;
+
+        // Omara Status Overlay toggle
+        graphics.text(font, Component.translatable("config.aromaaffect.omara_status_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        renderTogglePill(graphics, toggleX, rowY + 1, config.isOmaraStatusOverlay(), a);
+        Component omaraStatusLabel = config.isOmaraStatusOverlay()
+                ? Component.translatable("config.aromaaffect.on")
+                : Component.translatable("config.aromaaffect.off");
+        graphics.text(font, omaraStatusLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
 
         graphics.disableScissor();
 
@@ -1085,6 +1094,15 @@ public class ConfigScreen extends BaseMenuScreen {
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
             config.setDebugScentMessages(!config.isDebugScentMessages());
             MenuRenderUtils.playToggleSound(config.isDebugScentMessages());
+            config.save();
+            return true;
+        }
+        rowY += ROW_HEIGHT + 4;
+
+        // Omara status overlay toggle
+        if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
+            config.setOmaraStatusOverlay(!config.isOmaraStatusOverlay());
+            MenuRenderUtils.playToggleSound(config.isOmaraStatusOverlay());
             config.save();
             return true;
         }

@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:pillager_outpost",
+  "image": "structure/pillager_outpost",
+  "fallback_name": "Pillager Outpost",
+  "color_html": "#696969",
+  "scent_id": "timber",
+  "range": 40,
+  "blocks": [
+    "minecraft:dark_oak_log",
+    "minecraft:birch_planks",
+    "minecraft:cobblestone"
+  ],
+  "track_cost": 25
+}

@@ -1,0 +1,17 @@
+{
+  "puffMode": "automatic",
+  "manualPuffKey": "G",
+  "globalIntensityMultiplier": 1.0,
+  "globalCooldownMs": 3000,
+  "noseRenderEnabled": true,
+  "strapEnabled": false,
+  "trackingToastPersistent": false,
+  "passivePuffOverlay": true,
+  "debugScentMessages": false,
+  "omaraStatusOverlay": true,
+  "passiveBlockCooldownMs": 5000,
+  "passiveMobCooldownMs": 8000,
+  "passivePassiveMobCooldownMs": 8000,
+  "passiveBlockRange": 2.5,
+  "passiveMobRange": 5.0
+}

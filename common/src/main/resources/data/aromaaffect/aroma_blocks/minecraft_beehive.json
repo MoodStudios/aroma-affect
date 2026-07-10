@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:beehive",
+  "color_html": "#C19A3E",
+  "scent_id": "sweet",
+  "fallback_name": "Beehive",
+  "range": 4,
+  "track_cost": 5
+}

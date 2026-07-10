@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:crimson_fungus",
+  "scent_id": "smoky",
+  "fallback_name": "Crimson Fungus",
+  "color_html": "#941818",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

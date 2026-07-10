@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:snowy_slopes",
+  "image": "biome/snowy_slopes",
+  "fallback_name": "Snowy Slopes",
+  "color_html": "#E0E8E0",
+  "scent_id": "winter",
+  "track_cost": 10
+}

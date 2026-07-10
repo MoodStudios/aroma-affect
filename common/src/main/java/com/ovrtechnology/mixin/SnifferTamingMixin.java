@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.entity.sniffer.SnifferContainer;
 import com.ovrtechnology.entity.sniffer.SnifferMenuRegistry;
 import com.ovrtechnology.entity.sniffer.SnifferTamingData;
+import com.ovrtechnology.sniffer.loot.SnifferLootResolver;
 import com.ovrtechnology.sniffernose.SnifferNoseItem;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
 import net.minecraft.advancements.AdvancementHolder;
@@ -44,6 +45,7 @@ import com.ovrtechnology.network.SnifferEquipmentNetworking;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfig;
 import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
+import java.util.List;
 import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -572,18 +574,36 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         }
 
         // ========================================
-        // STEP 2: Bonanza with Enhanced Nose
+        // STEP 2: Installed-nose loot
+        //   Datapack rules (aroma_sniffer_loot/) take precedence; the config-driven
+        //   bonanza is the fallback when no rule matches the installed nose + biome.
         // ========================================
         SnifferContainer container = new SnifferContainer(self);
 
-        // Only if tamed AND has Enhanced Sniffer Nose equipped AND bonanza is enabled
-        if (data.ownerUUID != null && container.hasSnifferNose() && aromaaffect$getConfig().bonanza.enabled) {
-            // BONANZA! Drop all items together
-            aromaaffect$dropBonanza(self, serverLevel);
-            ci.cancel();
-            return;
+        if (data.ownerUUID != null && container.hasSnifferNose()) {
+            Identifier noseId = BuiltInRegistries.ITEM.getKey(data.decorationItem.getItem());
+            if (noseId != null) {
+                BlockPos lootPos = aromaaffect$getHeadBlock(self);
+                List<ItemStack> drops =
+                        SnifferLootResolver.resolve(noseId.toString(), serverLevel, lootPos, self.getRandom());
+                if (!drops.isEmpty()) {
+                    for (ItemStack drop : drops) {
+                        aromaaffect$dropItemStackAtHead(self, serverLevel, lootPos, drop);
+                    }
+                    self.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
+                    ci.cancel();
+                    return;
+                }
+            }
+
+            // Fallback: config-driven bonanza
+            if (aromaaffect$getConfig().bonanza.enabled) {
+                aromaaffect$dropBonanza(self, serverLevel);
+                ci.cancel();
+                return;
+            }
         }
-        // If no nose or bonanza disabled, vanilla drops normal seed
+        // If no nose (or no datapack rule + bonanza disabled), vanilla drops normal seed
     }
 
     /**

@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:swamp_hut",
+  "image": "structure/swamp_hut",
+  "fallback_name": "Witch Hut",
+  "color_html": "#2E8B57",
+  "scent_id": "petrichor",
+  "range": 25,
+  "blocks": [
+    "minecraft:spruce_planks",
+    "minecraft:cauldron",
+    "minecraft:crafting_table"
+  ],
+  "track_cost": 10
+}

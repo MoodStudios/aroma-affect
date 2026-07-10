@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:snow_golem",
+  "scent_id": "winter",
+  "fallback_name": "Snow Golem",
+  "color_html": "#FFFFFF",
+  "range": 5,
+  "priority": "MEDLOW"
+}

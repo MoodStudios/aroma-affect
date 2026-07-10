@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:tadpole",
+  "scent_id": "petrichor",
+  "fallback_name": "Tadpole",
+  "color_html": "#6B5B3C",
+  "range": 2,
+  "priority": "MEDLOW"
+}

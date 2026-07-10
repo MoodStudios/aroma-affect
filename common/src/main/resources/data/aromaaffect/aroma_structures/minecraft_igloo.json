@@ -1,0 +1,13 @@
+{
+  "structure_id": "minecraft:igloo",
+  "image": "structure/igloo",
+  "fallback_name": "Igloo",
+  "color_html": "#FFFAFA",
+  "scent_id": "winter",
+  "range": 25,
+  "blocks": [
+    "minecraft:snow_block",
+    "minecraft:white_carpet"
+  ],
+  "track_cost": 10
+}

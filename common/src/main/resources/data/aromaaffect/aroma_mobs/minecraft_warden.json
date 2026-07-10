@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:warden",
+  "scent_id": "machina",
+  "fallback_name": "Warden",
+  "color_html": "#0A4749",
+  "range": 20,
+  "priority": "MEDIUM",
+  "intensity": 0.7
+}

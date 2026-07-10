@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:pink_petals",
+  "scent_id": "floral",
+  "fallback_name": "Pink Petals",
+  "color_html": "#FFB7C5",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

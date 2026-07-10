@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:shipwreck",
+  "image": "structure/shipwreck",
+  "fallback_name": "Shipwreck",
+  "color_html": "#8B4513",
+  "scent_id": "marine",
+  "range": 30,
+  "blocks": [
+    "minecraft:oak_planks",
+    "minecraft:spruce_planks",
+    "minecraft:chest"
+  ],
+  "track_cost": 10
+}

@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:sheep",
+  "scent_id": "barnyard",
+  "fallback_name": "Sheep",
+  "color_html": "#E7E7E7",
+  "range": 5,
+  "priority": "MEDLOW"
+}

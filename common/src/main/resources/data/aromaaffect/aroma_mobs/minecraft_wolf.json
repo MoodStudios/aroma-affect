@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:wolf",
+  "scent_id": "barnyard",
+  "fallback_name": "Wolf",
+  "color_html": "#D7D3D3",
+  "range": 4,
+  "priority": "MEDLOW"
+}

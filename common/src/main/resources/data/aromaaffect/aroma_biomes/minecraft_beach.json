@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:beach",
+  "image": "biome/beach",
+  "fallback_name": "Beach",
+  "color_html": "#FADE55",
+  "scent_id": "beach",
+  "track_cost": 5
+}

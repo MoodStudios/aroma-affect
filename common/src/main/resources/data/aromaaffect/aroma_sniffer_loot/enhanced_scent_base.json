@@ -1,0 +1,6 @@
+{
+  "sniffer_nose": "aromaaffect:enhanced_sniffer_nose",
+  "always": [
+    { "item": "aromaaffect:scent_base", "count": { "min": 1, "max": 5 } }
+  ]
+}

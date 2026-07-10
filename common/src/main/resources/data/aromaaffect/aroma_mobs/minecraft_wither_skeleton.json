@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:wither_skeleton",
+  "scent_id": "smoky",
+  "fallback_name": "Wither Skeleton",
+  "color_html": "#141414",
+  "range": 8,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:cold_ocean",
+  "image": "biome/ocean",
+  "fallback_name": "Cold Ocean",
+  "color_html": "#2070DD",
+  "scent_id": "marine",
+  "track_cost": 5
+}

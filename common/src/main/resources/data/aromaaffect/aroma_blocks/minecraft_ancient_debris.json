@@ -1,0 +1,12 @@
+{
+  "block_id": "minecraft:ancient_debris",
+  "color_html": "#8B4513",
+  "scent_id": "smoky",
+  "fallback_name": "Ancient Debris",
+  "range": 6,
+  "track_cost": 50,
+  "required_item": {
+    "item_id": "minecraft:gold_ingot",
+    "count": 1
+  }
+}

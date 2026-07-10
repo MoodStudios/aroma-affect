@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:pufferfish",
+  "scent_id": "marine",
+  "fallback_name": "Pufferfish",
+  "color_html": "#E5C834",
+  "range": 3,
+  "priority": "MEDLOW"
+}

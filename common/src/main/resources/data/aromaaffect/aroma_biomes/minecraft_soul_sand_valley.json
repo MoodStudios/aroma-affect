@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:soul_sand_valley",
+  "image": "biome/soul_sand_valley",
+  "fallback_name": "Soul Sand Valley",
+  "color_html": "#5E3830",
+  "scent_id": "smoky",
+  "track_cost": 25
+}

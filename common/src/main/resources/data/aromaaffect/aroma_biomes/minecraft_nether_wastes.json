@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:nether_wastes",
+  "image": "biome/nether_wastes",
+  "fallback_name": "Nether Wastes",
+  "color_html": "#BF3B3B",
+  "scent_id": "smoky",
+  "track_cost": 25
+}

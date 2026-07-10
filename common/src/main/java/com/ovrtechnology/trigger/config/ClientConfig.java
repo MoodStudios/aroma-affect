@@ -57,6 +57,10 @@ public final class ClientConfig {
     @Getter @Setter
     private boolean debugScentMessages = false;
 
+    /** Whether to show the Omara Device connection status on the title screen */
+    @Getter @Setter
+    private boolean omaraStatusOverlay = true;
+
     // ========================================
     // Passive mode settings
     // ========================================
@@ -134,6 +138,7 @@ public final class ClientConfig {
         trackingToastPersistent = false;
         passivePuffOverlay = true;
         debugScentMessages = false;
+        omaraStatusOverlay = true;
         resetPassiveDefaults();
     }
 

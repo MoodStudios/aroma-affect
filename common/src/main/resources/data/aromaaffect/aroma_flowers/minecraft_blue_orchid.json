@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:blue_orchid",
+  "scent_id": "floral",
+  "fallback_name": "Blue Orchid",
+  "color_html": "#2ABFFF",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

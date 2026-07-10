@@ -11,7 +11,10 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,6 +71,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     private final AtomicReference<ConnectionState> state = new AtomicReference<>(ConnectionState.DISCONNECTED);
     private volatile WebSocket webSocket;
     private final HttpClient httpClient;
+
+    // Custom device name reported by the bridge, or null if unknown
+    @Getter
+    private volatile String deviceName;
+
+    private static final Pattern DEVICE_NAME_PATTERN =
+            Pattern.compile("\"device_?name\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"", Pattern.CASE_INSENSITIVE);
 
     // ========================================
     // Reconnection tracking
@@ -297,6 +307,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     public void disconnect(String reason, boolean cancelReconnect) {
         if (cancelReconnect) {
             cancelReconnectTask();
+            this.deviceName = null;
         }
 
         stopHealthMonitoring();
@@ -497,6 +508,39 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
     }
 
+    // Bridge contract for the device name shown on the title screen. The bridge may report
+    // the user's custom Omara name either as a "deviceName:<name>" message or inside any JSON
+    // payload carrying a "deviceName"/"device_name" field (e.g. a "status" message).
+    private void maybeCaptureDeviceName(WebSocketMessage message) {
+        String type = message.getType();
+        if (type != null) {
+            String lowerType = type.toLowerCase(Locale.ROOT);
+            if (lowerType.equals("devicename") || lowerType.equals("device_name")) {
+                applyDeviceName(message.getPayload());
+                return;
+            }
+        }
+
+        Matcher matcher = DEVICE_NAME_PATTERN.matcher(message.getPayload());
+        if (matcher.find()) {
+            applyDeviceName(matcher.group(1).replace("\\\"", "\"").replace("\\\\", "\\"));
+        }
+    }
+
+    private void applyDeviceName(String name) {
+        if (name == null) {
+            return;
+        }
+        String trimmed = name.trim();
+        if (trimmed.isEmpty()) {
+            return;
+        }
+        this.deviceName = trimmed;
+        if (config.isDebugLogging()) {
+            AromaAffect.LOGGER.debug("Omara device name reported: {}", trimmed);
+        }
+    }
+
     // ========================================
     // WebSocket.Listener implementation
     // ========================================
@@ -530,6 +574,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 lastPongTime.set(System.currentTimeMillis());
                 awaitingPong.set(false);
             } else {
+                maybeCaptureDeviceName(message);
                 addToHistory(message);
                 // Dispatch to handlers on main thread
                 executeOnMainThread(() -> {

@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:cod",
+  "scent_id": "marine",
+  "fallback_name": "Cod",
+  "color_html": "#C0A56E",
+  "range": 3,
+  "priority": "MEDLOW"
+}

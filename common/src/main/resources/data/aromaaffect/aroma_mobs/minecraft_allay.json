@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:allay",
+  "scent_id": "sweet",
+  "fallback_name": "Allay",
+  "color_html": "#00D4FF",
+  "range": 5,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

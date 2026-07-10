@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:salmon",
+  "scent_id": "marine",
+  "fallback_name": "Salmon",
+  "color_html": "#A83534",
+  "range": 3,
+  "priority": "MEDLOW"
+}

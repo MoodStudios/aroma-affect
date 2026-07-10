@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:horse",
+  "scent_id": "barnyard",
+  "fallback_name": "Horse",
+  "color_html": "#C09E7B",
+  "range": 6,
+  "priority": "MEDLOW"
+}

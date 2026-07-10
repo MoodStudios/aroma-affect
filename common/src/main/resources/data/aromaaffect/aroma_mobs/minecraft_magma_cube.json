@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:magma_cube",
+  "scent_id": "smoky",
+  "fallback_name": "Magma Cube",
+  "color_html": "#340000",
+  "range": 6,
+  "priority": "MEDLOW"
+}

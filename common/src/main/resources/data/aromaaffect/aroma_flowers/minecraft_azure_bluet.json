@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:azure_bluet",
+  "scent_id": "floral",
+  "fallback_name": "Azure Bluet",
+  "color_html": "#F7F7F7",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

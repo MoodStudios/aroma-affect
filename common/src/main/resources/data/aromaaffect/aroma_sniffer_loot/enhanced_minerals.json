@@ -1,0 +1,11 @@
+{
+  "sniffer_nose": "aromaaffect:enhanced_sniffer_nose",
+  "always": [
+    { "item": "minecraft:raw_copper",      "count": { "min": 5, "max": 15 } },
+    { "item": "minecraft:raw_iron",        "count": { "min": 5, "max": 15 } },
+    { "item": "minecraft:raw_gold",        "count": { "min": 5, "max": 15 } },
+    { "item": "minecraft:emerald",         "count": { "min": 5, "max": 15 } },
+    { "item": "minecraft:diamond",         "count": { "min": 5, "max": 15 } },
+    { "item": "minecraft:netherite_scrap", "count": { "min": 5, "max": 15 } }
+  ]
+}

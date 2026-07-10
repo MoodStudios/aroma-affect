@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:pink_tulip",
+  "scent_id": "floral",
+  "fallback_name": "Pink Tulip",
+  "color_html": "#EBC0DB",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

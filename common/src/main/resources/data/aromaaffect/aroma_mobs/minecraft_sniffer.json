@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:sniffer",
+  "scent_id": "floral",
+  "fallback_name": "Sniffer",
+  "color_html": "#7A5A2E",
+  "range": 6,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

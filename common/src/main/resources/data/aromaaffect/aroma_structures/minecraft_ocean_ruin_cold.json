@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:ocean_ruin_cold",
+  "image": "structure/ocean_ruin",
+  "fallback_name": "Cold Ocean Ruins",
+  "color_html": "#5F9EA0",
+  "scent_id": "marine",
+  "range": 25,
+  "blocks": [
+    "minecraft:stone_bricks",
+    "minecraft:mossy_stone_bricks",
+    "minecraft:gravel"
+  ],
+  "track_cost": 10
+}

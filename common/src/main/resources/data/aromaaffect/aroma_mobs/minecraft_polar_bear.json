@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:polar_bear",
+  "scent_id": "winter",
+  "fallback_name": "Polar Bear",
+  "color_html": "#F2F2DC",
+  "range": 8,
+  "priority": "MEDLOW"
+}

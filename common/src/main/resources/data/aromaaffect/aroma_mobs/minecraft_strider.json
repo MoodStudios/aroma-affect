@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:strider",
+  "scent_id": "smoky",
+  "fallback_name": "Strider",
+  "color_html": "#9B3131",
+  "range": 6,
+  "priority": "MEDLOW"
+}

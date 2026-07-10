@@ -324,7 +324,7 @@ public class ShopScreen extends BaseMenuScreen {
         }
 
         if (isHoveringBuy) {
-            Util.getPlatform().openUri(URI.create(BUY_URL));
+            Util.getPlatform().openUri(URI.create(ModpackConfig.appendModpackParam(BUY_URL)));
             return true;
         }
 

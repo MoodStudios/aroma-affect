@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:monument",
+  "image": "structure/monument",
+  "fallback_name": "Ocean Monument",
+  "color_html": "#00CED1",
+  "scent_id": "marine",
+  "blocks": [
+    "minecraft:prismarine",
+    "minecraft:prismarine_bricks",
+    "minecraft:dark_prismarine",
+    "minecraft:sea_lantern"
+  ],
+  "track_cost": 25
+}

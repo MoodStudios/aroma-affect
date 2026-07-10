@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:fox",
+  "scent_id": "evergreen",
+  "fallback_name": "Fox",
+  "color_html": "#D5843C",
+  "range": 4,
+  "priority": "MEDLOW"
+}

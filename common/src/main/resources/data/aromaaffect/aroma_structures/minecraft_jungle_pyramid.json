@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:jungle_pyramid",
+  "image": "structure/jungle_pyramid",
+  "fallback_name": "Jungle Temple",
+  "color_html": "#556B2F",
+  "scent_id": "citrus",
+  "range": 35,
+  "blocks": [
+    "minecraft:cobblestone",
+    "minecraft:mossy_cobblestone",
+    "minecraft:chiseled_stone_bricks"
+  ],
+  "track_cost": 25
+}

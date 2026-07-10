@@ -1,0 +1,10 @@
+{
+  "block_id": "minecraft:orange_tulip",
+  "scent_id": "floral",
+  "fallback_name": "Orange Tulip",
+  "color_html": "#ED7F10",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

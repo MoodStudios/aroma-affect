@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:stony_peaks",
+  "image": "biome/stony_peaks",
+  "fallback_name": "Stony Peaks",
+  "color_html": "#7E8E7E",
+  "scent_id": "terra_silva",
+  "track_cost": 10
+}

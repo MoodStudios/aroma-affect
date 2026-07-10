@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:piglin",
+  "scent_id": "smoky",
+  "fallback_name": "Piglin",
+  "color_html": "#F0A5A2",
+  "range": 6,
+  "priority": "MEDLOW"
+}

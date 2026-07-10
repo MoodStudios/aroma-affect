@@ -1,0 +1,8 @@
+{
+  "biome_id": "minecraft:the_end",
+  "image": "biome/the_end",
+  "fallback_name": "The End",
+  "color_html": "#8080A0",
+  "scent_id": "machina",
+  "track_cost": 25
+}

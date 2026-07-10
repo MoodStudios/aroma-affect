@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:bastion_remnant",
+  "image": "structure/bastion",
+  "fallback_name": "Bastion Remnant",
+  "color_html": "#2F2F2F",
+  "scent_id": "smoky",
+  "blocks": [
+    "minecraft:blackstone",
+    "minecraft:polished_blackstone_bricks",
+    "minecraft:gilded_blackstone",
+    "minecraft:gold_block"
+  ],
+  "track_cost": 25
+}

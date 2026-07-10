@@ -1,0 +1,8 @@
+{
+  "entity_type": "minecraft:iron_golem",
+  "scent_id": "machina",
+  "fallback_name": "Iron Golem",
+  "color_html": "#DBCABB",
+  "range": 6,
+  "priority": "MEDLOW"
+}

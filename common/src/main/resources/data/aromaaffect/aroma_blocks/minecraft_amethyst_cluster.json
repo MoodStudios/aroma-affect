@@ -1,0 +1,8 @@
+{
+  "block_id": "minecraft:amethyst_cluster",
+  "color_html": "#9B59B6",
+  "scent_id": "floral",
+  "fallback_name": "Amethyst Cluster",
+  "range": 4,
+  "track_cost": 10
+}

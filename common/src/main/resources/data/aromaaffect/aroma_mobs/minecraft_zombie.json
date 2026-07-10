@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:zombie",
+  "scent_id": "smoky",
+  "fallback_name": "Zombie",
+  "color_html": "#00AFAF",
+  "range": 6,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

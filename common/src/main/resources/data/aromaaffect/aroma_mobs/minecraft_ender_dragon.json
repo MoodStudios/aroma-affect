@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:ender_dragon",
+  "scent_id": "machina",
+  "fallback_name": "Ender Dragon",
+  "color_html": "#161616",
+  "range": 50,
+  "priority": "MEDIUM",
+  "intensity": 0.8
+}

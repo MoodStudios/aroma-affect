@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:creeper",
+  "scent_id": "smoky",
+  "fallback_name": "Creeper",
+  "color_html": "#0DA70B",
+  "range": 8,
+  "priority": "MEDLOW",
+  "intensity": 0.6
+}

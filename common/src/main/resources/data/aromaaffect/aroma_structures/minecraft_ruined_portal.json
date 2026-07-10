@@ -1,0 +1,14 @@
+{
+  "structure_id": "minecraft:ruined_portal",
+  "image": "structure/ruined_portal",
+  "fallback_name": "Ruined Portal",
+  "color_html": "#8B008B",
+  "scent_id": "smoky",
+  "range": 20,
+  "blocks": [
+    "minecraft:obsidian",
+    "minecraft:crying_obsidian",
+    "minecraft:netherrack"
+  ],
+  "track_cost": 5
+}
