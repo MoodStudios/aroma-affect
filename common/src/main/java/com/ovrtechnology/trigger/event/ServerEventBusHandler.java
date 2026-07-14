@@ -143,7 +143,7 @@ public final class ServerEventBusHandler {
 
     /** When Jukebox gets a music disc placed into it */
     public static void onJukeboxUsed(ServerPlayer player, BlockState state, ItemStack stack) {
-        if (player == null || stack == null || stack.isEmpty() ) return;
+        if (player == null || stack == null) return;
         if (!stack.has(DataComponents.JUKEBOX_PLAYABLE) || state.getValue(JukeboxBlock.HAS_RECORD)) return;
 
         fireSimpleEvent(player, TT_DISC_JUKEBOX);
