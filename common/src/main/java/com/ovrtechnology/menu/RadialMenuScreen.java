@@ -334,42 +334,44 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.fill(bx + 2, by - 1, bx + 5, by, lineColor);
         graphics.fill(bx + 2, by + 1, bx + 4, by + 2, lineColor);
 
-        // Shop button (right of guide, same height)
-        int shopX = guideX + guideBtnSize + 4;
-        int shopY = CORNER_BUTTON_PADDING;
-        int shopBtnSize = toggleH;
+        // Shop button hidden (pre-order button disabled) — code preserved, not rendered.
+        isHoveringShop = false;
+        // // Shop button (right of guide, same height)
+        // int shopX = guideX + guideBtnSize + 4;
+        // int shopY = CORNER_BUTTON_PADDING;
+        // int shopBtnSize = toggleH;
+        //
+        // isHoveringShop = isInBounds(mouseX, mouseY, shopX, shopY, shopBtnSize, shopBtnSize);
+        //
+        // // Animated glow behind shop button
+        // float glowPulse = (float) (0.4f + 0.6f * Math.abs(Math.sin(shopGlowPhase)));
+        // int glowA = (int) (50 * appear * glowPulse);
+        // int glowColor = (glowA << 24) | 0x44DD44;
+        // graphics.fill(shopX - 2, shopY - 2, shopX + shopBtnSize + 2, shopY + shopBtnSize + 2, glowColor);
+        //
+        // int shopBg = isHoveringShop
+        //         ? MenuRenderUtils.withAlpha(0xCC44BB44, appear)
+        //         : MenuRenderUtils.withAlpha(0x8833AA33, appear);
+        // graphics.fill(shopX, shopY, shopX + shopBtnSize, shopY + shopBtnSize, shopBg);
+        // MenuRenderUtils.renderOutline(graphics, shopX, shopY, shopBtnSize, shopBtnSize, MenuRenderUtils.withAlpha(0x8844FF44, appear));
+        //
+        // // Draw a cart icon procedurally (small basket shape)
+        // int cx = shopX + shopBtnSize / 2;
+        // int cy = shopY + shopBtnSize / 2;
+        // int iconColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
+        // // Cart body
+        // graphics.fill(cx - 5, cy - 2, cx + 5, cy + 3, iconColor);
+        // // Cart bottom (narrower)
+        // graphics.fill(cx - 4, cy + 3, cx + 4, cy + 4, iconColor);
+        // // Handle
+        // graphics.fill(cx - 6, cy - 4, cx - 5, cy - 1, iconColor);
+        // graphics.fill(cx - 6, cy - 4, cx - 2, cy - 3, iconColor);
+        // // Wheels
+        // graphics.fill(cx - 3, cy + 5, cx - 1, cy + 7, iconColor);
+        // graphics.fill(cx + 1, cy + 5, cx + 3, cy + 7, iconColor);
 
-        isHoveringShop = isInBounds(mouseX, mouseY, shopX, shopY, shopBtnSize, shopBtnSize);
-
-        // Animated glow behind shop button
-        float glowPulse = (float) (0.4f + 0.6f * Math.abs(Math.sin(shopGlowPhase)));
-        int glowA = (int) (50 * appear * glowPulse);
-        int glowColor = (glowA << 24) | 0x44DD44;
-        graphics.fill(shopX - 2, shopY - 2, shopX + shopBtnSize + 2, shopY + shopBtnSize + 2, glowColor);
-
-        int shopBg = isHoveringShop
-                ? MenuRenderUtils.withAlpha(0xCC44BB44, appear)
-                : MenuRenderUtils.withAlpha(0x8833AA33, appear);
-        graphics.fill(shopX, shopY, shopX + shopBtnSize, shopY + shopBtnSize, shopBg);
-        MenuRenderUtils.renderOutline(graphics, shopX, shopY, shopBtnSize, shopBtnSize, MenuRenderUtils.withAlpha(0x8844FF44, appear));
-
-        // Draw a cart icon procedurally (small basket shape)
-        int cx = shopX + shopBtnSize / 2;
-        int cy = shopY + shopBtnSize / 2;
-        int iconColor = MenuRenderUtils.withAlpha(0xFFFFFFFF, appear);
-        // Cart body
-        graphics.fill(cx - 5, cy - 2, cx + 5, cy + 3, iconColor);
-        // Cart bottom (narrower)
-        graphics.fill(cx - 4, cy + 3, cx + 4, cy + 4, iconColor);
-        // Handle
-        graphics.fill(cx - 6, cy - 4, cx - 5, cy - 1, iconColor);
-        graphics.fill(cx - 6, cy - 4, cx - 2, cy - 3, iconColor);
-        // Wheels
-        graphics.fill(cx - 3, cy + 5, cx - 1, cy + 7, iconColor);
-        graphics.fill(cx + 1, cy + 5, cx + 3, cy + 7, iconColor);
-
-        // Discord button (right of shop, same height)
-        int discordX = shopX + shopBtnSize + 4;
+        // Discord button (takes the shop slot, right of guide, same height)
+        int discordX = guideX + guideBtnSize + 4;
         int discordY = CORNER_BUTTON_PADDING;
         int discordBtnSize = toggleH;
 
@@ -444,12 +446,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     guideY + guideBtnSize / 2 - 4,
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
-        if (isHoveringShop) {
-            graphics.text(font, Component.translatable("shop.aromaaffect.button"),
-                    tooltipX,
-                    shopY + shopBtnSize / 2 - 4,
-                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
-        }
+        // Shop button tooltip disabled (button hidden).
+        // if (isHoveringShop) {
+        //     graphics.text(font, Component.translatable("shop.aromaaffect.button"),
+        //             tooltipX,
+        //             shopY + shopBtnSize / 2 - 4,
+        //             MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+        // }
         if (isHoveringDiscord) {
             graphics.text(font, Component.translatable("discord.aromaaffect.button"),
                     tooltipX,
@@ -493,12 +496,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
             MenuManager.openGuide();
             return true;
         }
-        if (isHoveringShop) {
-            AromaAffect.LOGGER.debug("Shop button clicked");
-            MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
-            MenuManager.openShopMenu();
-            return true;
-        }
+        // Shop button click disabled (button hidden).
+        // if (isHoveringShop) {
+        //     AromaAffect.LOGGER.debug("Shop button clicked");
+        //     MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
+        //     MenuManager.openShopMenu();
+        //     return true;
+        // }
         if (isHoveringDiscord) {
             AromaAffect.LOGGER.debug("Discord button clicked");
             MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.2f);
