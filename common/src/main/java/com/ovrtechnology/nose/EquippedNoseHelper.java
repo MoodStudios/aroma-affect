@@ -1,6 +1,8 @@
 package com.ovrtechnology.nose;
 
 import com.ovrtechnology.nose.accessory.NoseAccessory;
+import com.ovrtechnology.variant.CustomNoseItem;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -62,9 +64,22 @@ public final class EquippedNoseHelper {
      * @return the resolved abilities, or EMPTY if no nose is equipped
      */
     public static NoseAbilityResolver.ResolvedAbilities getEquippedAbilities(Player player) {
-        return getEquippedNose(player)
-                .map(NoseItem::getResolvedAbilities)
-                .orElse(NoseAbilityResolver.ResolvedAbilities.EMPTY);
+        if (player == null) {
+            return NoseAbilityResolver.ResolvedAbilities.EMPTY;
+        }
+        ItemStack stack = NoseAccessory.getEquipped(player);
+        if (stack.isEmpty()) {
+            return NoseAbilityResolver.ResolvedAbilities.EMPTY;
+        }
+        if (stack.getItem() instanceof NoseItem noseItem) {
+            return noseItem.getResolvedAbilities();
+        }
+        if (stack.getItem() instanceof CustomNoseItem) {
+            return CustomNoseItem.getVariantId(stack)
+                    .map(id -> NoseAbilityResolver.getResolvedAbilities(id.toString()))
+                    .orElse(NoseAbilityResolver.ResolvedAbilities.EMPTY);
+        }
+        return NoseAbilityResolver.ResolvedAbilities.EMPTY;
     }
 
     /**
@@ -74,7 +89,18 @@ public final class EquippedNoseHelper {
      * @return true if a nose is equipped
      */
     public static boolean hasNoseEquipped(Player player) {
-        return getEquippedNose(player).isPresent();
+        if (player == null) {
+            return false;
+        }
+        ItemStack stack = NoseAccessory.getEquipped(player);
+        if (stack.isEmpty()) {
+            return false;
+        }
+        if (stack.getItem() instanceof NoseItem) {
+            return true;
+        }
+        return stack.getItem() instanceof CustomNoseItem
+                && CustomNoseItem.getVariantId(stack).isPresent();
     }
 
     /**
@@ -140,6 +166,14 @@ public final class EquippedNoseHelper {
      * @return Optional containing the nose ID, or empty if no nose is equipped
      */
     public static Optional<String> getEquippedNoseId(Player player) {
-        return getEquippedNoseDefinition(player).map(NoseDefinition::getId);
+        Optional<String> byDefinition = getEquippedNoseDefinition(player).map(NoseDefinition::getId);
+        if (byDefinition.isPresent() || player == null) {
+            return byDefinition;
+        }
+        ItemStack stack = NoseAccessory.getEquipped(player);
+        if (stack.getItem() instanceof CustomNoseItem) {
+            return CustomNoseItem.getVariantId(stack).map(Identifier::toString);
+        }
+        return Optional.empty();
     }
 }

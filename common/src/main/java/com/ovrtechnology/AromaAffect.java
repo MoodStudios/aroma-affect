@@ -23,6 +23,7 @@ import com.ovrtechnology.network.AromaGuideNetworking;
 import com.ovrtechnology.network.IronGolemNoseNetworking;
 import com.ovrtechnology.network.OmaraDeviceNetworking;
 import com.ovrtechnology.network.SnifferEquipmentNetworking;
+import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.nose.NoseDefinitionLoader;
 import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.omara.OmaraDeviceRegistry;
@@ -37,6 +38,10 @@ import com.ovrtechnology.entity.sniffer.config.SnifferConfigLoader;
 import com.ovrtechnology.sniffer.loot.SnifferLootRegistry;
 import com.ovrtechnology.sniffernose.SnifferNoseDefinitionLoader;
 import com.ovrtechnology.sniffernose.SnifferNoseRegistry;
+import com.ovrtechnology.variant.CustomNoseRegistry;
+import com.ovrtechnology.variant.ModDataComponents;
+import com.ovrtechnology.variant.NoseVariantRegistry;
+import com.ovrtechnology.variant.VariantRecipeIndex;
 import com.ovrtechnology.data.ResourceManagerDataSource;
 import com.ovrtechnology.network.ScentEventNetworking;
 import com.ovrtechnology.trigger.ScentTriggerManager;
@@ -87,6 +92,10 @@ public final class AromaAffect {
         registrars.registrar(Registries.BLOCK, OmaraDeviceRegistry::registerBlocks);
         registrars.blockEntityTypes(OmaraDeviceRegistry::registerBlockEntities);
 
+        // Data components (nose_variant) must register before the custom_nose item
+        // so variant stacks can carry the component at runtime.
+        registrars.dataComponentTypes(ModDataComponents::register);
+
         // Items
         registrars.registrar(Registries.ITEM, NoseRegistry::register);
         registrars.registrar(Registries.ITEM, SnifferNoseRegistry::register);
@@ -94,6 +103,7 @@ public final class AromaAffect {
         registrars.registrar(Registries.ITEM, AromaGuideRegistry::register);
         registrars.registrar(Registries.ITEM, NoseSmithRegistry::registerItems);
         registrars.registrar(Registries.ITEM, OmaraDeviceRegistry::registerItems);
+        registrars.registrar(Registries.ITEM, CustomNoseRegistry::register);
 
         // Entity types
         registrars.registrar(Registries.ENTITY_TYPE, NoseSmithRegistry::registerEntities);
@@ -151,6 +161,9 @@ public final class AromaAffect {
                                     NoseDefinitionLoader.reloadInPlace(ds);
                                     SnifferNoseDefinitionLoader.reloadInPlace(ds);
                                     ScentItemDefinitionLoader.reloadInPlace(ds);
+                                    NoseVariantRegistry.reload(ds);
+                                    VariantRecipeIndex.reload(ds);
+                                    NoseAbilityResolver.rebuild();
                                     EventDefinitionLoader.loadAllEvents(ds);
                                 }));
 

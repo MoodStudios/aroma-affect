@@ -1,7 +1,10 @@
 package com.ovrtechnology.nose;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.variant.NoseVariant;
+import com.ovrtechnology.variant.NoseVariantRegistry;
 import lombok.Getter;
+import net.minecraft.resources.Identifier;
 
 import java.util.*;
 
@@ -34,13 +37,28 @@ public final class NoseAbilityResolver {
         
         AromaAffect.LOGGER.info("Initializing NoseAbilityResolver...");
         
-        // Resolve abilities for each nose
+        // Resolve abilities for each built-in nose
         for (String noseId : NoseRegistry.getAllNoseIds()) {
             resolveAbilitiesForNose(noseId);
         }
-        
+
+        // Resolve abilities for each datapack nose variant
+        for (Identifier variantId : NoseVariantRegistry.all().keySet()) {
+            resolveAbilitiesForNose(variantId.toString());
+        }
+
         initialized = true;
         AromaAffect.LOGGER.info("NoseAbilityResolver initialized with {} cached entries", ABILITY_CACHE.size());
+    }
+
+    /**
+     * Rebuild the ability cache from scratch. Called after nose variants are
+     * (re)loaded from datapacks so custom noses resolve their abilities.
+     */
+    public static void rebuild() {
+        ABILITY_CACHE.clear();
+        initialized = false;
+        init();
     }
     
     /**
@@ -105,18 +123,11 @@ public final class NoseAbilityResolver {
 
         visited.add(noseId);
 
-        // Get the nose definition
-        Optional<NoseDefinition> defOpt = NoseRegistry.getDefinition(noseId);
-        if (defOpt.isEmpty()) {
-            AromaAffect.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
-            visited.remove(noseId);
-            return;
-        }
-
-        NoseDefinition definition = defOpt.get();
-        NoseUnlock unlock = definition.getUnlock();
-
+        // Resolve the unlock config from a built-in nose definition, falling back
+        // to a datapack nose variant if this id is not a built-in nose.
+        NoseUnlock unlock = lookupUnlock(noseId);
         if (unlock == null) {
+            AromaAffect.LOGGER.warn("Referenced nose '{}' not found during ability resolution", noseId);
             visited.remove(noseId);
             return;
         }
@@ -139,6 +150,21 @@ public final class NoseAbilityResolver {
     /**
      * Get all resolved abilities for a nose (including inherited)
      */
+    private static NoseUnlock lookupUnlock(String noseId) {
+        Optional<NoseDefinition> defOpt = NoseRegistry.getDefinition(noseId);
+        if (defOpt.isPresent()) {
+            return defOpt.get().getUnlock();
+        }
+        Identifier id = Identifier.tryParse(noseId);
+        if (id != null) {
+            Optional<NoseVariant> variantOpt = NoseVariantRegistry.get(id);
+            if (variantOpt.isPresent()) {
+                return variantOpt.get().getUnlock();
+            }
+        }
+        return null;
+    }
+
     public static ResolvedAbilities getResolvedAbilities(String noseId) {
         if (!initialized) {
             AromaAffect.LOGGER.error("NoseAbilityResolver not initialized! Call init() first.");
