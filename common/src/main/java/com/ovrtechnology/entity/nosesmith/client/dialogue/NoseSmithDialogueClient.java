@@ -9,7 +9,7 @@ public final class NoseSmithDialogueClient {
 
     public static void open(NoseSmithEntity noseSmith) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.setScreen(new NoseSmithDialogueScreen(noseSmith));
+        minecraft.setScreenAndShow(new NoseSmithDialogueScreen(noseSmith));
     }
 }
 

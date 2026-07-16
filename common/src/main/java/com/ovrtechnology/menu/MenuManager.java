@@ -30,13 +30,13 @@ public final class MenuManager {
             return;
         }
         
-        if (minecraft.screen != null) {
+        if (minecraft.gui.screen() != null) {
             AromaAffect.LOGGER.debug("Cannot open radial menu: another screen is open");
             return;
         }
         
         AromaAffect.LOGGER.debug("Opening radial menu");
-        minecraft.setScreen(new RadialMenuScreen());
+        minecraft.setScreenAndShow(new RadialMenuScreen());
     }
     
     /**
@@ -50,7 +50,7 @@ public final class MenuManager {
         }
         
         AromaAffect.LOGGER.debug("Opening config menu");
-        minecraft.setScreen(new ConfigScreen());
+        minecraft.setScreenAndShow(new ConfigScreen());
     }
     
     /**
@@ -64,7 +64,7 @@ public final class MenuManager {
         }
         
         AromaAffect.LOGGER.debug("Opening blocks menu");
-        minecraft.setScreen(new BlocksMenuScreen());
+        minecraft.setScreenAndShow(new BlocksMenuScreen());
     }
     
     /**
@@ -78,7 +78,7 @@ public final class MenuManager {
         }
         
         AromaAffect.LOGGER.debug("Opening biomes menu");
-        minecraft.setScreen(new BiomesMenuScreen());
+        minecraft.setScreenAndShow(new BiomesMenuScreen());
     }
     
     /**
@@ -92,7 +92,7 @@ public final class MenuManager {
         }
         
         AromaAffect.LOGGER.debug("Opening structures menu");
-        minecraft.setScreen(new StructuresMenuScreen());
+        minecraft.setScreenAndShow(new StructuresMenuScreen());
     }
     
     /**
@@ -106,7 +106,7 @@ public final class MenuManager {
         }
         
         AromaAffect.LOGGER.debug("Opening flowers menu");
-        minecraft.setScreen(new FlowersMenuScreen());
+        minecraft.setScreenAndShow(new FlowersMenuScreen());
     }
     
     /**
@@ -127,7 +127,7 @@ public final class MenuManager {
         }
 
         AromaAffect.LOGGER.debug("Opening history menu");
-        minecraft.setScreen(new HistoryMenuScreen());
+        minecraft.setScreenAndShow(new HistoryMenuScreen());
     }
 
     /**
@@ -141,7 +141,7 @@ public final class MenuManager {
         }
 
         AromaAffect.LOGGER.debug("Opening shop menu");
-        minecraft.setScreen(new ShopScreen());
+        minecraft.setScreenAndShow(new ShopScreen());
     }
 
     /**
@@ -169,7 +169,7 @@ public final class MenuManager {
         }
         
         AromaAffect.LOGGER.debug("Opening compass menu");
-        minecraft.setScreen(new CompassMenuScreen());
+        minecraft.setScreenAndShow(new CompassMenuScreen());
     }
     
     /**
@@ -189,7 +189,7 @@ public final class MenuManager {
         }
 
         AromaAffect.LOGGER.debug("Opening menu for category {}", category.getId());
-        minecraft.setScreen(category.createScreen());
+        minecraft.setScreenAndShow(category.createScreen());
     }
     
     /**
@@ -197,8 +197,8 @@ public final class MenuManager {
      */
     public static void closeCurrentMenu() {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen instanceof BaseMenuScreen) {
-            minecraft.setScreen(null);
+        if (minecraft.gui.screen() instanceof BaseMenuScreen) {
+            minecraft.setScreenAndShow(null);
         }
     }
     
@@ -209,7 +209,7 @@ public final class MenuManager {
     public static void returnToRadialMenu() {
         Minecraft minecraft = Minecraft.getInstance();
         AromaAffect.LOGGER.debug("Returning to radial menu");
-        minecraft.setScreen(new RadialMenuScreen());
+        minecraft.setScreenAndShow(new RadialMenuScreen());
     }
     
     /**
@@ -219,7 +219,7 @@ public final class MenuManager {
      */
     public static boolean isMenuOpen() {
         Minecraft minecraft = Minecraft.getInstance();
-        return minecraft.screen instanceof BaseMenuScreen;
+        return minecraft.gui.screen() instanceof BaseMenuScreen;
     }
     
     /**
@@ -229,7 +229,7 @@ public final class MenuManager {
      */
     public static BaseMenuScreen getCurrentMenu() {
         Minecraft minecraft = Minecraft.getInstance();
-        Screen screen = minecraft.screen;
+        Screen screen = minecraft.gui.screen();
         if (screen instanceof BaseMenuScreen baseMenu) {
             return baseMenu;
         }

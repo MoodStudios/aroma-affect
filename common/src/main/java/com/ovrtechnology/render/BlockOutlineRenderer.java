@@ -13,7 +13,7 @@ import com.ovrtechnology.menu.TrackingCategory;
 import com.ovrtechnology.menu.TrailDomain;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -46,7 +46,7 @@ public final class BlockOutlineRenderer {
 
     public static final RenderType LINES_NO_DEPTH = RenderType.create(
             "aromaaffect:lines_no_depth",
-            RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).bufferSize(256).createRenderSetup()
+            RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).createRenderSetup()
     );
 
     /**
@@ -57,7 +57,7 @@ public final class BlockOutlineRenderer {
 
     private BlockOutlineRenderer() {}
 
-    public static void renderOutline(PoseStack poseStack, Vec3 cameraPos, MultiBufferSource consumers) {
+    public static void renderOutline(PoseStack poseStack, Vec3 cameraPos, OrderedSubmitNodeCollector collector) {
         if (!ActiveTrackingState.shouldShowOutline()) {
             return;
         }
@@ -94,10 +94,8 @@ public final class BlockOutlineRenderer {
         double dy = dest.getY() - cameraPos.y;
         double dz = dest.getZ() - cameraPos.z;
 
-        VertexConsumer lineConsumer = consumers.getBuffer(LINES_NO_DEPTH);
-
         // Vanilla's ShapeRenderer.renderShape emits POSITION_COLOR_NORMAL
-        // vertices, but LINES_SNIPPET in 26.1 requires
+        // vertices, but LINES_SNIPPET requires
         // POSITION_COLOR_NORMAL_LINE_WIDTH -- every vertex must call
         // setLineWidth() or BufferBuilder.endLastVertex throws "Missing
         // elements in vertex: LineWidth". Inline the edge iteration so we
@@ -106,18 +104,18 @@ public final class BlockOutlineRenderer {
         int green = (int) (g * 255);
         int blue = (int) (b * 255);
         int alpha8 = (int) (alpha * 255);
-        renderShapeWithLineWidth(poseStack, lineConsumer, Shapes.block(),
-                dx, dy, dz, red, green, blue, alpha8, OUTLINE_LINE_WIDTH);
+        collector.submitCustomGeometry(poseStack, LINES_NO_DEPTH, (pose, consumer) ->
+                renderShapeWithLineWidth(pose, consumer, Shapes.block(),
+                        dx, dy, dz, red, green, blue, alpha8, OUTLINE_LINE_WIDTH));
     }
 
     private static void renderShapeWithLineWidth(
-            PoseStack poseStack,
+            PoseStack.Pose pose,
             VertexConsumer consumer,
             VoxelShape shape,
             double offsetX, double offsetY, double offsetZ,
             int red, int green, int blue, int alpha,
             float lineWidth) {
-        PoseStack.Pose pose = poseStack.last();
         shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
             float nx = (float) (x2 - x1);
             float ny = (float) (y2 - y1);

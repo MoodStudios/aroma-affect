@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -212,7 +213,7 @@ public final class AbilityHandler {
      */
     private static boolean isStillInteracting(ServerPlayer player, BlockPos targetPos, BlockInteractionAbility ability) {
         // Check distance (player must be within 5 blocks)
-        double distance = player.position().distanceTo(targetPos.getCenter());
+        double distance = player.position().distanceTo(Vec3.atCenterOf(targetPos));
         if (distance > 5.0) {
             return false;
         }

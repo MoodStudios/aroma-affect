@@ -141,7 +141,7 @@ public class GuideScreen extends BaseMenuScreen {
     public void onClose() {
         // Close instantly — no fade-out animation
         if (this.minecraft != null) {
-            this.minecraft.setScreen(null);
+            this.minecraft.setScreenAndShow(null);
         }
     }
 

@@ -23,7 +23,7 @@ import com.ovrtechnology.trigger.config.TriggerSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -169,7 +169,7 @@ public final class PathTrailRenderer {
 
     // ── Public entry point ──────────────────────────────────────────────
 
-    public static void renderTrail(PoseStack poseStack, Vec3 cameraPos, MultiBufferSource consumers) {
+    public static void renderTrail(PoseStack poseStack, Vec3 cameraPos, OrderedSubmitNodeCollector collector) {
         if (!ActiveTrackingState.isActivelyTracking()) return;
 
         BlockPos dest = ActiveTrackingState.getDestination();
@@ -247,8 +247,6 @@ public final class PathTrailRenderer {
         float breathe = 0.85f + 0.15f * (float) Math.sin(
                 (now % BREATHE_PERIOD_MS) / (double) BREATHE_PERIOD_MS * Math.PI * 2.0);
 
-        PoseStack.Pose pose = poseStack.last();
-
         // ── Render previous path fading on its own geometry ──
         if (prevStablePath != null && prevStablePath.size() >= 2 && prevPulseStart > 0) {
             List<Vec3> adjustedPrev = adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos);
@@ -261,12 +259,14 @@ public final class PathTrailRenderer {
                 float prevCoreWidth = prevPulseIsPower ? TRAIL_CORE_POWER_WIDTH : TRAIL_CORE_WIDTH;
                 float prevGlowAlpha = prevPulseIsPower ? 0.20f : 0.12f;
                 float prevCoreAlpha = prevPulseIsPower ? 0.75f : 0.55f;
-                renderLayer(pose, cameraPos, consumers.getBuffer(prevGlow), prevGlowWidth,
-                        adjustedPrev, r, g, b, prevGlowAlpha * breathe,
-                        now, prevPulseStart, 0, prevPulseDurationMs, prevTotalLen, true, prevPulseIsPower);
-                renderLayer(pose, cameraPos, consumers.getBuffer(prevCore), prevCoreWidth,
-                        adjustedPrev, r, g, b, prevCoreAlpha * breathe,
-                        now, prevPulseStart, 0, prevPulseDurationMs, prevTotalLen, false, prevPulseIsPower);
+                collector.submitCustomGeometry(poseStack, prevGlow, (pose, consumer) ->
+                        renderLayer(pose, cameraPos, consumer, prevGlowWidth,
+                                adjustedPrev, r, g, b, prevGlowAlpha * breathe,
+                                now, prevPulseStart, 0, prevPulseDurationMs, prevTotalLen, true, prevPulseIsPower));
+                collector.submitCustomGeometry(poseStack, prevCore, (pose, consumer) ->
+                        renderLayer(pose, cameraPos, consumer, prevCoreWidth,
+                                adjustedPrev, r, g, b, prevCoreAlpha * breathe,
+                                now, prevPulseStart, 0, prevPulseDurationMs, prevTotalLen, false, prevPulseIsPower));
             } else {
                 prevStablePath = null;
                 prevPathOrigin = null;
@@ -280,12 +280,14 @@ public final class PathTrailRenderer {
         float curCoreWidth = currentPulseIsPower ? TRAIL_CORE_POWER_WIDTH : TRAIL_CORE_WIDTH;
         float curGlowAlpha = currentPulseIsPower ? 0.20f : 0.12f;
         float curCoreAlpha = currentPulseIsPower ? 0.75f : 0.55f;
-        renderLayer(pose, cameraPos, consumers.getBuffer(curGlow), curGlowWidth,
-                renderPoints, r, g, b, curGlowAlpha * breathe,
-                now, lastPulseStart, 0, currentPulseDurationMs, totalLen, true, currentPulseIsPower);
-        renderLayer(pose, cameraPos, consumers.getBuffer(curCore), curCoreWidth,
-                renderPoints, r, g, b, curCoreAlpha * breathe,
-                now, lastPulseStart, 0, currentPulseDurationMs, totalLen, false, currentPulseIsPower);
+        collector.submitCustomGeometry(poseStack, curGlow, (pose, consumer) ->
+                renderLayer(pose, cameraPos, consumer, curGlowWidth,
+                        renderPoints, r, g, b, curGlowAlpha * breathe,
+                        now, lastPulseStart, 0, currentPulseDurationMs, totalLen, true, currentPulseIsPower));
+        collector.submitCustomGeometry(poseStack, curCore, (pose, consumer) ->
+                renderLayer(pose, cameraPos, consumer, curCoreWidth,
+                        renderPoints, r, g, b, curCoreAlpha * breathe,
+                        now, lastPulseStart, 0, currentPulseDurationMs, totalLen, false, currentPulseIsPower));
 
         // ── Client-side particle spawning (synchronized with pulse) ──
         if (now - lastParticleSpawnTime >= PARTICLE_SPAWN_INTERVAL_MS) {
@@ -859,7 +861,7 @@ public final class PathTrailRenderer {
         static RenderType create(String name) {
             return RenderType.create(
                     "aromaaffect:" + name,
-                    RenderSetup.builder(TRAIL_PIPELINE).bufferSize(1536).createRenderSetup()
+                    RenderSetup.builder(TRAIL_PIPELINE).createRenderSetup()
             );
         }
     }

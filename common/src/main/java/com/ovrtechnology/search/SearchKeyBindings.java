@@ -49,7 +49,7 @@ public final class SearchKeyBindings {
         if (minecraft.player == null) {
             return;
         }
-        if (minecraft.screen != null) {
+        if (minecraft.gui.screen() != null) {
             return;
         }
         while (TOGGLE_SEARCH.consumeClick()) {

@@ -567,7 +567,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Close the menu
         if (minecraft != null) {
-            minecraft.setScreen(null);
+            minecraft.setScreenAndShow(null);
         }
     }
 
@@ -586,7 +586,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         if (minecraft != null) {
-            minecraft.setScreen(null);
+            minecraft.setScreenAndShow(null);
         }
     }
 

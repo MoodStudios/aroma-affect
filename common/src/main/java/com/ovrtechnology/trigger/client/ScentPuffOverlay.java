@@ -96,7 +96,7 @@ public final class ScentPuffOverlay {
 
     private static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (activeMask == null || mc.player == null || mc.isPaused() || mc.options.hideGui) {
+        if (activeMask == null || mc.player == null || mc.isPaused() || false) {
             return;
         }
 

@@ -1,7 +1,7 @@
 package com.ovrtechnology.mixin;
 
 import com.ovrtechnology.trigger.event.ServerEventBusHandler;
-import net.minecraft.advancements.criterion.UsedTotemTrigger;
+import net.minecraft.advancements.triggers.UsedTotemTrigger;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;

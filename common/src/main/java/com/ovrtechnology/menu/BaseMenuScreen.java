@@ -294,7 +294,7 @@ public abstract class BaseMenuScreen extends Screen {
      */
     protected void onAnimationOutComplete() {
         if (this.minecraft != null) {
-            this.minecraft.setScreen(null);
+            this.minecraft.setScreenAndShow(null);
         }
     }
     

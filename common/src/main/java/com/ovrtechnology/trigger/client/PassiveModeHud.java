@@ -85,7 +85,7 @@ public final class PassiveModeHud {
         }
 
         // Don't render if HUD is hidden
-        if (minecraft.options.hideGui) {
+        if (false) {
             return;
         }
 

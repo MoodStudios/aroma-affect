@@ -93,12 +93,12 @@ public final class TrackingHud {
 
     private static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.isPaused() || mc.player == null || mc.options.hideGui) {
+        if (mc.isPaused() || mc.player == null || false) {
             return;
         }
 
         // Don't render if radial menu (or any BaseMenuScreen) is open — it has its own panel
-        if (mc.screen instanceof BaseMenuScreen) {
+        if (mc.gui.screen() instanceof BaseMenuScreen) {
             return;
         }
 

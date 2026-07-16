@@ -76,21 +76,21 @@ public final class MenuKeyBindings {
         }
 
         while (OPEN_RADIAL_MENU.consumeClick()) {
-            if (minecraft.screen == null) {
+            if (minecraft.gui.screen() == null) {
                 MenuManager.openRadialMenu();
-            } else if (minecraft.screen instanceof RadialMenuScreen) {
-                minecraft.setScreen(null);
+            } else if (minecraft.gui.screen() instanceof RadialMenuScreen) {
+                minecraft.setScreenAndShow(null);
             }
         }
 
         while (OPEN_CONFIG_MENU.consumeClick()) {
-            if (minecraft.screen == null && isShiftDown()) {
+            if (minecraft.gui.screen() == null && isShiftDown()) {
                 MenuManager.openConfigMenu();
             }
         }
 
         while (RESET_COOLDOWNS.consumeClick()) {
-            if (minecraft.screen == null) {
+            if (minecraft.gui.screen() == null) {
                 ScentTriggerManager.getInstance().resetCooldowns();
             }
         }
