@@ -33,21 +33,22 @@ public final class AromaAffectNeoForgeClient {
 
         modEventBus.addListener(this::onRegisterClientExtensions);
 
-        // Curios renderer registration must run on the main thread during
-        // FMLClientSetupEvent. Only attach the listener if Curios is loaded.
-        if (ModList.get().isLoaded("curios")) {
-            modEventBus.addListener(this::onClientSetup);
-        }
+        // CURIOS DISABLED (no 26.2 release) — restore the curios client-setup listener
+        // (and onClientSetup below) when Curios publishes for 26.2.
+        // if (ModList.get().isLoaded("curios")) {
+        //     modEventBus.addListener(this::onClientSetup);
+        // }
 
         // BlockOutlineRendererNeoForge listens to RenderLevelStageEvent.AfterTranslucentBlocks
         // on NeoForge's main event bus; matches the pre-migration behaviour.
         BlockOutlineRendererNeoForge.init();
     }
 
-    private void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(
-                com.ovrtechnology.neoforge.client.accessory.CuriosClientIntegration::init);
-    }
+    // CURIOS DISABLED (no 26.2 release) — restore when Curios publishes for 26.2.
+    // private void onClientSetup(FMLClientSetupEvent event) {
+    //     event.enqueueWork(
+    //             com.ovrtechnology.neoforge.client.accessory.CuriosClientIntegration::init);
+    // }
 
     private void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
         NoseItemClientExtensions extensions = new NoseItemClientExtensions();

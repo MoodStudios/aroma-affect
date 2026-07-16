@@ -1,7 +1,7 @@
 package com.ovrtechnology.nose.accessory.neoforge;
 
 import com.ovrtechnology.nose.accessory.NoseAccessory;
-import net.blay09.mods.balm.Balm;
+// import net.blay09.mods.balm.Balm; // CURIOS DISABLED (no 26.2 release) — restore with CuriosBridge below
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,17 +20,18 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class NoseAccessoryImpl implements NoseAccessory.Provider {
 
-    private static final boolean CURIOS_LOADED = Balm.platform().isModLoaded("curios");
+    // CURIOS DISABLED (no 26.2 release): falls back to vanilla HEAD slot only.
+    // private static final boolean CURIOS_LOADED = Balm.platform().isModLoaded("curios");
 
     public NoseAccessoryImpl() {}
 
     @Override
     public ItemStack getEquipped(Player player) {
         if (player == null) return ItemStack.EMPTY;
-        if (CURIOS_LOADED) {
-            ItemStack curios = CuriosBridge.get(player);
-            if (!curios.isEmpty()) return curios;
-        }
+        // if (CURIOS_LOADED) {
+        //     ItemStack curios = CuriosBridge.get(player);
+        //     if (!curios.isEmpty()) return curios;
+        // }
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
         return head == null ? ItemStack.EMPTY : head;
     }
@@ -38,10 +39,10 @@ public final class NoseAccessoryImpl implements NoseAccessory.Provider {
     @Override
     public ItemStack equip(Player player, ItemStack stack) {
         if (player == null) return stack;
-        if (CURIOS_LOADED) {
-            ItemStack previous = CuriosBridge.equip(player, stack);
-            if (previous != null) return previous;
-        }
+        // if (CURIOS_LOADED) {
+        //     ItemStack previous = CuriosBridge.equip(player, stack);
+        //     if (previous != null) return previous;
+        // }
         ItemStack previous = player.getItemBySlot(EquipmentSlot.HEAD);
         player.setItemSlot(EquipmentSlot.HEAD, stack == null ? ItemStack.EMPTY : stack);
         return previous == null ? ItemStack.EMPTY : previous;
@@ -52,32 +53,28 @@ public final class NoseAccessoryImpl implements NoseAccessory.Provider {
         return player != null;
     }
 
-    /**
-     * Wrapper around the Curios API. Loaded lazily — JVM only resolves the
-     * {@code top.theillusivec4.curios.*} class references when this class is
-     * first touched, which only happens after the {@link #CURIOS_LOADED}
-     * guard succeeds.
-     */
-    private static final class CuriosBridge {
-
-        static ItemStack get(Player player) {
-            var maybeHandler = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player);
-            if (maybeHandler.isEmpty()) return ItemStack.EMPTY;
-            var stacks = maybeHandler.get().getStacksHandler(NoseAccessory.SLOT_ID);
-            if (stacks.isEmpty()) return ItemStack.EMPTY;
-            ItemStack stack = stacks.get().getStacks().getStackInSlot(0);
-            return stack == null ? ItemStack.EMPTY : stack;
-        }
-
-        static ItemStack equip(Player player, ItemStack stack) {
-            var maybeHandler = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player);
-            if (maybeHandler.isEmpty()) return null;
-            var stacks = maybeHandler.get().getStacksHandler(NoseAccessory.SLOT_ID);
-            if (stacks.isEmpty()) return null;
-            var handler = stacks.get().getStacks();
-            ItemStack previous = handler.getStackInSlot(0);
-            handler.setStackInSlot(0, stack == null ? ItemStack.EMPTY : stack);
-            return previous == null ? ItemStack.EMPTY : previous;
-        }
-    }
+    // ===== CURIOS DISABLED (no 26.2 release) — restore this inner class + the CURIOS_LOADED
+    // guard above, and re-add the curios dependency, when Curios publishes for 26.2. =====
+    // private static final class CuriosBridge {
+    //
+    //     static ItemStack get(Player player) {
+    //         var maybeHandler = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player);
+    //         if (maybeHandler.isEmpty()) return ItemStack.EMPTY;
+    //         var stacks = maybeHandler.get().getStacksHandler(NoseAccessory.SLOT_ID);
+    //         if (stacks.isEmpty()) return ItemStack.EMPTY;
+    //         ItemStack stack = stacks.get().getStacks().getStackInSlot(0);
+    //         return stack == null ? ItemStack.EMPTY : stack;
+    //     }
+    //
+    //     static ItemStack equip(Player player, ItemStack stack) {
+    //         var maybeHandler = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player);
+    //         if (maybeHandler.isEmpty()) return null;
+    //         var stacks = maybeHandler.get().getStacksHandler(NoseAccessory.SLOT_ID);
+    //         if (stacks.isEmpty()) return null;
+    //         var handler = stacks.get().getStacks();
+    //         ItemStack previous = handler.getStackInSlot(0);
+    //         handler.setStackInSlot(0, stack == null ? ItemStack.EMPTY : stack);
+    //         return previous == null ? ItemStack.EMPTY : previous;
+    //     }
+    // }
 }

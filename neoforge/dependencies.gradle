@@ -3,8 +3,9 @@ dependencies {
         changing = libs.versions.balm.get().contains("SNAPSHOT")
     }
 
-    // Curios — accessory slot API for NeoForge (optional at runtime, required for compile)
-    implementation libs.curiosNeoForge
+    // Curios — accessory slot API for NeoForge. CURIOS DISABLED (no 26.2 release):
+    // noses fall back to the vanilla HEAD slot. Restore when Curios publishes for 26.2.
+    // implementation libs.curiosNeoForge
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
