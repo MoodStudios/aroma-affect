@@ -73,11 +73,14 @@ public class ClientHooks {
         OvrWebSocketClient client = OvrWebSocketClient.getInstance();
         ConnectionState state = client.getState();
         boolean connected = state == ConnectionState.CONNECTED;
+        // "Reconnecting" only makes sense after a real connection dropped. Without a device the
+        // client never connects, so a fresh launch that only ever failed stays on "Ready".
         // The reconnect loop briefly dips through CONNECTING/CONNECTION_FAILED between each
         // RECONNECTING wait; treat those as "reconnecting" too so the text doesn't flicker.
-        boolean reconnecting = state == ConnectionState.RECONNECTING
-                || ((state == ConnectionState.CONNECTING || state == ConnectionState.CONNECTION_FAILED)
-                    && client.getReconnectAttempts() > 0);
+        boolean reconnecting = client.hasEverConnected()
+                && (state == ConnectionState.RECONNECTING
+                    || ((state == ConnectionState.CONNECTING || state == ConnectionState.CONNECTION_FAILED)
+                        && client.getReconnectAttempts() > 0));
         boolean linked = connected || reconnecting;
 
         Component prefix;

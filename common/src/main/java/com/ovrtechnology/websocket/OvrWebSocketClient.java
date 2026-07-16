@@ -86,6 +86,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private final AtomicLong currentReconnectDelay = new AtomicLong(0);
     private final AtomicBoolean reconnectScheduled = new AtomicBoolean(false);
+    private final AtomicBoolean everConnected = new AtomicBoolean(false);
 
     // ========================================
     // Threading
@@ -252,6 +253,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
                 this.webSocket = ws;
                 setState(ConnectionState.CONNECTED);
+                everConnected.set(true);
 
                 // Reset reconnect counters on successful connection
                 reconnectAttempts.set(0);
@@ -490,6 +492,10 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
      */
     public int getReconnectAttempts() {
         return reconnectAttempts.get();
+    }
+
+    public boolean hasEverConnected() {
+        return everConnected.get();
     }
 
     /**
