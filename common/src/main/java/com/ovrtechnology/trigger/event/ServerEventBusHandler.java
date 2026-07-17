@@ -49,6 +49,8 @@ public final class ServerEventBusHandler {
     public static final String TT_ANVIL_USED = "ANVIL_USED";
     public static final String TT_SNIFFER_DUG = "SNIFFER_DUG";
     public static final String TT_FLINT_USED = "FLINT_USED";
+    public static final String TT_FIREWORK_USED_ON = "FIREWORK_USED_ON";
+    public static final String TT_FIREWORK_USED = "FIREWORK_USED";
     public static final String TT_SEED_PLANTED = "SEED_PLANTED";
     public static final String TT_DISC_JUKEBOX = "DISC_JUKEBOX";
     public static final String TT_TOTEM_USE = "TOTEM_USE";

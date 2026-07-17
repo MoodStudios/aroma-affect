@@ -31,6 +31,7 @@
     "AnimalTameServerMixin",
     "AdvancementServerMixin",
     "FlintUseServerMixin",
+    "FireworkRocketUseServerMixin",
     "TotemTriggerServerMixin",
     "JukeboxUseServerMixin",
     "ItemEquippedServerMixin",
