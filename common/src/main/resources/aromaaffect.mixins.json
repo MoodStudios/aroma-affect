@@ -36,7 +36,8 @@
     "JukeboxUseServerMixin",
     "ItemEquippedServerMixin",
     "SeedPlantServerMixin",
-    "ShoulderRidingServerMixin"
+    "ShoulderRidingServerMixin",
+    "CopperWeatherMixin"
   ],
   "injectors": {
     "defaultRequire": 1

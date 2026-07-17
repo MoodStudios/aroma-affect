@@ -55,6 +55,7 @@ public final class ServerEventBusHandler {
     public static final String TT_DISC_JUKEBOX = "DISC_JUKEBOX";
     public static final String TT_TOTEM_USE = "TOTEM_USE";
     public static final String TT_ENTITY_RIDE_SHOULDER = "RIDE_SHOULDER";
+    public static final String TT_COPPER_OXIDIZE = "COPPER_OXIDIZE";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -168,6 +169,11 @@ public final class ServerEventBusHandler {
         if (player == null || stack == null || stack.isEmpty()) return;
         if (!SEED_ITEMS.contains(stack.getItem())) return;
         fireSimpleEvent(player, TT_SEED_PLANTED);
+    }
+
+    public static void onCopperOxidize(ServerPlayer player) {
+        if (player == null) return;
+        fireSimpleEvent(player, TT_COPPER_OXIDIZE);
     }
 
     public static void onTotemUse(ServerPlayer player, ItemStack stack) {
