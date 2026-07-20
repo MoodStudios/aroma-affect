@@ -1,0 +1,7 @@
+{
+  "block_id": "minecraft:sculk",
+  "color_html": "#042931",
+  "scent_id": "machina",
+  "fallback_name": "Sculk",
+  "range": 4
+}
