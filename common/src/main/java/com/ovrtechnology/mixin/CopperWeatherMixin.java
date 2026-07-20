@@ -2,6 +2,7 @@ package com.ovrtechnology.mixin;
 
 import com.ovrtechnology.trigger.event.ServerEventBusHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,12 +32,11 @@ public interface CopperWeatherMixin {
     @Inject(method = "getNextState", at = @At("HEAD"))
     private void aromaaffect$onGetNextState(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfoReturnable<Optional<BlockState>> cir) {
         if (this instanceof WeatheringCopper) {
-            // @TODO - Better way to do this?
-            List<Player> players = level.getNearbyPlayers(TargetingConditions.forNonCombat(), null, new AABB(pos).inflate(5));
-            if (!players.isEmpty()) {
-                   for (int i = 0; i < players.size() - 1; i++) {
-                       ServerEventBusHandler.onCopperOxidize((ServerPlayer) players.get(i));
-                   }
+            for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+                player.sendOverlayMessage(Component.literal("Distance: " + player.blockPosition().distSqr(pos)));
+                if (player.blockPosition().distSqr(pos) <= 15.0) {
+                    ServerEventBusHandler.onCopperOxidize(player);
+                }
             }
         }
     }
