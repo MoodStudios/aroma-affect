@@ -33,7 +33,6 @@ public interface CopperWeatherMixin {
     private void aromaaffect$onGetNextState(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfoReturnable<Optional<BlockState>> cir) {
         if (this instanceof WeatheringCopper) {
             for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
-                player.sendOverlayMessage(Component.literal("Distance: " + player.blockPosition().distSqr(pos)));
                 if (player.blockPosition().distSqr(pos) <= 15.0) {
                     ServerEventBusHandler.onCopperOxidize(player);
                 }
