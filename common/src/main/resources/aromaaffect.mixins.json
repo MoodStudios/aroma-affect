@@ -37,7 +37,8 @@
     "ItemEquippedServerMixin",
     "SeedPlantServerMixin",
     "ShoulderRidingServerMixin",
-    "CopperWeatherMixin"
+    "CopperWeatherMixin",
+    "SculkShriekServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -14,6 +14,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -56,6 +57,7 @@ public final class ServerEventBusHandler {
     public static final String TT_TOTEM_USE = "TOTEM_USE";
     public static final String TT_ENTITY_RIDE_SHOULDER = "RIDE_SHOULDER";
     public static final String TT_COPPER_OXIDIZE = "COPPER_OXIDIZE";
+    public static final String TT_SCULK_SHRIEK = "SCULK_SHRIEK";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -174,6 +176,12 @@ public final class ServerEventBusHandler {
     public static void onCopperOxidize(ServerPlayer player) {
         if (player == null) return;
         fireSimpleEvent(player, TT_COPPER_OXIDIZE);
+    }
+
+    public static void onSculkShriek(ServerPlayer player) {
+        if (player == null) return;
+
+        fireSimpleEvent(player, TT_SCULK_SHRIEK);
     }
 
     public static void onTotemUse(ServerPlayer player, ItemStack stack) {
