@@ -38,7 +38,10 @@
     "SeedPlantServerMixin",
     "ShoulderRidingServerMixin",
     "CopperWeatherMixin",
-    "SculkShriekServerMixin"
+    "SculkShriekServerMixin",
+    "MinecartBehaviorServerMixin",
+    "OldMinecartBehaviorServerMixin",
+    "NewMinecartBehaviorServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

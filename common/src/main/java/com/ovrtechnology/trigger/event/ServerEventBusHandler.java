@@ -58,6 +58,7 @@ public final class ServerEventBusHandler {
     public static final String TT_ENTITY_RIDE_SHOULDER = "RIDE_SHOULDER";
     public static final String TT_COPPER_OXIDIZE = "COPPER_OXIDIZE";
     public static final String TT_SCULK_SHRIEK = "SCULK_SHRIEK";
+    public static final String TT_MINECART_OVERLAP_POWERED_RAIL = "MINECART_OVERLAP_POWERED_RAIL";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
