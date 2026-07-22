@@ -145,6 +145,20 @@ public final class MenuManager {
     }
 
     /**
+     * Opens the feedback submission screen.
+     */
+    public static void openFeedbackMenu() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
+            AromaAffect.LOGGER.debug("Cannot open feedback menu: no player");
+            return;
+        }
+
+        AromaAffect.LOGGER.debug("Opening feedback menu");
+        minecraft.setScreen(new FeedbackScreen());
+    }
+
+    /**
      * Invites player to Discord
      */
     public static void openDiscord() {
