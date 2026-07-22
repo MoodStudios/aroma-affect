@@ -191,6 +191,8 @@ jobs:
 
       - name: Build ${{ matrix.name }}
         run: ./gradlew :${{ matrix.platform }}:build --no-daemon --stacktrace
+        env:
+          FEEDBACK_HMAC_SECRET: ${{ secrets.FEEDBACK_HMAC_SECRET }}
 
       - name: Upload ${{ matrix.name }} Artifact
         uses: actions/upload-artifact@v4
