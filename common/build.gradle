@@ -44,8 +44,88 @@ sourceSets {
     }
 }
 
+// -----------------------------------------------------------------------------
+// Feedback backend config, injected at build time.
+//
+// The HMAC secret must NOT live in this open-source repo. Supply it only for the
+// release build via one of (highest priority first):
+//   * Gradle property:  ./gradlew build -PfeedbackHmacSecret=THE_SECRET
+//   * Env var:          FEEDBACK_HMAC_SECRET=THE_SECRET ./gradlew build
+//   * ~/.gradle/gradle.properties (untracked):  feedbackHmacSecret=THE_SECRET
+// Dev builds default to an empty secret (feedback simply fails with 401), and the
+// endpoint defaults to production. For local emulator testing, override both, e.g.
+//   -PfeedbackEndpoint=http://127.0.0.1:5001/demo-aroma-affect/us-central1/feedback \
+//   -PfeedbackHmacSecret=demo-emulator-secret-not-for-production
+//
+// Mod / Minecraft versions are baked in here too: unlike the 1.21.x branch there is
+// no Architectury Platform API on 26.1 to query them at runtime, and the values are
+// already fixed per build by gradle.properties.
+// -----------------------------------------------------------------------------
+def feedbackEndpoint = (project.findProperty('feedbackEndpoint')
+        ?: System.getenv('FEEDBACK_ENDPOINT')
+        ?: 'https://us-central1-ovr-aroma-affect-feedback-prod.cloudfunctions.net/feedback').toString()
+def feedbackSecret = (project.findProperty('feedbackHmacSecret')
+        ?: System.getenv('FEEDBACK_HMAC_SECRET')
+        ?: '').toString()
+def feedbackModVersion = (project.findProperty('mod_version') ?: 'unknown').toString()
+def feedbackMcVersion = (project.findProperty('minecraft_version') ?: 'unknown').toString()
+
+def javaEscape = { String s ->
+    s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r')
+}
+
+def generatedFeedbackDir = layout.buildDirectory.dir('generated/feedback')
+
+def generateFeedbackConfig = tasks.register('generateFeedbackConfig') {
+    // Re-run whenever the injected values change so the release secret is baked in.
+    inputs.property 'endpoint', feedbackEndpoint
+    inputs.property 'secret', feedbackSecret
+    inputs.property 'modVersion', feedbackModVersion
+    inputs.property 'mcVersion', feedbackMcVersion
+    outputs.dir generatedFeedbackDir
+    doLast {
+        if (feedbackSecret.isEmpty()) {
+            logger.lifecycle('generateFeedbackConfig: no HMAC secret supplied; ' +
+                    'feedback requests from this build will be rejected by the backend.')
+        }
+        def pkgDir = generatedFeedbackDir.get().dir('com/ovrtechnology/menu').asFile
+        pkgDir.mkdirs()
+        new File(pkgDir, 'FeedbackConfig.java').text = """\
+package com.ovrtechnology.menu;
+
+/** Generated at build time from Gradle properties / env vars. Do not edit or commit. */
+public final class FeedbackConfig {
+
+    public static final String ENDPOINT = "${javaEscape(feedbackEndpoint)}";
+
+    public static final String HMAC_SECRET = "${javaEscape(feedbackSecret)}";
+
+    public static final String MOD_VERSION = "${javaEscape(feedbackModVersion)}";
+
+    public static final String MC_VERSION = "${javaEscape(feedbackMcVersion)}";
+
+    private FeedbackConfig() {}
+}
+"""
+    }
+}
+
+// Captured before registering the generated source dir below: the loader projects
+// consume these directories through the commonJava configuration, and this used to
+// be a single-directory lookup.
+def commonJavaMainDir = sourceSets.main.java.sourceDirectories.singleFile
+
+// Registering the task provider as a source dir wires the task dependency for both
+// compileJava and sourcesJar automatically.
+sourceSets.main.java.srcDir(generateFeedbackConfig)
+
 artifacts {
-    commonJava sourceSets.main.java.sourceDirectories.singleFile
+    // Both directories must be published so :fabric / :neoforge compile the generated
+    // FeedbackConfig alongside the hand-written common sources.
+    commonJava commonJavaMainDir
+    commonJava(generatedFeedbackDir.get().asFile) {
+        builtBy generateFeedbackConfig
+    }
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
     commonGeneratedResources sourceSets.generated.resources.sourceDirectories.singleFile
 }
