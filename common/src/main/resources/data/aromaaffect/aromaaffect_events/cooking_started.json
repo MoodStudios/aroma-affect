@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:cooking_started",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "COOKING_STARTED",
+  "scent_id": "smoky",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}

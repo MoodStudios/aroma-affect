@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -23,8 +24,10 @@ import net.minecraft.world.item.DiscFragmentItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 /**
  * Dispatch hub for server-side event-trigger scents.
@@ -53,6 +56,8 @@ public final class ServerEventBusHandler {
     public static final String TT_DISC_JUKEBOX = "DISC_JUKEBOX";
     public static final String TT_TOTEM_USE = "TOTEM_USE";
     public static final String TT_ENTITY_RIDE_SHOULDER = "RIDE_SHOULDER";
+    public static final String TT_PLAYER_DEATH = "PLAYER_DEATH";
+    public static final String TT_COOKING_STARTED = "COOKING_STARTED";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -174,6 +179,33 @@ public final class ServerEventBusHandler {
         fireSimpleEvent(player, TT_TOTEM_USE);
     }
 
+    /**
+     * The player started cooking on a campfire (placed food onto it). Fires COOKING_STARTED
+     * (→ Smoky) — the "process begins" scent. The furnace take-result events (Savory Spice /
+     * Terra Silva) are a separate, later moment and are unaffected.
+     */
+    public static void onCampfireCook(ServerPlayer player) {
+        fireSimpleEvent(player, TT_COOKING_STARTED);
+    }
+
+    /** Radius (blocks) around an igniting furnace within which players receive the scent. */
+    private static final double FURNACE_IGNITE_RADIUS = 16.0;
+
+    /**
+     * A furnace / blast furnace / smoker just ignited (transitioned to lit). Block entities have
+     * no owner, so — like {@link com.ovrtechnology.network.OmaraDeviceNetworking#broadcastPuff} —
+     * the scent goes to every nearby player. Called at most once per
+     * ignition (see {@code FurnaceIgniteServerMixin}); the per-player event cooldown in
+     * {@link #dispatch} collapses the re-ignitions between items within one cook session.
+     */
+    public static void onFurnaceIgnited(Level level, BlockPos pos) {
+        if (level == null || level.isClientSide() || pos == null) return;
+        AABB area = new AABB(pos).inflate(FURNACE_IGNITE_RADIUS);
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, area)) {
+            fireSimpleEvent(player, TT_COOKING_STARTED);
+        }
+    }
+
     public static void fireSimpleEvent(ServerPlayer player, String triggerType) {
         if (player == null || triggerType == null) return;
         dispatch(player, triggerType, def -> true);
@@ -215,6 +247,10 @@ public final class ServerEventBusHandler {
 
     public static void onLivingDeath(LivingEntity entity, DamageSource source) {
         if (entity == null || source == null) return;
+
+        if (entity instanceof ServerPlayer victim) {
+            fireSimpleEvent(victim, TT_PLAYER_DEATH);
+        }
 
         ServerPlayer killer = resolvePlayerSource(source);
         if (killer == null) return;

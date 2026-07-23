@@ -35,7 +35,10 @@
     "JukeboxUseServerMixin",
     "ItemEquippedServerMixin",
     "SeedPlantServerMixin",
-    "ShoulderRidingServerMixin"
+    "ShoulderRidingServerMixin",
+    "CampfireCookServerMixin",
+    "FurnaceIgniteServerMixin",
+    "ServerPlayerDeathServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

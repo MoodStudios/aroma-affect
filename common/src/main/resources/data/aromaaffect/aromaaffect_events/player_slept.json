@@ -2,7 +2,7 @@
   "event_id": "aromaaffect:player_slept",
   "category": "PLAYER_ACTION",
   "trigger_type": "PLAYER_SLEPT",
-  "scent_id": "floral",
+  "scent_id": "kindred",
   "intensity": 0.6,
   "priority": "LOW",
   "duration_mode": "ONE_SHOT",

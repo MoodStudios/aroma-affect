@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:player_death",
+  "category": "PLAYER_STATE",
+  "trigger_type": "PLAYER_DEATH",
+  "scent_id": "machina",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "default": true
+  }
+}
