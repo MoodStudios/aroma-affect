@@ -20,7 +20,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DiscFragmentItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -52,12 +51,17 @@ public final class ServerEventBusHandler {
     public static final String TT_ANVIL_USED = "ANVIL_USED";
     public static final String TT_SNIFFER_DUG = "SNIFFER_DUG";
     public static final String TT_FLINT_USED = "FLINT_USED";
+    public static final String TT_FIREWORK_USED_ON = "FIREWORK_USED_ON";
+    public static final String TT_FIREWORK_USED = "FIREWORK_USED";
     public static final String TT_SEED_PLANTED = "SEED_PLANTED";
     public static final String TT_DISC_JUKEBOX = "DISC_JUKEBOX";
     public static final String TT_TOTEM_USE = "TOTEM_USE";
     public static final String TT_ENTITY_RIDE_SHOULDER = "RIDE_SHOULDER";
     public static final String TT_PLAYER_DEATH = "PLAYER_DEATH";
     public static final String TT_COOKING_STARTED = "COOKING_STARTED";
+    public static final String TT_COPPER_OXIDIZE = "COPPER_OXIDIZE";
+    public static final String TT_SCULK_SHRIEK = "SCULK_SHRIEK";
+    public static final String TT_MINECART_OVERLAP_POWERED_RAIL = "MINECART_OVERLAP_POWERED_RAIL";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -171,6 +175,17 @@ public final class ServerEventBusHandler {
         if (player == null || stack == null || stack.isEmpty()) return;
         if (!SEED_ITEMS.contains(stack.getItem())) return;
         fireSimpleEvent(player, TT_SEED_PLANTED);
+    }
+
+    public static void onCopperOxidize(ServerPlayer player) {
+        if (player == null) return;
+        fireSimpleEvent(player, TT_COPPER_OXIDIZE);
+    }
+
+    public static void onSculkShriek(ServerPlayer player) {
+        if (player == null) return;
+
+        fireSimpleEvent(player, TT_SCULK_SHRIEK);
     }
 
     public static void onTotemUse(ServerPlayer player, ItemStack stack) {

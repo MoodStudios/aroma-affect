@@ -31,6 +31,7 @@
     "AnimalTameServerMixin",
     "AdvancementServerMixin",
     "FlintUseServerMixin",
+    "FireworkRocketUseServerMixin",
     "TotemTriggerServerMixin",
     "JukeboxUseServerMixin",
     "ItemEquippedServerMixin",
@@ -38,7 +39,12 @@
     "ShoulderRidingServerMixin",
     "CampfireCookServerMixin",
     "FurnaceIgniteServerMixin",
-    "ServerPlayerDeathServerMixin"
+    "ServerPlayerDeathServerMixin",
+    "CopperWeatherMixin",
+    "SculkShriekServerMixin",
+    "MinecartBehaviorServerMixin",
+    "OldMinecartBehaviorServerMixin",
+    "NewMinecartBehaviorServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

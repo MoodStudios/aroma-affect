@@ -27,5 +27,10 @@
   "minecraft_bee_nest",
   "minecraft_beehive",
   "minecraft_honey_block",
-  "minecraft_crafting_table"
+  "minecraft_crafting_table",
+  "minecraft_sculk",
+  "minecraft_sculk_catalyst",
+  "minecraft_sculk_sensor",
+  "minecraft_sculk_shrieker",
+  "minecraft_sculk_vein"
 ]

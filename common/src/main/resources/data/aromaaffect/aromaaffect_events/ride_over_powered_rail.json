@@ -1,0 +1,11 @@
+{
+  "event_id": "aromaaffect:ride_over_powered_rail",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "MINECART_OVERLAP_POWERED_RAIL",
+  "scent_id": "citrus",
+  "intensity": 0.5,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": { "default": true }
+}
