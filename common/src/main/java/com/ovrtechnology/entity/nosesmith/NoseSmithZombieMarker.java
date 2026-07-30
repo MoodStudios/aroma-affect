@@ -1,7 +1,7 @@
 package com.ovrtechnology.entity.nosesmith;
 
 /**
- * Duck interface applied to {@link net.minecraft.world.entity.monster.ZombieVillager}
+ * Duck interface applied to {@link net.minecraft.world.entity.monster.zombie.ZombieVillager}
  * via mixin. Allows {@link NoseSmithEntity} to mark a zombie villager as a former
  * Nose Smith during zombification so the cure restores the correct entity type.
  */

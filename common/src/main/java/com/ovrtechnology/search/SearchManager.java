@@ -13,13 +13,13 @@ import net.minecraft.world.item.ItemStack;
  * <p>This class handles the activation and deactivation of the scent search mode,
  * which allows players to track targets when they have a Nose equipped.</p>
  * 
- * <h3>Search States:</h3>
+ * <h2>Search States:</h2>
  * <ul>
  *   <li><b>Inactive</b>: Default state, no active tracking</li>
  *   <li><b>Active</b>: Player is actively searching/tracking targets</li>
  * </ul>
  * 
- * <h3>Preconditions for Activation:</h3>
+ * <h2>Preconditions for Activation:</h2>
  * <ul>
  *   <li>Player must have a Nose item equipped in the head slot</li>
  *   <li>Player must be in a valid game state (not in menu, etc.)</li>

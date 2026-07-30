@@ -7,7 +7,7 @@ package com.ovrtechnology.websocket;
  * parsed and are called on Minecraft's main thread for thread-safe access
  * to game state.</p>
  * 
- * <h3>Example Implementation:</h3>
+ * <h2>Example Implementation:</h2>
  * <pre>{@code
  * client.addMessageHandler(message -> {
  *     if (message.isScent()) {

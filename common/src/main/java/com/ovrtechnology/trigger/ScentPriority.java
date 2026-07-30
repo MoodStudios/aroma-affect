@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
  * <p>Based on OVR's priority system. Higher priority scents override lower ones.
  * When two scents have the same priority, the most recently triggered one wins.</p>
  * 
- * <h3>Priority Levels:</h3>
+ * <h2>Priority Levels:</h2>
  * <ul>
  *   <li><b>HIGH</b> - Hero/critical scents that override everything (item use, healing)</li>
  *   <li><b>MEDIUM</b> - Important events (low health warning, block interactions)</li>

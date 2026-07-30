@@ -12,7 +12,6 @@
  *   <li>{@link com.ovrtechnology.nose.NoseRegistry} - Central registry for all nose items</li>
  *   <li>{@link com.ovrtechnology.nose.NoseDefinitionLoader} - JSON parsing utilities with texture fallback</li>
  *   <li>{@link com.ovrtechnology.nose.NoseUnlock} - Unlock conditions (blocks, biomes, structures, abilities, nose inheritance)</li>
- *   <li>{@link com.ovrtechnology.nose.NoseRecipe} - Recipe definition for crafting noses</li>
  *   <li>{@link com.ovrtechnology.nose.NoseAbilityResolver} - Resolves and caches inherited abilities with circular dependency detection</li>
  * </ul>
  * 

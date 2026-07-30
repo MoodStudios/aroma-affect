@@ -89,11 +89,7 @@ public final class ScentTriggerConfigLoader {
             loadItemTriggers();
 
             // Build trigger maps from per-category loaders
-            buildBiomeTriggers();
-            buildBlockTriggers();
-            buildFlowerTriggers();
-            buildStructureTriggers();
-            buildMobTriggers();
+            rebuildDefinitionTriggers();
 
             int total = itemTriggerMap.size() + biomeTriggerMap.size()
                     + blockTriggerMap.size() + mobTriggerMap.size()
@@ -385,6 +381,21 @@ public final class ScentTriggerConfigLoader {
 
     public static boolean isInitialized() {
         return initialized;
+    }
+
+    /**
+     * Rebuilds the lookup maps backed by reloadable datapack definitions.
+     *
+     * <p>This must run after the scent and per-category definition loaders have
+     * processed a server-data reload. Item triggers and global settings remain
+     * classpath configuration and are intentionally left unchanged.</p>
+     */
+    public static void rebuildDefinitionTriggers() {
+        buildBiomeTriggers();
+        buildBlockTriggers();
+        buildFlowerTriggers();
+        buildStructureTriggers();
+        buildMobTriggers();
     }
 
     public static void reload() {

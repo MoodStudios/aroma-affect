@@ -13,7 +13,7 @@ import java.util.UUID;
  * <p>Messages have a type identifier and a payload. The type helps route
  * messages to appropriate handlers, while the payload contains the actual data.</p>
  * 
- * <h3>Common Message Types:</h3>
+ * <h2>Common Message Types:</h2>
  * <ul>
  *   <li><b>scent</b> - Trigger a scent emission</li>
  *   <li><b>stop</b> - Stop current scent emission</li>
@@ -147,7 +147,11 @@ public class WebSocketMessage {
     public static WebSocketMessage playScent(String scentName, double intensity) {
         // Clamp intensity to valid range
         double clampedIntensity = Math.max(0.0, Math.min(1.0, intensity));
-        String payload = String.format("{\"odor\":\"%s\",\"intensity\":%.2f}", scentName, clampedIntensity);
+        String payload = String.format(
+                Locale.ROOT,
+                "{\"odor\":\"%s\",\"intensity\":%.2f}",
+                scentName,
+                clampedIntensity);
         // Use "raw" type so toRawText() sends the JSON directly without a type prefix
         return new WebSocketMessage("raw", payload);
     }

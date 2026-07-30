@@ -19,7 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * When a Nose Smith is zombified, vanilla creates a regular {@link ZombieVillager}.
- * Curing that zombie villager normally produces a plain {@link net.minecraft.world.entity.npc.Villager},
+ * Curing that zombie villager normally produces a plain
+ * {@link net.minecraft.world.entity.npc.villager.Villager},
  * losing all Nose Smith data. This mixin:
  * <ol>
  *   <li>Persists a "was Nose Smith" flag and the Nose Smith's quest state in NBT.</li>

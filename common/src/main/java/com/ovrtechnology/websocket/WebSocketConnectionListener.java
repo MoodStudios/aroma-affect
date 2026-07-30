@@ -6,7 +6,7 @@ package com.ovrtechnology.websocket;
  * <p>Implementations can react to connection lifecycle events such as
  * successful connections, disconnections, and errors.</p>
  * 
- * <h3>Example:</h3>
+ * <h2>Example:</h2>
  * <pre>{@code
  * client.addConnectionListener(new WebSocketConnectionListener() {
  *     @Override

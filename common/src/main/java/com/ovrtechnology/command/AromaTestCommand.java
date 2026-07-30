@@ -67,7 +67,8 @@ public final class AromaTestCommand {
      * Registers the /aromatest command with all subcommands.
      */
     private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest");
+        LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
         
         // Add all registered subcommands
         for (SubCommand subCommand : SUB_COMMANDS.values()) {

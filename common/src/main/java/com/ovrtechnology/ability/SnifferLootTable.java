@@ -29,7 +29,7 @@ import java.util.List;
  * </p>
  * <ul>
  * <li>Roll a random number from 0 to 100</li>
- * <li>If roll <= SNIFFER_EGG_CHANCE (40%), return Sniffer Egg</li>
+ * <li>If roll &lt;= SNIFFER_EGG_CHANCE (40%), return Sniffer Egg</li>
  * <li>Otherwise, use the vanilla archaeology loot table</li>
  * </ul>
  * 

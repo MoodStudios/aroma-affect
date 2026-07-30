@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.Instant;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -115,6 +116,23 @@ class WebSocketMessageTest {
             
             assertThat(lowMsg.getPayload()).contains("0.00");
             assertThat(highMsg.getPayload()).contains("1.00");
+        }
+
+        @Test
+        @DisplayName("playScent() should use locale-independent JSON decimals")
+        void playScentShouldUseLocaleIndependentDecimals() {
+            Locale previousLocale = Locale.getDefault();
+            try {
+                Locale.setDefault(Locale.forLanguageTag("es-CO"));
+
+                WebSocketMessage msg = WebSocketMessage.playScent("Winter", 0.5);
+
+                assertThat(msg.getType()).isEqualTo("raw");
+                assertThat(msg.toRawText())
+                        .isEqualTo("{\"odor\":\"Winter\",\"intensity\":0.50}");
+            } finally {
+                Locale.setDefault(previousLocale);
+            }
         }
         
         @Test

@@ -26,7 +26,7 @@ import java.util.Optional;
  * <li>Processing trigger durations each tick</li>
  * </ul>
  * 
- * <h3>Usage:</h3>
+ * <h2>Usage:</h2>
  * 
  * <pre>
  * // Check if can trigger (cooldown)

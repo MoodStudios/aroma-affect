@@ -115,6 +115,21 @@ jobs:
           echo "║  Create Tag:        ${{ github.event.inputs.create_tag }}"
           echo "╚══════════════════════════════════════════════════════════════╝"
 
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Run Common Tests and Javadoc
+        run: ./gradlew :common:test :common:javadoc --no-daemon --stacktrace
+
   # ════════════════════════════════════════════════════════════════════════════
   # Update Version Job - Updates gradle.properties if requested
   # ════════════════════════════════════════════════════════════════════════════

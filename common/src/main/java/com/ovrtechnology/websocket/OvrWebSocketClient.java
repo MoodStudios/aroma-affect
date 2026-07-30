@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * and ensures callbacks are executed on Minecraft's main thread.
  * </p>
  * 
- * <h3>Key Features:</h3>
+ * <h2>Key Features:</h2>
  * <ul>
  * <li>Non-blocking connection that doesn't delay game startup</li>
  * <li>Automatic reconnection with exponential backoff</li>
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * <li>Main thread callback execution</li>
  * </ul>
  * 
- * <h3>Usage:</h3>
+ * <h2>Usage:</h2>
  * 
  * <pre>{@code
  * OvrWebSocketClient client = OvrWebSocketClient.getInstance();

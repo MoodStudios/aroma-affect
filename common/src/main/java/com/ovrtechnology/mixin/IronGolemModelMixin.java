@@ -32,7 +32,7 @@ public class IronGolemModelMixin {
      * child part ("nose") so its visibility can be toggled independently.
      *
      * @author AromaAffect
-     * @reason Split nose into toggleable child part
+     * <p><strong>Reason:</strong> Split nose into toggleable child part.</p>
      */
     @Overwrite
     public static LayerDefinition createBodyLayer() {

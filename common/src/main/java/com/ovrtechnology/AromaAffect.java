@@ -165,6 +165,7 @@ public final class AromaAffect {
                                     VariantRecipeIndex.reload(ds);
                                     NoseAbilityResolver.rebuild();
                                     EventDefinitionLoader.loadAllEvents(ds);
+                                    ScentTriggerConfigLoader.rebuildDefinitionTriggers();
                                 }));
 
         // === Phase 5 — event listeners (still on Architectury) ===============
