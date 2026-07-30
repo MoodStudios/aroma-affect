@@ -592,6 +592,7 @@
   "gui.aromaaffect.omara_device.interval.5min": "Every 5min",
 
   "subtitles.aromaaffect.omara_puff": "Omara Device puffs",
+  "subtitles.aromaaffect.sniff": "Sniffing",
 
   "menu.aromaaffect.cost.nose_durability": "Nose durability: -%d",
   "menu.aromaaffect.cost.required_item": "Required: %dx %s",

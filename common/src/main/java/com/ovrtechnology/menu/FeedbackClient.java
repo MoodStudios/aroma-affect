@@ -49,6 +49,12 @@ public final class FeedbackClient {
      *         (network error, timeout, or non-2xx status). Never completes exceptionally.
      */
     public static CompletableFuture<Boolean> submit(String feedback, String name, boolean anonymous) {
+        if (!isConfigured()) {
+            AromaAffect.LOGGER.warn(
+                    "Feedback submission is unavailable because no HMAC secret was provided at build time");
+            return CompletableFuture.completedFuture(false);
+        }
+
         FeedbackPayload payload = new FeedbackPayload(
                 feedback,
                 anonymous ? null : blankToNull(name),
@@ -83,6 +89,10 @@ public final class FeedbackClient {
                     AromaAffect.LOGGER.warn("Failed to submit feedback: {}", throwable.getMessage());
                     return false;
                 });
+    }
+
+    static boolean isConfigured() {
+        return FEEDBACK_HMAC_SECRET != null && !FEEDBACK_HMAC_SECRET.isBlank();
     }
 
     /**

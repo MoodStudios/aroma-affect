@@ -21,6 +21,11 @@
       "description": "Sense nearby dangers and hostile entities"
     },
     {
+      "id": "omniscent",
+      "type": "passive",
+      "description": "Unlock all scent detections granted by the Dragon's Nose"
+    },
+    {
       "id": "precise_sniffer",
       "type": "block_interaction",
       "description": "Sniff out loot from Suspicious Sand with increased Sniffer Egg chance",

@@ -11,7 +11,9 @@ dependencies {
 
     testImplementation libs.junitJupiter
     testImplementation libs.assertjCore
+    testImplementation libs.gson
     testRuntimeOnly libs.junitPlatformLauncher
+    testRuntimeOnly libs.slf4jApi
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 }

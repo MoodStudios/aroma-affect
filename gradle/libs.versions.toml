@@ -14,6 +14,8 @@ curios = "15.0.0-beta.2+26.1.2"
 lombok = "1.18.42"
 junit = "5.10.2"
 assertj = "3.25.3"
+gson = "2.14.0"
+slf4j = "2.0.17"
 jakartaAnnotation = "3.0.0"
 
 [libraries]
@@ -37,6 +39,8 @@ jakartaAnnotation = { module = "jakarta.annotation:jakarta.annotation-api", vers
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "1.10.2" }
 assertjCore = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+slf4jApi = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 mixin = { module = "org.spongepowered:mixin", version = "0.8.7" }
 
