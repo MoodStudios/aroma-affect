@@ -112,7 +112,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
         }
 
         String scentName = si.getDefinition().getScent();
-        String fallbackName = si.getDefinition().getFallbackName();
+        String itemName = capsule.getHoverName().getString();
 
         // Scent color
         int[] rgb = {255, 255, 255};
@@ -128,7 +128,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
 
         // Truncate name to fit within GUI bounds
         int maxNamePx = (x + this.imageWidth - 4) - (infoX + 6);
-        String displayName = trimToWidth(fallbackName, maxNamePx);
+        String displayName = trimToWidth(itemName, maxNamePx);
         g.text(this.font, displayName, infoX + 6, row1Y, 0xFFFFFFFF, true);
 
         // ── Row 2: Charges bar (no text) ──

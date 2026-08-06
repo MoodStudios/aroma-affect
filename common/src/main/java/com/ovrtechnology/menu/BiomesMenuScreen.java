@@ -6,6 +6,7 @@ import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.tracking.RequiredItem;
+import com.ovrtechnology.util.RegistryNames;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -178,8 +179,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
     private void addBiomeCard(Identifier biomeId, boolean isUnlocked) {
         ItemStack icon = BIOME_ICONS.getOrDefault(biomeId.toString(), Items.GRASS_BLOCK.getDefaultInstance());
 
-        String biomeName = MenuRenderUtils.capitalizeWords(biomeId.getPath().replace("_", " "));
-        Component displayName = Component.literal(biomeName);
+        Component displayName = RegistryNames.biome(biomeId);
         Component description = Component.translatable("menu.aromaaffect.biomes.card.description", displayName);
 
         Identifier thumbnail = BiomeThumbnailResolver.resolve(biomeId);

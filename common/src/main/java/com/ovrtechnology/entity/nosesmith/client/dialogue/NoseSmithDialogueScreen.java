@@ -86,7 +86,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         int buttonY = bottom - PADDING - buttonHeight;
         int gap = 6;
 
-        shopButton = Button.builder(Component.literal("Shop"), btn -> {
+        shopButton = Button.builder(Component.translatable("shop.aromaaffect.button"), btn -> {
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.level != null) {
                 NoseSmithTradeNetworking.sendOpenShop(minecraft.level.registryAccess(), noseSmith.getId());
@@ -94,7 +94,7 @@ public final class NoseSmithDialogueScreen extends Screen {
             onClose();
         }).bounds(right - PADDING - buttonWidth, buttonY, buttonWidth, buttonHeight).build();
 
-        closeButton = Button.builder(Component.literal("Close"), btn -> onClose())
+        closeButton = Button.builder(Component.translatable("gui.aromaaffect.close"), btn -> onClose())
                 .bounds(right - PADDING - buttonWidth * 2 - gap, buttonY, buttonWidth, buttonHeight).build();
 
         shopButton.visible = false;
@@ -349,25 +349,22 @@ public final class NoseSmithDialogueScreen extends Screen {
             if (seconds > 0) {
                 int min = seconds / 60;
                 int sec = seconds % 60;
-                String time = String.format("%d:%02d", min, sec);
-                return Component.literal("A deal's a deal. Thanks again. My nose will grow back in ")
-                        .append(Component.literal(time).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
-                        .append(Component.literal("."));
+                Component time = Component.literal(String.format("%d:%02d", min, sec))
+                        .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
+                return Component.translatable("dialogue.aromaaffect.nose_smith.regrowing", time);
             }
-            return Component.literal("A deal's a deal. Thanks again.");
+            return Component.translatable("dialogue.aromaaffect.nose_smith.traded");
         }
 
         Block flower = getRequestedFlowerBlock();
         if (flower == null) {
-            return Component.literal("Hmm... I can't decide which flower I want today.");
+            return Component.translatable("dialogue.aromaaffect.nose_smith.undecided");
         }
 
         Component flowerName = Component.translatable(flower.getDescriptionId())
                 .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
 
-        return Component.literal("Oh! I'm a flower collector, but I haven't been able to find ")
-                .append(flowerName)
-                .append(Component.literal(". Drop one near me and I'll give you my nose!"));
+        return Component.translatable("dialogue.aromaaffect.nose_smith.request", flowerName);
     }
 
     @Nullable

@@ -44,7 +44,7 @@ public class SnifferMenuRegistry {
         Balm.networking().openMenu(player, new BalmMenuProvider<Integer>() {
             @Override
             public Component getDisplayName() {
-                return Component.literal("Sniffer Inventory");
+                return Component.translatable("container.aromaaffect.sniffer");
             }
 
             @Override

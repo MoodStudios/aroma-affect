@@ -1171,7 +1171,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int py = (height - 80) / 2;
 
         nameEditBox = new EditBox(font, px + 10, py + 22, popupW - 20, 18,
-                Component.literal("Name"));
+                Component.translatable("history.aromaaffect.name_field"));
         nameEditBox.setMaxLength(64);
         nameEditBox.setValue(prefill != null ? prefill : "");
         nameEditBox.setFocused(true);

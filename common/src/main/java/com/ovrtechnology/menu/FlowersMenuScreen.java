@@ -6,6 +6,7 @@ import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.tracking.RequiredItem;
+import com.ovrtechnology.util.RegistryNames;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -151,9 +152,7 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
             icon = Items.POPPY.getDefaultInstance();
         }
 
-        String flowerName = flowerId.getPath().replace("_", " ");
-        flowerName = MenuRenderUtils.capitalizeWords(flowerName);
-        Component displayName = Component.literal(flowerName);
+        Component displayName = RegistryNames.block(flowerId);
         Component description = Component.translatable("menu.aromaaffect.flowers.card.description", displayName);
 
         SelectionCard card = new SelectionCard(flowerId, displayName, icon, isUnlocked, description);

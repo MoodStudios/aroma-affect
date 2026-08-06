@@ -6,6 +6,7 @@ import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.structure.StructureDefinition;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.tracking.RequiredItem;
+import com.ovrtechnology.util.RegistryNames;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -126,18 +127,8 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
     private void addStructureCard(Identifier structureId, boolean isUnlocked) {
         StructureInfo info = STRUCTURE_INFO.get(structureId.toString());
 
-        ItemStack icon;
-        String displayName;
-
-        if (info != null) {
-            icon = info.icon;
-            displayName = info.displayName;
-        } else {
-            icon = Items.COMPASS.getDefaultInstance();
-            displayName = MenuRenderUtils.capitalizeWords(structureId.getPath().replace("_", " "));
-        }
-
-        Component name = Component.literal(displayName);
+        ItemStack icon = info != null ? info.icon : Items.COMPASS.getDefaultInstance();
+        Component name = RegistryNames.structure(structureId, info != null ? info.displayName : null);
         Component description = Component.translatable("menu.aromaaffect.structures.card.description", name);
 
         Identifier thumbnail = StructureThumbnailResolver.resolve(structureId);

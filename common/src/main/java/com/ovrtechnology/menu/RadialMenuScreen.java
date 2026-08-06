@@ -981,7 +981,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             // Teleport button (creative mode only, left of stop button)
             var player = Minecraft.getInstance().player;
             if (player != null && player.isCreative() && ActiveTrackingState.getDestination() != null) {
-                Component tpLabel = Component.literal("Teleport");
+                Component tpLabel = Component.translatable("menu.aromaaffect.teleport");
                 int tpTextW = font.width(tpLabel);
                 int tpBtnW = tpTextW + 12;
                 int tpBtnH = 14;

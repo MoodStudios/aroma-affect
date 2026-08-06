@@ -3,6 +3,7 @@ package com.ovrtechnology.scent;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.DataSource;
 import lombok.Getter;
+import net.minecraft.network.chat.Component;
 
 import java.util.*;
 
@@ -34,7 +35,12 @@ import java.util.*;
  * </pre>
  */
 public final class ScentRegistry {
-    
+
+    /**
+     * Sentinel returned when a scent ID cannot be resolved.
+     */
+    public static final String UNKNOWN_SCENT = "Unknown Scent";
+
     /**
      * Map of scent ID to its definition
      */
@@ -212,20 +218,50 @@ public final class ScentRegistry {
     }
     
     /**
-     * Get the display name for a scent, using localization if available.
-     * Falls back to the fallback_name from the definition.
-     * 
+     * Get the canonical OVR protocol name for a scent (e.g. "Winter", "Terra Silva").
+     *
+     * <p>This is an identifier, not a display string: it is sent verbatim to the OVR
+     * hardware via {@code WebSocketMessage.playScent} and compared by equality inside
+     * {@code ScentTriggerManager}. It must never be localized. For a name shown to the
+     * player, use {@link #getLocalizedName(String)} instead.</p>
+     *
      * @param id The scent ID
-     * @return The display name, or "Unknown Scent" if not found
+     * @return The OVR protocol name, or "Unknown Scent" if not found
      */
     public static String getDisplayName(String id) {
         ScentDefinition scent = scentDefinitions.get(id);
         if (scent == null) {
-            return "Unknown Scent";
+            return UNKNOWN_SCENT;
         }
-        // TODO: Integrate with Minecraft's localization system
-        // For now, return the fallback name
         return scent.getFallbackName();
+    }
+
+    /**
+     * Get the player-facing name for a scent, localized when a translation exists.
+     *
+     * @param id The scent ID
+     * @return A component resolving to the translated name, falling back to the definition's fallback_name
+     */
+    public static Component getLocalizedName(String id) {
+        ScentDefinition scent = scentDefinitions.get(id);
+        if (scent == null) {
+            return Component.literal(UNKNOWN_SCENT);
+        }
+        return Component.translatableWithFallback(scent.getTranslationKey(), scent.getFallbackName());
+    }
+
+    /**
+     * Get the player-facing name for a scent looked up by its OVR protocol name.
+     *
+     * @param ovrName The OVR protocol name (e.g. "Winter")
+     * @return A component resolving to the translated name, or the raw name if the scent is unknown
+     */
+    public static Component getLocalizedNameByOvrName(String ovrName) {
+        Optional<ScentDefinition> scent = getScentByName(ovrName);
+        if (scent.isEmpty()) {
+            return Component.literal(ovrName == null ? UNKNOWN_SCENT : ovrName);
+        }
+        return getLocalizedName(scent.get().getId());
     }
     
     /**

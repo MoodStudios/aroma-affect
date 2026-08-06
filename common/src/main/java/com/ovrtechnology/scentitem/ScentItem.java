@@ -13,6 +13,7 @@ import lombok.Getter;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -265,8 +266,11 @@ public class ScentItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
         
-        // Add scent description as tooltip
-        String description = definition.getDescription();
+        // Add scent description as tooltip, localized when a translation exists
+        String descriptionKey = definition.getDescriptionTranslationKey();
+        String description = Language.getInstance().has(descriptionKey)
+                ? Language.getInstance().getOrDefault(descriptionKey)
+                : definition.getDescription();
         if (description != null && !description.isEmpty()) {
             // Split long descriptions into multiple lines
             String[] words = description.split(" ");

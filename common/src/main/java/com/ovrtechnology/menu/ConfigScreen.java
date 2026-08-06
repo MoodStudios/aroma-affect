@@ -11,7 +11,9 @@ import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.MobTriggerDefinition;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
+import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.event.EventTriggersConfig;
+import com.ovrtechnology.util.RegistryNames;
 import com.ovrtechnology.util.Texts;
 import com.ovrtechnology.websocket.ConnectionState;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
@@ -28,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Full configuration screen for Aroma Affect mod settings.
@@ -373,43 +376,43 @@ public class ConfigScreen extends BaseMenuScreen {
         rowY += ROW_HEIGHT + 8;
 
         // Cooldowns
-        graphics.text(font, "Cooldowns", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive.cooldowns"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
         // Block Cooldown (1s - 30s)
-        graphics.text(font, "Block Cooldown", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive.block_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockCd = config.getPassiveBlockCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, blockCd, 1f, 30f, a);
         graphics.text(font, String.format("%.0fs", blockCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT;
 
         // Hostile Mob CD (1s - 30s)
-        graphics.text(font, "Hostile Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive.hostile_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobCd = config.getPassiveMobCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, mobCd, 1f, 30f, a);
         graphics.text(font, String.format("%.0fs", mobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT;
 
         // Passive Mob CD (1s - 30s)
-        graphics.text(font, "Passive Mob CD", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive.passive_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float passiveMobCd = config.getPassivePassiveMobCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, SLIDER_W, passiveMobCd, 1f, 30f, a);
         graphics.text(font, String.format("%.0fs", passiveMobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT + 8;
 
         // Ranges
-        graphics.text(font, "Ranges", x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive.ranges"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
         // Block Range (1 - 5 blocks)
-        graphics.text(font, "Block Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive.block_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockRange = (float) config.getPassiveBlockRange();
         renderSlider(graphics, sliderX, rowY, SLIDER_W, blockRange, 1f, 5f, a);
         graphics.text(font, String.format("%.1f", blockRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += ROW_HEIGHT;
 
         // Mob Range (1 - 15 blocks)
-        graphics.text(font, "Mob Range", x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.passive.mob_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobRange = (float) config.getPassiveMobRange();
         renderSlider(graphics, sliderX, rowY, SLIDER_W, mobRange, 1f, 15f, a);
         graphics.text(font, String.format("%.1f", mobRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
@@ -610,9 +613,9 @@ public class ConfigScreen extends BaseMenuScreen {
         scentScrollOffset = Mth.clamp(scentScrollOffset, 0, maxScroll);
 
         // Header
-        graphics.text(font, "Name", x, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-        graphics.text(font, "Scent", x + w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-        graphics.text(font, "Intensity", x + 2 * w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.scent_values.col_name"), x, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.scent_values.col_scent"), x + w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        graphics.text(font, Component.translatable("config.aromaaffect.scent_values.col_intensity"), x + 2 * w / 3, listTop, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         listTop += entryH + 2;
         listH -= entryH + 2;
 
@@ -770,8 +773,8 @@ public class ConfigScreen extends BaseMenuScreen {
                 for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
                     if (!trigger.isValid()) continue;
                     if (FLOWER_IDS.contains(trigger.getBlockId())) continue;
-                    String name = formatId(trigger.getBlockId());
-                    String scent = trigger.getScentName();
+                    String name = resolveName(trigger.getBlockId(), RegistryNames::block);
+                    String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
             }
@@ -779,32 +782,32 @@ public class ConfigScreen extends BaseMenuScreen {
                 for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
                     if (!trigger.isValid()) continue;
                     if (!FLOWER_IDS.contains(trigger.getBlockId())) continue;
-                    String name = formatId(trigger.getBlockId());
-                    String scent = trigger.getScentName();
+                    String name = resolveName(trigger.getBlockId(), RegistryNames::block);
+                    String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
             }
             case BIOMES -> {
                 for (BiomeTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBiomeTriggers()) {
                     if (!trigger.isValid()) continue;
-                    String name = formatId(trigger.getBiomeId());
-                    String scent = trigger.getScentName();
+                    String name = resolveName(trigger.getBiomeId(), RegistryNames::biome);
+                    String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
             }
             case STRUCTURES -> {
                 for (StructureTriggerDefinition trigger : ScentTriggerConfigLoader.getAllStructureTriggers()) {
                     if (!trigger.isValid()) continue;
-                    String name = formatId(trigger.getStructureId());
-                    String scent = trigger.getScentName();
+                    String name = resolveName(trigger.getStructureId(), id -> RegistryNames.structure(id, null));
+                    String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
             }
             case MOBS -> {
                 for (MobTriggerDefinition trigger : ScentTriggerConfigLoader.getAllMobTriggers()) {
                     if (!trigger.isValid()) continue;
-                    String name = formatId(trigger.getEntityType());
-                    String scent = trigger.getScentName();
+                    String name = resolveName(trigger.getEntityType(), RegistryNames::entity);
+                    String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
             }
@@ -813,17 +816,22 @@ public class ConfigScreen extends BaseMenuScreen {
     }
 
     private static String formatIntensity(Double intensity) {
-        if (intensity == null || intensity <= 0) return "default";
+        if (intensity == null || intensity <= 0) {
+            return Component.translatable("config.aromaaffect.scent_values.default").getString();
+        }
         return String.format("%.0f%%", intensity * 100);
     }
 
-    private static String formatId(String resourceId) {
+    private static String localizedScent(String ovrName) {
+        return ScentRegistry.getLocalizedNameByOvrName(ovrName).getString();
+    }
+
+    private static String resolveName(String resourceId, Function<Identifier, Component> resolver) {
+        if (resourceId == null || resourceId.isEmpty()) return "";
         try {
-            int colonIdx = resourceId.indexOf(':');
-            String path = colonIdx >= 0 ? resourceId.substring(colonIdx + 1) : resourceId;
-            return path.replace('_', ' ');
+            return resolver.apply(Identifier.parse(resourceId)).getString();
         } catch (Exception e) {
-            return resourceId;
+            return RegistryNames.prettify(resourceId);
         }
     }
 
