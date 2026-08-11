@@ -18,7 +18,7 @@ public final class EventDebugLog {
         // setting — mirrors the proximity-trigger UX so events are observable
         // without OVR hardware.
         if (ClientConfig.getInstance().isPassivePuffOverlay()) {
-            ScentPuffOverlay.onScentPuff(scentName, intensity);
+            ScentPuffOverlay.onScentPuff(scentName, intensity, def.getEventId());
         }
 
         boolean debugChat = ClientConfig.getInstance().isDebugScentMessages();

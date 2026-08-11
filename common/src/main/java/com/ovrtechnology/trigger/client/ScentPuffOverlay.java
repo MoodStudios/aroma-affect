@@ -23,14 +23,28 @@ public final class ScentPuffOverlay {
 
     private static final Map<String, Identifier> SCENT_MASKS = new HashMap<>();
 
+    /**
+     * Per-event animated frames, keyed by event id. These override the scent's static
+     * mask without changing which scent fires: a golden apple still triggers citrus and
+     * redstone still triggers machina, they just get their own border.
+     */
+    private static final Map<String, Identifier> EVENT_FRAMES = new HashMap<>();
+
     private static final long PULSE_DURATION_MS = 2000L;
     private static final long FADE_IN_MS = 90L;
     private static final long FADE_OUT_MS = 800L;
     private static final float MIN_VISIBLE_ALPHA = 0.28f;
 
+    /** Animated sheets are a horizontal strip of {@value #SHEET_FRAMES} frames. */
+    private static final int SHEET_FRAMES = 5;
+    private static final int SHEET_FRAME_W = 160;
+    private static final int SHEET_FRAME_H = 90;
+    private static final long SHEET_FRAME_MS = 120L;
+
     private static boolean initialized = false;
 
     private static Identifier activeMask = null;
+    private static boolean activeMaskIsSheet = false;
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
 
@@ -51,6 +65,10 @@ public final class ScentPuffOverlay {
         register("timber", "timberlayermask");
         register("smoky", "smokylayermask");
         register("machina", "diesellayermask");
+
+        registerEventFrame("aromaaffect:player_food_citrus", "golden");
+        registerEventFrame("aromaaffect:block_break_redstone_ore", "redstone_technology");
+        registerEventFrame("aromaaffect:item_crafted_redstone", "redstone_technology");
     }
 
     private ScentPuffOverlay() {
@@ -80,16 +98,35 @@ public final class ScentPuffOverlay {
      * @param intensity the scent intensity (0.0 to 1.0)
      */
     public static void onScentPuff(String scentName, double intensity) {
-        if (scentName == null || scentName.isBlank()) {
-            return;
-        }
-        Identifier mask = resolveMask(scentName);
-        if (mask == null) {
-            AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
-            return;
+        onScentPuff(scentName, intensity, null);
+    }
+
+    /**
+     * Triggers the scent overlay, preferring an animated frame registered for the event.
+     *
+     * @param scentName the scent name (used to resolve the static mask)
+     * @param intensity the scent intensity (0.0 to 1.0)
+     * @param eventId   the firing event id, or null when the puff has no event behind it
+     */
+    public static void onScentPuff(String scentName, double intensity, String eventId) {
+        Identifier sheet = eventId != null ? EVENT_FRAMES.get(eventId) : null;
+
+        if (sheet == null) {
+            if (scentName == null || scentName.isBlank()) {
+                return;
+            }
+            Identifier mask = resolveMask(scentName);
+            if (mask == null) {
+                AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
+                return;
+            }
+            activeMask = mask;
+            activeMaskIsSheet = false;
+        } else {
+            activeMask = sheet;
+            activeMaskIsSheet = true;
         }
 
-        activeMask = mask;
         pulseStartMs = System.currentTimeMillis();
         lastPuffIntensity = clamp01(intensity);
     }
@@ -122,6 +159,27 @@ public final class ScentPuffOverlay {
         int height = mc.getWindow().getGuiScaledHeight();
 
         int tint = ARGB.color(finalAlpha, 0xFFFFFF);
+
+        if (activeMaskIsSheet) {
+            int frame = (int) ((elapsed / SHEET_FRAME_MS) % SHEET_FRAMES);
+            graphics.blit(
+                    RenderPipelines.GUI_TEXTURED,
+                    activeMask,
+                    0,
+                    0,
+                    (float) (frame * SHEET_FRAME_W),
+                    0.0f,
+                    width,
+                    height,
+                    SHEET_FRAME_W,
+                    SHEET_FRAME_H,
+                    SHEET_FRAME_W * SHEET_FRAMES,
+                    SHEET_FRAME_H,
+                    tint
+            );
+            return;
+        }
+
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
                 activeMask,
@@ -153,6 +211,14 @@ public final class ScentPuffOverlay {
     private static Identifier resolveMask(String scentName) {
         String key = scentName.toLowerCase(Locale.ROOT).trim();
         return SCENT_MASKS.get(key);
+    }
+
+    private static void registerEventFrame(String eventId, String sheetFileStem) {
+        EVENT_FRAMES.put(
+                eventId,
+                Identifier.fromNamespaceAndPath(
+                        AromaAffect.MOD_ID, "textures/masks/animated/" + sheetFileStem + ".png")
+        );
     }
 
     private static void register(String scentName, String maskFileStem) {

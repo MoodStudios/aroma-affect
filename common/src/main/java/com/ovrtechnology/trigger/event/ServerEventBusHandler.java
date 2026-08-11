@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -68,6 +69,9 @@ public final class ServerEventBusHandler {
             Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS,
             Items.CARROT, Items.POTATO, Items.NETHER_WART, Items.TORCHFLOWER_SEEDS,
             Items.PITCHER_POD, Items.SWEET_BERRIES);
+
+    /** Item key matched for cake-block eating; see {@link #onCakeEaten(ServerPlayer)}. */
+    private static final String CAKE_ITEM_KEY = "minecraft:cake";
 
     private static final Map<UUID, Map<String, Long>> serverCooldowns = new HashMap<>();
 
@@ -168,6 +172,24 @@ public final class ServerEventBusHandler {
                 player,
                 TT_ITEM_EQUIPPED,
                 def -> matchesItemSimple(def.getConditions(), itemKey));
+    }
+
+    /**
+     * A bite was taken out of a cake block (plain or candle cake).
+     *
+     * <p>Cake is the one vanilla food that never reaches
+     * {@code PlayerItemUseEventDispatcher}: the item is a {@code BlockItem} with no
+     * {@code FOOD} data component, and eating happens through block interaction
+     * rather than {@code completeUsingItem}. It is dispatched here instead, under the
+     * same {@code PLAYER_FOOD_EATEN} trigger type, so a food event can keep listing
+     * {@code minecraft:cake} in its {@code item_ids} like any other food.</p>
+     */
+    public static void onCakeEaten(ServerPlayer player) {
+        if (player == null) return;
+        dispatch(
+                player,
+                PlayerStateTickHandler.TT_PLAYER_FOOD_EATEN,
+                def -> matchesItemSimple(def.getConditions(), CAKE_ITEM_KEY));
     }
 
     /** A seed/crop item was placed (planting). Filtered to {@link #SEED_ITEMS}. */
@@ -312,12 +334,29 @@ public final class ServerEventBusHandler {
         return EventConditionUtils.getBoolean(conditions, "default", false);
     }
 
+    /**
+     * An advancement was completed.
+     *
+     * <p>Only advancements the player can actually see are eligible. Recipe unlocks
+     * are advancements too -- vanilla ships 1562 of them against 126 real ones -- and
+     * they carry no {@code DisplayInfo}, so filtering on {@link Advancement#display()}
+     * keeps routine recipe unlocks from firing a scent. Root advancements are category
+     * headers rather than achievements, so they are excluded as well.</p>
+     */
     public static void onAdvancement(ServerPlayer player, AdvancementHolder advancement) {
         if (player == null || advancement == null) return;
         Identifier advId = advancement.id();
-        String advKey = advId != null ? advId.toString() : "";
+        if (advId == null) return;
+        String advKey = advId.toString();
 
-        if (advKey.contains("/recipes/") || advKey.endsWith("/root")) {
+        if (advancement.value().display().isEmpty()) {
+            return;
+        }
+
+        // Match on the path: the full id reads "minecraft:recipes/...", so a
+        // substring test for "/recipes/" would never hit.
+        String path = advId.getPath();
+        if (path.startsWith("recipes/") || path.equals("root") || path.endsWith("/root")) {
             return;
         }
 
