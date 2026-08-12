@@ -385,7 +385,7 @@ public final class PlayerStateTickHandler {
 
     private static void evaluateSleep(LocalPlayer player, EventTriggersConfig config) {
         boolean nowSleeping = player.isSleeping();
-        if (wasSleeping && !nowSleeping) {
+        if (!wasSleeping && nowSleeping) {
             fireOneShotByTriggerType(TT_PLAYER_SLEPT, config, def -> true, -1.0);
         }
         wasSleeping = nowSleeping;
