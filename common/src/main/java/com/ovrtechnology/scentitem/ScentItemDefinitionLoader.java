@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.data.DataSourceInfo;
 import com.ovrtechnology.data.JsonResources;
 import lombok.Getter;
 
@@ -41,7 +42,7 @@ public class ScentItemDefinitionLoader {
     /**
      * Path to the scent items JSON file
      */
-    private static final String SCENT_ITEMS_RESOURCE_PATH = "data/aromaaffect/scents/scent_items.json";
+    private static final String SCENT_ITEMS_RESOURCE_PATH = "settings/scent_items.json";
     
     /**
      * Default texture path for fallback
@@ -73,7 +74,7 @@ public class ScentItemDefinitionLoader {
         loadedIds.clear();
 
         try {
-            ScentItemDefinition[] scentItems = loadScentItemsFromResource(dataSource, SCENT_ITEMS_RESOURCE_PATH);
+            ScentItemDefinition[] scentItems = loadScentItemsFromResource(dataSource, DataSourceInfo.BASE + SCENT_ITEMS_RESOURCE_PATH);
             if (scentItems != null) {
                 for (ScentItemDefinition scentItem : scentItems) {
                     processScentItem(scentItem);

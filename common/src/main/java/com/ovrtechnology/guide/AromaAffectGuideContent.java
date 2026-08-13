@@ -44,7 +44,7 @@ public final class AromaAffectGuideContent {
     // ── Welcome / Getting Started ──────────────────────────────────
 
     private static GuideCategory buildWelcomeCategory() {
-        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/getting_started.json");
+        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/aroma/guide/getting_started.json");
         if (loaded != null) {
             return loaded;
         }
@@ -57,7 +57,7 @@ public final class AromaAffectGuideContent {
     // ── Noses ───────────────────────────────────────────────────────
 
     private static GuideCategory buildNosesCategory() {
-        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/noses.json");
+        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/aroma/guide/noses.json");
         if (loaded != null) {
             return loaded;
         }
@@ -72,7 +72,7 @@ public final class AromaAffectGuideContent {
     // ── Sniffer ─────────────────────────────────────────────────────
 
     private static GuideCategory buildSnifferCategory() {
-        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/sniffer.json");
+        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/aroma/guide/sniffer.json");
         if (loaded != null) {
             return loaded;
         }
@@ -85,7 +85,7 @@ public final class AromaAffectGuideContent {
     // ── Endgame ─────────────────────────────────────────────────────
 
     private static GuideCategory buildEndgameCategory() {
-        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/guide/endgame.json");
+        GuideCategory loaded = GuideContentLoader.loadCategory("data/aromaaffect/aroma/guide/endgame.json");
         if (loaded != null) {
             return loaded;
         }

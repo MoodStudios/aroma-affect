@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:windswept_gravelly_hills",
+  "image": "biome/mountains",
+  "fallback_name": "Windswept Gravelly Hills",
+  "color": "#789878",
+  "scent_id": "winter",
+  "track_cost": 10
+}

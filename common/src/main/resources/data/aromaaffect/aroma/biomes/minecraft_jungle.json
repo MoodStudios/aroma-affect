@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:jungle",
+  "image": "biome/jungle",
+  "fallback_name": "Jungle",
+  "color": "#537B09",
+  "scent_id": "citrus",
+  "track_cost": 10
+}

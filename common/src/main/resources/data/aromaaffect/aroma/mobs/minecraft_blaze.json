@@ -1,0 +1,9 @@
+{
+  "id": "minecraft:blaze",
+  "scent_id": "smoky",
+  "fallback_name": "Blaze",
+  "color": "#F6B201",
+  "range": 8,
+  "priority": "MEDLOW",
+  "intensity": 0.6
+}

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:river",
+  "image": "biome/river",
+  "fallback_name": "River",
+  "color": "#3F76E4",
+  "scent_id": "marine",
+  "track_cost": 5
+}

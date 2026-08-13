@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:sculk_vein",
+  "color": "#042931",
+  "scent_id": "machina",
+  "fallback_name": "Sculk Vein",
+  "perception": "aromaaffect:deep_dark",
+  "range": 2
+}

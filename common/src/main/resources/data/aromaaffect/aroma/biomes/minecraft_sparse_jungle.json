@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:sparse_jungle",
+  "image": "biome/jungle",
+  "fallback_name": "Sparse Jungle",
+  "color": "#64C73F",
+  "scent_id": "citrus",
+  "track_cost": 10
+}

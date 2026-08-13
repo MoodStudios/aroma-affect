@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:iron_ore",
+  "color": "#BDC3C7",
+  "scent_id": "terra_silva",
+  "fallback_name": "Iron Ore",
+  "range": 4,
+  "track_cost": 5
+}

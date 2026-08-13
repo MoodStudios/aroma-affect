@@ -622,6 +622,8 @@ public final class PathTrailRenderer {
 
         ScentTrigger trigger = ScentTrigger.create(
                 scentName,
+                null,
+                null,
                 ScentTriggerSource.PATH_TRACKING,
                 ScentPriority.MEDIUM,
                 100,

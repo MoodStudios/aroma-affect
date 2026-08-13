@@ -1,0 +1,7 @@
+{
+  "id": "machina",
+  "fallback_name": "Machina",
+  "color": "#708090",
+  "mask": "aromaaffect:textures/mask/machina",
+  "description": "Diesel fuel, industrial parts of cities, slightly sulfurous"
+}

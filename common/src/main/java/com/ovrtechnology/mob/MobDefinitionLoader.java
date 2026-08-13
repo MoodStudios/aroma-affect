@@ -26,7 +26,7 @@ public class MobDefinitionLoader {
             .setPrettyPrinting()
             .create();
 
-    public static final String MOBS_DIR = "aroma_mobs";
+    public static final String MOBS_DIR = "mobs";
 
     @Getter
     private static List<MobDefinition> loadedMobs = new ArrayList<>();
@@ -75,7 +75,7 @@ public class MobDefinitionLoader {
             return;
         }
 
-        String entityType = mob.getEntityType();
+        String entityType = mob.getId();
 
         if (loadedIds.contains(entityType)) {
             addWarning("Duplicate mob entity_type '" + entityType + "' found, skipping...");
@@ -91,7 +91,7 @@ public class MobDefinitionLoader {
     }
 
     private static void validateMob(MobDefinition mob) {
-        String entityType = mob.getEntityType();
+        String entityType = mob.getId();
 
         if (mob.hasScentId()) {
             String scentId = mob.getScentId();
@@ -110,7 +110,7 @@ public class MobDefinitionLoader {
 
     public static MobDefinition getMobByEntityType(String entityType) {
         for (MobDefinition mob : loadedMobs) {
-            if (mob.getEntityType().equals(entityType)) {
+            if (mob.getId().equals(entityType)) {
                 return mob;
             }
         }

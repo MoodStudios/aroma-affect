@@ -31,7 +31,7 @@ public class SnifferNoseDefinitionLoader {
     /**
      * Path to the sniffer noses JSON file
      */
-    private static final String SNIFFER_NOSES_RESOURCE_PATH = "data/aromaaffect/noses/sniffer_noses.json";
+    private static final String SNIFFER_NOSES_RESOURCE_PATH = "data/aromaaffect/aroma/noses/sniffer_noses.json";
     
     /**
      * Default texture path for fallback

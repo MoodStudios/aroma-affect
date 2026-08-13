@@ -48,34 +48,34 @@ import java.util.Set;
  * </ul>
  */
 public class BiomeDefinitionLoader {
-    
+
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
             .create();
-    
-    public static final String BIOMES_DIR = "aroma_biomes";
-    
+
+    public static final String BIOMES_DIR = "biomes";
+
     /**
      * Cached list of loaded biome definitions
      */
     @Getter
     private static List<BiomeDefinition> loadedBiomes = new ArrayList<>();
-    
+
     /**
      * Set of loaded biome IDs for duplicate detection
      */
     private static Set<String> loadedIds = new HashSet<>();
-    
+
     /**
      * List of validation warnings encountered during loading
      */
     @Getter
     private static List<String> validationWarnings = new ArrayList<>();
-    
+
     /**
      * Load all biome definitions from the biomes directory.
      * This parses the JSON file and validates each entry.
-     * 
+     *
      * <p>Validation includes:</p>
      * <ul>
      *   <li>Duplicate biome_id detection</li>
@@ -83,7 +83,7 @@ public class BiomeDefinitionLoader {
      *   <li>HTML color format validation</li>
      *   <li>Scent ID reference validation</li>
      * </ul>
-     * 
+     *
      * @return An unmodifiable list of valid biome definitions
      */
     public static List<BiomeDefinition> loadAllBiomes() {
@@ -113,10 +113,10 @@ public class BiomeDefinitionLoader {
 
         return Collections.unmodifiableList(loadedBiomes);
     }
-    
+
     /**
      * Process a single biome definition, validating and adding to the loaded list.
-     * 
+     *
      * @param biome The biome definition to process
      */
     private static void processBiome(BiomeDefinition biome) {
@@ -124,50 +124,50 @@ public class BiomeDefinitionLoader {
             addWarning("Null biome definition found, skipping...");
             return;
         }
-        
+
         if (!biome.isValid()) {
             addWarning("Invalid biome definition found (missing biome_id), skipping...");
             return;
         }
-        
-        String biomeId = biome.getBiomeId();
-        
+
+        String biomeId = biome.getId();
+
         // Check for duplicate IDs
         if (loadedIds.contains(biomeId)) {
             addWarning("Duplicate biome_id '" + biomeId + "' found, skipping...");
             return;
         }
-        
+
         // Validate the biome entry
         validateBiome(biome);
-        
+
         loadedIds.add(biomeId);
         loadedBiomes.add(biome);
-        AromaAffect.LOGGER.debug("Loaded biome definition: {} (color: {}, scent: {})", 
+        AromaAffect.LOGGER.debug("Loaded biome definition: {} (color: {}, scent: {})",
                 biomeId, biome.getColorHtml(), biome.getScentId());
     }
-    
+
     /**
      * Validate a biome definition and log any warnings.
-     * 
+     *
      * @param biome The biome to validate
      */
     private static void validateBiome(BiomeDefinition biome) {
-        String biomeId = biome.getBiomeId();
-        
+        String biomeId = biome.getId();
+
         // Validate biome_id format (namespace:path)
-        if (!biome.hasValidBiomeIdFormat()) {
+        if (!biome.hasValidIDFormat()) {
             addWarning("[" + biomeId + "] Invalid biome_id format - should be 'namespace:path' (e.g., 'minecraft:jungle')");
         }
-        
+
         // Validate HTML color format
         String rawColor = biome.getRawColorHtml();
         if (rawColor == null || rawColor.isEmpty()) {
-            addWarning("[" + biomeId + "] No color_html defined, using default: " + BiomeDefinition.DEFAULT_COLOR);
+            addWarning("[" + biomeId + "] No color_html defined, using default: " + BiomeDefinition.getColor(biome));
         } else if (!BiomeDefinition.isValidHtmlColor(rawColor)) {
-            addWarning("[" + biomeId + "] Invalid color_html format '" + rawColor + "', using default: " + BiomeDefinition.DEFAULT_COLOR);
+            addWarning("[" + biomeId + "] Invalid color_html format '" + rawColor + "', using default: " + BiomeDefinition.getColor(biome));
         }
-        
+
         // Validate scent_id reference
         if (biome.hasScentId()) {
             String scentId = biome.getScentId();
@@ -177,27 +177,27 @@ public class BiomeDefinitionLoader {
         } else {
             addWarning("[" + biomeId + "] No scent_id defined, biome will have no associated scent");
         }
-        
+
         // Validate image path
         String rawImage = biome.getRawImage();
         if (rawImage == null || rawImage.isEmpty()) {
-            AromaAffect.LOGGER.debug("[{}] No image defined, using default: {}", biomeId, BiomeDefinition.DEFAULT_IMAGE);
+            AromaAffect.LOGGER.debug("[{}] No image defined, using default: {}", biomeId, BiomeDefinition.getDefaultImage(biome));
         }
     }
-    
+
     /**
      * Add a validation warning.
-     * 
+     *
      * @param warning The warning message
      */
     private static void addWarning(String warning) {
         validationWarnings.add(warning);
         AromaAffect.LOGGER.warn(warning);
     }
-    
+
     /**
      * Parse a single biome definition from a JSON string.
-     * 
+     *
      * @param json The JSON string to parse
      * @return The parsed biome definition, or null if parsing fails
      */
@@ -209,35 +209,35 @@ public class BiomeDefinitionLoader {
             return null;
         }
     }
-    
+
     /**
      * Get a biome definition by biome ID from the loaded biomes.
-     * 
+     *
      * @param biomeId The biome ID to look up
      * @return The biome definition, or null if not found
      */
     public static BiomeDefinition getBiomeById(String biomeId) {
         for (BiomeDefinition biome : loadedBiomes) {
-            if (biome.getBiomeId().equals(biomeId)) {
+            if (biome.getId().equals(biomeId)) {
                 return biome;
             }
         }
         return null;
     }
-    
+
     /**
      * Check if a biome with the given ID has been loaded.
-     * 
+     *
      * @param biomeId The biome ID to check
      * @return true if the biome exists
      */
     public static boolean hasBiomeId(String biomeId) {
         return loadedIds.contains(biomeId);
     }
-    
+
     /**
      * Get all biomes that reference a specific scent.
-     * 
+     *
      * @param scentId The scent ID to filter by
      * @return List of biomes using the specified scent
      */
@@ -250,10 +250,10 @@ public class BiomeDefinitionLoader {
         }
         return result;
     }
-    
+
     /**
      * Get all vanilla Minecraft biomes.
-     * 
+     *
      * @return List of biomes with "minecraft" namespace
      */
     public static List<BiomeDefinition> getVanillaBiomes() {
@@ -265,10 +265,10 @@ public class BiomeDefinitionLoader {
         }
         return result;
     }
-    
+
     /**
      * Get all modded biomes (non-vanilla).
-     * 
+     *
      * @return List of biomes without "minecraft" namespace
      */
     public static List<BiomeDefinition> getModdedBiomes() {
@@ -280,40 +280,40 @@ public class BiomeDefinitionLoader {
         }
         return result;
     }
-    
+
     /**
      * Serialize a biome definition to JSON.
-     * 
+     *
      * @param biome The biome to serialize
      * @return JSON string representation
      */
     public static String toJson(BiomeDefinition biome) {
         return GSON.toJson(biome);
     }
-    
+
     /**
      * Get the GSON instance for external use.
-     * 
+     *
      * @return The configured GSON instance
      */
     public static Gson getGson() {
         return GSON;
     }
-    
+
     /**
      * Reload all biome definitions.
      * This clears the cache and reloads from the JSON file.
-     * 
+     *
      * @return The reloaded list of biome definitions
      */
     public static List<BiomeDefinition> reload() {
         AromaAffect.LOGGER.info("Reloading biome definitions...");
         return loadAllBiomes();
     }
-    
+
     /**
      * Check if any validation warnings occurred during loading.
-     * 
+     *
      * @return true if there were validation warnings
      */
     public static boolean hasValidationWarnings() {

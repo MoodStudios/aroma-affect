@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:meadow",
+  "image": "biome/meadow",
+  "fallback_name": "Meadow",
+  "color": "#83BB6D",
+  "scent_id": "floral",
+  "track_cost": 5
+}

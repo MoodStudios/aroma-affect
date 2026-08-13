@@ -1,0 +1,10 @@
+{
+  "id": "aromaaffect:redstone",
+  "color": "#7C4749",
+  "fallback_name": "Redstone",
+  "sound": {
+    "id": "minecraft:block.redstone_torch.burnout",
+    "volume": 1.0,
+    "pitch": 1.0
+  }
+}

@@ -145,7 +145,7 @@ public final class RegistryValidator {
         
         for (BlockDefinition block : BlockRegistry.getAllBlocks()) {
             checked++;
-            String blockId = block.getBlockId();
+            String blockId = block.getId();
             Identifier resourceLocation = Identifier.tryParse(blockId);
             
             if (resourceLocation == null) {
@@ -182,7 +182,7 @@ public final class RegistryValidator {
         
         for (BiomeDefinition biome : BiomeRegistry.getAllBiomes()) {
             checked++;
-            String biomeId = biome.getBiomeId();
+            String biomeId = biome.getId();
             Identifier resourceLocation = Identifier.tryParse(biomeId);
             
             if (resourceLocation == null) {
@@ -231,7 +231,7 @@ public final class RegistryValidator {
         
         for (StructureDefinition structure : StructureRegistry.getAllStructures()) {
             checked++;
-            String structureId = structure.getStructureId();
+            String structureId = structure.getId();
             Identifier resourceLocation = Identifier.tryParse(structureId);
             
             if (resourceLocation == null) {
@@ -341,7 +341,7 @@ public final class RegistryValidator {
         
         List<StructureDefinition> valid = new ArrayList<>();
         for (StructureDefinition structure : StructureRegistry.getAllStructures()) {
-            if (!invalidStructureIds.contains(structure.getStructureId())) {
+            if (!invalidStructureIds.contains(structure.getId())) {
                 valid.add(structure);
             }
         }
@@ -360,7 +360,7 @@ public final class RegistryValidator {
         
         List<BiomeDefinition> valid = new ArrayList<>();
         for (BiomeDefinition biome : BiomeRegistry.getAllBiomes()) {
-            if (!invalidBiomeIds.contains(biome.getBiomeId())) {
+            if (!invalidBiomeIds.contains(biome.getId())) {
                 valid.add(biome);
             }
         }
@@ -379,7 +379,7 @@ public final class RegistryValidator {
         
         List<BlockDefinition> valid = new ArrayList<>();
         for (BlockDefinition block : BlockRegistry.getAllBlocks()) {
-            if (!invalidBlockIds.contains(block.getBlockId())) {
+            if (!invalidBlockIds.contains(block.getId())) {
                 valid.add(block);
             }
         }

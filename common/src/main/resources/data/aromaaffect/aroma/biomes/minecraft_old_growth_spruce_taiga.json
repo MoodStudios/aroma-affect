@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:old_growth_spruce_taiga",
+  "image": "biome/taiga",
+  "fallback_name": "Old Growth Spruce Taiga",
+  "color": "#596651",
+  "scent_id": "evergreen",
+  "track_cost": 10
+}

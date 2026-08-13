@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:donkey",
+  "scent_id": "barnyard",
+  "fallback_name": "Donkey",
+  "color": "#534033",
+  "range": 6,
+  "priority": "MEDLOW"
+}

@@ -184,6 +184,8 @@ public class ScentItem extends Item {
 
         ScentTrigger trigger = ScentTrigger.fromItemUse(
             scentName,
+            null,
+            null,
             triggerDef.getDurationTicks(),
             intensity
         );
@@ -221,7 +223,7 @@ public class ScentItem extends Item {
     private static int getCooldownTicks(String fullItemId) {
         Optional<ItemTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getItemTrigger(fullItemId);
         long cooldownMs = triggerOpt.map(ItemTriggerDefinition::getCooldownMsOrDefault)
-                .orElse(ItemTriggerDefinition.DEFAULT_COOLDOWN_MS);
+                .orElse(triggerOpt.get().getCooldownMsOrDefault());
         return Math.max(1, (int) (cooldownMs / 50)); // ms to ticks (50ms per tick)
     }
 

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:drowned",
+  "scent_id": "marine",
+  "fallback_name": "Drowned",
+  "color": "#FACB73",
+  "range": 6,
+  "priority": "MEDLOW"
+}

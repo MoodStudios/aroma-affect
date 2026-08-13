@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:the_void",
+  "image": "biome/the_void",
+  "fallback_name": "The Void",
+  "color": "#000000",
+  "scent_id": "machina",
+  "track_cost": 25
+}

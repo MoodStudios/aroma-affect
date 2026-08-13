@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:spider",
+  "scent_id": "terra_silva",
+  "fallback_name": "Spider",
+  "color": "#342D27",
+  "range": 5,
+  "priority": "MEDLOW"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:ghast",
+  "scent_id": "smoky",
+  "fallback_name": "Ghast",
+  "color": "#F9F9F9",
+  "range": 15,
+  "priority": "MEDLOW"
+}

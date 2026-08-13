@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:sculk_shrieker",
+  "color": "#042931",
+  "scent_id": "machina",
+  "fallback_name": "Sculk Shrieker",
+  "perception": "aromaaffect:deep_dark",
+  "range": 8
+}

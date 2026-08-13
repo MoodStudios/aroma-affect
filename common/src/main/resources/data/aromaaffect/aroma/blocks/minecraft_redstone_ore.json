@@ -1,0 +1,7 @@
+{
+  "id": "minecraft:redstone_ore",
+  "color": "#C0392B",
+  "scent_id": "machina",
+  "fallback_name": "Redstone Ore",
+  "track_cost": 10
+}

@@ -2,6 +2,7 @@ package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.ActiveTrackingState;
+import com.ovrtechnology.trigger.client.SoundTrigger;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
 import com.ovrtechnology.trigger.config.MobTriggerDefinition;
@@ -104,12 +105,12 @@ public final class PassiveModeManager {
      * Passive mobs (villagers, sheep, cows, etc.) follow normal cooldown rules.
      */
     private static final Set<String> HOSTILE_MOBS = Set.of(
-        "minecraft:zombie", "minecraft:skeleton", "minecraft:creeper",
-        "minecraft:spider", "minecraft:cave_spider", "minecraft:enderman",
-        "minecraft:blaze", "minecraft:ghast", "minecraft:magma_cube",
-        "minecraft:piglin", "minecraft:hoglin", "minecraft:strider",
-        "minecraft:wither_skeleton", "minecraft:ender_dragon", "minecraft:wither",
-        "minecraft:warden", "minecraft:elder_guardian"
+            "minecraft:zombie", "minecraft:skeleton", "minecraft:creeper",
+            "minecraft:spider", "minecraft:cave_spider", "minecraft:enderman",
+            "minecraft:blaze", "minecraft:ghast", "minecraft:magma_cube",
+            "minecraft:piglin", "minecraft:hoglin", "minecraft:strider",
+            "minecraft:wither_skeleton", "minecraft:ender_dragon", "minecraft:wither",
+            "minecraft:warden", "minecraft:elder_guardian"
     );
 
     /**
@@ -279,13 +280,14 @@ public final class PassiveModeManager {
      * Represents a candidate trigger with its source information.
      */
     private record TriggerCandidate(
-        ScentTrigger trigger,
-        String source,
-        String displayName,
-        TriggerType type,
-        int range,
-        double distance
-    ) {}
+            ScentTrigger trigger,
+            String source,
+            String displayName,
+            TriggerType type,
+            int range,
+            double distance
+    ) {
+    }
 
     /**
      * Checks if a scent can be activated (respects cooldowns with special bypass rules).
@@ -309,10 +311,10 @@ public final class PassiveModeManager {
         if (candidate.type == TriggerType.MOB && isHostileMob(candidate.source)) {
             ScentTrigger activeScent = ScentTriggerManager.getInstance().getActiveScent();
             if (activeScent != null && activeScent.source() == ScentTriggerSource.PASSIVE_MODE
-                && currentTriggerType != TriggerType.MOB) {
+                    && currentTriggerType != TriggerType.MOB) {
                 if (DEV_MODE) {
                     AromaAffect.LOGGER.info("[PassiveMode] HOSTILE MOB INTERRUPT: {} at distance {}",
-                        scentName, candidate.distance);
+                            scentName, candidate.distance);
                 }
                 return true;
             }
@@ -323,7 +325,7 @@ public final class PassiveModeManager {
         Long lastTriggerTime = typeTriggerTimes.get(candidate.type);
         if (lastTriggerTime != null && (now - lastTriggerTime) < cooldownMs) {
             AromaAffect.LOGGER.debug("[PassiveMode] Blocked by type cooldown: {} ({}ms remaining)",
-                candidate.type, cooldownMs - (now - lastTriggerTime));
+                    candidate.type, cooldownMs - (now - lastTriggerTime));
             return false;
         }
 
@@ -414,10 +416,10 @@ public final class PassiveModeManager {
         for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
             if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
             try {
-                Identifier loc = Identifier.parse(trigger.getBlockId());
+                Identifier loc = Identifier.parse(trigger.getId());
                 level.registryAccess().lookupOrThrow(Registries.BLOCK)
-                    .getOptional(loc)
-                    .ifPresent(block -> triggersByBlock.put(block, trigger));
+                        .getOptional(loc)
+                        .ifPresent(block -> triggersByBlock.put(block, trigger));
             } catch (Exception e) {
                 // skip invalid block IDs
             }
@@ -448,17 +450,19 @@ public final class PassiveModeManager {
                         double intensity = calculateIntensityByDistance(distance, activationRange);
 
                         ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                            trigger.getScentName(),
-                            ScentPriority.MEDIUM,
-                            -1,
-                            intensity
+                                trigger.getScentName(),
+                                trigger.getPerception(),
+                                trigger.getSound(),
+                                ScentPriority.MEDIUM,
+                                -1,
+                                intensity
                         );
 
-                        String source = "block:" + trigger.getBlockId();
-                        String displayName = getBlockDisplayName(level, trigger.getBlockId());
+                        String source = "block:" + trigger.getId();
+                        String displayName = getBlockDisplayName(level, trigger.getId());
 
                         bestCandidate = new TriggerCandidate(scentTrigger, source, displayName,
-                            TriggerType.BLOCK, (int) activationRange, distance);
+                                TriggerType.BLOCK, (int) activationRange, distance);
                     }
                 }
             }
@@ -479,7 +483,7 @@ public final class PassiveModeManager {
                 continue;
             }
 
-            String entityTypeId = trigger.getEntityType();
+            String entityTypeId = trigger.getId();
 
             Optional<Entity> foundEntity = findNearbyMob(level, player, entityTypeId, searchRange);
 
@@ -490,22 +494,24 @@ public final class PassiveModeManager {
                 // Non-hostile mobs also require the player to be looking at them
                 if (distance <= getMobActivationRange()
                         && (HOSTILE_MOBS.contains(entityTypeId)
-                            || isPlayerLookingAt(player, foundEntity.get().getEyePosition(1.0f)))) {
+                        || isPlayerLookingAt(player, foundEntity.get().getEyePosition(1.0f)))) {
                     double intensity = calculateIntensityByDistance(distance, getMobActivationRange());
 
                     // Mobs use HIGH priority for player safety
                     ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                        trigger.getScentName(),
-                        ScentPriority.HIGH,
-                        -1,
-                        intensity
+                            trigger.getScentName(),
+                            trigger.getPerception(),
+                            trigger.getSound(),
+                            ScentPriority.HIGH,
+                            -1,
+                            intensity
                     );
 
                     String source = "mob:" + entityTypeId;
                     String displayName = getMobDisplayName(foundEntity.get());
 
                     return new TriggerCandidate(scentTrigger, source, displayName,
-                        TriggerType.MOB, (int) getMobActivationRange(), distance);
+                            TriggerType.MOB, (int) getMobActivationRange(), distance);
                 }
             }
         }
@@ -519,8 +525,8 @@ public final class PassiveModeManager {
         try {
             Identifier entityLocation = Identifier.parse(entityTypeId);
             Optional<EntityType<?>> entityTypeOpt = level.registryAccess()
-                .lookupOrThrow(Registries.ENTITY_TYPE)
-                .getOptional(entityLocation);
+                    .lookupOrThrow(Registries.ENTITY_TYPE)
+                    .getOptional(entityLocation);
 
             if (entityTypeOpt.isEmpty()) {
                 return Optional.empty();
@@ -533,7 +539,7 @@ public final class PassiveModeManager {
 
             // Find entities of the target type
             var entities = level.getEntities(player, searchBox, entity ->
-                entity.getType() == targetType && entity.isAlive()
+                    entity.getType() == targetType && entity.isAlive()
             );
 
             if (!entities.isEmpty()) {
@@ -595,26 +601,28 @@ public final class PassiveModeManager {
 
         if (DEV_MODE) {
             AromaAffect.LOGGER.info("[PassiveMode] Entered structure: {} (previous: {})",
-                currentStructureId, previousStructure);
+                    currentStructureId, previousStructure);
         }
 
         // Find the matching trigger definition for scent name and priority
         for (StructureTriggerDefinition trigger : ScentTriggerConfigLoader.getAllStructureTriggers()) {
             if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
-            if (!trigger.getStructureId().equals(currentStructureId)) continue;
+            if (!trigger.getId().equals(currentStructureId)) continue;
 
             ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                trigger.getScentName(),
-                ScentPriority.MEDLOW,
-                -1,
-                1.0
+                    trigger.getScentName(),
+                    trigger.getPerception(),
+                    trigger.getSound(),
+                    ScentPriority.MEDLOW,
+                    -1,
+                    1.0
             );
 
             String source = "structure:" + currentStructureId;
             String displayName = formatResourceId(currentStructureId);
 
             return new TriggerCandidate(scentTrigger, source, displayName,
-                TriggerType.STRUCTURE, 0, 0);
+                    TriggerType.STRUCTURE, 0, 0);
         }
 
         return null;
@@ -652,10 +660,12 @@ public final class PassiveModeManager {
             double intensity = 1.0;
 
             ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                trigger.getScentName(),
-                trigger.getPriority(),
-                -1,
-                intensity
+                    trigger.getScentName(),
+                    trigger.getPerception(),
+                    trigger.getSound(),
+                    trigger.getPriority(),
+                    -1,
+                    intensity
             );
 
             String source = "biome:" + currentBiomeId;
@@ -696,9 +706,15 @@ public final class PassiveModeManager {
         // Send trigger to hardware (cooldown already verified)
         boolean triggered = manager.trigger(candidate.trigger);
 
-        // Show border overlay if setting is enabled
-        if (triggered && ClientConfig.getInstance().isPassivePuffOverlay()) {
-            ScentPuffOverlay.onScentPuff(candidate.trigger.scentName(), candidate.trigger.intensity());
+
+        if (triggered) {
+            // Play sound when scent trigger conditions are met
+            SoundTrigger.playEventSound(player, candidate.trigger.perception(), candidate.trigger.sound());
+
+            // Show border overlay if setting is enabled
+            if (ClientConfig.getInstance().isPassivePuffOverlay()) {
+                ScentPuffOverlay.onScentPuff(candidate.trigger.scentName(), candidate.trigger.perception(), candidate.trigger.intensity());
+            }
         }
 
         if (DEV_MODE) {
@@ -717,21 +733,21 @@ public final class PassiveModeManager {
             String message;
             if (candidate.type == TriggerType.BIOME) {
                 // Biomes don't have range/distance
-                message = String.format("§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%%]",
-                    candidate.trigger.scentName(),
-                    triggerTypeName,
-                    candidate.displayName,
-                    intensityPercent
+                message = String.format("§6[Aroma Lib] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%%]",
+                        candidate.trigger.scentName(),
+                        triggerTypeName,
+                        candidate.displayName,
+                        intensityPercent
                 );
             } else {
                 // Blocks, mobs, structures have range and distance
-                message = String.format("§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%% | %.1fm / %dm]",
-                    candidate.trigger.scentName(),
-                    triggerTypeName,
-                    candidate.displayName,
-                    intensityPercent,
-                    candidate.distance,
-                    candidate.range
+                message = String.format("§6[Aroma Lib] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%% | %.1fm / %dm]",
+                        candidate.trigger.scentName(),
+                        triggerTypeName,
+                        candidate.displayName,
+                        intensityPercent,
+                        candidate.distance,
+                        candidate.range
                 );
             }
 
@@ -740,9 +756,9 @@ public final class PassiveModeManager {
         }
 
         AromaAffect.LOGGER.debug("Passive-mode activated: {} from {} (intensity: {}%, distance: {}, range: {})",
-            candidate.trigger.scentName(), candidate.source,
-            (int) Math.round(candidate.trigger.intensity() * 100),
-            candidate.distance, candidate.range);
+                candidate.trigger.scentName(), candidate.source,
+                (int) Math.round(candidate.trigger.intensity() * 100),
+                candidate.distance, candidate.range);
     }
 
     /**
@@ -753,8 +769,8 @@ public final class PassiveModeManager {
         try {
             Identifier blockLocation = Identifier.parse(blockId);
             Optional<Block> blockOpt = level.registryAccess()
-                .lookupOrThrow(Registries.BLOCK)
-                .getOptional(blockLocation);
+                    .lookupOrThrow(Registries.BLOCK)
+                    .getOptional(blockLocation);
 
             if (blockOpt.isEmpty()) {
                 return Optional.empty();
@@ -806,8 +822,8 @@ public final class PassiveModeManager {
         try {
             Identifier location = Identifier.parse(blockId);
             Optional<Block> blockOpt = level.registryAccess()
-                .lookupOrThrow(Registries.BLOCK)
-                .getOptional(location);
+                    .lookupOrThrow(Registries.BLOCK)
+                    .getOptional(location);
 
             if (blockOpt.isPresent()) {
                 Block block = blockOpt.get();
@@ -883,7 +899,7 @@ public final class PassiveModeManager {
      * Checks if the player is looking at a target position within the configured cone of vision.
      * Uses dot product between the player's view direction and the direction to the target.
      *
-     * @param player the player whose view direction to check
+     * @param player    the player whose view direction to check
      * @param targetPos the world position to check against
      * @return true if the target is within the look-at cone (30 degrees)
      */
@@ -903,11 +919,11 @@ public final class PassiveModeManager {
         if (currentPassiveTrigger != null) {
             ScentTriggerManager manager = ScentTriggerManager.getInstance();
             manager.getActiveScentOptional()
-                .filter(trigger -> trigger.source() == ScentTriggerSource.PASSIVE_MODE)
-                .ifPresent(trigger -> {
-                    manager.stop();
-                    AromaAffect.LOGGER.debug("Passive-mode scent stopped: {}", trigger.scentName());
-                });
+                    .filter(trigger -> trigger.source() == ScentTriggerSource.PASSIVE_MODE)
+                    .ifPresent(trigger -> {
+                        manager.stop();
+                        AromaAffect.LOGGER.debug("Passive-mode scent stopped: {}", trigger.scentName());
+                    });
 
             currentPassiveTrigger = null;
             currentTriggerSource = null;

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:snowy_plains",
+  "image": "biome/snowy_plains",
+  "fallback_name": "Snowy Plains",
+  "color": "#FFFAFA",
+  "scent_id": "winter",
+  "track_cost": 10
+}

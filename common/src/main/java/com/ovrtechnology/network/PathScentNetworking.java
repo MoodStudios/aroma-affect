@@ -11,6 +11,7 @@ import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.ScentTrigger;
 import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.ScentTriggerSource;
+import com.ovrtechnology.util.SoundRef;
 import net.blay09.mods.balm.Balm;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
@@ -38,17 +39,18 @@ public final class PathScentNetworking {
 
     // ── Payload records ────────────────────────────────────────────────
 
-    public record PathScentTriggerS2C(String scentName, double intensity, int priorityOrdinal, int durationTicks) implements CustomPacketPayload {
+    public record PathScentTriggerS2C(String scentName, String perception, double intensity, int priorityOrdinal, int durationTicks) implements CustomPacketPayload {
         public static final Type<PathScentTriggerS2C> TYPE = new Type<>(
                 Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_scent_trigger"));
         public static final StreamCodec<RegistryFriendlyByteBuf, PathScentTriggerS2C> STREAM_CODEC = StreamCodec.of(
                 (buf, payload) -> {
                     buf.writeUtf(payload.scentName);
+                    buf.writeUtf(payload.perception);
                     buf.writeDouble(payload.intensity);
                     buf.writeVarInt(payload.priorityOrdinal);
                     buf.writeVarInt(payload.durationTicks);
                 },
-                buf -> new PathScentTriggerS2C(buf.readUtf(), buf.readDouble(), buf.readVarInt(), buf.readVarInt())
+                buf -> new PathScentTriggerS2C(buf.readUtf(), buf.readUtf(), buf.readDouble(), buf.readVarInt(), buf.readVarInt())
         );
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
@@ -162,6 +164,8 @@ public final class PathScentNetworking {
 
                     ScentTrigger trigger = ScentTrigger.create(
                             payload.scentName(),
+                            payload.perception(),
+                            null,
                             ScentTriggerSource.PATH_TRACKING,
                             priority,
                             payload.durationTicks(),
@@ -252,8 +256,8 @@ public final class PathScentNetworking {
         AromaAffect.LOGGER.info("PathScentNetworking initialized");
     }
 
-    public static void sendScentTrigger(ServerPlayer player, String scentName, double intensity, ScentPriority priority) {
-        Balm.networking().sendTo(player, new PathScentTriggerS2C(scentName, intensity, priority.ordinal(), PATH_SCENT_DURATION_TICKS));
+    public static void sendScentTrigger(ServerPlayer player, String scentName, String perception, double intensity, ScentPriority priority) {
+        Balm.networking().sendTo(player, new PathScentTriggerS2C(scentName, perception, intensity, priority.ordinal(), PATH_SCENT_DURATION_TICKS));
         AromaAffect.LOGGER.debug("Sent path scent trigger to {}: {} (intensity: {}, priority: {})",
                 player.getName().getString(), scentName, intensity, priority);
     }

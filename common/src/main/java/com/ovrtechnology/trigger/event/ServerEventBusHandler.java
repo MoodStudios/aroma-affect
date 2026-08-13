@@ -389,16 +389,16 @@ public final class ServerEventBusHandler {
 
             long cooldown =
                     Math.max(def.getCooldownMs(), config.getCategoryCooldownMs(def.getCategory()));
-            Long lastTime = playerCooldowns.get(def.getEventId());
+            Long lastTime = playerCooldowns.get(def.getId());
             if (lastTime != null && (now - lastTime) < cooldown) {
                 return;
             }
 
-            playerCooldowns.put(def.getEventId(), now);
-            ScentEventNetworking.sendEvent(player, def.getEventId());
+            playerCooldowns.put(def.getId(), now);
+            ScentEventNetworking.sendEvent(player, def.getId());
             AromaAffect.LOGGER.debug(
                     "[Events] dispatched {} for {} via packet (trigger {})",
-                    def.getEventId(),
+                    def.getId(),
                     player.getName().getString(),
                     triggerType);
             return;

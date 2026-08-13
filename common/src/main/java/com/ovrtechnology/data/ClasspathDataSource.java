@@ -17,8 +17,6 @@ import java.util.Map;
 public enum ClasspathDataSource implements DataSource {
     INSTANCE;
 
-    private static final String BASE = "data/" + AromaAffect.MOD_ID + "/";
-
     @Override
     @Nullable
     public JsonElement read(String classpathPath) {
@@ -39,14 +37,14 @@ public enum ClasspathDataSource implements DataSource {
     @Override
     public Map<Identifier, JsonElement> listJson(String directory) {
         Map<Identifier, JsonElement> result = new LinkedHashMap<>();
-        JsonElement index = read(BASE + "_indexes/" + directory + ".json");
+        JsonElement index = read(DataSourceInfo.BASE + "_indexes/" + directory + ".json");
         if (index == null || !index.isJsonArray()) {
             return result;
         }
         JsonArray names = index.getAsJsonArray();
         for (JsonElement nameEl : names) {
             String name = nameEl.getAsString();
-            JsonElement content = read(BASE + directory + "/" + name + ".json");
+            JsonElement content = read(DataSourceInfo.BASE + directory + "/" + name + ".json");
             if (content == null) {
                 AromaAffect.LOGGER.warn("Indexed resource missing: {}/{}", directory, name);
                 continue;

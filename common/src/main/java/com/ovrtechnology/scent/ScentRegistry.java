@@ -46,20 +46,20 @@ public final class ScentRegistry {
      */
     @Getter
     private static final Map<String, ScentDefinition> scentDefinitions = new LinkedHashMap<>();
-    
+
     /**
      * Whether the registry has been initialized
      */
     @Getter
     private static boolean initialized = false;
-    
+
     /**
      * Private constructor to prevent instantiation.
      */
     private ScentRegistry() {
         throw new UnsupportedOperationException("ScentRegistry is a static utility class");
     }
-    
+
     /**
      * Initialize the scent registry.
      * This loads scent definitions from JSON.
@@ -70,51 +70,51 @@ public final class ScentRegistry {
             AromaAffect.LOGGER.warn("ScentRegistry.init() called multiple times!");
             return;
         }
-        
+
         AromaAffect.LOGGER.info("Initializing ScentRegistry...");
-        
+
         // Load scent definitions from JSON
         List<ScentDefinition> definitions = ScentDefinitionLoader.loadAllScents();
-        
+
         // Store each scent in the map
         for (ScentDefinition definition : definitions) {
             registerScent(definition);
         }
-        
+
         initialized = true;
         AromaAffect.LOGGER.info("ScentRegistry initialized with {} scents", scentDefinitions.size());
     }
-    
+
     /**
      * Register a single scent from its definition.
-     * 
+     *
      * @param definition The scent definition to register
      */
     private static void registerScent(ScentDefinition definition) {
         String id = definition.getId();
-        
+
         if (scentDefinitions.containsKey(id)) {
             AromaAffect.LOGGER.warn("Duplicate scent ID in registry: {}, skipping...", id);
             return;
         }
-        
+
         scentDefinitions.put(id, definition);
         AromaAffect.LOGGER.debug("Registered scent: {}", id);
     }
-    
+
     /**
      * Get a scent definition by ID.
-     * 
+     *
      * @param id The scent ID
      * @return Optional containing the scent if found
      */
     public static Optional<ScentDefinition> getScent(String id) {
         return Optional.ofNullable(scentDefinitions.get(id));
     }
-    
+
     /**
      * Get a scent definition by ID, or throw if not found.
-     * 
+     *
      * @param id The scent ID
      * @return The scent definition
      * @throws IllegalArgumentException if scent not found
@@ -126,34 +126,34 @@ public final class ScentRegistry {
         }
         return scent;
     }
-    
+
     /**
      * Get all registered scent IDs.
-     * 
+     *
      * @return Iterable of all scent IDs
      */
     public static Iterable<String> getAllScentIds() {
         return Collections.unmodifiableSet(scentDefinitions.keySet());
     }
-    
+
     /**
      * Get all registered scent definitions.
-     * 
+     *
      * @return Iterable of all scent definitions
      */
     public static Iterable<ScentDefinition> getAllScents() {
         return Collections.unmodifiableCollection(scentDefinitions.values());
     }
-    
+
     /**
      * Get all scent definitions as a list.
-     * 
+     *
      * @return List of all scent definitions
      */
     public static List<ScentDefinition> getAllScentsAsList() {
         return new ArrayList<>(scentDefinitions.values());
     }
-    
+
     /**
      * Get a scent definition by its fallback name (case-insensitive).
      *
@@ -172,26 +172,26 @@ public final class ScentRegistry {
 
     /**
      * Get the number of registered scents.
-     * 
+     *
      * @return The scent count
      */
     public static int getScentCount() {
         return scentDefinitions.size();
     }
-    
+
     /**
      * Check if a scent with the given ID is registered.
-     * 
+     *
      * @param id The scent ID to check
      * @return true if the scent exists
      */
     public static boolean hasScent(String id) {
         return scentDefinitions.containsKey(id);
     }
-    
+
     /**
      * Get scents sorted by ID alphabetically.
-     * 
+     *
      * @return List of scents sorted by ID
      */
     public static List<ScentDefinition> getScentsSortedById() {
@@ -199,11 +199,11 @@ public final class ScentRegistry {
         result.sort((a, b) -> a.getId().compareTo(b.getId()));
         return result;
     }
-    
+
     /**
      * Validate that all scent IDs in a list are registered.
      * Useful for validating configuration that references scents.
-     * 
+     *
      * @param scentIds List of scent IDs to validate
      * @return List of invalid (unregistered) scent IDs
      */
@@ -216,7 +216,7 @@ public final class ScentRegistry {
         }
         return invalid;
     }
-    
+
     /**
      * Get the canonical OVR protocol name for a scent (e.g. "Winter", "Terra Silva").
      *
@@ -263,7 +263,7 @@ public final class ScentRegistry {
         }
         return getLocalizedName(scent.get().getId());
     }
-    
+
     /**
      * Reload all scent definitions from JSON.
      * This clears the registry and reloads from the configuration file.
@@ -291,7 +291,7 @@ public final class ScentRegistry {
 
         AromaAffect.LOGGER.info("ScentRegistry reloaded with {} scents", scentDefinitions.size());
     }
-    
+
     /**
      * Clear the registry (primarily for testing).
      */
@@ -300,4 +300,3 @@ public final class ScentRegistry {
         initialized = false;
     }
 }
-

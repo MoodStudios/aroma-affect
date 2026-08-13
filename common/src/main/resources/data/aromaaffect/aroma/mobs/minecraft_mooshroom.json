@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:mooshroom",
+  "scent_id": "sweet",
+  "fallback_name": "Mooshroom",
+  "color": "#A00F10",
+  "range": 5,
+  "priority": "MEDLOW"
+}

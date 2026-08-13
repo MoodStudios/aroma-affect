@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:bogged",
+  "scent_id": "smoky",
+  "fallback_name": "Bogged",
+  "color": "#C1C1C1",
+  "range": 6,
+  "priority": "MEDLOW"
+}

@@ -50,34 +50,34 @@ import java.util.Set;
  * </ul>
  */
 public class StructureDefinitionLoader {
-    
+
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
             .create();
-    
-    public static final String STRUCTURES_DIR = "aroma_structures";
-    
+
+    public static final String STRUCTURES_DIR = "structures";
+
     /**
      * Cached list of loaded structure definitions
      */
     @Getter
     private static List<StructureDefinition> loadedStructures = new ArrayList<>();
-    
+
     /**
      * Set of loaded structure IDs for duplicate detection
      */
     private static Set<String> loadedIds = new HashSet<>();
-    
+
     /**
      * List of validation warnings encountered during loading
      */
     @Getter
     private static List<String> validationWarnings = new ArrayList<>();
-    
+
     /**
      * Load all structure definitions from the structures directory.
      * This parses the JSON file and validates each entry.
-     * 
+     *
      * <p>Validation includes:</p>
      * <ul>
      *   <li>Duplicate structure_id detection</li>
@@ -86,7 +86,7 @@ public class StructureDefinitionLoader {
      *   <li>Scent ID reference validation</li>
      *   <li>Block IDs reference validation</li>
      * </ul>
-     * 
+     *
      * @return An unmodifiable list of valid structure definitions
      */
     public static List<StructureDefinition> loadAllStructures() {
@@ -116,10 +116,10 @@ public class StructureDefinitionLoader {
 
         return Collections.unmodifiableList(loadedStructures);
     }
-    
+
     /**
      * Process a single structure definition, validating and adding to the loaded list.
-     * 
+     *
      * @param structure The structure definition to process
      */
     private static void processStructure(StructureDefinition structure) {
@@ -127,50 +127,50 @@ public class StructureDefinitionLoader {
             addWarning("Null structure definition found, skipping...");
             return;
         }
-        
+
         if (!structure.isValid()) {
             addWarning("Invalid structure definition found (missing structure_id), skipping...");
             return;
         }
-        
-        String structureId = structure.getStructureId();
-        
+
+        String structureId = structure.getId();
+
         // Check for duplicate IDs
         if (loadedIds.contains(structureId)) {
             addWarning("Duplicate structure_id '" + structureId + "' found, skipping...");
             return;
         }
-        
+
         // Validate the structure entry
         validateStructure(structure);
-        
+
         loadedIds.add(structureId);
         loadedStructures.add(structure);
-        AromaAffect.LOGGER.debug("Loaded structure definition: {} (color: {}, scent: {})", 
+        AromaAffect.LOGGER.debug("Loaded structure definition: {} (color: {}, scent: {})",
                 structureId, structure.getColorHtml(), structure.getScentId());
     }
-    
+
     /**
      * Validate a structure definition and log any warnings.
-     * 
+     *
      * @param structure The structure to validate
      */
     private static void validateStructure(StructureDefinition structure) {
-        String structureId = structure.getStructureId();
-        
+        String structureId = structure.getId();
+
         // Validate structure_id format (namespace:path)
-        if (!structure.hasValidStructureIdFormat()) {
+        if (!structure.hasValidIDFormat()) {
             addWarning("[" + structureId + "] Invalid structure_id format - should be 'namespace:path' (e.g., 'minecraft:stronghold')");
         }
-        
+
         // Validate HTML color format
         String rawColor = structure.getRawColorHtml();
         if (rawColor == null || rawColor.isEmpty()) {
-            addWarning("[" + structureId + "] No color_html defined, using default: " + StructureDefinition.DEFAULT_COLOR);
+            addWarning("[" + structureId + "] No color_html defined, using default: " + StructureDefinition.getColor(structure));
         } else if (!StructureDefinition.isValidHtmlColor(rawColor)) {
-            addWarning("[" + structureId + "] Invalid color_html format '" + rawColor + "', using default: " + StructureDefinition.DEFAULT_COLOR);
+            addWarning("[" + structureId + "] Invalid color_html format '" + rawColor + "', using default: " + StructureDefinition.getColor(structure));
         }
-        
+
         // Validate scent_id reference
         if (structure.hasScentId()) {
             String scentId = structure.getScentId();
@@ -180,22 +180,22 @@ public class StructureDefinitionLoader {
         } else {
             addWarning("[" + structureId + "] No scent_id defined, structure will have no associated scent");
         }
-        
+
         // Validate blocks list
         if (structure.hasBlocks()) {
             validateBlockReferences(structureId, structure.getBlocks());
         }
-        
+
         // Validate image path
         String rawImage = structure.getRawImage();
         if (rawImage == null || rawImage.isEmpty()) {
-            AromaAffect.LOGGER.debug("[{}] No image defined, using default: {}", structureId, StructureDefinition.DEFAULT_IMAGE);
+            AromaAffect.LOGGER.debug("[{}] No image defined, using default: {}", structureId, StructureDefinition.getDefaultImage(structure));
         }
     }
-    
+
     /**
      * Validate block references in the structure's blocks list.
-     * 
+     *
      * @param structureId The structure ID for logging
      * @param blockIds List of block IDs to validate
      */
@@ -204,15 +204,15 @@ public class StructureDefinitionLoader {
             AromaAffect.LOGGER.debug("[{}] BlockRegistry not initialized, skipping block validation", structureId);
             return;
         }
-        
+
         List<String> invalidBlocks = BlockRegistry.validateBlockIds(blockIds);
         for (String invalidBlock : invalidBlocks) {
             // This is just a warning - blocks in structures don't need to be in our BlockRegistry
             // They just need to be valid Minecraft block IDs
-            AromaAffect.LOGGER.debug("[{}] Block '{}' not found in BlockRegistry (may still be valid Minecraft block)", 
+            AromaAffect.LOGGER.debug("[{}] Block '{}' not found in BlockRegistry (may still be valid Minecraft block)",
                     structureId, invalidBlock);
         }
-        
+
         // Validate block ID format
         for (String blockId : blockIds) {
             if (!StructureDefinition.isValidIdentifier(blockId)) {
@@ -220,20 +220,20 @@ public class StructureDefinitionLoader {
             }
         }
     }
-    
+
     /**
      * Add a validation warning.
-     * 
+     *
      * @param warning The warning message
      */
     private static void addWarning(String warning) {
         validationWarnings.add(warning);
         AromaAffect.LOGGER.warn(warning);
     }
-    
+
     /**
      * Parse a single structure definition from a JSON string.
-     * 
+     *
      * @param json The JSON string to parse
      * @return The parsed structure definition, or null if parsing fails
      */
@@ -245,35 +245,35 @@ public class StructureDefinitionLoader {
             return null;
         }
     }
-    
+
     /**
      * Get a structure definition by structure ID from the loaded structures.
-     * 
+     *
      * @param structureId The structure ID to look up
      * @return The structure definition, or null if not found
      */
     public static StructureDefinition getStructureById(String structureId) {
         for (StructureDefinition structure : loadedStructures) {
-            if (structure.getStructureId().equals(structureId)) {
+            if (structure.getId().equals(structureId)) {
                 return structure;
             }
         }
         return null;
     }
-    
+
     /**
      * Check if a structure with the given ID has been loaded.
-     * 
+     *
      * @param structureId The structure ID to check
      * @return true if the structure exists
      */
     public static boolean hasStructureId(String structureId) {
         return loadedIds.contains(structureId);
     }
-    
+
     /**
      * Get all structures that reference a specific scent.
-     * 
+     *
      * @param scentId The scent ID to filter by
      * @return List of structures using the specified scent
      */
@@ -286,10 +286,10 @@ public class StructureDefinitionLoader {
         }
         return result;
     }
-    
+
     /**
      * Get all vanilla Minecraft structures.
-     * 
+     *
      * @return List of structures with "minecraft" namespace
      */
     public static List<StructureDefinition> getVanillaStructures() {
@@ -301,10 +301,10 @@ public class StructureDefinitionLoader {
         }
         return result;
     }
-    
+
     /**
      * Get all modded structures (non-vanilla).
-     * 
+     *
      * @return List of structures without "minecraft" namespace
      */
     public static List<StructureDefinition> getModdedStructures() {
@@ -316,40 +316,40 @@ public class StructureDefinitionLoader {
         }
         return result;
     }
-    
+
     /**
      * Serialize a structure definition to JSON.
-     * 
+     *
      * @param structure The structure to serialize
      * @return JSON string representation
      */
     public static String toJson(StructureDefinition structure) {
         return GSON.toJson(structure);
     }
-    
+
     /**
      * Get the GSON instance for external use.
-     * 
+     *
      * @return The configured GSON instance
      */
     public static Gson getGson() {
         return GSON;
     }
-    
+
     /**
      * Reload all structure definitions.
      * This clears the cache and reloads from the JSON file.
-     * 
+     *
      * @return The reloaded list of structure definitions
      */
     public static List<StructureDefinition> reload() {
         AromaAffect.LOGGER.info("Reloading structure definitions...");
         return loadAllStructures();
     }
-    
+
     /**
      * Check if any validation warnings occurred during loading.
-     * 
+     *
      * @return true if there were validation warnings
      */
     public static boolean hasValidationWarnings() {

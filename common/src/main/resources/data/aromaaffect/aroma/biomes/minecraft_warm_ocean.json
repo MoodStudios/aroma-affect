@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:warm_ocean",
+  "image": "biome/ocean",
+  "fallback_name": "Warm Ocean",
+  "color": "#43D5EE",
+  "scent_id": "marine",
+  "track_cost": 5
+}

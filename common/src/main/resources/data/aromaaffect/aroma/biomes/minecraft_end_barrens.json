@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:end_barrens",
+  "image": "biome/end_barrens",
+  "fallback_name": "End Barrens",
+  "color": "#8080A0",
+  "scent_id": "machina",
+  "track_cost": 50
+}

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:desert",
+  "image": "biome/desert",
+  "fallback_name": "Desert",
+  "color": "#FA9418",
+  "scent_id": "desert",
+  "track_cost": 5
+}

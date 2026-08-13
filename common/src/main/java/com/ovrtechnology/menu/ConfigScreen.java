@@ -772,8 +772,8 @@ public class ConfigScreen extends BaseMenuScreen {
             case BLOCKS -> {
                 for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
                     if (!trigger.isValid()) continue;
-                    if (FLOWER_IDS.contains(trigger.getBlockId())) continue;
-                    String name = resolveName(trigger.getBlockId(), RegistryNames::block);
+                    if (FLOWER_IDS.contains(trigger.getId())) continue;
+                    String name = resolveName(trigger.getId(), RegistryNames::block);
                     String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
@@ -781,8 +781,8 @@ public class ConfigScreen extends BaseMenuScreen {
             case FLOWERS -> {
                 for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
                     if (!trigger.isValid()) continue;
-                    if (!FLOWER_IDS.contains(trigger.getBlockId())) continue;
-                    String name = resolveName(trigger.getBlockId(), RegistryNames::block);
+                    if (!FLOWER_IDS.contains(trigger.getId())) continue;
+                    String name = resolveName(trigger.getId(), RegistryNames::block);
                     String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
@@ -790,7 +790,7 @@ public class ConfigScreen extends BaseMenuScreen {
             case BIOMES -> {
                 for (BiomeTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBiomeTriggers()) {
                     if (!trigger.isValid()) continue;
-                    String name = resolveName(trigger.getBiomeId(), RegistryNames::biome);
+                    String name = resolveName(trigger.getId(), RegistryNames::biome);
                     String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
@@ -798,7 +798,7 @@ public class ConfigScreen extends BaseMenuScreen {
             case STRUCTURES -> {
                 for (StructureTriggerDefinition trigger : ScentTriggerConfigLoader.getAllStructureTriggers()) {
                     if (!trigger.isValid()) continue;
-                    String name = resolveName(trigger.getStructureId(), id -> RegistryNames.structure(id, null));
+                    String name = resolveName(trigger.getId(), id -> RegistryNames.structure(id, null));
                     String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }
@@ -806,7 +806,7 @@ public class ConfigScreen extends BaseMenuScreen {
             case MOBS -> {
                 for (MobTriggerDefinition trigger : ScentTriggerConfigLoader.getAllMobTriggers()) {
                     if (!trigger.isValid()) continue;
-                    String name = resolveName(trigger.getEntityType(), RegistryNames::entity);
+                    String name = resolveName(trigger.getId(), RegistryNames::entity);
                     String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});
                 }

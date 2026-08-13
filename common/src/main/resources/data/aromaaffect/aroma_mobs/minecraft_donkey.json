@@ -1,8 +1,0 @@
-{
-  "entity_type": "minecraft:donkey",
-  "scent_id": "barnyard",
-  "fallback_name": "Donkey",
-  "color_html": "#534033",
-  "range": 6,
-  "priority": "MEDLOW"
-}

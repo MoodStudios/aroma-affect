@@ -1,0 +1,10 @@
+{
+  "id": "aromaaffect:stat_buff",
+  "color": "#57AF5D",
+  "fallback_name": "Stat Buff",
+  "sound": {
+    "id": "minecraft:block.beacon.power_select",
+    "volume": 1.0,
+    "pitch": 1.0
+  }
+}

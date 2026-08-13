@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:goat",
+  "scent_id": "barnyard",
+  "fallback_name": "Goat",
+  "color": "#A49585",
+  "range": 5,
+  "priority": "MEDLOW"
+}

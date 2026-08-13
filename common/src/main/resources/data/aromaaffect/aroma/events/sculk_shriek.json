@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:sculk_shriek",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "SCULK_SHRIEK",
+  "scent_id": "terra_silva",
+  "intensity": 0.85,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}

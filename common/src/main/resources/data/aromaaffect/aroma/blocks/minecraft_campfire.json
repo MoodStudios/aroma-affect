@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:campfire",
+  "color": "#E74C3C",
+  "scent_id": "smoky",
+  "fallback_name": "Campfire",
+  "range": 6,
+  "conditions": {
+
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:dripstone_caves",
+  "image": "biome/caves",
+  "fallback_name": "Dripstone Caves",
+  "color": "#836644",
+  "scent_id": "terra_silva",
+  "track_cost": 25
+}

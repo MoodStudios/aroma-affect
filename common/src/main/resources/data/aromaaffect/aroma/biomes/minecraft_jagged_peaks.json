@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:jagged_peaks",
+  "image": "biome/jagged_peaks",
+  "fallback_name": "Jagged Peaks",
+  "color": "#C0D8DF",
+  "scent_id": "winter",
+  "track_cost": 10
+}

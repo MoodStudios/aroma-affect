@@ -1,5 +1,7 @@
 package com.ovrtechnology.trigger;
 
+import com.ovrtechnology.util.SoundRef;
+
 import java.util.Objects;
 
 /**
@@ -16,22 +18,24 @@ import java.util.Objects;
  * @param triggeredAt   Timestamp when this trigger was created (for tie-breaking)
  */
 public record ScentTrigger(
-    String scentName,
-    ScentTriggerSource source,
-    ScentPriority priority,
-    int durationTicks,
-    double intensity,
-    long triggeredAt
+        String scentName,
+        String perception,
+        SoundRef sound,
+        ScentTriggerSource source,
+        ScentPriority priority,
+        int durationTicks,
+        double intensity,
+        long triggeredAt
 ) {
-    
+
     /**
      * Default intensity when not specified.
      */
     public static final double DEFAULT_INTENSITY = 0.5;
-    
+
     /**
      * Creates a new scent trigger with the current timestamp.
-     * 
+     *
      * @param scentName     The exact OVR scent name
      * @param source        The source of the trigger
      * @param priority      The priority level
@@ -41,23 +45,27 @@ public record ScentTrigger(
      */
     public static ScentTrigger create(
             String scentName,
+            String visual,
+            SoundRef sound,
             ScentTriggerSource source,
             ScentPriority priority,
             int durationTicks,
             double intensity) {
         return new ScentTrigger(
-            Objects.requireNonNull(scentName, "scentName cannot be null"),
-            Objects.requireNonNull(source, "source cannot be null"),
-            Objects.requireNonNull(priority, "priority cannot be null"),
-            durationTicks,
-            Math.max(0.0, Math.min(1.0, intensity)),
-            System.currentTimeMillis()
+                Objects.requireNonNull(scentName, "scentName cannot be null"),
+                visual,
+                sound,
+                Objects.requireNonNull(source, "source cannot be null"),
+                Objects.requireNonNull(priority, "priority cannot be null"),
+                durationTicks,
+                Math.max(0.0, Math.min(1.0, intensity)),
+                System.currentTimeMillis()
         );
     }
-    
+
     /**
      * Creates a new scent trigger with default intensity (0.5).
-     * 
+     *
      * @param scentName     The exact OVR scent name
      * @param source        The source of the trigger
      * @param priority      The priority level
@@ -66,35 +74,47 @@ public record ScentTrigger(
      */
     public static ScentTrigger create(
             String scentName,
+            String visual,
+            SoundRef sound,
             ScentTriggerSource source,
             ScentPriority priority,
             int durationTicks) {
-        return create(scentName, source, priority, durationTicks, DEFAULT_INTENSITY);
+        return create(scentName, visual, sound, source, priority, durationTicks, DEFAULT_INTENSITY);
     }
-    
+
+    public static ScentTrigger create(
+            String scentName,
+            SoundRef sound,
+            ScentTriggerSource source,
+            ScentPriority priority,
+            int durationTicks,
+            double intensity) {
+        return create(scentName, null, sound, source, priority, durationTicks, intensity);
+    }
+
     /**
      * Creates a high-priority trigger from item use.
-     * 
+     *
      * @param scentName     The exact OVR scent name
      * @param durationTicks Duration in ticks
      * @param intensity     Scent intensity (0.0 to 1.0)
      * @return a new ScentTrigger for item use
      */
-    public static ScentTrigger fromItemUse(String scentName, int durationTicks, double intensity) {
-        return create(scentName, ScentTriggerSource.ITEM_USE, ScentPriority.HIGH, durationTicks, intensity);
+    public static ScentTrigger fromItemUse(String scentName, String visual, SoundRef sound, int durationTicks, double intensity) {
+        return create(scentName, visual, sound, ScentTriggerSource.ITEM_USE, ScentPriority.HIGH, durationTicks, intensity);
     }
-    
+
     /**
      * Creates a high-priority trigger from item use with default intensity.
-     * 
+     *
      * @param scentName     The exact OVR scent name
      * @param durationTicks Duration in ticks
      * @return a new ScentTrigger for item use
      */
-    public static ScentTrigger fromItemUse(String scentName, int durationTicks) {
-        return fromItemUse(scentName, durationTicks, DEFAULT_INTENSITY);
+    public static ScentTrigger fromItemUse(String scentName, String visual, SoundRef sound, int durationTicks) {
+        return fromItemUse(scentName, visual, sound, durationTicks, DEFAULT_INTENSITY);
     }
-    
+
     /**
      * Creates a high-priority trigger from the Omara Device.
      *
@@ -104,40 +124,40 @@ public record ScentTrigger(
      * @return a new ScentTrigger for Omara Device
      */
     public static ScentTrigger fromOmaraDevice(String scentName, int durationTicks, double intensity) {
-        return create(scentName, ScentTriggerSource.OMARA_DEVICE, ScentPriority.HIGH, durationTicks, intensity);
+        return create(scentName, null, null, ScentTriggerSource.OMARA_DEVICE, ScentPriority.HIGH, durationTicks, intensity);
     }
 
     /**
      * Creates a trigger from passive mode detection.
-     * 
+     *
      * @param scentName     The exact OVR scent name
      * @param priority      The priority level
      * @param durationTicks Duration in ticks
      * @param intensity     Scent intensity (0.0 to 1.0)
      * @return a new ScentTrigger for passive mode
      */
-    public static ScentTrigger fromPassiveMode(String scentName, ScentPriority priority, int durationTicks, double intensity) {
-        return create(scentName, ScentTriggerSource.PASSIVE_MODE, priority, durationTicks, intensity);
+    public static ScentTrigger fromPassiveMode(String scentName, String visual, SoundRef sound, ScentPriority priority, int durationTicks, double intensity) {
+        return create(scentName, visual, sound, ScentTriggerSource.PASSIVE_MODE, priority, durationTicks, intensity);
     }
-    
+
     /**
      * Checks if this trigger has indefinite duration.
-     * 
+     *
      * @return true if duration is -1 (indefinite)
      */
     public boolean isIndefinite() {
         return durationTicks < 0;
     }
-    
+
     /**
      * Checks if this trigger should replace another based on priority and timing.
-     * 
+     *
      * <p>A trigger replaces another if:</p>
      * <ul>
      *   <li>It has higher priority, OR</li>
      *   <li>It has equal priority and was triggered more recently</li>
      * </ul>
-     * 
+     *
      * @param other the other trigger to compare (can be null)
      * @return true if this trigger should replace the other
      */
@@ -145,24 +165,26 @@ public record ScentTrigger(
         if (other == null) {
             return true;
         }
-        
+
         int priorityComparison = this.priority.comparePriority(other.priority);
-        
+
         if (priorityComparison > 0) {
             return true; // This has higher priority
         }
         if (priorityComparison < 0) {
             return false; // Other has higher priority
         }
-        
+
         // Equal priority: most recent wins
         return this.triggeredAt >= other.triggeredAt;
     }
-    
+
     @Override
     public String toString() {
         return "ScentTrigger{" +
                 "scentName='" + scentName + '\'' +
+                ", perception=" + perception +
+                ", sound=" + sound +
                 ", source=" + source +
                 ", priority=" + priority +
                 ", durationTicks=" + durationTicks +

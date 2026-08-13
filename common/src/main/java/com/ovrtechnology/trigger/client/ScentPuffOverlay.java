@@ -1,6 +1,11 @@
 package com.ovrtechnology.trigger.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.category.CategoryDefinition;
+import com.ovrtechnology.category.CategoryDefinitionLoader;
+import com.ovrtechnology.scent.ScentDefinition;
+import com.ovrtechnology.scent.ScentRegistry;
+import com.ovrtechnology.util.ColorHelper;
 import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -47,29 +52,13 @@ public final class ScentPuffOverlay {
     private static boolean activeMaskIsSheet = false;
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
+    private static String categoryColor;
 
-    static {
-        register("winter", "winterlayermask");
-        register("barnyard", "barnyardlayermask");
-        register("sweet", "sweetlayermask");
-        register("floral", "flowerlayermask");
-        register("beach", "beachlayermask");
-        register("kindred", "kindredlayermask");
-        register("petrichor", "rainlayermask");
-        register("marine", "marinelayermask");
-        register("evergreen", "forestlayermask");
-        register("terra silva", "terrasilvalayermask");
-        register("citrus", "citruslayermask");
-        register("desert", "desertlayermask");
-        register("savory spice", "savoryspicelayermask");
-        register("timber", "timberlayermask");
-        register("smoky", "smokylayermask");
-        register("machina", "diesellayermask");
-
-        registerEventFrame("aromaaffect:player_food_citrus", "golden");
-        registerEventFrame("aromaaffect:block_break_redstone_ore", "redstone_technology");
-        registerEventFrame("aromaaffect:item_crafted_redstone", "redstone_technology");
-    }
+//    static {
+//        registerEventFrame("aromaaffect:player_food_citrus", "golden");
+//        registerEventFrame("aromaaffect:block_break_redstone_ore", "redstone_technology");
+//        registerEventFrame("aromaaffect:item_crafted_redstone", "redstone_technology");
+//    }
 
     private ScentPuffOverlay() {
     }
@@ -98,7 +87,7 @@ public final class ScentPuffOverlay {
      * @param intensity the scent intensity (0.0 to 1.0)
      */
     public static void onScentPuff(String scentName, double intensity) {
-        onScentPuff(scentName, intensity, null);
+        onScentPuff(scentName, null, intensity);
     }
 
     /**
@@ -106,27 +95,38 @@ public final class ScentPuffOverlay {
      *
      * @param scentName the scent name (used to resolve the static mask)
      * @param intensity the scent intensity (0.0 to 1.0)
-     * @param eventId   the firing event id, or null when the puff has no event behind it
+     * @param visualCategory   the firing event id, or null when the puff has no event behind it
      */
-    public static void onScentPuff(String scentName, double intensity, String eventId) {
-        Identifier sheet = eventId != null ? EVENT_FRAMES.get(eventId) : null;
-
-        if (sheet == null) {
-            if (scentName == null || scentName.isBlank()) {
-                return;
-            }
-            Identifier mask = resolveMask(scentName);
-            if (mask == null) {
-                AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
-                return;
-            }
-            activeMask = mask;
-            activeMaskIsSheet = false;
-        } else {
-            activeMask = sheet;
-            activeMaskIsSheet = true;
+    public static void onScentPuff(String scentName, String visualCategory, double intensity) {
+        if (scentName == null || scentName.isBlank()) {
+            return;
         }
 
+//        Identifier sheet = eventId != null ? EVENT_FRAMES.get(eventId) : null;
+//
+//        if (sheet == null) {
+//            if (scentName == null || scentName.isBlank()) {
+//                return;
+//            }
+//            Identifier mask = resolveMask(scentName);
+//            if (mask == null) {
+//                AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
+//                return;
+//            }
+//            activeMask = mask;
+//            activeMaskIsSheet = false;
+//        } else {
+//            activeMask = sheet;
+//            activeMaskIsSheet = true;
+//        }
+
+        Identifier mask = resolveMask(scentName, visualCategory);
+        if (mask == null) {
+            AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
+            return;
+        }
+
+        activeMask = mask;
         pulseStartMs = System.currentTimeMillis();
         lastPuffIntensity = clamp01(intensity);
     }
@@ -158,27 +158,27 @@ public final class ScentPuffOverlay {
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();
 
-        int tint = ARGB.color(finalAlpha, 0xFFFFFF);
+        int tint = ARGB.color(finalAlpha, ColorHelper.getColorAsInt(categoryColor));
 
-        if (activeMaskIsSheet) {
-            int frame = (int) ((elapsed / SHEET_FRAME_MS) % SHEET_FRAMES);
-            graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    activeMask,
-                    0,
-                    0,
-                    (float) (frame * SHEET_FRAME_W),
-                    0.0f,
-                    width,
-                    height,
-                    SHEET_FRAME_W,
-                    SHEET_FRAME_H,
-                    SHEET_FRAME_W * SHEET_FRAMES,
-                    SHEET_FRAME_H,
-                    tint
-            );
-            return;
-        }
+//        if (activeMaskIsSheet) {
+//            int frame = (int) ((elapsed / SHEET_FRAME_MS) % SHEET_FRAMES);
+//            graphics.blit(
+//                    RenderPipelines.GUI_TEXTURED,
+//                    activeMask,
+//                    0,
+//                    0,
+//                    (float) (frame * SHEET_FRAME_W),
+//                    0.0f,
+//                    width,
+//                    height,
+//                    SHEET_FRAME_W,
+//                    SHEET_FRAME_H,
+//                    SHEET_FRAME_W * SHEET_FRAMES,
+//                    SHEET_FRAME_H,
+//                    tint
+//            );
+//            return;
+//        }
 
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
@@ -208,25 +208,44 @@ public final class ScentPuffOverlay {
         return 1.0f;
     }
 
-    private static Identifier resolveMask(String scentName) {
-        String key = scentName.toLowerCase(Locale.ROOT).trim();
-        return SCENT_MASKS.get(key);
+    private static Identifier resolveMask(String scentName, String categoryID) {
+        CategoryDefinition category = CategoryDefinitionLoader.getCategoryFromID(categoryID);
+
+        if (category != null) {
+            if (category.getColorHtml() != null) {
+                categoryColor = category.getColorHtml();
+            }
+
+            if (category.getMask() == null) {
+                return getScentMask(scentName);
+            }
+
+            return Identifier.parse(category.getMask() + ".png");
+        }
+
+        categoryColor = "#FFFFFF";
+        return getScentMask(scentName);
     }
 
-    private static void registerEventFrame(String eventId, String sheetFileStem) {
-        EVENT_FRAMES.put(
-                eventId,
-                Identifier.fromNamespaceAndPath(
-                        AromaAffect.MOD_ID, "textures/masks/animated/" + sheetFileStem + ".png")
-        );
+    private static Identifier getScentMask(String scentName) {
+        var scentDef = ScentRegistry.getScentByName(scentName.toLowerCase());
+        ScentDefinition scent;
+
+        if (scentDef.isPresent()) {
+            scent = scentDef.get();
+            return Identifier.parse(scent.getMask() + ".png");
+        }
+
+        return null;
     }
 
-    private static void register(String scentName, String maskFileStem) {
-        SCENT_MASKS.put(
-                scentName.toLowerCase(Locale.ROOT),
-                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/masks/" + maskFileStem + ".png")
-        );
-    }
+//    private static void registerEventFrame(String eventId, String sheetFileStem) {
+//        EVENT_FRAMES.put(
+//                eventId,
+//                Identifier.fromNamespaceAndPath(
+//                        AromaAffect.MOD_ID, "textures/masks/animated/" + sheetFileStem + ".png")
+//        );
+//    }
 
     private static double clamp01(double value) {
         return Math.max(0.0, Math.min(1.0, value));

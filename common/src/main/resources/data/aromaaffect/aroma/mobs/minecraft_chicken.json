@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:chicken",
+  "scent_id": "barnyard",
+  "fallback_name": "Chicken",
+  "color": "#FFFFFF",
+  "range": 5,
+  "priority": "MEDLOW"
+}

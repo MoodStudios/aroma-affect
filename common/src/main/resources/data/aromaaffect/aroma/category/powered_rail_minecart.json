@@ -1,0 +1,10 @@
+{
+  "id": "aromaaffect:powered_rail_minecart",
+  "color": "#FF84C3",
+  "fallback_name": "Powered Rail Overlap",
+  "sound": {
+    "id": "minecraft:ui.button.click",
+    "volume": 1.0,
+    "pitch": 1.0
+  }
+}

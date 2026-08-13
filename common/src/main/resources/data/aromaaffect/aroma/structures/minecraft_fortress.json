@@ -1,0 +1,13 @@
+{
+  "id": "minecraft:fortress",
+  "image": "structure/fortress",
+  "fallback_name": "Nether Fortress",
+  "color": "#4A0000",
+  "scent_id": "smoky",
+  "blocks": [
+    "minecraft:nether_bricks",
+    "minecraft:nether_brick_fence",
+    "minecraft:blaze_spawner"
+  ],
+  "track_cost": 25
+}

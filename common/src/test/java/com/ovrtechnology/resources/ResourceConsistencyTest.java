@@ -53,14 +53,14 @@ class ResourceConsistencyTest {
     @Test
     @DisplayName("every bundled nose ability should be defined")
     void noseAbilitiesShouldBeDefined() throws IOException {
-        JsonArray definitions = loadObject("data/aromaaffect/abilities/abilities.json")
+        JsonArray definitions = loadObject("data/aromaaffect/aroma/abilities/abilities.json")
                 .getAsJsonArray("abilities");
         Set<String> abilityIds = new HashSet<>();
         for (JsonElement definition : definitions) {
             abilityIds.add(definition.getAsJsonObject().get("id").getAsString());
         }
 
-        JsonArray noses = loadObject("data/aromaaffect/noses/noses.json")
+        JsonArray noses = loadObject("data/aromaaffect/aroma/noses/noses.json")
                 .getAsJsonArray("noses");
         for (JsonElement noseElement : noses) {
             JsonObject nose = noseElement.getAsJsonObject();
@@ -82,10 +82,10 @@ class ResourceConsistencyTest {
                 .isEqualTo("aromaaffect:item/foragers_nose");
 
         JsonObject exampleVariant =
-                loadObject("data/aromaaffect/aroma_nose_variants/example.json");
+                loadObject("data/aromaaffect/aroma/nose_variants/example.json");
         assertThat(exampleVariant.get("example").getAsBoolean()).isTrue();
 
-        JsonObject bundledGuide = loadObject("data/aromaaffect/guide/noses.json");
+        JsonObject bundledGuide = loadObject("data/aromaaffect/aroma/guide/noses.json");
         assertThat(bundledGuide.toString()).doesNotContain("custom_nose");
 
         URL recipeDirectory =

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:mule",
+  "scent_id": "barnyard",
+  "fallback_name": "Mule",
+  "color": "#1C0E00",
+  "range": 6,
+  "priority": "MEDLOW"
+}

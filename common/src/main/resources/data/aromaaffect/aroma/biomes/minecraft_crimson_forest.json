@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:crimson_forest",
+  "image": "biome/crimson_forest",
+  "fallback_name": "Crimson Forest",
+  "color": "#DD0808",
+  "scent_id": "smoky",
+  "track_cost": 25
+}

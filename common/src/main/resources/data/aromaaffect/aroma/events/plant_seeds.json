@@ -1,0 +1,11 @@
+{
+  "id": "aromaaffect:plant_seeds",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "SEED_PLANTED",
+  "scent_id": "terra_silva",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 10000,
+  "conditions": { "default": true }
+}
