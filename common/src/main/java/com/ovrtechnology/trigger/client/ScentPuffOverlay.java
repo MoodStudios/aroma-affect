@@ -6,6 +6,7 @@ import com.ovrtechnology.category.CategoryDefinitionLoader;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.util.ColorHelper;
+import com.ovrtechnology.util.ResourceUtil;
 import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -26,22 +27,11 @@ import java.util.Map;
  */
 public final class ScentPuffOverlay {
 
-    private static final Map<String, Identifier> SCENT_MASKS = new HashMap<>();
-
-    /**
-     * Per-event animated frames, keyed by event id. These override the scent's static
-     * mask without changing which scent fires: a golden apple still triggers citrus and
-     * redstone still triggers machina, they just get their own border.
-     */
-    private static final Map<String, Identifier> EVENT_FRAMES = new HashMap<>();
-
     private static final long PULSE_DURATION_MS = 2000L;
     private static final long FADE_IN_MS = 90L;
     private static final long FADE_OUT_MS = 800L;
     private static final float MIN_VISIBLE_ALPHA = 0.28f;
 
-    /** Animated sheets are a horizontal strip of {@value #SHEET_FRAMES} frames. */
-    private static final int SHEET_FRAMES = 5;
     private static final int SHEET_FRAME_W = 160;
     private static final int SHEET_FRAME_H = 90;
     private static final long SHEET_FRAME_MS = 120L;
@@ -49,16 +39,9 @@ public final class ScentPuffOverlay {
     private static boolean initialized = false;
 
     private static Identifier activeMask = null;
-    private static boolean activeMaskIsSheet = false;
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
     private static String categoryColor;
-
-//    static {
-//        registerEventFrame("aromaaffect:player_food_citrus", "golden");
-//        registerEventFrame("aromaaffect:block_break_redstone_ore", "redstone_technology");
-//        registerEventFrame("aromaaffect:item_crafted_redstone", "redstone_technology");
-//    }
 
     private ScentPuffOverlay() {
     }
@@ -102,24 +85,6 @@ public final class ScentPuffOverlay {
             return;
         }
 
-//        Identifier sheet = eventId != null ? EVENT_FRAMES.get(eventId) : null;
-//
-//        if (sheet == null) {
-//            if (scentName == null || scentName.isBlank()) {
-//                return;
-//            }
-//            Identifier mask = resolveMask(scentName);
-//            if (mask == null) {
-//                AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
-//                return;
-//            }
-//            activeMask = mask;
-//            activeMaskIsSheet = false;
-//        } else {
-//            activeMask = sheet;
-//            activeMaskIsSheet = true;
-//        }
-
         Identifier mask = resolveMask(scentName, visualCategory);
         if (mask == null) {
             AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
@@ -159,26 +124,8 @@ public final class ScentPuffOverlay {
         int height = mc.getWindow().getGuiScaledHeight();
 
         int tint = ARGB.color(finalAlpha, ColorHelper.getColorAsInt(categoryColor));
-
-//        if (activeMaskIsSheet) {
-//            int frame = (int) ((elapsed / SHEET_FRAME_MS) % SHEET_FRAMES);
-//            graphics.blit(
-//                    RenderPipelines.GUI_TEXTURED,
-//                    activeMask,
-//                    0,
-//                    0,
-//                    (float) (frame * SHEET_FRAME_W),
-//                    0.0f,
-//                    width,
-//                    height,
-//                    SHEET_FRAME_W,
-//                    SHEET_FRAME_H,
-//                    SHEET_FRAME_W * SHEET_FRAMES,
-//                    SHEET_FRAME_H,
-//                    tint
-//            );
-//            return;
-//        }
+        int frames = ResourceUtil.getTextureHeight(activeMask) / SHEET_FRAME_H;
+        int frame = (int) ((elapsed / SHEET_FRAME_MS) % frames);
 
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
@@ -186,13 +133,13 @@ public final class ScentPuffOverlay {
                 0,
                 0,
                 0.0f,
-                0.0f,
+                (frame * SHEET_FRAME_H),
                 width,
                 height,
-                width,
-                height,
-                width,
-                height,
+                SHEET_FRAME_W,
+                SHEET_FRAME_H,
+                SHEET_FRAME_W,
+                SHEET_FRAME_H * frames,
                 tint
         );
     }
@@ -238,14 +185,6 @@ public final class ScentPuffOverlay {
 
         return null;
     }
-
-//    private static void registerEventFrame(String eventId, String sheetFileStem) {
-//        EVENT_FRAMES.put(
-//                eventId,
-//                Identifier.fromNamespaceAndPath(
-//                        AromaAffect.MOD_ID, "textures/masks/animated/" + sheetFileStem + ".png")
-//        );
-//    }
 
     private static double clamp01(double value) {
         return Math.max(0.0, Math.min(1.0, value));

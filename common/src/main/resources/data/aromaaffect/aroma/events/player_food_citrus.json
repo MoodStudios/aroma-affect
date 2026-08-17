@@ -5,6 +5,7 @@
   "scent_id": "citrus",
   "intensity": 1.0,
   "priority": "MEDIUM",
+  "perception": "aromaaffect:golden",
   "duration_mode": "ONE_SHOT",
   "cooldown_ms": 5000,
   "conditions": {

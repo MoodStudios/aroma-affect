@@ -1,0 +1,5 @@
+{
+  "id": "aromaaffect:golden",
+  "fallback_name": "Golden",
+  "mask": "aromaaffect:textures/mask/citrus/golden"
+}

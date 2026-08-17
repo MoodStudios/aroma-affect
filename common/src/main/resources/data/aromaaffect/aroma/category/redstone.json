@@ -2,6 +2,7 @@
   "id": "aromaaffect:redstone",
   "color": "#7C4749",
   "fallback_name": "Redstone",
+  "mask": "aromaaffect:textures/mask/machina/redstone",
   "sound": {
     "id": "minecraft:block.redstone_torch.burnout",
     "volume": 1.0,
