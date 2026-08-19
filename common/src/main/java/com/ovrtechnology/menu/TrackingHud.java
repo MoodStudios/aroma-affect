@@ -36,6 +36,11 @@ public final class TrackingHud {
     /** Fade-out starts this many ms before the notification ends. */
     private static final long FADE_OUT_MS = 600;
 
+    /** Brief, central guidance shown when a newly found trail starts off-screen. */
+    private static final long DIRECTION_GUIDE_MS = 2500;
+    private static long directionGuideStart = 0;
+    private static ActiveTrackingState.TrackingStatus previousStatus = ActiveTrackingState.TrackingStatus.IDLE;
+
     private TrackingHud() {}
 
     public static void init() {
@@ -60,6 +65,12 @@ public final class TrackingHud {
 
     private static void tickNotification() {
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
+
+        if (status == ActiveTrackingState.TrackingStatus.TRACKING
+                && previousStatus != ActiveTrackingState.TrackingStatus.TRACKING) {
+            directionGuideStart = System.currentTimeMillis();
+        }
+        previousStatus = status;
 
         // Detect new terminal state
         if (status == ActiveTrackingState.TrackingStatus.ARRIVED
@@ -103,6 +114,9 @@ public final class TrackingHud {
         }
 
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
+        if (status == ActiveTrackingState.TrackingStatus.TRACKING) {
+            renderInitialDirectionGuide(graphics, mc);
+        }
         if (ClientConfig.getInstance().isTrackingToastPersistent()
                 && (status == ActiveTrackingState.TrackingStatus.SEARCHING
                 || status == ActiveTrackingState.TrackingStatus.TRACKING)) {
@@ -183,6 +197,44 @@ public final class TrackingHud {
             int nameColor = (a << 24) | 0xCCCCCC;
             graphics.text(font, targetText, textX, boxY + 20, nameColor, false);
         }
+    }
+
+    private static void renderInitialDirectionGuide(GuiGraphicsExtractor graphics, Minecraft mc) {
+        long elapsed = System.currentTimeMillis() - directionGuideStart;
+        if (elapsed < 0 || elapsed >= DIRECTION_GUIDE_MS) return;
+
+        TrackingDirectionIndicator.Kind kind = TrackingDirectionIndicator.resolve(
+                mc, ActiveTrackingState.getDestination());
+        // Forward and forward-diagonal trails should already be visible in the viewport.
+        if (kind == TrackingDirectionIndicator.Kind.N
+                || kind == TrackingDirectionIndicator.Kind.NE
+                || kind == TrackingDirectionIndicator.Kind.NW
+                || kind == TrackingDirectionIndicator.Kind.ON_TARGET) return;
+
+        int screenW = mc.getWindow().getGuiScaledWidth();
+        int screenH = mc.getWindow().getGuiScaledHeight();
+        int margin = 22;
+        int x = screenW / 2 - 2;
+        int y = screenH / 2 - 2;
+        switch (kind) {
+            case E -> x = screenW - margin;
+            case SE -> { x = screenW - margin; y = screenH - margin; }
+            case S -> y = screenH - margin;
+            case SW -> { x = margin; y = screenH - margin; }
+            case W -> x = margin;
+            case UP -> y = margin;
+            case DOWN -> y = screenH - margin;
+            default -> { }
+        }
+
+        float fade = elapsed < 250 ? elapsed / 250f
+                : Math.min(1f, (DIRECTION_GUIDE_MS - elapsed) / 500f);
+        float pulse = 0.8f + 0.2f * (float) Math.sin(elapsed / 120.0);
+        int alpha = (int) (220 * Mth.clamp(fade * pulse, 0f, 1f));
+        int background = (alpha / 3 << 24) | 0x102018;
+        int color = (alpha << 24) | 0x66FF99;
+        graphics.fill(x - 5, y - 5, x + 10, y + 10, background);
+        TrackingDirectionIndicator.draw(graphics, x, y, kind, color);
     }
 
     private static void renderPersistentTrackingToast(
