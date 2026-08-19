@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier;
 
 public final class SnifferLootRegistry {
 
-    public static final String RULES_DIR = "aroma_sniffer_loot";
+    public static final String RULES_DIR = "aroma/sniffer_loot";
 
     private static final Gson GSON = new GsonBuilder().create();
     private static final Map<Identifier, SnifferLootRule> rules = new LinkedHashMap<>();

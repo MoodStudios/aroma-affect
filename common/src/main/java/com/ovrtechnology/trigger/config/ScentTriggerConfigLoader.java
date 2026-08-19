@@ -7,6 +7,7 @@ import com.ovrtechnology.biome.BiomeDefinition;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinition;
 import com.ovrtechnology.block.BlockDefinitionLoader;
+import com.ovrtechnology.data.DataSourceInfo;
 import com.ovrtechnology.flower.FlowerDefinition;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.mob.MobDefinition;
@@ -31,12 +32,12 @@ public final class ScentTriggerConfigLoader {
     /**
      * Path to the item triggers configuration file (items remain separate).
      */
-    private static final String ITEM_TRIGGERS_PATH = "data/AromaAffect/aroma/settings/scent_item_triggers.json";
+    private static final String ITEM_TRIGGERS_PATH = DataSourceInfo.BASE + "settings/scent_item_triggers.json";
 
     /**
      * Path to the trigger settings file.
      */
-    private static final String SETTINGS_PATH = "data/AromaAffect/aroma/settings/trigger_settings.json";
+    private static final String SETTINGS_PATH = DataSourceInfo.BASE + "settings/trigger_settings.json";
 
     /**
      * Valid OVR scent names (case-sensitive).

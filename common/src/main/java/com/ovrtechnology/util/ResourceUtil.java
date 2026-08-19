@@ -10,10 +10,18 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ResourceUtil {
+    private static final Map<Identifier, int[]> DIMENSIONS_CACHE = new ConcurrentHashMap<>();
+
     public static int[] getTextureDimensions(Identifier texture) {
+        return DIMENSIONS_CACHE.computeIfAbsent(texture, ResourceUtil::readTextureDimensions);
+    }
+
+    private static int[] readTextureDimensions(Identifier texture) {
         try {
             Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(texture);
             if (resource.isPresent()) {

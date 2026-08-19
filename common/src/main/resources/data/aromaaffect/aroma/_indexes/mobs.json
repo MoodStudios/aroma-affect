@@ -51,5 +51,15 @@
   "minecraft_warden",
   "minecraft_elder_guardian",
   "minecraft_allay",
-  "minecraft_mooshroom"
+  "minecraft_mooshroom",
+  "minecraft_armadillo",
+  "minecraft_bogged",
+  "minecraft_breeze",
+  "minecraft_camel_husk",
+  "minecraft_creaking",
+  "minecraft_drowned",
+  "minecraft_nautilus",
+  "minecraft_trader_llama",
+  "minecraft_wandering_villager",
+  "minecraft_zombie_villager"
 ]

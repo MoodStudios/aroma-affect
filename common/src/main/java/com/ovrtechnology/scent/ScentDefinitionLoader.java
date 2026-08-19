@@ -46,7 +46,7 @@ public class ScentDefinitionLoader {
             .setPrettyPrinting()
             .create();
 
-    public static final String SCENTS_DIR = "scents";
+    public static final String SCENTS_DIR = "aroma/scents";
 
     /**
      * Cached list of loaded scent definitions

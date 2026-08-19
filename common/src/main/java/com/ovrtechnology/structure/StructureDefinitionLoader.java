@@ -55,7 +55,7 @@ public class StructureDefinitionLoader {
             .setPrettyPrinting()
             .create();
 
-    public static final String STRUCTURES_DIR = "structures";
+    public static final String STRUCTURES_DIR = "aroma/structures";
 
     /**
      * Cached list of loaded structure definitions

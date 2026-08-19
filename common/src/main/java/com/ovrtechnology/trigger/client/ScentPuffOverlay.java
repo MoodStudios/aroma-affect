@@ -14,10 +14,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 /**
  * Fullscreen scent mask overlay for non-tracking puffs (Omara Device, etc.).
  *
@@ -124,7 +120,7 @@ public final class ScentPuffOverlay {
         int height = mc.getWindow().getGuiScaledHeight();
 
         int tint = ARGB.color(finalAlpha, ColorHelper.getColorAsInt(categoryColor));
-        int frames = ResourceUtil.getTextureHeight(activeMask) / SHEET_FRAME_H;
+        int frames = Math.max(1, ResourceUtil.getTextureHeight(activeMask) / SHEET_FRAME_H);
         int frame = (int) ((elapsed / SHEET_FRAME_MS) % frames);
 
         graphics.blit(
@@ -158,32 +154,25 @@ public final class ScentPuffOverlay {
     private static Identifier resolveMask(String scentName, String categoryID) {
         CategoryDefinition category = CategoryDefinitionLoader.getCategoryFromID(categoryID);
 
-        if (category != null) {
-            if (category.getColorHtml() != null) {
-                categoryColor = category.getColorHtml();
-            }
-
-            if (category.getMask() == null) {
-                return getScentMask(scentName);
-            }
-
-            return Identifier.parse(category.getMask() + ".png");
+        if (category == null) {
+            categoryColor = "#FFFFFF";
+            return resolveScentMask(scentName);
         }
 
-        categoryColor = "#FFFFFF";
-        return getScentMask(scentName);
+        categoryColor = category.getColorHtml();
+        if (category.getMask() == null || category.getMask().isBlank()) {
+            return resolveScentMask(scentName);
+        }
+
+        return Identifier.tryParse(category.getMask() + ".png");
     }
 
-    private static Identifier getScentMask(String scentName) {
-        var scentDef = ScentRegistry.getScentByName(scentName.toLowerCase());
-        ScentDefinition scent;
-
-        if (scentDef.isPresent()) {
-            scent = scentDef.get();
-            return Identifier.parse(scent.getMask() + ".png");
-        }
-
-        return null;
+    static Identifier resolveScentMask(String scentName) {
+        return ScentRegistry.getScentByName(scentName)
+                .map(ScentDefinition::getMask)
+                .filter(mask -> !mask.isBlank())
+                .map(mask -> Identifier.tryParse(mask + ".png"))
+                .orElse(null);
     }
 
     private static double clamp01(double value) {

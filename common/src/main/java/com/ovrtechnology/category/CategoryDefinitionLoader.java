@@ -17,7 +17,7 @@ public class CategoryDefinitionLoader {
             .setPrettyPrinting()
             .create();
     
-    public static final String CATEGORY_DIR = "category";
+    public static final String CATEGORY_DIR = "aroma/category";
     
 
     @Getter

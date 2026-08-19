@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier;
 
 public final class NoseVariantRegistry {
 
-    public static final String VARIANTS_DIR = "aroma_nose_variants";
+    public static final String VARIANTS_DIR = "aroma/nose_variants";
 
     private static final Gson GSON = new GsonBuilder().create();
 

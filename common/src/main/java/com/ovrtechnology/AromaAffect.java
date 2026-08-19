@@ -153,22 +153,23 @@ public final class AromaAffect {
                                 "aromaaffect_data_reload",
                                 (net.minecraft.server.packs.resources.ResourceManager rm) -> {
                                     var ds = new ResourceManagerDataSource(rm);
-//                                    ScentRegistry.reload(ds);
-//                                    AbilityDefinitionLoader.loadAllAbilities(ds);
-//                                    BiomeDefinitionLoader.loadAllBiomes(ds);
-//                                    BlockDefinitionLoader.loadAllBlocks(ds);
-//                                    FlowerDefinitionLoader.loadAllFlowers(ds);
-//                                    StructureDefinitionLoader.loadAllStructures(ds);
-//                                    MobDefinitionLoader.loadAllMobs(ds);
-//                                    SnifferLootRegistry.reload(ds);
-//                                    NoseDefinitionLoader.reloadInPlace(ds);
-//                                    SnifferNoseDefinitionLoader.reloadInPlace(ds);
-//                                    ScentItemDefinitionLoader.reloadInPlace(ds);
-//                                    NoseVariantRegistry.reload(ds);
-//                                    VariantRecipeIndex.reload(ds);
-//                                    NoseAbilityResolver.rebuild();
-//                                    EventDefinitionLoader.loadAllEvents(ds);
-//                                    ScentTriggerConfigLoader.rebuildDefinitionTriggers();
+                                    ScentRegistry.reload(ds);
+                                    AbilityDefinitionLoader.loadAllAbilities(ds);
+                                    BiomeDefinitionLoader.loadAllBiomes(ds);
+                                    BlockDefinitionLoader.loadAllBlocks(ds);
+                                    FlowerDefinitionLoader.loadAllFlowers(ds);
+                                    StructureDefinitionLoader.loadAllStructures(ds);
+                                    MobDefinitionLoader.loadAllMobs(ds);
+                                    CategoryDefinitionLoader.loadAllCategories(ds);
+                                    SnifferLootRegistry.reload(ds);
+                                    NoseDefinitionLoader.reloadInPlace(ds);
+                                    SnifferNoseDefinitionLoader.reloadInPlace(ds);
+                                    ScentItemDefinitionLoader.reloadInPlace(ds);
+                                    NoseVariantRegistry.reload(ds);
+                                    VariantRecipeIndex.reload(ds);
+                                    NoseAbilityResolver.rebuild();
+                                    EventDefinitionLoader.loadAllEvents(ds);
+                                    ScentTriggerConfigLoader.rebuild();
                                 }));
 
         // === Phase 5 — event listeners (still on Architectury) ===============
