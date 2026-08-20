@@ -1,6 +1,5 @@
 {
   "id": "aromaaffect:boss_encounter",
-  "color": "#B5451B",
   "fallback_name": "Boss Encounter",
   "mask": "aromaaffect:textures/mask/smoky/boss_encounter",
   "sound": {
