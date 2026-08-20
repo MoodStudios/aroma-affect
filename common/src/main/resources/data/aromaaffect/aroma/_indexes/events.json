@@ -61,5 +61,7 @@
   "sniffer_dug",
   "trade_completed",
   "weather_rain",
-  "weather_thunderstorm"
+  "weather_thunderstorm",
+  "block_break_redstone_component",
+  "redstone_activated"
 ]

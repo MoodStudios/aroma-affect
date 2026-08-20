@@ -38,6 +38,7 @@ public final class ScentPuffOverlay {
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
     private static String categoryColor;
+    private static boolean activeMaskLoops = true;
 
     private ScentPuffOverlay() {
     }
@@ -121,7 +122,12 @@ public final class ScentPuffOverlay {
 
         int tint = ARGB.color(finalAlpha, ColorHelper.getColorAsInt(categoryColor));
         int frames = Math.max(1, ResourceUtil.getTextureHeight(activeMask) / SHEET_FRAME_H);
-        int frame = (int) ((elapsed / SHEET_FRAME_MS) % frames);
+        long step = elapsed / SHEET_FRAME_MS;
+        // A one-shot sheet stops on its last frame rather than snapping back to the
+        // start; the puff is fading out by then anyway.
+        int frame = activeMaskLoops
+                ? (int) (step % frames)
+                : (int) Math.min(step, frames - 1L);
 
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
@@ -156,13 +162,17 @@ public final class ScentPuffOverlay {
 
         if (category == null) {
             categoryColor = "#FFFFFF";
+            activeMaskLoops = true;
             return resolveScentMask(scentName);
         }
 
         categoryColor = category.getColorHtml();
         if (category.getMask() == null || category.getMask().isBlank()) {
+            activeMaskLoops = true;
             return resolveScentMask(scentName);
         }
+
+        activeMaskLoops = category.isMaskLooping();
 
         return Identifier.tryParse(category.getMask() + ".png");
     }

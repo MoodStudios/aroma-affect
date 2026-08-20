@@ -1,6 +1,7 @@
 {
   "id": "aromaaffect:deep_dark",
   "color": "#042A2A",
+  "mask": "aromaaffect:textures/mask/machina/deep_dark",
   "fallback_name": "Deep Dark",
   "sound": {
     "id": "minecraft:entity.allay.hurt",

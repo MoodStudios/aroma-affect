@@ -1,6 +1,7 @@
 {
   "id": "minecraft:warden",
   "scent_id": "machina",
+  "perception": "aromaaffect:deep_dark",
   "fallback_name": "Warden",
   "color": "#0A4749",
   "range": 20,
