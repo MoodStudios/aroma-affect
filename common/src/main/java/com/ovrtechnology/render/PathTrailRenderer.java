@@ -81,6 +81,12 @@ public final class PathTrailRenderer {
     private static final double INTRO_FACING_DOT = 0.65;
     /** How long the player must keep it centred before the guide retires. */
     private static final long INTRO_FACING_RELEASE_MS = 1200;
+    /** Alpha of the lead-in layer; brighter than the trail, since it must catch the eye. */
+    private static final float INTRO_GLOW_ALPHA = 0.22f;
+    private static final float INTRO_CORE_ALPHA = 0.9f;
+    /** Fraction of the lead-in spent easing in at the player and out at the join. */
+    private static final double INTRO_LEAD_FADE_IN = 0.18;
+    private static final double INTRO_LEAD_FADE_OUT = 0.4;
 
     // Dual sine wave parameters (organic worm-like undulation)
     private static final double WAVE1_AMPLITUDE = 0.5;
@@ -199,7 +205,14 @@ public final class PathTrailRenderer {
     // ── Public entry point ──────────────────────────────────────────────
 
     public static void renderTrail(PoseStack poseStack, Vec3 cameraPos, OrderedSubmitNodeCollector collector) {
-        if (!ActiveTrackingState.isActivelyTracking()) return;
+        if (!ActiveTrackingState.isActivelyTracking()) {
+            // Drop the cached path when a session ends. Without this the destination
+            // stays cached, so re-tracking the SAME target is not seen as a change:
+            // the path is never recomputed from the new player position and the intro
+            // guide never arms.
+            if (cachedDest != null) clearCache();
+            return;
+        }
 
         BlockPos dest = ActiveTrackingState.getDestination();
         if (dest == null) return;
@@ -321,6 +334,23 @@ public final class PathTrailRenderer {
                 renderLayer(pose, cameraPos, consumer, curCoreWidth,
                         renderPoints, r, g, b, curCoreAlpha * breathe,
                         now, lastPulseStart, 0, currentPulseDurationMs, totalLen, false, currentPulseIsPower));
+
+        // ── Intro guide lead-in, drawn outside the pulse reveal ──
+        // The pulse sweeps from the destination toward the player, so the samples the
+        // guide bends are the LAST to light up, and computeAlpha fades the first few
+        // blocks out on top of that. Both are right for the trail and fatal for a hint
+        // that has to be on screen immediately, so the lead-in gets its own always-on
+        // layer over the same geometry.
+        if (introStrength > 0.004f && renderPoints.size() >= 4) {
+            int leadEnd = introJoinIndex(renderPoints.size());
+            float leadFade = introStrength * breathe;
+            collector.submitCustomGeometry(poseStack, TRAIL_GLOW, (pose, consumer) ->
+                    renderIntroLead(pose, cameraPos, consumer, TRAIL_GLOW_WIDTH,
+                            renderPoints, leadEnd, r, g, b, INTRO_GLOW_ALPHA * leadFade));
+            collector.submitCustomGeometry(poseStack, TRAIL_CORE, (pose, consumer) ->
+                    renderIntroLead(pose, cameraPos, consumer, TRAIL_CORE_WIDTH,
+                            renderPoints, leadEnd, r, g, b, INTRO_CORE_ALPHA * leadFade));
+        }
 
         // ── Client-side particle spawning (synchronized with pulse) ──
         if (now - lastParticleSpawnTime >= PARTICLE_SPAWN_INTERVAL_MS) {
@@ -498,6 +528,53 @@ public final class PathTrailRenderer {
         }
     }
 
+    /** Sample where the intro curve rejoins the real trail; shared so the bend and the lead-in agree. */
+    private static int introJoinIndex(int size) {
+        return Math.min(size - 1, Math.max(3, (int) Math.round(INTRO_JOIN_DISTANCE / SAMPLE_SPACING)));
+    }
+
+    /**
+     * Draws the bent head of the trail at full strength, ignoring the pulse reveal.
+     * Eases in just off the player so it does not start on their nose, and out into
+     * the join so it hands over to the pulsing trail instead of ending on a stub.
+     */
+    private static void renderIntroLead(PoseStack.Pose pose, Vec3 cam, VertexConsumer consumer,
+                                        float lineWidth, List<Vec3> points, int joinIndex,
+                                        float r, float g, float b, float baseAlpha) {
+        if (baseAlpha <= 0.002f || joinIndex < 2) return;
+
+        for (int i = 0; i < joinIndex; i++) {
+            Vec3 a = points.get(i);
+            Vec3 next = points.get(i + 1);
+
+            float alphaA = baseAlpha * introLeadTaper((double) i / joinIndex);
+            float alphaB = baseAlpha * introLeadTaper((double) (i + 1) / joinIndex);
+            if (alphaA < 0.004f && alphaB < 0.004f) continue;
+
+            float nx = (float) (next.x - a.x);
+            float ny = (float) (next.y - a.y);
+            float nz = (float) (next.z - a.z);
+            float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+            if (len > 0) { nx /= len; ny /= len; nz /= len; }
+
+            consumer.addVertex(pose, (float) (a.x - cam.x), (float) (a.y - cam.y), (float) (a.z - cam.z))
+                    .setColor(r, g, b, alphaA)
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
+            consumer.addVertex(pose, (float) (next.x - cam.x), (float) (next.y - cam.y), (float) (next.z - cam.z))
+                    .setColor(r, g, b, alphaB)
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
+        }
+    }
+
+    /** Along-the-lead-in envelope: eases in near the player, out at the join. */
+    private static float introLeadTaper(double t) {
+        float in = smoothstep((float) (t / INTRO_LEAD_FADE_IN));
+        float out = smoothstep((float) ((1.0 - t) / INTRO_LEAD_FADE_OUT));
+        return in * out;
+    }
+
     /**
      * Returns a copy of {@code points} whose leading samples are bent toward
      * the player's gaze, blended by the current intro strength. At strength 0
@@ -509,8 +586,7 @@ public final class PathTrailRenderer {
             return points;
         }
 
-        int joinIndex = Math.min(points.size() - 1,
-                Math.max(3, (int) Math.round(INTRO_JOIN_DISTANCE / SAMPLE_SPACING)));
+        int joinIndex = introJoinIndex(points.size());
         Vec3 join = points.get(joinIndex);
         Vec3 control = playerPos.add(introAimDir.scale(INTRO_CONTROL_DISTANCE));
 
