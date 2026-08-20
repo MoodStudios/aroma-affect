@@ -57,6 +57,36 @@ public final class PathTrailRenderer {
     private static final double HEIGHT_OFFSET = 0.6;
     private static final double MAX_RENDER_DISTANCE = 120.0;
     private static final double MAX_Y_STEP = 1.5;
+    // ── Intro guide (camera-facing lead-in) ──────────────────────
+    // When a trail is picked while the destination sits behind/above/below the
+    // player, the leading samples are bent toward the player's gaze so a hook
+    // appears in front of them and sweeps into the real trail. The bend is
+    // applied at render time (not baked into the sampled path) so it follows
+    // the camera and dissolves gradually instead of popping out.
+
+    /** Total lifetime of the intro guide before it eases out on its own. */
+    private static final long INTRO_GUIDE_MS = 6000;
+    /** Tail of that lifetime spent easing the bend back into the real trail. */
+    private static final long INTRO_FADE_MS = 2000;
+    /** How far in front of the gaze the bezier control point sits. */
+    private static final double INTRO_CONTROL_DISTANCE = 5.0;
+    /** Distance along the real trail where the intro curve rejoins it. */
+    private static final double INTRO_JOIN_DISTANCE = 12.0;
+    /** Exponential smoothing time constants (seconds) for bend and aim. */
+    private static final float INTRO_STRENGTH_TAU = 0.35f;
+    private static final float INTRO_AIM_TAU = 0.30f;
+    /** Vertical damping on the aim so the hook does not dive into ground/sky. */
+    private static final double INTRO_AIM_PITCH_DAMP = 0.35;
+    /** cos(angle) at which the trail counts as centred in the player's view. */
+    private static final double INTRO_FACING_DOT = 0.65;
+    /** How long the player must keep it centred before the guide retires. */
+    private static final long INTRO_FACING_RELEASE_MS = 1200;
+    /** Alpha of the lead-in layer; brighter than the trail, since it must catch the eye. */
+    private static final float INTRO_GLOW_ALPHA = 0.22f;
+    private static final float INTRO_CORE_ALPHA = 0.9f;
+    /** Fraction of the lead-in spent easing in at the player and out at the join. */
+    private static final double INTRO_LEAD_FADE_IN = 0.18;
+    private static final double INTRO_LEAD_FADE_OUT = 0.4;
 
     // Dual sine wave parameters (organic worm-like undulation)
     private static final double WAVE1_AMPLITUDE = 0.5;
@@ -108,6 +138,11 @@ public final class PathTrailRenderer {
     private static long prevPulseStart = 0;
     private static long currentPulseDurationMs = PULSE_DURATION_FAR_MS;
     private static long prevPulseDurationMs = PULSE_DURATION_FAR_MS;
+    private static long introGuideStart = 0;
+    private static Vec3 introAimDir = null;
+    private static float introStrength = 0f;
+    private static long introFacingSince = 0;
+    private static long introLastUpdate = 0;
 
     // ── Player-tracking: where the player was when each path was computed ──
 
@@ -170,7 +205,14 @@ public final class PathTrailRenderer {
     // ── Public entry point ──────────────────────────────────────────────
 
     public static void renderTrail(PoseStack poseStack, Vec3 cameraPos, OrderedSubmitNodeCollector collector) {
-        if (!ActiveTrackingState.isActivelyTracking()) return;
+        if (!ActiveTrackingState.isActivelyTracking()) {
+            // Drop the cached path when a session ends. Without this the destination
+            // stays cached, so re-tracking the SAME target is not seen as a change:
+            // the path is never recomputed from the new player position and the intro
+            // guide never arms.
+            if (cachedDest != null) clearCache();
+            return;
+        }
 
         BlockPos dest = ActiveTrackingState.getDestination();
         if (dest == null) return;
@@ -183,6 +225,7 @@ public final class PathTrailRenderer {
 
         // ── Destination changed → reset everything ──
         if (!dest.equals(cachedDest)) {
+            beginIntroGuide(now);
             stablePath = computeTrailPoints(playerPos, dest, mc.level);
             stablePathOrigin = playerPos;
             cachedDest = dest;
@@ -237,7 +280,9 @@ public final class PathTrailRenderer {
         Vec3 baseOrigin = useIncoming ? incomingPathOrigin : stablePathOrigin;
         if (basePath.size() < 2) return;
 
-        List<Vec3> renderPoints = adjustedForPlayer(basePath, baseOrigin, playerPos);
+        updateIntroGuide(mc.player, playerPos, dest, now);
+        List<Vec3> renderPoints = withIntroCurve(
+                adjustedForPlayer(basePath, baseOrigin, playerPos), playerPos);
 
         // ── Color & animation ──
         float[] color = resolveColor();
@@ -249,7 +294,8 @@ public final class PathTrailRenderer {
 
         // ── Render previous path fading on its own geometry ──
         if (prevStablePath != null && prevStablePath.size() >= 2 && prevPulseStart > 0) {
-            List<Vec3> adjustedPrev = adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos);
+            List<Vec3> adjustedPrev = withIntroCurve(
+                    adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos), playerPos);
             double prevTotalLen = totalLength(adjustedPrev);
             long lastPointReach = prevPulseStart + prevPulseDurationMs;
             if (now - lastPointReach < WAKE_VISIBLE_MS + WAKE_FADE_MS) {
@@ -289,12 +335,30 @@ public final class PathTrailRenderer {
                         renderPoints, r, g, b, curCoreAlpha * breathe,
                         now, lastPulseStart, 0, currentPulseDurationMs, totalLen, false, currentPulseIsPower));
 
+        // ── Intro guide lead-in, drawn outside the pulse reveal ──
+        // The pulse sweeps from the destination toward the player, so the samples the
+        // guide bends are the LAST to light up, and computeAlpha fades the first few
+        // blocks out on top of that. Both are right for the trail and fatal for a hint
+        // that has to be on screen immediately, so the lead-in gets its own always-on
+        // layer over the same geometry.
+        if (introStrength > 0.004f && renderPoints.size() >= 4) {
+            int leadEnd = introJoinIndex(renderPoints.size());
+            float leadFade = introStrength * breathe;
+            collector.submitCustomGeometry(poseStack, TRAIL_GLOW, (pose, consumer) ->
+                    renderIntroLead(pose, cameraPos, consumer, TRAIL_GLOW_WIDTH,
+                            renderPoints, leadEnd, r, g, b, INTRO_GLOW_ALPHA * leadFade));
+            collector.submitCustomGeometry(poseStack, TRAIL_CORE, (pose, consumer) ->
+                    renderIntroLead(pose, cameraPos, consumer, TRAIL_CORE_WIDTH,
+                            renderPoints, leadEnd, r, g, b, INTRO_CORE_ALPHA * leadFade));
+        }
+
         // ── Client-side particle spawning (synchronized with pulse) ──
         if (now - lastParticleSpawnTime >= PARTICLE_SPAWN_INTERVAL_MS) {
             lastParticleSpawnTime = now;
             spawnPulseParticles(mc.level, renderPoints, totalLen, now, lastPulseStart, currentPulseDurationMs, color, currentPulseIsPower);
             if (prevStablePath != null && prevStablePath.size() >= 2) {
-                List<Vec3> adjustedPrevParticles = adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos);
+                List<Vec3> adjustedPrevParticles = withIntroCurve(
+                        adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos), playerPos);
                 double prevTotalLen = totalLength(adjustedPrevParticles);
                 spawnPulseParticles(mc.level, adjustedPrevParticles, prevTotalLen, now, prevPulseStart, prevPulseDurationMs, color, prevPulseIsPower);
             }
@@ -317,6 +381,11 @@ public final class PathTrailRenderer {
         pulseCount = 0;
         currentPulseIsPower = false;
         prevPulseIsPower = false;
+        introGuideStart = 0;
+        introAimDir = null;
+        introStrength = 0f;
+        introFacingSince = 0;
+        introLastUpdate = 0;
         stablePathOrigin = null;
         incomingPathOrigin = null;
         prevPathOrigin = null;
@@ -383,6 +452,162 @@ public final class PathTrailRenderer {
         }
 
         return points;
+    }
+
+    // ── Intro guide ──────────────────────────────────────────────
+
+    /** Arms the intro guide for a freshly selected destination. */
+    private static void beginIntroGuide(long now) {
+        introGuideStart = now;
+        introAimDir = null;
+        introStrength = 0f;
+        introFacingSince = 0;
+        introLastUpdate = now;
+    }
+
+    /**
+     * Advances the intro guide once per frame: eases its strength in, follows
+     * the camera with a lag, and retires it once the player has kept the real
+     * trail centred long enough. Every transition runs through an exponential
+     * smoother, so the hook never appears or vanishes in a single frame.
+     */
+    private static void updateIntroGuide(net.minecraft.client.player.LocalPlayer player,
+                                         Vec3 playerPos, BlockPos dest, long now) {
+        float dt = introLastUpdate == 0
+                ? 0.05f
+                : (float) Math.max(0.0, Math.min(0.25, (now - introLastUpdate) / 1000.0));
+        introLastUpdate = now;
+
+        float target = 0f;
+        if (introGuideStart > 0) {
+            long age = now - introGuideStart;
+            long fadeAt = INTRO_GUIDE_MS - INTRO_FADE_MS;
+            if (age < fadeAt) {
+                target = 1f;
+            } else if (age < INTRO_GUIDE_MS) {
+                target = smoothstep(1f - (age - fadeAt) / (float) INTRO_FADE_MS);
+            }
+
+            // Retire early once the destination has been centred for a while:
+            // the guide has done its job and would only clutter the view.
+            Vec3 toDest = new Vec3(dest.getX() + 0.5 - playerPos.x,
+                    dest.getY() + 0.5 - playerPos.y,
+                    dest.getZ() + 0.5 - playerPos.z);
+            if (toDest.lengthSqr() > 1.0e-4
+                    && player.getViewVector(1.0f).dot(toDest.normalize()) >= INTRO_FACING_DOT) {
+                if (introFacingSince == 0) introFacingSince = now;
+                long held = now - introFacingSince;
+                target = Math.min(target, smoothstep(1f - held / (float) INTRO_FACING_RELEASE_MS));
+                if (held >= INTRO_FACING_RELEASE_MS) introGuideStart = 0;
+            } else {
+                introFacingSince = 0;
+            }
+        }
+
+        // Aim lags the camera so turning sweeps the hook around instead of
+        // snapping it, and so it keeps pointing from the gaze into the trail.
+        Vec3 look = player.getViewVector(1.0f);
+        Vec3 desired = new Vec3(look.x, look.y * INTRO_AIM_PITCH_DAMP, look.z);
+        if (desired.lengthSqr() < 1.0e-4) desired = look;
+        if (desired.lengthSqr() > 1.0e-6) {
+            desired = desired.normalize();
+            if (introAimDir == null) {
+                introAimDir = desired;
+            } else {
+                double blend = 1.0 - Math.exp(-dt / INTRO_AIM_TAU);
+                Vec3 mixed = introAimDir.add(desired.subtract(introAimDir).scale(blend));
+                if (mixed.lengthSqr() > 1.0e-6) introAimDir = mixed.normalize();
+            }
+        }
+
+        double ease = 1.0 - Math.exp(-dt / INTRO_STRENGTH_TAU);
+        introStrength += (float) ((target - introStrength) * ease);
+        if (target == 0f && introStrength < 0.004f) {
+            introStrength = 0f;
+            introAimDir = null;
+        }
+    }
+
+    /** Sample where the intro curve rejoins the real trail; shared so the bend and the lead-in agree. */
+    private static int introJoinIndex(int size) {
+        return Math.min(size - 1, Math.max(3, (int) Math.round(INTRO_JOIN_DISTANCE / SAMPLE_SPACING)));
+    }
+
+    /**
+     * Draws the bent head of the trail at full strength, ignoring the pulse reveal.
+     * Eases in just off the player so it does not start on their nose, and out into
+     * the join so it hands over to the pulsing trail instead of ending on a stub.
+     */
+    private static void renderIntroLead(PoseStack.Pose pose, Vec3 cam, VertexConsumer consumer,
+                                        float lineWidth, List<Vec3> points, int joinIndex,
+                                        float r, float g, float b, float baseAlpha) {
+        if (baseAlpha <= 0.002f || joinIndex < 2) return;
+
+        for (int i = 0; i < joinIndex; i++) {
+            Vec3 a = points.get(i);
+            Vec3 next = points.get(i + 1);
+
+            float alphaA = baseAlpha * introLeadTaper((double) i / joinIndex);
+            float alphaB = baseAlpha * introLeadTaper((double) (i + 1) / joinIndex);
+            if (alphaA < 0.004f && alphaB < 0.004f) continue;
+
+            float nx = (float) (next.x - a.x);
+            float ny = (float) (next.y - a.y);
+            float nz = (float) (next.z - a.z);
+            float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+            if (len > 0) { nx /= len; ny /= len; nz /= len; }
+
+            consumer.addVertex(pose, (float) (a.x - cam.x), (float) (a.y - cam.y), (float) (a.z - cam.z))
+                    .setColor(r, g, b, alphaA)
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
+            consumer.addVertex(pose, (float) (next.x - cam.x), (float) (next.y - cam.y), (float) (next.z - cam.z))
+                    .setColor(r, g, b, alphaB)
+                    .setNormal(pose, nx, ny, nz)
+                    .setLineWidth(lineWidth);
+        }
+    }
+
+    /** Along-the-lead-in envelope: eases in near the player, out at the join. */
+    private static float introLeadTaper(double t) {
+        float in = smoothstep((float) (t / INTRO_LEAD_FADE_IN));
+        float out = smoothstep((float) ((1.0 - t) / INTRO_LEAD_FADE_OUT));
+        return in * out;
+    }
+
+    /**
+     * Returns a copy of {@code points} whose leading samples are bent toward
+     * the player's gaze, blended by the current intro strength. At strength 0
+     * the input list is returned untouched, and intermediate strengths give a
+     * partial bend, so the guide dissolves into the real trail continuously.
+     */
+    private static List<Vec3> withIntroCurve(List<Vec3> points, Vec3 playerPos) {
+        if (introStrength <= 0.004f || introAimDir == null || points == null || points.size() < 4) {
+            return points;
+        }
+
+        int joinIndex = introJoinIndex(points.size());
+        Vec3 join = points.get(joinIndex);
+        Vec3 control = playerPos.add(introAimDir.scale(INTRO_CONTROL_DISTANCE));
+
+        List<Vec3> curved = new ArrayList<>(points);
+        for (int i = 1; i < joinIndex; i++) {
+            double t = (double) i / joinIndex;
+            double oneMinusT = 1.0 - t;
+            Vec3 bezier = playerPos.scale(oneMinusT * oneMinusT)
+                    .add(control.scale(2.0 * oneMinusT * t))
+                    .add(join.scale(t * t));
+            Vec3 original = points.get(i);
+            curved.set(i, original.add(bezier.subtract(original).scale(introStrength)));
+        }
+        return curved;
+    }
+
+    /** Hermite ease on [0,1]; values outside the range are clamped. */
+    private static float smoothstep(float x) {
+        if (x <= 0f) return 0f;
+        if (x >= 1f) return 1f;
+        return x * x * (3f - 2f * x);
     }
 
     private static int getGroundHeight(ClientLevel level, int x, int z) {
