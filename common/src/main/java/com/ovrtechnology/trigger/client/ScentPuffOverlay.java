@@ -24,19 +24,36 @@ public final class ScentPuffOverlay {
     private static final Map<String, Identifier> SCENT_MASKS = new HashMap<>();
 
     /**
-     * Per-event animated frames, keyed by event id. These override the scent's static
+     * An animated mask: a horizontal sprite strip of {@link #frames} cells, each
+     * {@value #SHEET_FRAME_W}x{@value #SHEET_FRAME_H}.
+     *
+     * @param texture the sheet
+     * @param frames  how many cells the strip holds
+     * @param loop    true to restart from cell 0, false to hold the last cell once
+     *                the strip has played through (for art that ends on a settled
+     *                pose and would jump if wrapped around)
+     */
+    private record AnimatedMask(Identifier texture, int frames, boolean loop) {}
+
+    /**
+     * Animated sheets keyed by what fired the puff. These override the scent's static
      * mask without changing which scent fires: a golden apple still triggers citrus and
      * redstone still triggers machina, they just get their own border.
+     *
+     * <p>Two kinds of key live here. Event ids ({@code aromaaffect:...}) come from the
+     * data-driven event system; passive-mode sources ({@code biome:}, {@code mob:},
+     * {@code structure:}, {@code block:} + the vanilla id) come from
+     * {@link com.ovrtechnology.trigger.PassiveModeManager}. They cannot collide, so one
+     * map serves both.</p>
      */
-    private static final Map<String, Identifier> EVENT_FRAMES = new HashMap<>();
+    private static final Map<String, AnimatedMask> SOURCE_MASKS = new HashMap<>();
 
     private static final long PULSE_DURATION_MS = 2000L;
     private static final long FADE_IN_MS = 90L;
     private static final long FADE_OUT_MS = 800L;
     private static final float MIN_VISIBLE_ALPHA = 0.28f;
 
-    /** Animated sheets are a horizontal strip of {@value #SHEET_FRAMES} frames. */
-    private static final int SHEET_FRAMES = 5;
+    /** Every animated sheet is a horizontal strip of this cell size. */
     private static final int SHEET_FRAME_W = 160;
     private static final int SHEET_FRAME_H = 90;
     private static final long SHEET_FRAME_MS = 120L;
@@ -44,7 +61,7 @@ public final class ScentPuffOverlay {
     private static boolean initialized = false;
 
     private static Identifier activeMask = null;
-    private static boolean activeMaskIsSheet = false;
+    private static AnimatedMask activeSheet = null;
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
 
@@ -66,9 +83,46 @@ public final class ScentPuffOverlay {
         register("smoky", "smokylayermask");
         register("machina", "diesellayermask");
 
-        registerEventFrame("aromaaffect:player_food_citrus", "golden");
-        registerEventFrame("aromaaffect:block_break_redstone_ore", "redstone_technology");
-        registerEventFrame("aromaaffect:item_crafted_redstone", "redstone_technology");
+        // ── Golden: eating a golden apple / enchanted golden apple / golden carrot ──
+        AnimatedMask golden = sheet("golden", 5, true);
+        registerSheet("aromaaffect:player_food_citrus", golden);
+
+        // ── Redstone technology: mining it, building with it, switching it on ──
+        AnimatedMask redstone = sheet("redstone_technology", 5, true);
+        registerSheet("aromaaffect:block_break_redstone_ore", redstone);
+        registerSheet("aromaaffect:block_break_redstone_component", redstone);
+        registerSheet("aromaaffect:item_crafted_redstone", redstone);
+        registerSheet("aromaaffect:redstone_activated", redstone);
+        registerSheet("block:minecraft:redstone_ore", redstone);
+        registerSheet("block:minecraft:deepslate_redstone_ore", redstone);
+
+        // ── Boss encounter: smelling (or felling) the Ender Dragon or the Wither ──
+        AnimatedMask boss = sheet("boss_encounter", 9, true);
+        registerSheet("mob:minecraft:ender_dragon", boss);
+        registerSheet("mob:minecraft:wither", boss);
+        registerSheet("aromaaffect:mob_killed_boss", boss);
+
+        // ── Deep dark: the biome, the city, the warden, and the shriek that warns ──
+        AnimatedMask deepDark = sheet("deep_dark", 6, true);
+        registerSheet("biome:minecraft:deep_dark", deepDark);
+        registerSheet("structure:minecraft:ancient_city", deepDark);
+        registerSheet("mob:minecraft:warden", deepDark);
+        registerSheet("aromaaffect:sculk_shriek", deepDark);
+        registerSheet("block:minecraft:sculk", deepDark);
+        registerSheet("block:minecraft:sculk_catalyst", deepDark);
+        registerSheet("block:minecraft:sculk_sensor", deepDark);
+        registerSheet("block:minecraft:sculk_shrieker", deepDark);
+        registerSheet("block:minecraft:sculk_vein", deepDark);
+
+        // ── Jungle discovery: authored as a one-shot reveal, so it does not loop ──
+        AnimatedMask jungle = sheet("jungle_biome_discovery", 7, false);
+        registerSheet("biome:minecraft:jungle", jungle);
+        registerSheet("biome:minecraft:bamboo_jungle", jungle);
+        registerSheet("biome:minecraft:sparse_jungle", jungle);
+
+        // ── Speed buff: a powered rail kicking the minecart forward ──
+        registerSheet("aromaaffect:ride_over_powered_rail",
+                sheet("speed_buff_powered_minecart", 4, true));
     }
 
     private ScentPuffOverlay() {
@@ -102,14 +156,16 @@ public final class ScentPuffOverlay {
     }
 
     /**
-     * Triggers the scent overlay, preferring an animated frame registered for the event.
+     * Triggers the scent overlay, preferring the animated sheet registered for whatever
+     * fired the puff.
      *
      * @param scentName the scent name (used to resolve the static mask)
      * @param intensity the scent intensity (0.0 to 1.0)
-     * @param eventId   the firing event id, or null when the puff has no event behind it
+     * @param sourceKey the firing event id or passive-mode source, or null when the puff
+     *                  has neither behind it
      */
-    public static void onScentPuff(String scentName, double intensity, String eventId) {
-        Identifier sheet = eventId != null ? EVENT_FRAMES.get(eventId) : null;
+    public static void onScentPuff(String scentName, double intensity, String sourceKey) {
+        AnimatedMask sheet = sourceKey != null ? SOURCE_MASKS.get(sourceKey) : null;
 
         if (sheet == null) {
             if (scentName == null || scentName.isBlank()) {
@@ -121,10 +177,10 @@ public final class ScentPuffOverlay {
                 return;
             }
             activeMask = mask;
-            activeMaskIsSheet = false;
+            activeSheet = null;
         } else {
-            activeMask = sheet;
-            activeMaskIsSheet = true;
+            activeMask = sheet.texture();
+            activeSheet = sheet;
         }
 
         pulseStartMs = System.currentTimeMillis();
@@ -133,7 +189,7 @@ public final class ScentPuffOverlay {
 
     private static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (activeMask == null || mc.player == null || mc.isPaused() || false) {
+        if (activeMask == null || mc.player == null || mc.isPaused()) {
             return;
         }
 
@@ -160,8 +216,8 @@ public final class ScentPuffOverlay {
 
         int tint = ARGB.color(finalAlpha, 0xFFFFFF);
 
-        if (activeMaskIsSheet) {
-            int frame = (int) ((elapsed / SHEET_FRAME_MS) % SHEET_FRAMES);
+        if (activeSheet != null) {
+            int frame = resolveFrame(activeSheet, elapsed);
             graphics.blit(
                     RenderPipelines.GUI_TEXTURED,
                     activeMask,
@@ -173,7 +229,7 @@ public final class ScentPuffOverlay {
                     height,
                     SHEET_FRAME_W,
                     SHEET_FRAME_H,
-                    SHEET_FRAME_W * SHEET_FRAMES,
+                    SHEET_FRAME_W * activeSheet.frames(),
                     SHEET_FRAME_H,
                     tint
             );
@@ -197,6 +253,18 @@ public final class ScentPuffOverlay {
         );
     }
 
+    /**
+     * Cell to draw for an animated sheet. Looping sheets wrap; one-shot sheets stop on
+     * their last cell and hold it for the rest of the puff, which fades out anyway.
+     */
+    private static int resolveFrame(AnimatedMask sheet, long elapsedMs) {
+        long step = elapsedMs / SHEET_FRAME_MS;
+        if (sheet.loop()) {
+            return (int) (step % sheet.frames());
+        }
+        return (int) Math.min(step, sheet.frames() - 1L);
+    }
+
     private static float computePulseAlpha(long elapsedMs) {
         if (elapsedMs < FADE_IN_MS) {
             return clamp01f((float) elapsedMs / FADE_IN_MS);
@@ -213,12 +281,16 @@ public final class ScentPuffOverlay {
         return SCENT_MASKS.get(key);
     }
 
-    private static void registerEventFrame(String eventId, String sheetFileStem) {
-        EVENT_FRAMES.put(
-                eventId,
+    private static AnimatedMask sheet(String sheetFileStem, int frames, boolean loop) {
+        return new AnimatedMask(
                 Identifier.fromNamespaceAndPath(
-                        AromaAffect.MOD_ID, "textures/masks/animated/" + sheetFileStem + ".png")
-        );
+                        AromaAffect.MOD_ID, "textures/masks/animated/" + sheetFileStem + ".png"),
+                frames,
+                loop);
+    }
+
+    private static void registerSheet(String sourceKey, AnimatedMask sheet) {
+        SOURCE_MASKS.put(sourceKey, sheet);
     }
 
     private static void register(String scentName, String maskFileStem) {

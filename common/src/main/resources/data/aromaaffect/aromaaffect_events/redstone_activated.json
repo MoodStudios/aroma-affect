@@ -1,0 +1,13 @@
+{
+  "event_id": "aromaaffect:redstone_activated",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "REDSTONE_ACTIVATED",
+  "scent_id": "machina",
+  "intensity": 0.7,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}

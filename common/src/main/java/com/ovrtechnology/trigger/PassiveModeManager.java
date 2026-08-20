@@ -698,7 +698,10 @@ public final class PassiveModeManager {
 
         // Show border overlay if setting is enabled
         if (triggered && ClientConfig.getInstance().isPassivePuffOverlay()) {
-            ScentPuffOverlay.onScentPuff(candidate.trigger.scentName(), candidate.trigger.intensity());
+            // Pass the source ("biome:minecraft:jungle", "mob:minecraft:warden", ...) so
+            // sources with their own animated mask get it instead of the scent default.
+            ScentPuffOverlay.onScentPuff(
+                    candidate.trigger.scentName(), candidate.trigger.intensity(), candidate.source);
         }
 
         if (DEV_MODE) {
