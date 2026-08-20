@@ -9,7 +9,7 @@ public class SoundRef {
     private String id;
 
     @SerializedName("volume")
-    private float volume = 1.0f;
+    private float volume = 0.25f;
 
     @Getter
     @SerializedName("pitch")

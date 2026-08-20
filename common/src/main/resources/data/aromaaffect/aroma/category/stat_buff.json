@@ -4,7 +4,7 @@
   "fallback_name": "Stat Buff",
   "sound": {
     "id": "minecraft:block.beacon.power_select",
-    "volume": 1.0,
+    "volume": 0.25,
     "pitch": 1.0
   }
 }

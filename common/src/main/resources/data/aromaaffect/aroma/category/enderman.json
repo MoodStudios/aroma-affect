@@ -4,7 +4,7 @@
   "fallback_name": "Enderman",
   "sound": {
     "id": "minecraft:entity.enderman.ambient",
-    "volume": 1.0,
+    "volume": 0.25,
     "pitch": 3.0
   }
 }

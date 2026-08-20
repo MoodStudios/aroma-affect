@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Player;
 public final class SoundTrigger {
 
     private static final SoundEvent DEFAULT_SOUND = SoundEvents.NOTE_BLOCK_CHIME.value();
-    private static final float DEFAULT_VOLUME = 1.0f;
+    private static final float DEFAULT_VOLUME = 0.25f;
     private static final float DEFAULT_PITCH = 0.5f;
 
     public SoundTrigger() {

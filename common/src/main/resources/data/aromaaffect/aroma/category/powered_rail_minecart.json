@@ -4,7 +4,7 @@
   "fallback_name": "Powered Rail Overlap",
   "sound": {
     "id": "minecraft:ui.button.click",
-    "volume": 1.0,
+    "volume": 0.25,
     "pitch": 1.0
   }
 }

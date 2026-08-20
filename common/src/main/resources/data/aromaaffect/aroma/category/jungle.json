@@ -5,7 +5,7 @@
   "loop": false,
   "sound": {
     "id": "minecraft:entity.parrot.ambient",
-    "volume": 1.0,
+    "volume": 0.25,
     "pitch": 1.0
   }
 }

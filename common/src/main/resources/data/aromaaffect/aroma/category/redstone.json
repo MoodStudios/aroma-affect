@@ -4,7 +4,7 @@
   "mask": "aromaaffect:textures/mask/machina/redstone",
   "sound": {
     "id": "minecraft:block.redstone_torch.burnout",
-    "volume": 1.0,
+    "volume": 0.25,
     "pitch": 1.0
   }
 }
