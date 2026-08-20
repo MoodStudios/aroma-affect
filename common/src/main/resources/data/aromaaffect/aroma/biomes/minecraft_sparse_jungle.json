@@ -4,5 +4,6 @@
   "fallback_name": "Sparse Jungle",
   "color": "#64C73F",
   "scent_id": "citrus",
+  "perception": "aromaaffect:jungle",
   "track_cost": 10
 }

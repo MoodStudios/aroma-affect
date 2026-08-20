@@ -5,5 +5,7 @@
   "redstone",
   "stat_buff",
   "water_buff",
-  "golden"
+  "golden",
+  "boss_encounter",
+  "jungle"
 ]

@@ -3,6 +3,7 @@
   "category": "CRAFT_INTERACT",
   "trigger_type": "ITEM_CRAFTED",
   "scent_id": "machina",
+  "perception": "aromaaffect:redstone",
   "intensity": 0.8,
   "priority": "MEDIUM",
   "duration_mode": "ONE_SHOT",

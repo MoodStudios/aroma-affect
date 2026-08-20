@@ -4,6 +4,7 @@
   "fallback_name": "Ancient City",
   "color": "#1C1C2A",
   "scent_id": "machina",
+  "perception": "aromaaffect:deep_dark",
   "range": 60,
   "blocks": [
     "minecraft:sculk",

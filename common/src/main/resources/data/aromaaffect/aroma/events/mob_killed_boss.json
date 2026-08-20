@@ -3,6 +3,7 @@
   "category": "COMBAT",
   "trigger_type": "MOB_KILLED",
   "scent_id": "machina",
+  "perception": "aromaaffect:boss_encounter",
   "intensity": 1.0,
   "priority": "HIGH",
   "duration_mode": "ONE_SHOT",

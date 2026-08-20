@@ -3,6 +3,7 @@
   "category": "PLAYER_ACTION",
   "trigger_type": "SCULK_SHRIEK",
   "scent_id": "terra_silva",
+  "perception": "aromaaffect:deep_dark",
   "intensity": 0.85,
   "priority": "MEDIUM",
   "duration_mode": "ONE_SHOT",

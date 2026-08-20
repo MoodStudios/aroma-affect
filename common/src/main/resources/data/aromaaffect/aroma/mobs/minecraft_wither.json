@@ -1,6 +1,7 @@
 {
   "id": "minecraft:wither",
   "scent_id": "smoky",
+  "perception": "aromaaffect:boss_encounter",
   "fallback_name": "Wither",
   "color": "#141414",
   "range": 30,
