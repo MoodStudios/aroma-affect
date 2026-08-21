@@ -63,6 +63,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Extract Properties
         id: properties
@@ -159,7 +161,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add gradle.properties
-          git commit -m "🔖 Release v${{ needs.validate.outputs.version }}"
+          git diff --staged --quiet || git commit -m "🔖 Release v${{ needs.validate.outputs.version }}"
           git push
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -233,6 +235,7 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     needs: [validate, build]
+    if: always() && needs.validate.result == 'success' && needs.build.result == 'success'
     permissions:
       contents: write
     
