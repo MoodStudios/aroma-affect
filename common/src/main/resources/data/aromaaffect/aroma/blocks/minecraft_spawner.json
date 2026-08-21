@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:spawner",
+  "color": "#1ABC9C",
+  "scent_id": "machina",
+  "fallback_name": "Monster Spawner",
+  "range": 8,
+  "track_cost": 25
+}

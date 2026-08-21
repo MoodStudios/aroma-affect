@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger.config;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.definition.trigger.DefinitionTrigger;
 import com.ovrtechnology.trigger.ScentPriority;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,97 +29,31 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class BlockTriggerDefinition {
-    
-    /**
-     * Default range for proximity triggers (in blocks).
-     */
-    public static final int DEFAULT_RANGE = 5;
-    
-    /**
-     * The Minecraft block ID (e.g., "minecraft:campfire").
-     */
-    @SerializedName("block_id")
-    private String blockId;
-    
-    /**
-     * The exact OVR scent name to trigger.
-     */
-    @SerializedName("scent_name")
-    private String scentName;
-    
-    /**
-     * Trigger mode: "INTERACT" (on right-click) or "PROXIMITY" (when near).
-     */
-    @SerializedName("trigger_on")
-    private String triggerOn = "PROXIMITY";
-    
-    /**
-     * Range in blocks for proximity triggers.
-     */
-    @SerializedName("range")
-    private int range = DEFAULT_RANGE;
-    
-    /**
-     * Priority level for this trigger.
-     */
-    @SerializedName("priority")
-    private ScentPriority priority = ScentPriority.MEDIUM;
-    
-    /**
-     * Scent intensity (0.0 to 1.0).
-     * If not specified, uses the global block_intensity from settings.
-     */
-    @SerializedName("intensity")
-    private Double intensity;
-    
-    /**
-     * Optional comment for documentation in JSON.
-     */
-    @SerializedName("_comment")
-    private String comment;
-    
+public class BlockTriggerDefinition extends DefinitionTrigger {
+
     /**
      * Default constructor for GSON.
      */
     public BlockTriggerDefinition() {
     }
-    
-    /**
-     * Checks if this is a proximity-based trigger.
-     * 
-     * @return true if trigger_on is PROXIMITY
-     */
-    public boolean isProximityTrigger() {
-        return "PROXIMITY".equalsIgnoreCase(triggerOn);
+
+    @Override
+    protected int getDefaultRange() {
+        return 5;
     }
-    
-    /**
-     * Checks if this is an interaction-based trigger.
-     * 
-     * @return true if trigger_on is INTERACT
-     */
-    public boolean isInteractTrigger() {
-        return "INTERACT".equalsIgnoreCase(triggerOn);
+
+    @Override
+    protected ScentPriority getDefaultPriority() {
+        return super.getDefaultPriority();
     }
-    
-    /**
-     * Gets the intensity, falling back to global setting if not specified.
-     * 
-     * @param globalIntensity the global default intensity from TriggerSettings
-     * @return intensity value (0.0 to 1.0)
-     */
-    public double getIntensityOrDefault(double globalIntensity) {
-        return intensity != null ? intensity : globalIntensity;
+
+    @Override
+    protected String getDefaultMode() {
+        return null;
     }
-    
-    /**
-     * Validates the definition has required fields.
-     * 
-     * @return true if valid
-     */
-    public boolean isValid() {
-        return blockId != null && !blockId.isEmpty()
-            && scentName != null && !scentName.isEmpty();
+
+    @Override
+    protected String getDefaultTrigger() {
+        return super.getDefaultTrigger();
     }
 }

@@ -1,16 +1,18 @@
 package com.ovrtechnology.trigger.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.category.CategoryDefinition;
+import com.ovrtechnology.category.CategoryDefinitionLoader;
+import com.ovrtechnology.scent.ScentDefinition;
+import com.ovrtechnology.scent.ScentRegistry;
+import com.ovrtechnology.util.ColorHelper;
+import com.ovrtechnology.util.ResourceUtil;
 import net.blay09.mods.balm.client.platform.event.callback.RenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Fullscreen scent mask overlay for non-tracking puffs (Omara Device, etc.).
@@ -21,22 +23,11 @@ import java.util.Map;
  */
 public final class ScentPuffOverlay {
 
-    private static final Map<String, Identifier> SCENT_MASKS = new HashMap<>();
-
-    /**
-     * Per-event animated frames, keyed by event id. These override the scent's static
-     * mask without changing which scent fires: a golden apple still triggers citrus and
-     * redstone still triggers machina, they just get their own border.
-     */
-    private static final Map<String, Identifier> EVENT_FRAMES = new HashMap<>();
-
     private static final long PULSE_DURATION_MS = 2000L;
     private static final long FADE_IN_MS = 90L;
     private static final long FADE_OUT_MS = 800L;
     private static final float MIN_VISIBLE_ALPHA = 0.28f;
 
-    /** Animated sheets are a horizontal strip of {@value #SHEET_FRAMES} frames. */
-    private static final int SHEET_FRAMES = 5;
     private static final int SHEET_FRAME_W = 160;
     private static final int SHEET_FRAME_H = 90;
     private static final long SHEET_FRAME_MS = 120L;
@@ -44,32 +35,10 @@ public final class ScentPuffOverlay {
     private static boolean initialized = false;
 
     private static Identifier activeMask = null;
-    private static boolean activeMaskIsSheet = false;
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
-
-    static {
-        register("winter", "winterlayermask");
-        register("barnyard", "barnyardlayermask");
-        register("sweet", "sweetlayermask");
-        register("floral", "flowerlayermask");
-        register("beach", "beachlayermask");
-        register("kindred", "kindredlayermask");
-        register("petrichor", "rainlayermask");
-        register("marine", "marinelayermask");
-        register("evergreen", "forestlayermask");
-        register("terra silva", "terrasilvalayermask");
-        register("citrus", "citruslayermask");
-        register("desert", "desertlayermask");
-        register("savory spice", "savoryspicelayermask");
-        register("timber", "timberlayermask");
-        register("smoky", "smokylayermask");
-        register("machina", "diesellayermask");
-
-        registerEventFrame("aromaaffect:player_food_citrus", "golden");
-        registerEventFrame("aromaaffect:block_break_redstone_ore", "redstone_technology");
-        registerEventFrame("aromaaffect:item_crafted_redstone", "redstone_technology");
-    }
+    private static String categoryColor;
+    private static boolean activeMaskLoops = true;
 
     private ScentPuffOverlay() {
     }
@@ -98,7 +67,7 @@ public final class ScentPuffOverlay {
      * @param intensity the scent intensity (0.0 to 1.0)
      */
     public static void onScentPuff(String scentName, double intensity) {
-        onScentPuff(scentName, intensity, null);
+        onScentPuff(scentName, null, intensity);
     }
 
     /**
@@ -106,27 +75,20 @@ public final class ScentPuffOverlay {
      *
      * @param scentName the scent name (used to resolve the static mask)
      * @param intensity the scent intensity (0.0 to 1.0)
-     * @param eventId   the firing event id, or null when the puff has no event behind it
+     * @param visualCategory   the firing event id, or null when the puff has no event behind it
      */
-    public static void onScentPuff(String scentName, double intensity, String eventId) {
-        Identifier sheet = eventId != null ? EVENT_FRAMES.get(eventId) : null;
-
-        if (sheet == null) {
-            if (scentName == null || scentName.isBlank()) {
-                return;
-            }
-            Identifier mask = resolveMask(scentName);
-            if (mask == null) {
-                AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
-                return;
-            }
-            activeMask = mask;
-            activeMaskIsSheet = false;
-        } else {
-            activeMask = sheet;
-            activeMaskIsSheet = true;
+    public static void onScentPuff(String scentName, String visualCategory, double intensity) {
+        if (scentName == null || scentName.isBlank()) {
+            return;
         }
 
+        Identifier mask = resolveMask(scentName, visualCategory);
+        if (mask == null) {
+            AromaAffect.LOGGER.debug("No mask mapping for scent '{}' (ScentPuffOverlay)", scentName);
+            return;
+        }
+
+        activeMask = mask;
         pulseStartMs = System.currentTimeMillis();
         lastPuffIntensity = clamp01(intensity);
     }
@@ -158,27 +120,14 @@ public final class ScentPuffOverlay {
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();
 
-        int tint = ARGB.color(finalAlpha, 0xFFFFFF);
-
-        if (activeMaskIsSheet) {
-            int frame = (int) ((elapsed / SHEET_FRAME_MS) % SHEET_FRAMES);
-            graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    activeMask,
-                    0,
-                    0,
-                    (float) (frame * SHEET_FRAME_W),
-                    0.0f,
-                    width,
-                    height,
-                    SHEET_FRAME_W,
-                    SHEET_FRAME_H,
-                    SHEET_FRAME_W * SHEET_FRAMES,
-                    SHEET_FRAME_H,
-                    tint
-            );
-            return;
-        }
+        int tint = ARGB.color(finalAlpha, ColorHelper.getColorAsInt(categoryColor));
+        int frames = Math.max(1, ResourceUtil.getTextureHeight(activeMask) / SHEET_FRAME_H);
+        long step = elapsed / SHEET_FRAME_MS;
+        // A one-shot sheet stops on its last frame rather than snapping back to the
+        // start; the puff is fading out by then anyway.
+        int frame = activeMaskLoops
+                ? (int) (step % frames)
+                : (int) Math.min(step, frames - 1L);
 
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
@@ -186,13 +135,13 @@ public final class ScentPuffOverlay {
                 0,
                 0,
                 0.0f,
-                0.0f,
+                (frame * SHEET_FRAME_H),
                 width,
                 height,
-                width,
-                height,
-                width,
-                height,
+                SHEET_FRAME_W,
+                SHEET_FRAME_H,
+                SHEET_FRAME_W,
+                SHEET_FRAME_H * frames,
                 tint
         );
     }
@@ -208,24 +157,32 @@ public final class ScentPuffOverlay {
         return 1.0f;
     }
 
-    private static Identifier resolveMask(String scentName) {
-        String key = scentName.toLowerCase(Locale.ROOT).trim();
-        return SCENT_MASKS.get(key);
+    private static Identifier resolveMask(String scentName, String categoryID) {
+        CategoryDefinition category = CategoryDefinitionLoader.getCategoryFromID(categoryID);
+
+        if (category == null) {
+            categoryColor = "#FFFFFF";
+            activeMaskLoops = true;
+            return resolveScentMask(scentName);
+        }
+
+        categoryColor = category.getColorHtml();
+        if (category.getMask() == null || category.getMask().isBlank()) {
+            activeMaskLoops = true;
+            return resolveScentMask(scentName);
+        }
+
+        activeMaskLoops = category.isMaskLooping();
+
+        return Identifier.tryParse(category.getMask() + ".png");
     }
 
-    private static void registerEventFrame(String eventId, String sheetFileStem) {
-        EVENT_FRAMES.put(
-                eventId,
-                Identifier.fromNamespaceAndPath(
-                        AromaAffect.MOD_ID, "textures/masks/animated/" + sheetFileStem + ".png")
-        );
-    }
-
-    private static void register(String scentName, String maskFileStem) {
-        SCENT_MASKS.put(
-                scentName.toLowerCase(Locale.ROOT),
-                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/masks/" + maskFileStem + ".png")
-        );
+    static Identifier resolveScentMask(String scentName) {
+        return ScentRegistry.getScentByName(scentName)
+                .map(ScentDefinition::getMask)
+                .filter(mask -> !mask.isBlank())
+                .map(mask -> Identifier.tryParse(mask + ".png"))
+                .orElse(null);
     }
 
     private static double clamp01(double value) {

@@ -19,7 +19,7 @@ import java.nio.file.Path;
  */
 public final class SnifferConfigLoader {
 
-    private static final String CONFIG_PATH = "data/aromaaffect/config/sniffer_config.json";
+    private static final String CONFIG_PATH = "data/aromaaffect/aroma/config/sniffer_config.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     @Getter

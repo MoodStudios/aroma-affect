@@ -60,7 +60,7 @@ public class NoseDefinitionLoader {
 
         // Load the index file that lists all nose definition files
         try {
-            NoseDefinition[] noses = loadNosesFromResource(dataSource, "data/aromaaffect/noses/noses.json");
+            NoseDefinition[] noses = loadNosesFromResource(dataSource, "data/aromaaffect/aroma/noses/noses.json");
             if (noses != null) {
                 for (NoseDefinition nose : noses) {
                     if (nose != null && nose.isValid()) {
@@ -83,7 +83,7 @@ public class NoseDefinitionLoader {
     }
 
     public static void reloadInPlace(DataSource dataSource) {
-        NoseDefinition[] newDefs = loadNosesFromResource(dataSource, "data/aromaaffect/noses/noses.json");
+        NoseDefinition[] newDefs = loadNosesFromResource(dataSource, "data/aromaaffect/aroma/noses/noses.json");
         int mutated = 0;
         int skipped = 0;
         for (NoseDefinition src : newDefs) {

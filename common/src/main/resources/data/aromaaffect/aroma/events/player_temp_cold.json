@@ -1,0 +1,14 @@
+{
+  "id": "aromaaffect:player_temp_cold",
+  "category": "WEATHER",
+  "trigger_type": "PLAYER_TEMP",
+  "scent_id": "winter",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 50000,
+  "conditions": {
+    "comparison_type": "<",
+    "temp": 0.15
+  }
+}

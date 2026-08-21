@@ -1,8 +1,0 @@
-{
-  "biome_id": "minecraft:badlands",
-  "image": "biome/badlands",
-  "fallback_name": "Badlands",
-  "color_html": "#D94515",
-  "scent_id": "desert",
-  "track_cost": 10
-}

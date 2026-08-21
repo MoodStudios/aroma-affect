@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:camel_husk",
+  "scent_id": "smoky",
+  "fallback_name": "Camel Husk",
+  "color": "#FACB73",
+  "range": 6,
+  "priority": "MEDLOW"
+}

@@ -101,6 +101,8 @@ public final class ScentEventNetworking {
         ScentTrigger trigger =
                 ScentTrigger.create(
                         scentName,
+                        def.getPerception(),
+                        def.getSound(),
                         def.resolveSource(),
                         def.getPriority(),
                         def.getDurationTicks(),

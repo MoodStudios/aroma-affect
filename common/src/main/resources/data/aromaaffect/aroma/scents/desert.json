@@ -1,0 +1,7 @@
+{
+  "id": "desert",
+  "fallback_name": "Desert",
+  "color": "#D2B48C",
+  "mask": "aromaaffect:textures/mask/desert",
+  "description": "Dry, herbal, desert heat and sand"
+}

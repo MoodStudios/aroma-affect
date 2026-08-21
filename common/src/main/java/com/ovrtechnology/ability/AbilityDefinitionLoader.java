@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.data.DataSourceInfo;
 import lombok.Getter;
 
 import java.util.*;
@@ -46,7 +47,7 @@ public class AbilityDefinitionLoader {
     /**
      * Resource path for the abilities definition file.
      */
-    private static final String ABILITIES_RESOURCE_PATH = "data/aromaaffect/abilities/abilities.json";
+    private static final String ABILITY = "abilities/abilities.json";
 
     /**
      * Cached map of loaded ability definitions by ID.
@@ -72,7 +73,7 @@ public class AbilityDefinitionLoader {
         loadedAbilities.clear();
 
         try {
-            AbilityDefinition[] abilities = loadAbilitiesFromResource(dataSource, ABILITIES_RESOURCE_PATH);
+            AbilityDefinition[] abilities = loadAbilitiesFromResource(dataSource, DataSourceInfo.BASE + ABILITY);
             if (abilities != null) {
                 for (AbilityDefinition ability : abilities) {
                     if (ability != null && ability.isValid()) {

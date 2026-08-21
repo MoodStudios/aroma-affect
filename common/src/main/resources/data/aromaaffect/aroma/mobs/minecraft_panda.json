@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:panda",
+  "scent_id": "citrus",
+  "fallback_name": "Panda",
+  "color": "#E7E7E7",
+  "range": 5,
+  "priority": "MEDLOW"
+}

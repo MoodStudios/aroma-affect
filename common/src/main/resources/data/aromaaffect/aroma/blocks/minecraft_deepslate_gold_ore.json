@@ -1,0 +1,7 @@
+{
+  "id": "minecraft:deepslate_gold_ore",
+  "color": "#D4AC0D",
+  "scent_id": "terra_silva",
+  "fallback_name": "Deepslate Gold Ore",
+  "track_cost": 10
+}

@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:diamond_ore",
+  "color": "#5DECF5",
+  "scent_id": "terra_silva",
+  "fallback_name": "Diamond Ore",
+  "range": 6,
+  "track_cost": 25
+}

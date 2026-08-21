@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:swamp",
+  "image": "biome/swamp",
+  "fallback_name": "Swamp",
+  "color": "#4C763C",
+  "scent_id": "petrichor",
+  "track_cost": 5
+}

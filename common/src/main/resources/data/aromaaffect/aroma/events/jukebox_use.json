@@ -1,0 +1,11 @@
+{
+  "id": "aromaaffect:disc_jukebox",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "DISC_JUKEBOX",
+  "scent_id": "sweet",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": { "default": true }
+}

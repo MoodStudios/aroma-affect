@@ -45,7 +45,9 @@
     "SculkShriekServerMixin",
     "MinecartBehaviorServerMixin",
     "OldMinecartBehaviorServerMixin",
-    "NewMinecartBehaviorServerMixin"
+    "NewMinecartBehaviorServerMixin",
+    "LeverUseServerMixin",
+    "ButtonPressServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

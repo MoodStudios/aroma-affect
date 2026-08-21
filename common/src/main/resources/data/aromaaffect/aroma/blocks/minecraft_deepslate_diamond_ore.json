@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:deepslate_diamond_ore",
+  "color": "#4DD4E0",
+  "scent_id": "terra_silva",
+  "fallback_name": "Deepslate Diamond Ore",
+  "range": 6,
+  "track_cost": 25
+}

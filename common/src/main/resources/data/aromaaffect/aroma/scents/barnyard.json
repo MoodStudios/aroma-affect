@@ -1,0 +1,7 @@
+{
+  "id": "barnyard",
+  "fallback_name": "Barnyard",
+  "color": "#C4A35A",
+  "mask": "aromaaffect:textures/mask/barnyard",
+  "description": "Warm hay, farm animals, hint of fresh country air"
+}

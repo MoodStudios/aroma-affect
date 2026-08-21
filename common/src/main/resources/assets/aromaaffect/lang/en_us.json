@@ -658,5 +658,6 @@
   "structure.minecraft.trial_chambers": "Trial Chambers",
   "structure.minecraft.fortress": "Nether Fortress",
   "structure.minecraft.bastion_remnant": "Bastion Remnant",
-  "structure.minecraft.end_city": "End City"
+  "structure.minecraft.end_city": "End City",
+  "key.category.aromaaffect.keybinds": "Aroma Affect"
 }

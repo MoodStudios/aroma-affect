@@ -39,26 +39,26 @@ import java.util.*;
  * to be registered alongside vanilla ones.</p>
  */
 public final class BiomeRegistry {
-    
+
     /**
      * Map of biome ID to its definition
      */
     @Getter
     private static final Map<String, BiomeDefinition> biomeDefinitions = new LinkedHashMap<>();
-    
+
     /**
      * Whether the registry has been initialized
      */
     @Getter
     private static boolean initialized = false;
-    
+
     /**
      * Private constructor to prevent instantiation.
      */
     private BiomeRegistry() {
         throw new UnsupportedOperationException("BiomeRegistry is a static utility class");
     }
-    
+
     /**
      * Initialize the biome registry.
      * This loads biome definitions from JSON.
@@ -69,56 +69,56 @@ public final class BiomeRegistry {
             AromaAffect.LOGGER.warn("BiomeRegistry.init() called multiple times!");
             return;
         }
-        
+
         // Warn if ScentRegistry is not initialized
         if (!ScentRegistry.isInitialized()) {
             AromaAffect.LOGGER.warn("BiomeRegistry.init() called before ScentRegistry! Scent validation may fail.");
         }
-        
+
         AromaAffect.LOGGER.info("Initializing BiomeRegistry...");
-        
+
         // Load biome definitions from JSON
         List<BiomeDefinition> definitions = BiomeDefinitionLoader.loadAllBiomes();
-        
+
         // Store each biome in the map
         for (BiomeDefinition definition : definitions) {
             registerBiome(definition);
         }
-        
+
         initialized = true;
         AromaAffect.LOGGER.info("BiomeRegistry initialized with {} biomes", biomeDefinitions.size());
     }
-    
+
     /**
      * Register a single biome from its definition.
-     * 
+     *
      * @param definition The biome definition to register
      */
     private static void registerBiome(BiomeDefinition definition) {
-        String biomeId = definition.getBiomeId();
-        
+        String biomeId = definition.getId();
+
         if (biomeDefinitions.containsKey(biomeId)) {
             AromaAffect.LOGGER.warn("Duplicate biome ID in registry: {}, skipping...", biomeId);
             return;
         }
-        
+
         biomeDefinitions.put(biomeId, definition);
         AromaAffect.LOGGER.debug("Registered biome: {}", biomeId);
     }
-    
+
     /**
      * Get a biome definition by biome ID.
-     * 
+     *
      * @param biomeId The Minecraft biome ID (e.g., "minecraft:jungle")
      * @return Optional containing the biome if found
      */
     public static Optional<BiomeDefinition> getBiome(String biomeId) {
         return Optional.ofNullable(biomeDefinitions.get(biomeId));
     }
-    
+
     /**
      * Get a biome definition by ID, or throw if not found.
-     * 
+     *
      * @param biomeId The biome ID
      * @return The biome definition
      * @throws IllegalArgumentException if biome not found
@@ -130,56 +130,56 @@ public final class BiomeRegistry {
         }
         return biome;
     }
-    
+
     /**
      * Check if a biome with the given ID is registered.
-     * 
+     *
      * @param biomeId The biome ID to check
      * @return true if the biome is trackable
      */
     public static boolean hasBiome(String biomeId) {
         return biomeDefinitions.containsKey(biomeId);
     }
-    
+
     /**
      * Get all registered biome IDs.
-     * 
+     *
      * @return Iterable of all biome IDs
      */
     public static Iterable<String> getAllBiomeIds() {
         return Collections.unmodifiableSet(biomeDefinitions.keySet());
     }
-    
+
     /**
      * Get all registered biome definitions.
-     * 
+     *
      * @return Iterable of all biome definitions
      */
     public static Iterable<BiomeDefinition> getAllBiomes() {
         return Collections.unmodifiableCollection(biomeDefinitions.values());
     }
-    
+
     /**
      * Get all biome definitions as a list.
-     * 
+     *
      * @return List of all biome definitions
      */
     public static List<BiomeDefinition> getAllBiomesAsList() {
         return new ArrayList<>(biomeDefinitions.values());
     }
-    
+
     /**
      * Get the number of registered biomes.
-     * 
+     *
      * @return The biome count
      */
     public static int getBiomeCount() {
         return biomeDefinitions.size();
     }
-    
+
     /**
      * Get the scent definition associated with a biome.
-     * 
+     *
      * @param biomeId The biome ID
      * @return Optional containing the scent if biome exists and has a scent
      */
@@ -190,10 +190,10 @@ public final class BiomeRegistry {
         }
         return Optional.empty();
     }
-    
+
     /**
      * Get all biomes that use a specific scent.
-     * 
+     *
      * @param scentId The scent ID to filter by
      * @return List of biomes using the specified scent
      */
@@ -206,10 +206,10 @@ public final class BiomeRegistry {
         }
         return result;
     }
-    
+
     /**
      * Get all vanilla Minecraft biomes.
-     * 
+     *
      * @return List of biomes with "minecraft" namespace
      */
     public static List<BiomeDefinition> getVanillaBiomes() {
@@ -221,10 +221,10 @@ public final class BiomeRegistry {
         }
         return result;
     }
-    
+
     /**
      * Get all modded biomes (non-vanilla).
-     * 
+     *
      * @return List of biomes without "minecraft" namespace
      */
     public static List<BiomeDefinition> getModdedBiomes() {
@@ -236,10 +236,10 @@ public final class BiomeRegistry {
         }
         return result;
     }
-    
+
     /**
      * Get biomes by namespace (e.g., "minecraft", "terralith", "biomes_o_plenty").
-     * 
+     *
      * @param namespace The mod namespace to filter by
      * @return List of biomes from that namespace
      */
@@ -252,10 +252,10 @@ public final class BiomeRegistry {
         }
         return result;
     }
-    
+
     /**
      * Get the display color for a biome as an integer.
-     * 
+     *
      * @param biomeId The biome ID
      * @return RGB color as integer, or 0x5AA000 (green) if not found
      */
@@ -263,22 +263,22 @@ public final class BiomeRegistry {
         BiomeDefinition biome = biomeDefinitions.get(biomeId);
         return biome != null ? biome.getColorAsInt() : 0x5AA000;
     }
-    
+
     /**
      * Get the display color for a biome as HTML hex string.
-     * 
+     *
      * @param biomeId The biome ID
      * @return HTML color string, or "#5AA000" if not found
      */
     public static String getBiomeColorHtml(String biomeId) {
         BiomeDefinition biome = biomeDefinitions.get(biomeId);
-        return biome != null ? biome.getColorHtml() : BiomeDefinition.DEFAULT_COLOR;
+        return biome != null ? biome.getColorHtml() : BiomeDefinition.getColor(biome);
     }
-    
+
     /**
      * Validate that all biome IDs in a list are registered.
      * Useful for validating nose definitions that reference biomes.
-     * 
+     *
      * @param biomeIds List of biome IDs to validate
      * @return List of invalid (unregistered) biome IDs
      */
@@ -291,10 +291,10 @@ public final class BiomeRegistry {
         }
         return invalid;
     }
-    
+
     /**
      * Get all unique namespaces from registered biomes.
-     * 
+     *
      * @return Set of namespace strings (e.g., "minecraft", "terralith")
      */
     public static Set<String> getAllNamespaces() {
@@ -307,7 +307,7 @@ public final class BiomeRegistry {
         }
         return namespaces;
     }
-    
+
     /**
      * Reload all biome definitions from JSON.
      * This clears the registry and reloads from the configuration file.
@@ -315,15 +315,15 @@ public final class BiomeRegistry {
     public static void reload() {
         AromaAffect.LOGGER.info("Reloading BiomeRegistry...");
         biomeDefinitions.clear();
-        
+
         List<BiomeDefinition> definitions = BiomeDefinitionLoader.reload();
         for (BiomeDefinition definition : definitions) {
             registerBiome(definition);
         }
-        
+
         AromaAffect.LOGGER.info("BiomeRegistry reloaded with {} biomes", biomeDefinitions.size());
     }
-    
+
     /**
      * Clear the registry (primarily for testing).
      */

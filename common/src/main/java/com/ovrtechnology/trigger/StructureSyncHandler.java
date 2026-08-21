@@ -78,8 +78,8 @@ public final class StructureSyncHandler {
         for (StructureTriggerDefinition trigger : ScentTriggerConfigLoader.getAllStructureTriggers()) {
             if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
 
-            if (isInsideStructure(level, playerPos, trigger.getStructureId())) {
-                return trigger.getStructureId();
+            if (isInsideStructure(level, playerPos, trigger.getId())) {
+                return trigger.getId();
             }
         }
         return null;

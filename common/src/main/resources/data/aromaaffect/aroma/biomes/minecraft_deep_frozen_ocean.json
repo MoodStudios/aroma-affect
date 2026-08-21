@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:deep_frozen_ocean",
+  "image": "biome/frozen_ocean",
+  "fallback_name": "Deep Frozen Ocean",
+  "color": "#3D57D6",
+  "scent_id": "winter",
+  "track_cost": 10
+}

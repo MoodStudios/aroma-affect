@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:budding_amethyst",
+  "color": "#8E44AD",
+  "scent_id": "floral",
+  "fallback_name": "Budding Amethyst",
+  "range": 4,
+  "track_cost": 10
+}

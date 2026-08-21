@@ -1,6 +1,6 @@
 {
   "itemGroup.aromaaffect": "Aroma Affect",
-
+  "key.category.aromaaffect.keybinds": "Aroma Affect",
   "entity.aromaaffect.nose_smith": "Herrero de Narices",
   "item.aromaaffect.nose_smith_spawn_egg": "Huevo generador de Herrero de Narices",
   "item.aromaaffect.special_rose": "Rosa Especial",

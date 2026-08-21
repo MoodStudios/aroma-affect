@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:frog",
+  "scent_id": "petrichor",
+  "fallback_name": "Frog",
+  "color": "#7A9A2D",
+  "range": 3,
+  "priority": "MEDLOW"
+}

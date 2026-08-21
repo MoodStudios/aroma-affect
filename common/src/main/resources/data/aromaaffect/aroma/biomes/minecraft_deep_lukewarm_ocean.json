@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:deep_lukewarm_ocean",
+  "image": "biome/ocean",
+  "fallback_name": "Deep Lukewarm Ocean",
+  "color": "#3998DF",
+  "scent_id": "marine",
+  "track_cost": 10
+}

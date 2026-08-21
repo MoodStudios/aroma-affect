@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:sculk_catalyst",
+  "color": "#042931",
+  "scent_id": "machina",
+  "fallback_name": "Sculk Catalyst",
+  "perception": "aromaaffect:deep_dark",
+  "range": 4
+}

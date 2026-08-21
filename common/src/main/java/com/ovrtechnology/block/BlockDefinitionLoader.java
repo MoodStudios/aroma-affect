@@ -47,41 +47,41 @@ import java.util.Set;
  * </ul>
  */
 public class BlockDefinitionLoader {
-    
+
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
             .create();
-    
-    public static final String BLOCKS_DIR = "aroma_blocks";
-    
+
+    public static final String BLOCKS_DIR = "aroma/blocks";
+
     /**
      * Cached list of loaded block definitions
      */
     @Getter
     private static List<BlockDefinition> loadedBlocks = new ArrayList<>();
-    
+
     /**
      * Set of loaded block IDs for duplicate detection
      */
     private static Set<String> loadedIds = new HashSet<>();
-    
+
     /**
      * List of validation warnings encountered during loading
      */
     @Getter
     private static List<String> validationWarnings = new ArrayList<>();
-    
+
     /**
      * Load all block definitions from the blocks directory.
      * This parses the JSON file and validates each entry.
-     * 
+     *
      * <p>Validation includes:</p>
      * <ul>
      *   <li>Duplicate block_id detection</li>
      *   <li>HTML color format validation</li>
      *   <li>Scent ID reference validation (requires ScentRegistry to be initialized)</li>
      * </ul>
-     * 
+     *
      * @return An unmodifiable list of valid block definitions
      */
     public static List<BlockDefinition> loadAllBlocks() {
@@ -111,10 +111,10 @@ public class BlockDefinitionLoader {
 
         return Collections.unmodifiableList(loadedBlocks);
     }
-    
+
     /**
      * Process a single block definition, validating and adding to the loaded list.
-     * 
+     *
      * @param block The block definition to process
      */
     private static void processBlock(BlockDefinition block) {
@@ -122,45 +122,45 @@ public class BlockDefinitionLoader {
             addWarning("Null block definition found, skipping...");
             return;
         }
-        
+
         if (!block.isValid()) {
             addWarning("Invalid block definition found (missing block_id), skipping...");
             return;
         }
-        
-        String blockId = block.getBlockId();
-        
+
+        String blockId = block.getId();
+
         // Check for duplicate IDs
         if (loadedIds.contains(blockId)) {
             addWarning("Duplicate block_id '" + blockId + "' found, skipping...");
             return;
         }
-        
+
         // Validate the block entry
         validateBlock(block);
-        
+
         loadedIds.add(blockId);
         loadedBlocks.add(block);
-        AromaAffect.LOGGER.debug("Loaded block definition: {} (color: {}, scent: {})", 
+        AromaAffect.LOGGER.debug("Loaded block definition: {} (color: {}, scent: {})",
                 blockId, block.getColorHtml(), block.getScentId());
     }
-    
+
     /**
      * Validate a block definition and log any warnings.
-     * 
+     *
      * @param block The block to validate
      */
     private static void validateBlock(BlockDefinition block) {
-        String blockId = block.getBlockId();
-        
+        String blockId = block.getId();
+
         // Validate HTML color format
         String rawColor = block.getRawColorHtml();
         if (rawColor == null || rawColor.isEmpty()) {
-            addWarning("[" + blockId + "] No color_html defined, using default: " + BlockDefinition.DEFAULT_COLOR);
+            addWarning("[" + blockId + "] No color_html defined, using default: " + BlockDefinition.getColor(block));
         } else if (!BlockDefinition.isValidHtmlColor(rawColor)) {
-            addWarning("[" + blockId + "] Invalid color_html format '" + rawColor + "', using default: " + BlockDefinition.DEFAULT_COLOR);
+            addWarning("[" + blockId + "] Invalid color_html format '" + rawColor + "', using default: " + BlockDefinition.getColor(block));
         }
-        
+
         // Validate scent_id reference
         if (block.hasScentId()) {
             String scentId = block.getScentId();
@@ -170,26 +170,26 @@ public class BlockDefinitionLoader {
         } else {
             addWarning("[" + blockId + "] No scent_id defined, block will have no associated scent");
         }
-        
+
         // Validate block_id format (should be namespace:path)
         if (!blockId.contains(":")) {
             addWarning("[" + blockId + "] Block ID should include namespace (e.g., 'minecraft:stone')");
         }
     }
-    
+
     /**
      * Add a validation warning.
-     * 
+     *
      * @param warning The warning message
      */
     private static void addWarning(String warning) {
         validationWarnings.add(warning);
         AromaAffect.LOGGER.warn(warning);
     }
-    
+
     /**
      * Parse a single block definition from a JSON string.
-     * 
+     *
      * @param json The JSON string to parse
      * @return The parsed block definition, or null if parsing fails
      */
@@ -201,35 +201,35 @@ public class BlockDefinitionLoader {
             return null;
         }
     }
-    
+
     /**
      * Get a block definition by block ID from the loaded blocks.
-     * 
+     *
      * @param blockId The block ID to look up
      * @return The block definition, or null if not found
      */
     public static BlockDefinition getBlockById(String blockId) {
         for (BlockDefinition block : loadedBlocks) {
-            if (block.getBlockId().equals(blockId)) {
+            if (block.getId().equals(blockId)) {
                 return block;
             }
         }
         return null;
     }
-    
+
     /**
      * Check if a block with the given ID has been loaded.
-     * 
+     *
      * @param blockId The block ID to check
      * @return true if the block exists
      */
     public static boolean hasBlockId(String blockId) {
         return loadedIds.contains(blockId);
     }
-    
+
     /**
      * Get all blocks that reference a specific scent.
-     * 
+     *
      * @param scentId The scent ID to filter by
      * @return List of blocks using the specified scent
      */
@@ -242,40 +242,40 @@ public class BlockDefinitionLoader {
         }
         return result;
     }
-    
+
     /**
      * Serialize a block definition to JSON.
-     * 
+     *
      * @param block The block to serialize
      * @return JSON string representation
      */
     public static String toJson(BlockDefinition block) {
         return GSON.toJson(block);
     }
-    
+
     /**
      * Get the GSON instance for external use.
-     * 
+     *
      * @return The configured GSON instance
      */
     public static Gson getGson() {
         return GSON;
     }
-    
+
     /**
      * Reload all block definitions.
      * This clears the cache and reloads from the JSON file.
-     * 
+     *
      * @return The reloaded list of block definitions
      */
     public static List<BlockDefinition> reload() {
         AromaAffect.LOGGER.info("Reloading block definitions...");
         return loadAllBlocks();
     }
-    
+
     /**
      * Check if any validation warnings occurred during loading.
-     * 
+     *
      * @return true if there were validation warnings
      */
     public static boolean hasValidationWarnings() {

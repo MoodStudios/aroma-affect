@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:iron_golem",
+  "scent_id": "machina",
+  "fallback_name": "Iron Golem",
+  "color": "#DBCABB",
+  "range": 6,
+  "priority": "MEDLOW"
+}

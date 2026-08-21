@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:lily_of_the_valley",
+  "scent_id": "floral",
+  "fallback_name": "Lily of the Valley",
+  "color": "#FFFFFF",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

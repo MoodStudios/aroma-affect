@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:sunflower_plains",
+  "image": "biome/plains",
+  "fallback_name": "Sunflower Plains",
+  "color": "#B5DB88",
+  "scent_id": "floral",
+  "track_cost": 5
+}

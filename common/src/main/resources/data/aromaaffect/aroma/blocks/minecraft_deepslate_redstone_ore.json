@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:deepslate_redstone_ore",
+  "color": "#A93226",
+  "scent_id": "machina",
+  "perception": "aromaaffect:redstone",
+  "fallback_name": "Deepslate Redstone Ore",
+  "track_cost": 10
+}

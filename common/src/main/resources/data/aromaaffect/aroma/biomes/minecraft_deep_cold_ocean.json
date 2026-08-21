@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:deep_cold_ocean",
+  "image": "biome/ocean",
+  "fallback_name": "Deep Cold Ocean",
+  "color": "#2050C0",
+  "scent_id": "marine",
+  "track_cost": 10
+}

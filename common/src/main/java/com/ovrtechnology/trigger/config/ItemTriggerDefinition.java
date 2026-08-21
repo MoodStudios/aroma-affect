@@ -1,6 +1,7 @@
 package com.ovrtechnology.trigger.config;
 
 import com.google.gson.annotations.SerializedName;
+import com.ovrtechnology.definition.trigger.DefinitionTrigger;
 import com.ovrtechnology.trigger.ScentPriority;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,131 +28,77 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ItemTriggerDefinition {
-    
-    /**
-     * Default duration in ticks (200 = 10 seconds).
-     */
-    public static final int DEFAULT_DURATION_TICKS = 200;
-    
-    /**
-     * Default priority for item triggers.
-     */
-    public static final ScentPriority DEFAULT_PRIORITY = ScentPriority.HIGH;
-    
-    /**
-     * Default cooldown in milliseconds.
-     */
-    public static final long DEFAULT_COOLDOWN_MS = 5000;
-    
-    /**
-     * The full item ID including namespace (e.g., "aromaaffect:winter_scent").
-     */
-    @SerializedName("item_id")
-    private String itemId;
-    
-    /**
-     * The exact OVR scent name to trigger (e.g., "Winter", "Terra Silva").
-     * This value is sent directly to the OVR hardware.
-     */
-    @SerializedName("scent_name")
-    private String scentName;
-    
-    /**
-     * When to trigger the scent.
-     * Currently only "USE" is supported.
-     */
-    @SerializedName("trigger_on")
-    private String triggerOn = "USE";
-    
+public class ItemTriggerDefinition extends DefinitionTrigger {
     /**
      * How long the scent should last in game ticks.
      * 20 ticks = 1 second. Use -1 for indefinite.
      */
     @SerializedName("duration_ticks")
-    private int durationTicks = DEFAULT_DURATION_TICKS;
-    
-    /**
-     * Priority level for this trigger.
-     */
-    @SerializedName("priority")
-    private ScentPriority priority = DEFAULT_PRIORITY;
-    
+    private int durationTicks = getDefaultDurationTicks();
+
     /**
      * Cooldown in milliseconds before this item can trigger again.
      * If not specified, uses the global item_use_cooldown_ms.
      */
     @SerializedName("cooldown_ms")
     private Long cooldownMs;
-    
-    /**
-     * Scent intensity (0.0 to 1.0).
-     * If not specified, uses the global item_intensity from settings.
-     */
-    @SerializedName("intensity")
-    private Double intensity;
-    
+
     /**
      * Default constructor for GSON.
      */
     public ItemTriggerDefinition() {
     }
-    
+
     /**
      * Constructor for programmatic creation.
-     * 
-     * @param itemId    the full item ID
+     *
+     * @param id    the full item ID
      * @param scentName the OVR scent name
      */
-    public ItemTriggerDefinition(String itemId, String scentName) {
-        this.itemId = itemId;
+    public ItemTriggerDefinition(String id, String scentName) {
+        this.id = id;
         this.scentName = scentName;
     }
-    
+
     /**
      * Gets the cooldown, falling back to default if not specified.
-     * 
+     *
      * @return cooldown in milliseconds
      */
     public long getCooldownMsOrDefault() {
-        return cooldownMs != null ? cooldownMs : DEFAULT_COOLDOWN_MS;
+        return cooldownMs != null ? cooldownMs : getDefaultCooldownMS();
     }
-    
-    /**
-     * Gets the intensity, falling back to global setting if not specified.
-     * 
-     * @param globalIntensity the global default intensity from TriggerSettings
-     * @return intensity value (0.0 to 1.0)
-     */
-    public double getIntensityOrDefault(double globalIntensity) {
-        return intensity != null ? intensity : globalIntensity;
-    }
-    
+
     /**
      * Gets the priority, falling back to default if not specified.
-     * 
+     *
      * @return the priority level
      */
     public ScentPriority getPriorityOrDefault() {
-        return priority != null ? priority : DEFAULT_PRIORITY;
+        return priority != null ? priority : getDefaultPriority();
     }
-    
-    /**
-     * Checks if this trigger is for item use (right-click).
-     * 
-     * @return true if trigger_on is "USE"
-     */
-    public boolean isUseTriggered() {
-        return "USE".equalsIgnoreCase(triggerOn);
+
+    @Override
+    protected ScentPriority getDefaultPriority() {
+        return ScentPriority.HIGH;
     }
-    
+
+    @Override
+    protected String getDefaultTrigger() {
+        return "USE";
+    }
+
     /**
-     * Validates the definition has required fields.
-     * 
-     * @return true if valid
+     * Default duration in ticks (200 = 10 seconds).
      */
-    public boolean isValid() {
-        return itemId != null && !itemId.isEmpty()
-            && scentName != null && !scentName.isEmpty();
+    protected int getDefaultDurationTicks() {
+        return 200;
+    }
+
+    /**
+     * Default cooldown in milliseconds.
+     */
+    protected int getDefaultCooldownMS() {
+        return 5000;
     }
 }

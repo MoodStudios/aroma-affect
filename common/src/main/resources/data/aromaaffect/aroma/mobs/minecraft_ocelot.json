@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:ocelot",
+  "scent_id": "citrus",
+  "fallback_name": "Ocelot",
+  "color": "#EFDE7D",
+  "range": 4,
+  "priority": "MEDLOW"
+}

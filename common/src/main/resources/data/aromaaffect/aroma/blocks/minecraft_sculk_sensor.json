@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:sculk_sensor",
+  "color": "#042931",
+  "scent_id": "machina",
+  "fallback_name": "Sculk Sensor",
+  "perception": "aromaaffect:deep_dark",
+  "range": 6
+}

@@ -26,7 +26,7 @@ public class FlowerDefinitionLoader {
             .setPrettyPrinting()
             .create();
 
-    public static final String FLOWERS_DIR = "aroma_flowers";
+    public static final String FLOWERS_DIR = "aroma/flowers";
 
     @Getter
     private static List<FlowerDefinition> loadedFlowers = new ArrayList<>();
@@ -75,7 +75,7 @@ public class FlowerDefinitionLoader {
             return;
         }
 
-        String blockId = flower.getBlockId();
+        String blockId = flower.getId();
 
         if (loadedIds.contains(blockId)) {
             addWarning("Duplicate flower block_id '" + blockId + "' found, skipping...");
@@ -91,7 +91,7 @@ public class FlowerDefinitionLoader {
     }
 
     private static void validateFlower(FlowerDefinition flower) {
-        String blockId = flower.getBlockId();
+        String blockId = flower.getId();
 
         if (flower.hasScentId()) {
             String scentId = flower.getScentId();
@@ -110,7 +110,7 @@ public class FlowerDefinitionLoader {
 
     public static FlowerDefinition getFlowerById(String blockId) {
         for (FlowerDefinition flower : loadedFlowers) {
-            if (flower.getBlockId().equals(blockId)) {
+            if (flower.getId().equals(blockId)) {
                 return flower;
             }
         }

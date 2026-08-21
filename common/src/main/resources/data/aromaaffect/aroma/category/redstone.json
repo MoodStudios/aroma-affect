@@ -1,0 +1,10 @@
+{
+  "id": "aromaaffect:redstone",
+  "fallback_name": "Redstone",
+  "mask": "aromaaffect:textures/mask/machina/redstone",
+  "sound": {
+    "id": "minecraft:block.redstone_torch.burnout",
+    "volume": 0.25,
+    "pitch": 1.0
+  }
+}

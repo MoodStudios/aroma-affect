@@ -9,17 +9,11 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 /**
  * Fullscreen scent mask overlay for active path tracking.
  * Triggered once per path scent puff (initial + recurring pulses).
  */
 public final class PathTrackingMaskOverlay {
-
-    private static final Map<String, Identifier> SCENT_MASKS = new HashMap<>();
 
     private static final long PULSE_DURATION_MS = 2800L;
     private static final long FADE_IN_MS = 90L;
@@ -31,25 +25,6 @@ public final class PathTrackingMaskOverlay {
     private static Identifier activeMask = null;
     private static long pulseStartMs = 0L;
     private static double lastPuffIntensity = 0.5;
-
-    static {
-        register("winter", "winterlayermask");
-        register("barnyard", "barnyardlayermask");
-        register("sweet", "sweetlayermask");
-        register("floral", "flowerlayermask");
-        register("beach", "beachlayermask");
-        register("kindred", "kindredlayermask");
-        register("petrichor", "rainlayermask");
-        register("marine", "marinelayermask");
-        register("evergreen", "forestlayermask");
-        register("terra silva", "terrasilvalayermask");
-        register("citrus", "citruslayermask");
-        register("desert", "desertlayermask");
-        register("savory spice", "savoryspicelayermask");
-        register("timber", "timberlayermask");
-        register("smoky", "smokylayermask");
-        register("machina", "diesellayermask");
-    }
 
     private PathTrackingMaskOverlay() {
     }
@@ -164,15 +139,7 @@ public final class PathTrackingMaskOverlay {
     }
 
     private static Identifier resolveMask(String scentName) {
-        String key = scentName.toLowerCase(Locale.ROOT).trim();
-        return SCENT_MASKS.get(key);
-    }
-
-    private static void register(String scentName, String maskFileStem) {
-        SCENT_MASKS.put(
-                scentName.toLowerCase(Locale.ROOT),
-                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/masks/" + maskFileStem + ".png")
-        );
+        return ScentPuffOverlay.resolveScentMask(scentName.trim());
     }
 
     private static double clamp01(double value) {

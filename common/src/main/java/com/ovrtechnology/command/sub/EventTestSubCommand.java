@@ -51,7 +51,7 @@ public class EventTestSubCommand implements SubCommand {
 
     private static CompletableFuture<Suggestions> suggest(SuggestionsBuilder builder) {
         for (EventDefinition def : EventDefinitionLoader.getLoadedEvents()) {
-            builder.suggest(def.getEventId());
+            builder.suggest(def.getId());
         }
         return builder.buildFuture();
     }
@@ -66,7 +66,7 @@ public class EventTestSubCommand implements SubCommand {
                     () ->
                             Texts.lit(
                                     "§7  - §e"
-                                            + def.getEventId()
+                                            + def.getId()
                                             + " §8("
                                             + def.getCategory()
                                             + " / "

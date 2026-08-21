@@ -1,0 +1,9 @@
+{
+  "id": "minecraft:deep_dark",
+  "image": "biome/deep_dark",
+  "fallback_name": "Deep Dark",
+  "color": "#0A0A14",
+  "scent_id": "machina",
+  "perception": "aromaaffect:deep_dark",
+  "track_cost": 25
+}

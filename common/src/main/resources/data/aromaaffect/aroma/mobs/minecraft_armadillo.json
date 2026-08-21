@@ -1,0 +1,9 @@
+{
+  "id": "minecraft:armadillo",
+  "scent_id": "earthy",
+  "fallback_name": "Armadillo",
+  "color": "#B57A75",
+  "range": 5,
+  "priority": "MEDLOW",
+  "intensity": 0.5
+}

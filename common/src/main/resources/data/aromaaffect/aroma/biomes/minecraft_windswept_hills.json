@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:windswept_hills",
+  "image": "biome/mountains",
+  "fallback_name": "Windswept Hills",
+  "color": "#597D72",
+  "scent_id": "winter",
+  "track_cost": 10
+}

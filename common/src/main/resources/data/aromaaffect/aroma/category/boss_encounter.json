@@ -1,0 +1,10 @@
+{
+  "id": "aromaaffect:boss_encounter",
+  "fallback_name": "Boss Encounter",
+  "mask": "aromaaffect:textures/mask/smoky/boss_encounter",
+  "sound": {
+    "id": "minecraft:entity.ender_dragon.growl",
+    "volume": 0.25,
+    "pitch": 1.0
+  }
+}

@@ -6,6 +6,7 @@ import com.ovrtechnology.ability.AbilityRegistry;
 import com.ovrtechnology.ability.PreciseSnifferAbility;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinitionLoader;
+import com.ovrtechnology.category.CategoryDefinitionLoader;
 import com.ovrtechnology.command.AromaTestCommand;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
@@ -82,6 +83,8 @@ public final class AromaAffect {
         FlowerDefinitionLoader.loadAllFlowers();
         StructureDefinitionLoader.loadAllStructures();
         MobDefinitionLoader.loadAllMobs();
+        EventDefinitionLoader.loadAllEvents();
+        CategoryDefinitionLoader.loadAllCategories();
         ScentTriggerConfigLoader.init();
         ScentTriggerManager.init();
 
@@ -157,6 +160,7 @@ public final class AromaAffect {
                                     FlowerDefinitionLoader.loadAllFlowers(ds);
                                     StructureDefinitionLoader.loadAllStructures(ds);
                                     MobDefinitionLoader.loadAllMobs(ds);
+                                    CategoryDefinitionLoader.loadAllCategories(ds);
                                     SnifferLootRegistry.reload(ds);
                                     NoseDefinitionLoader.reloadInPlace(ds);
                                     SnifferNoseDefinitionLoader.reloadInPlace(ds);
@@ -165,7 +169,7 @@ public final class AromaAffect {
                                     VariantRecipeIndex.reload(ds);
                                     NoseAbilityResolver.rebuild();
                                     EventDefinitionLoader.loadAllEvents(ds);
-                                    ScentTriggerConfigLoader.rebuildDefinitionTriggers();
+                                    ScentTriggerConfigLoader.rebuild();
                                 }));
 
         // === Phase 5 — event listeners (still on Architectury) ===============

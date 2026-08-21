@@ -1,8 +1,0 @@
-{
-  "biome_id": "minecraft:bamboo_jungle",
-  "image": "biome/jungle",
-  "fallback_name": "Bamboo Jungle",
-  "color_html": "#64C73F",
-  "scent_id": "citrus",
-  "track_cost": 10
-}

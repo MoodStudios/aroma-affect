@@ -1,0 +1,11 @@
+{
+  "id": "aromaaffect:jungle",
+  "fallback_name": "Jungle Discovery",
+  "mask": "aromaaffect:textures/mask/citrus/jungle",
+  "loop": false,
+  "sound": {
+    "id": "minecraft:entity.parrot.ambient",
+    "volume": 0.25,
+    "pitch": 1.0
+  }
+}

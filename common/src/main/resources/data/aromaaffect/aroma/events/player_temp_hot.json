@@ -1,0 +1,14 @@
+{
+  "id": "aromaaffect:player_temp_hot",
+  "category": "WEATHER",
+  "trigger_type": "PLAYER_TEMP",
+  "scent_id": "desert",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 50000,
+  "conditions": {
+    "comparison_type": "=",
+    "temp": 2.0
+  }
+}

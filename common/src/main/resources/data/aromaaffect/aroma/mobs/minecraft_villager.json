@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:villager",
+  "scent_id": "kindred",
+  "fallback_name": "Villager",
+  "color": "#563C33",
+  "range": 4,
+  "priority": "MEDLOW"
+}

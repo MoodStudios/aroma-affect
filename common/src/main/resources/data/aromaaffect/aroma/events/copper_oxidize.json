@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:copper_oxidize",
+  "category": "WEATHER",
+  "trigger_type": "COPPER_OXIDIZE",
+  "scent_id": "machina",
+  "intensity": 1.0,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 30000,
+  "conditions": {
+    "default": true
+  }
+}

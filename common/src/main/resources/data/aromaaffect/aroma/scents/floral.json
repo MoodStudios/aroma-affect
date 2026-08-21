@@ -1,0 +1,7 @@
+{
+  "id": "floral",
+  "fallback_name": "Floral",
+  "color": "#FF85A1",
+  "mask": "aromaaffect:textures/mask/floral",
+  "description": "Wandering through a flower garden, catching wafts of different blooms"
+}
