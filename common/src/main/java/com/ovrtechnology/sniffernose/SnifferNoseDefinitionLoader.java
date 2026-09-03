@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.data.DataSourceInfo;
 import com.ovrtechnology.data.JsonResources;
 import lombok.Getter;
 
@@ -31,12 +32,12 @@ public class SnifferNoseDefinitionLoader {
     /**
      * Path to the sniffer noses JSON file
      */
-    private static final String SNIFFER_NOSES_RESOURCE_PATH = "data/aromaaffect/aroma/noses/sniffer_noses.json";
+    public static final String SNIFFER_NOSES_RESOURCE_PATH = DataSourceInfo.BASE + "noses/sniffer_noses.json";
     
     /**
      * Default texture path for fallback
      */
-    private static final String DEFAULT_TEXTURE = "item/sniffer_nose_default";
+    private static final String DEFAULT_TEXTURE = "item/enhanced_sniffer_nose";
     
     /**
      * Cached list of loaded sniffer nose definitions

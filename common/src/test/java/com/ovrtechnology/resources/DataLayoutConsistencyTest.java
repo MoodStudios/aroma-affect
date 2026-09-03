@@ -10,8 +10,10 @@ import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.category.CategoryDefinitionLoader;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.mob.MobDefinitionLoader;
+import com.ovrtechnology.nose.NoseDefinitionLoader;
 import com.ovrtechnology.scent.ScentDefinitionLoader;
 import com.ovrtechnology.scentitem.ScentItemDefinitionLoader;
+import com.ovrtechnology.sniffernose.SnifferNoseDefinitionLoader;
 import com.ovrtechnology.sniffer.loot.SnifferLootRegistry;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
@@ -62,6 +64,8 @@ class DataLayoutConsistencyTest {
 
     private static final List<String> SINGLE_FILE_RESOURCES = List.of(
             ScentItemDefinitionLoader.SCENT_ITEMS_RESOURCE_PATH,
+            NoseDefinitionLoader.NOSES_RESOURCE_PATH,
+            SnifferNoseDefinitionLoader.SNIFFER_NOSES_RESOURCE_PATH,
             ScentTriggerConfigLoader.ITEM_TRIGGERS_PATH,
             ScentTriggerConfigLoader.SETTINGS_PATH,
             AbilityDefinitionLoader.ABILITY_PATH

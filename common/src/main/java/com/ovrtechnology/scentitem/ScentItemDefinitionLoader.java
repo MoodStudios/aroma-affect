@@ -47,7 +47,7 @@ public class ScentItemDefinitionLoader {
     /**
      * Default texture path for fallback
      */
-    private static final String DEFAULT_TEXTURE = "item/scent_default";
+    private static final String DEFAULT_TEXTURE = "item/scent_container";
     
     /**
      * Cached list of loaded scent item definitions

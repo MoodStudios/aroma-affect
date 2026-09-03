@@ -9,6 +9,7 @@ import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockRegistry;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
+import com.ovrtechnology.data.DataSourceInfo;
 import com.ovrtechnology.data.JsonResources;
 import com.ovrtechnology.structure.StructureRegistry;
 import lombok.Getter;
@@ -34,6 +35,8 @@ public class NoseDefinitionLoader {
     /**
      * Default texture path for fallback
      */
+    public static final String NOSES_RESOURCE_PATH = DataSourceInfo.BASE + "noses/noses.json";
+
     private static final String DEFAULT_TEXTURE = "item/foragers_nose";
     
     /**
@@ -60,7 +63,7 @@ public class NoseDefinitionLoader {
 
         // Load the index file that lists all nose definition files
         try {
-            NoseDefinition[] noses = loadNosesFromResource(dataSource, "data/aromaaffect/aroma/noses/noses.json");
+            NoseDefinition[] noses = loadNosesFromResource(dataSource, NOSES_RESOURCE_PATH);
             if (noses != null) {
                 for (NoseDefinition nose : noses) {
                     if (nose != null && nose.isValid()) {
@@ -83,7 +86,7 @@ public class NoseDefinitionLoader {
     }
 
     public static void reloadInPlace(DataSource dataSource) {
-        NoseDefinition[] newDefs = loadNosesFromResource(dataSource, "data/aromaaffect/aroma/noses/noses.json");
+        NoseDefinition[] newDefs = loadNosesFromResource(dataSource, NOSES_RESOURCE_PATH);
         int mutated = 0;
         int skipped = 0;
         for (NoseDefinition src : newDefs) {
