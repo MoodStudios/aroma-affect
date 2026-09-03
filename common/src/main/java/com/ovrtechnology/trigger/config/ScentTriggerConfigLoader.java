@@ -32,12 +32,12 @@ public final class ScentTriggerConfigLoader {
     /**
      * Path to the item triggers configuration file (items remain separate).
      */
-    private static final String ITEM_TRIGGERS_PATH = DataSourceInfo.BASE + "settings/scent_item_triggers.json";
+    public static final String ITEM_TRIGGERS_PATH = DataSourceInfo.BASE + "settings/scent_item_triggers.json";
 
     /**
      * Path to the trigger settings file.
      */
-    private static final String SETTINGS_PATH = DataSourceInfo.BASE + "settings/trigger_settings.json";
+    public static final String SETTINGS_PATH = DataSourceInfo.BASE + "settings/trigger_settings.json";
 
     /**
      * Valid OVR scent names (case-sensitive).

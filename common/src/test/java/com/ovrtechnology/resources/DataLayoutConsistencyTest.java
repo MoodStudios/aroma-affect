@@ -4,14 +4,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
 import com.ovrtechnology.block.BlockDefinitionLoader;
 import com.ovrtechnology.category.CategoryDefinitionLoader;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.mob.MobDefinitionLoader;
 import com.ovrtechnology.scent.ScentDefinitionLoader;
+import com.ovrtechnology.scentitem.ScentItemDefinitionLoader;
 import com.ovrtechnology.sniffer.loot.SnifferLootRegistry;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
+import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.event.EventDefinitionLoader;
 import com.ovrtechnology.variant.NoseVariantRegistry;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +60,13 @@ class DataLayoutConsistencyTest {
             NoseVariantRegistry.VARIANTS_DIR
     );
 
+    private static final List<String> SINGLE_FILE_RESOURCES = List.of(
+            ScentItemDefinitionLoader.SCENT_ITEMS_RESOURCE_PATH,
+            ScentTriggerConfigLoader.ITEM_TRIGGERS_PATH,
+            ScentTriggerConfigLoader.SETTINGS_PATH,
+            AbilityDefinitionLoader.ABILITY_PATH
+    );
+
     @Test
     @DisplayName("every loader directory should exist in bundled resources")
     void loaderDirectoriesShouldExist() {
@@ -64,6 +74,16 @@ class DataLayoutConsistencyTest {
                 .forEach(directory -> assertThat(resourceUrl(DATA_ROOT + directory))
                         .as("bundled directory %s%s", DATA_ROOT, directory)
                         .isNotNull());
+    }
+
+    @Test
+    @DisplayName("every single-file loader path should resolve to a bundled JSON resource")
+    void singleFileResourcesShouldExist() throws IOException {
+        for (String path : SINGLE_FILE_RESOURCES) {
+            assertThat(path).as("loader path %s is rooted at the data directory", path).startsWith(DATA_ROOT);
+            assertThat(resourceUrl(path)).as("bundled resource %s", path).isNotNull();
+            assertThat(loadJson(path)).as("parsable JSON at %s", path).isNotNull();
+        }
     }
 
     @Test

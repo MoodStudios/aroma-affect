@@ -42,12 +42,12 @@ public class ScentItemDefinitionLoader {
     /**
      * Path to the scent items JSON file
      */
-    private static final String SCENT_ITEMS_RESOURCE_PATH = DataSourceInfo.ROOT + "settings/scent_items.json";
+    public static final String SCENT_ITEMS_RESOURCE_PATH = DataSourceInfo.BASE + "settings/scent_items.json";
     
     /**
      * Default texture path for fallback
      */
-    private static final String DEFAULT_TEXTURE = DataSourceInfo.ROOT + "item/scent_default";
+    private static final String DEFAULT_TEXTURE = "item/scent_default";
     
     /**
      * Cached list of loaded scent item definitions
@@ -74,7 +74,7 @@ public class ScentItemDefinitionLoader {
         loadedIds.clear();
 
         try {
-            ScentItemDefinition[] scentItems = loadScentItemsFromResource(dataSource, DataSourceInfo.BASE + SCENT_ITEMS_RESOURCE_PATH);
+            ScentItemDefinition[] scentItems = loadScentItemsFromResource(dataSource, SCENT_ITEMS_RESOURCE_PATH);
             if (scentItems != null) {
                 for (ScentItemDefinition scentItem : scentItems) {
                     processScentItem(scentItem);
