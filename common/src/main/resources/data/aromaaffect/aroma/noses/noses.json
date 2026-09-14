@@ -75,7 +75,11 @@
           "minecraft:peony",
           "minecraft:torchflower",
           "minecraft:pitcher_plant",
-          "minecraft:pink_petals"
+          "minecraft:pink_petals",
+          "minecraft:brown_mushroom",
+          "minecraft:red_mushroom",
+          "minecraft:brown_mushroom_block",
+          "minecraft:red_mushroom_block"
         ],
         "abilities": [
           "active_tracking"
@@ -136,13 +140,22 @@
       "track_cost": 10,
       "unlock": {
         "blocks": [],
-        "biomes": [],
+        "biomes": [
+          "minecraft:nether_wastes",
+          "minecraft:warped_forest",
+          "minecraft:crimson_forest",
+          "minecraft:soul_sand_valley",
+          "minecraft:basalt_deltas"
+        ],
         "structures": [
           "minecraft:stronghold",
           "minecraft:ancient_city",
           "minecraft:fortress"
         ],
-        "flowers": [],
+        "flowers": [
+          "minecraft:crimson_fungus",
+          "minecraft:warped_fungus"
+        ],
         "abilities": [],
         "noses": [
           "gemseekers_nose"

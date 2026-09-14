@@ -63,5 +63,10 @@
   "weather_rain",
   "weather_thunderstorm",
   "block_break_redstone_component",
-  "redstone_activated"
+  "redstone_activated",
+  "ender_eye_thrown",
+  "end_portal_created",
+  "lingering_potion_thrown",
+  "dragon_breath_exposure",
+  "lingering_cloud_exposure"
 ]

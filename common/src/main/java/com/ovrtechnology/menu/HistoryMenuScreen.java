@@ -23,6 +23,7 @@ import net.minecraft.world.item.Items;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import com.ovrtechnology.tracking.RespawnSyncState;
 
 /**
  * History screen with 3 tabs: History, Saved, Blacklist.
@@ -1074,6 +1075,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private boolean canRetrackTarget(String targetId, String categoryId) {
         var player = Minecraft.getInstance().player;
         if (player == null) return false;
+        if (RespawnSyncState.isRespawnBlock(Identifier.tryParse(targetId))) return true;
 
         return switch (categoryId) {
             case "blocks" -> EquippedNoseHelper.canDetectBlock(player, targetId);

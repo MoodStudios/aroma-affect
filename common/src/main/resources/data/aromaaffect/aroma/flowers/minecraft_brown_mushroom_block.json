@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:brown_mushroom_block",
+  "scent_id": "petrichor",
+  "fallback_name": "Brown Mushroom Block",
+  "color": "#8D6E63",
+  "trigger_on": "PROXIMITY",
+  "range": 4,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

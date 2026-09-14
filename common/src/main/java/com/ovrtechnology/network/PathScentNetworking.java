@@ -6,6 +6,7 @@ import com.ovrtechnology.history.HistoryEntry;
 import com.ovrtechnology.history.TrackingHistoryData;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
+import com.ovrtechnology.tracking.RespawnSyncState;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import com.ovrtechnology.trigger.ScentPriority;
 import com.ovrtechnology.trigger.ScentTrigger;
@@ -107,6 +108,27 @@ public final class PathScentNetworking {
                 buf -> {
                     boolean hasStructure = buf.readBoolean();
                     return new StructureSyncS2C(hasStructure ? buf.readUtf() : null);
+                }
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record RespawnSyncS2C(boolean present, String dimension, BlockPos pos, String blockId) implements CustomPacketPayload {
+        public static final Type<RespawnSyncS2C> TYPE = new Type<>(
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "respawn_sync"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, RespawnSyncS2C> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeBoolean(payload.present);
+                    if (payload.present) {
+                        buf.writeUtf(payload.dimension);
+                        buf.writeBlockPos(payload.pos);
+                        buf.writeUtf(payload.blockId);
+                    }
+                },
+                buf -> {
+                    boolean present = buf.readBoolean();
+                    if (!present) return new RespawnSyncS2C(false, null, null, null);
+                    return new RespawnSyncS2C(true, buf.readUtf(), buf.readBlockPos(), buf.readUtf());
                 }
         );
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
@@ -239,6 +261,19 @@ public final class PathScentNetworking {
                     AromaAffect.LOGGER.debug("Received structure sync from server: {}", payload.structureId());
                 });
 
+        Balm.networking().registerClientboundPacket(
+                RespawnSyncS2C.TYPE,
+                RespawnSyncS2C.class,
+                RespawnSyncS2C.STREAM_CODEC,
+                (player, payload) -> {
+                    if (payload.present()) {
+                        RespawnSyncState.update(payload.dimension(), payload.pos(), payload.blockId());
+                    } else {
+                        RespawnSyncState.clear();
+                    }
+                    AromaAffect.LOGGER.debug("Received respawn sync from server: {} at {}", payload.blockId(), payload.pos());
+                });
+
         // Server-side receiver for blacklist sync. Under Balm this runs on the main
         // server thread; BlacklistSyncManager uses ConcurrentHashMap so the update
         // is still safe and ordering is preserved because the same tick processes
@@ -280,6 +315,14 @@ public final class PathScentNetworking {
 
     public static void sendStructureSync(ServerPlayer player, String structureId) {
         Balm.networking().sendTo(player, new StructureSyncS2C(structureId));
+    }
+
+    public static void sendRespawnSync(ServerPlayer player, String dimension, BlockPos pos, String blockId) {
+        Balm.networking().sendTo(player, new RespawnSyncS2C(true, dimension, pos, blockId));
+    }
+
+    public static void sendRespawnCleared(ServerPlayer player) {
+        Balm.networking().sendTo(player, new RespawnSyncS2C(false, null, null, null));
     }
 
     public static void sendBlacklistSync(RegistryAccess registryAccess) {

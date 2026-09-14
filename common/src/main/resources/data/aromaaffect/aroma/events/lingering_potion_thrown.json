@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:lingering_potion_thrown",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "LINGERING_POTION_THROWN",
+  "scent_id": "savory_spice",
+  "intensity": 0.6,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "default": true
+  }
+}

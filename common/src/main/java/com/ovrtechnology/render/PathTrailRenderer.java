@@ -38,6 +38,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.ovrtechnology.tracking.RespawnSyncState;
 
 
 /**
@@ -934,6 +935,11 @@ public final class PathTrailRenderer {
         TrackingCategory cat = ActiveTrackingState.getCategory();
 
         if (targetId != null) {
+            var bedColor = RespawnSyncState.bedColorOf(ActiveTrackingState.getTargetId());
+            if (bedColor.isPresent()) {
+                int argb = bedColor.get().getTextureDiffuseColor();
+                return new float[]{((argb >> 16) & 0xFF) / 255.0f, ((argb >> 8) & 0xFF) / 255.0f, (argb & 0xFF) / 255.0f};
+            }
             var blockDef = BlockRegistry.getBlock(targetId);
             if (blockDef.isPresent()) {
                 return blockDef.get().getColorAsFloats();

@@ -47,10 +47,13 @@
     "OldMinecartBehaviorServerMixin",
     "NewMinecartBehaviorServerMixin",
     "LeverUseServerMixin",
-    "ButtonPressServerMixin"
+    "ButtonPressServerMixin",
+    "EnderEyeItemServerMixin",
+    "LingeringPotionUseServerMixin",
+    "AreaEffectCloudServerMixin",
+    "ServerPlayerRespawnMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   }
 }
-

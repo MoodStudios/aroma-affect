@@ -1,0 +1,8 @@
+{
+  "id": "minecraft:silverfish",
+  "scent_id": "petrichor",
+  "fallback_name": "Silverfish",
+  "color": "#6F6F6F",
+  "range": 4,
+  "priority": "MEDLOW"
+}

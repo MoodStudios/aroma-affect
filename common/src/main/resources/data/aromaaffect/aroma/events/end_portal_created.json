@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:end_portal_created",
+  "category": "PLAYER_PROGRESS",
+  "trigger_type": "END_PORTAL_CREATED",
+  "scent_id": "machina",
+  "intensity": 1.0,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 30000,
+  "conditions": {
+    "default": true
+  }
+}

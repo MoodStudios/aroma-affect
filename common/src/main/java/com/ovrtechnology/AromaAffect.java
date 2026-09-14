@@ -46,6 +46,7 @@ import com.ovrtechnology.variant.VariantRecipeIndex;
 import com.ovrtechnology.data.ResourceManagerDataSource;
 import com.ovrtechnology.network.ScentEventNetworking;
 import com.ovrtechnology.trigger.ScentTriggerManager;
+import com.ovrtechnology.tracking.RespawnSyncHandler;
 import com.ovrtechnology.trigger.StructureSyncHandler;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.event.EventDefinitionLoader;
@@ -178,6 +179,7 @@ public final class AromaAffect {
         ActivePathManager.init();
         AbilityHandler.init();
         StructureSyncHandler.init();
+        RespawnSyncHandler.init();
         AromaTestCommand.init();
         AromaGuideFirstJoinHandler.init();
         VillagePoolInjector.init();

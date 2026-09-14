@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:lingering_cloud_exposure",
+  "category": "PLAYER_STATE",
+  "trigger_type": "LINGERING_CLOUD_EXPOSURE",
+  "scent_id": "savory_spice",
+  "intensity": 0.7,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 6000,
+  "conditions": {
+    "default": true
+  }
+}

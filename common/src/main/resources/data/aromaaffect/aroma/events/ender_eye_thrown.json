@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:ender_eye_thrown",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "ENDER_EYE_THROWN",
+  "scent_id": "smoky",
+  "intensity": 0.6,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 5000,
+  "conditions": {
+    "default": true
+  }
+}

@@ -6,7 +6,10 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
+import com.ovrtechnology.tracking.RespawnSyncState;
 import com.ovrtechnology.trigger.PassiveModeManager;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -206,6 +209,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private boolean isHoveringFeedback = false;
     private boolean isHoveringPanelStop = false;
     private boolean isHoveringPanelTeleport = false;
+    private boolean isHoveringBedButton = false;
+    private int trackingPanelBottom = 0;
 
     // Shop button animation
     private float shopGlowPhase = 0f;
@@ -237,6 +242,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Render active tracking info panel
         renderTrackingPanel(graphics, mouseX, mouseY, animationProgress);
+
+        renderBedButton(graphics, mouseX, mouseY, animationProgress);
     }
 
     /**
@@ -553,6 +560,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             MenuManager.openFeedbackMenu();
             return true;
         }
+        if (isHoveringBedButton) {
+            AromaAffect.LOGGER.debug("Bed tracking button clicked");
+            executeTrackBed();
+            return true;
+        }
+
         if (isHoveringPanelStop) {
             AromaAffect.LOGGER.debug("Panel stop button clicked");
             executeStopPath();
@@ -593,6 +606,69 @@ public class RadialMenuScreen extends BaseMenuScreen {
     /**
      * Executes the stop path command and closes the menu.
      */
+    private void renderBedButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
+        isHoveringBedButton = false;
+        if (!RespawnSyncState.hasRespawnPoint()) {
+            return;
+        }
+        float appear = Mth.clamp((animationProgress - 0.4f) / 0.6f, 0.0f, 1.0f);
+        if (appear <= 0.0f) {
+            return;
+        }
+        var player = Minecraft.getInstance().player;
+        if (player == null) {
+            return;
+        }
+        boolean reachable = RespawnSyncState.isInDimension(player.level());
+        int size = 26;
+        int x = width - CORNER_BUTTON_PADDING - size;
+        int y = Math.max(height / 3, trackingPanelBottom + 8);
+        isHoveringBedButton = isInBounds(mouseX, mouseY, x, y, size, size);
+
+        int rgb = RespawnSyncState.getBedColor().map(DyeColor::getTextureDiffuseColor).orElse(0xFF8A5CFF) & 0x00FFFFFF;
+        int bg = reachable
+                ? (isHoveringBedButton ? 0xCC000000 : 0x80000000) | rgb
+                : 0x60555555;
+        int border = reachable ? 0xEE000000 | rgb : 0x88888888;
+        graphics.fill(x, y, x + size, y + size, MenuRenderUtils.withAlpha(bg, appear));
+        MenuRenderUtils.renderOutline(graphics, x, y, size, size, MenuRenderUtils.withAlpha(border, appear));
+
+        ItemStack icon = RespawnSyncState.getIcon();
+        graphics.item(icon, x + (size - 16) / 2, y + (size - 16) / 2);
+
+        if (isHoveringBedButton) {
+            Component tip = reachable
+                    ? Component.translatable("menu.aromaaffect.track_bed")
+                    : Component.translatable("menu.aromaaffect.track_bed.other_dimension");
+            graphics.setTooltipForNextFrame(tip, mouseX, mouseY);
+        }
+    }
+
+    private void executeTrackBed() {
+        var player = Minecraft.getInstance().player;
+        if (player == null || !RespawnSyncState.hasRespawnPoint()) {
+            return;
+        }
+        if (!RespawnSyncState.isInDimension(player.level())) {
+            MenuRenderUtils.playSound(SoundEvents.VILLAGER_NO, 0.5f, 1.2f);
+            return;
+        }
+        MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
+        Identifier target = RespawnSyncState.getBlockId();
+        BlockPos pos = RespawnSyncState.getPos();
+        ItemStack icon = RespawnSyncState.getIcon();
+        ActiveTrackingState.set(target, icon.getHoverName(), icon, TrackingCategoryRegistry.fromId("blocks"));
+        if (Minecraft.getInstance().getConnection() != null) {
+            String command = String.format("aromatest path recall %s %d %d %d %s",
+                    target, pos.getX(), pos.getY(), pos.getZ(), RespawnSyncState.getDimension());
+            Minecraft.getInstance().getConnection().sendCommand(command);
+            AromaAffect.LOGGER.debug("Tracking respawn point via: {}", command);
+        }
+        if (minecraft != null) {
+            minecraft.setScreenAndShow(null);
+        }
+    }
+
     private void executeStopPath() {
         // Clear client-side tracking state
         ActiveTrackingState.clear();
@@ -778,6 +854,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private void renderTrackingPanel(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
         isHoveringPanelStop = false;
         isHoveringPanelTeleport = false;
+        trackingPanelBottom = 0;
         ActiveTrackingState.TrackingStatus status = ActiveTrackingState.getStatus();
         if (status == ActiveTrackingState.TrackingStatus.IDLE) {
             return;
@@ -886,6 +963,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             lineCount++; // failure reason
         }
         int panelHeight = 10 + lineCount * 11;
+        trackingPanelBottom = panelTop + panelHeight + 16;
         int panelLeft = panelRight - panelWidth;
 
         // Background

@@ -14,16 +14,23 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
@@ -86,6 +93,11 @@ public final class ServerEventBusHandler {
     public static final String TT_SCULK_SHRIEK = "SCULK_SHRIEK";
     public static final String TT_MINECART_OVERLAP_POWERED_RAIL = "MINECART_OVERLAP_POWERED_RAIL";
     public static final String TT_REDSTONE_ACTIVATED = "REDSTONE_ACTIVATED";
+    public static final String TT_ENDER_EYE_THROWN = "ENDER_EYE_THROWN";
+    public static final String TT_END_PORTAL_CREATED = "END_PORTAL_CREATED";
+    public static final String TT_LINGERING_POTION_THROWN = "LINGERING_POTION_THROWN";
+    public static final String TT_DRAGON_BREATH_EXPOSURE = "DRAGON_BREATH_EXPOSURE";
+    public static final String TT_LINGERING_CLOUD_EXPOSURE = "LINGERING_CLOUD_EXPOSURE";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -352,6 +364,90 @@ public final class ServerEventBusHandler {
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, area)) {
             fireSimpleEvent(player, TT_COOKING_STARTED);
         }
+    }
+
+    private static final double END_PORTAL_CREATED_RADIUS = 32.0;
+
+    private static final int EFFECT_CLOUD_CHECK_INTERVAL_TICKS = 10;
+
+    public static void onEnderEyeThrown(ServerPlayer player) {
+        fireSimpleEvent(player, TT_ENDER_EYE_THROWN);
+    }
+
+    public static void onEndPortalCreated(Level level, BlockPos pos, Player activator) {
+        if (level == null || level.isClientSide() || pos == null) return;
+        AABB area = new AABB(pos).inflate(END_PORTAL_CREATED_RADIUS);
+        Set<ServerPlayer> players = new HashSet<>(level.getEntitiesOfClass(ServerPlayer.class, area));
+        if (activator instanceof ServerPlayer serverPlayer) {
+            players.add(serverPlayer);
+        }
+        for (ServerPlayer player : players) {
+            fireSimpleEvent(player, TT_END_PORTAL_CREATED);
+        }
+    }
+
+    public static void onLingeringPotionThrown(ServerPlayer player, ItemStack stack) {
+        if (player == null || stack == null || stack.isEmpty()) return;
+        PotionKeys keys = PotionKeys.of(stack.get(DataComponents.POTION_CONTENTS));
+        dispatch(
+                player,
+                TT_LINGERING_POTION_THROWN,
+                def -> matchesPotion(def.getConditions(), keys));
+    }
+
+    public static void onEffectCloudTick(AreaEffectCloud cloud, ServerLevel level) {
+        if (cloud == null || level == null) return;
+        if (cloud.tickCount % EFFECT_CLOUD_CHECK_INTERVAL_TICKS != 0) return;
+        if (cloud.isWaiting()) return;
+
+        List<ServerPlayer> players = level.getEntitiesOfClass(ServerPlayer.class, cloud.getBoundingBox());
+        if (players.isEmpty()) return;
+
+        boolean dragonBreath = cloud.getParticle() != null
+                && cloud.getParticle().getType() == ParticleTypes.DRAGON_BREATH;
+        if (dragonBreath) {
+            for (ServerPlayer player : players) {
+                fireSimpleEvent(player, TT_DRAGON_BREATH_EXPOSURE);
+            }
+            return;
+        }
+
+        PotionContents contents = cloud.get(DataComponents.POTION_CONTENTS);
+        if (contents == null || !contents.hasEffects()) return;
+        PotionKeys keys = PotionKeys.of(contents);
+        for (ServerPlayer player : players) {
+            dispatch(
+                    player,
+                    TT_LINGERING_CLOUD_EXPOSURE,
+                    def -> matchesPotion(def.getConditions(), keys));
+        }
+    }
+
+    private record PotionKeys(String potionKey, String effectKey) {
+        static PotionKeys of(PotionContents contents) {
+            if (contents == null) return new PotionKeys(null, null);
+            Holder<Potion> potion = contents.potion().orElse(null);
+            String potionKey = potion == null
+                    ? null
+                    : potion.unwrapKey().map(k -> k.identifier().toString()).orElse(null);
+            String effectKey = null;
+            for (MobEffectInstance effect : contents.getAllEffects()) {
+                Identifier id = effect.getEffect().unwrapKey().map(k -> k.identifier()).orElse(null);
+                if (id != null) {
+                    effectKey = id.toString();
+                    break;
+                }
+            }
+            return new PotionKeys(potionKey, effectKey);
+        }
+    }
+
+    private static boolean matchesPotion(JsonObject conditions, PotionKeys keys) {
+        List<String> potionIds = EventConditionUtils.getStringArray(conditions, "potion_ids");
+        if (keys.potionKey() != null && potionIds.contains(keys.potionKey())) return true;
+        List<String> effectIds = EventConditionUtils.getStringArray(conditions, "effect_ids");
+        if (keys.effectKey() != null && effectIds.contains(keys.effectKey())) return true;
+        return EventConditionUtils.getBoolean(conditions, "default", false);
     }
 
     public static void fireSimpleEvent(ServerPlayer player, String triggerType) {

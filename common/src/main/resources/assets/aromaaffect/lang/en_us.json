@@ -444,6 +444,7 @@
   "guide.aromaaffect.noses.prospectors_nose.detect_lava": "Lava",
   "guide.aromaaffect.noses.prospectors_nose.detects_flowers": "Flowers",
   "guide.aromaaffect.noses.prospectors_nose.detect_flowers_vanilla": "All vanilla flowers",
+  "guide.aromaaffect.noses.prospectors_nose.detect_mushrooms": "Mushrooms",
   "guide.aromaaffect.noses.prospectors_nose.recipe_header": "Recipe",
   "guide.aromaaffect.noses.prospectors_nose.recipe_label": "Prospector's Nose",
 
@@ -473,6 +474,10 @@
   "guide.aromaaffect.noses.dimensional_nose.detect_stronghold": "Stronghold",
   "guide.aromaaffect.noses.dimensional_nose.detect_ancient_city": "Ancient City",
   "guide.aromaaffect.noses.dimensional_nose.detect_nether_fortress": "Nether Fortress",
+  "guide.aromaaffect.noses.dimensional_nose.detects_biomes": "Biomes",
+  "guide.aromaaffect.noses.dimensional_nose.detect_nether_biomes": "Nether biomes",
+  "guide.aromaaffect.noses.dimensional_nose.detects_flowers": "Flowers",
+  "guide.aromaaffect.noses.dimensional_nose.detect_nether_fungi": "Nether fungi",
   "guide.aromaaffect.noses.dimensional_nose.recipe_header": "Recipe",
   "guide.aromaaffect.noses.dimensional_nose.recipe_label": "Dimensional Nose",
 
@@ -626,6 +631,8 @@
   "config.aromaaffect.scent_values.default": "default",
   "container.aromaaffect.sniffer": "Sniffer Inventory",
   "menu.aromaaffect.teleport": "Teleport",
+  "menu.aromaaffect.track_bed": "Track your bed",
+  "menu.aromaaffect.track_bed.other_dimension": "Your bed is in another dimension",
   "history.aromaaffect.name_field": "Name",
   "gui.aromaaffect.close": "Close",
   "dialogue.aromaaffect.nose_smith.regrowing": "A deal's a deal. Thanks again. My nose will grow back in %s.",

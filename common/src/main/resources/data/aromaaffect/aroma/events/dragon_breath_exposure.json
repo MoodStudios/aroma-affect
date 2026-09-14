@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:dragon_breath_exposure",
+  "category": "PLAYER_STATE",
+  "trigger_type": "DRAGON_BREATH_EXPOSURE",
+  "scent_id": "smoky",
+  "intensity": 0.9,
+  "priority": "HIGH",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 6000,
+  "conditions": {
+    "default": true
+  }
+}

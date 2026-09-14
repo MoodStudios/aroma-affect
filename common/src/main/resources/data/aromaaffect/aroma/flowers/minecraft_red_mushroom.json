@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:red_mushroom",
+  "scent_id": "petrichor",
+  "fallback_name": "Red Mushroom",
+  "color": "#D32F2F",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

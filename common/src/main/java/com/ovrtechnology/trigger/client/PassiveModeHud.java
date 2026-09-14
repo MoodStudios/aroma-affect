@@ -163,8 +163,13 @@ public final class PassiveModeHud {
             cooldownMs = 5000; // Fallback default
         }
 
-        // Use the actual last trigger time for this specific scent
-        long lastTriggerTime = ScentTriggerManager.getInstance().getLastTriggerTime(activeScent.scentName());
+        long lastTriggerTime = 0;
+        if (activeScent.source() == ScentTriggerSource.PASSIVE_MODE) {
+            lastTriggerTime = PassiveModeManager.getCurrentTypeLastTriggerTime();
+        }
+        if (lastTriggerTime <= 0) {
+            lastTriggerTime = ScentTriggerManager.getInstance().getLastTriggerTime(activeScent.scentName());
+        }
         long now = System.currentTimeMillis();
         long elapsedMs = now - lastTriggerTime;
         long remainingMs = Math.max(0, cooldownMs - elapsedMs);

@@ -13,8 +13,10 @@ import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
 import com.ovrtechnology.trigger.event.EventTriggersConfig;
 
+import com.ovrtechnology.util.SoundRef;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -25,6 +27,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.HashMap;
 import java.util.Map;
@@ -110,7 +114,7 @@ public final class PassiveModeManager {
             "minecraft:blaze", "minecraft:ghast", "minecraft:magma_cube",
             "minecraft:piglin", "minecraft:hoglin", "minecraft:strider",
             "minecraft:wither_skeleton", "minecraft:ender_dragon", "minecraft:wither",
-            "minecraft:warden", "minecraft:elder_guardian"
+            "minecraft:warden", "minecraft:elder_guardian", "minecraft:silverfish"
     );
 
     /**
@@ -144,6 +148,10 @@ public final class PassiveModeManager {
      * Structures only trigger once on entry, like biomes.
      */
     private static String lastStructureId = null;
+
+    private static String announcedMobSource = null;
+
+    private static String announcedBlockSource = null;
 
     /**
      * Structure ID synced from the server via {@link StructureSyncHandler}.
@@ -239,23 +247,29 @@ public final class PassiveModeManager {
         TriggerCandidate structureCandidate = evaluateStructureTriggers(level, playerPos);
         TriggerCandidate biomeCandidate = evaluateBiomeTriggers(level, playerPos);
 
-        // Select highest priority candidate only (Mobs > Blocks > Structures > Biomes)
-        // If a higher priority source exists nearby, lower priorities are suppressed
-        // even if the higher priority is on cooldown — prevents ping-pong between triggers
-        TriggerCandidate bestCandidate = mobCandidate;
-        if (bestCandidate == null) bestCandidate = blockCandidate;
-        if (bestCandidate == null) bestCandidate = structureCandidate;
-        if (bestCandidate == null) bestCandidate = biomeCandidate;
+        if (mobCandidate == null) announcedMobSource = null;
+        if (blockCandidate == null) announcedBlockSource = null;
+
+        // Select highest priority candidate only (Mobs > Blocks > Structures > Biomes).
+        // A mob or block that already sounded stays silent while it remains nearby
+        // and no longer suppresses lower priorities.
+        TriggerCandidate bestCandidate = null;
+        for (TriggerCandidate candidate : new TriggerCandidate[]{mobCandidate, blockCandidate, structureCandidate, biomeCandidate}) {
+            if (candidate != null && !isAnnounced(candidate)) {
+                bestCandidate = candidate;
+                break;
+            }
+        }
 
         if (bestCandidate != null) {
-            // Try to activate if cooldown has expired.
-            // This ensures consistent re-trigger intervals (e.g., every 5s for mobs)
-            // and updates intensity based on current distance.
-            // The per-type cooldown in canActivateScent() prevents spam between triggers.
             if (canActivateScent(bestCandidate)) {
                 activateTrigger(player, bestCandidate);
             }
             // Even if on cooldown, don't fall through to lower priorities
+            return;
+        }
+
+        if (mobCandidate != null || blockCandidate != null) {
             return;
         }
 
@@ -285,8 +299,13 @@ public final class PassiveModeManager {
             String displayName,
             TriggerType type,
             int range,
-            double distance
+            double distance,
+            String enteredId
     ) {
+        TriggerCandidate(ScentTrigger trigger, String source, String displayName,
+                         TriggerType type, int range, double distance) {
+            this(trigger, source, displayName, type, range, distance, null);
+        }
     }
 
     /**
@@ -320,6 +339,14 @@ public final class PassiveModeManager {
             }
         }
 
+        long globalCooldownMs = ClientConfig.getInstance().getGlobalCooldownMs();
+        long lastGlobalTrigger = ScentTriggerManager.getInstance().getLastGlobalTriggerTime();
+        if (lastGlobalTrigger > 0 && (now - lastGlobalTrigger) < globalCooldownMs) {
+            AromaAffect.LOGGER.debug("[PassiveMode] Blocked by global cooldown: {} ({}ms remaining)",
+                    candidate.source, globalCooldownMs - (now - lastGlobalTrigger));
+            return false;
+        }
+
         // Per-type cooldown: enforces the user-configured cooldown between any triggers of the same type.
         // e.g., "Block Cooldown = 6s" means 6s between ANY two block triggers (coal → redstone → coal).
         Long lastTriggerTime = typeTriggerTimes.get(candidate.type);
@@ -337,6 +364,14 @@ public final class PassiveModeManager {
      * Block and mob cooldowns come from ClientConfig (user-editable).
      * Structure and biome cooldowns come from TriggerSettings (data pack defaults).
      */
+    private static boolean isAnnounced(TriggerCandidate candidate) {
+        return switch (candidate.type) {
+            case MOB -> candidate.source.equals(announcedMobSource);
+            case BLOCK -> candidate.source.equals(announcedBlockSource);
+            default -> false;
+        };
+    }
+
     private static long getCooldownForType(TriggerType type) {
         ClientConfig config = ClientConfig.getInstance();
         return switch (type) {
@@ -411,7 +446,7 @@ public final class PassiveModeManager {
         Vec3 viewDir = player.getViewVector(1.0f).normalize();
         double activationRange = getBlockActivationRange();
 
-        // Build lookup: Block instance → trigger definition (one-time per evaluation)
+        // Build lookup: Block instance -> trigger definition (one-time per evaluation)
         Map<Block, BlockTriggerDefinition> triggersByBlock = new HashMap<>();
         for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
             if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
@@ -449,19 +484,17 @@ public final class PassiveModeManager {
                         bestDot = dot;
                         double intensity = calculateIntensityByDistance(distance, activationRange);
 
+                        ResolvedBlockScent resolved = resolveBlockScent(level, checkPos, block, trigger);
                         ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                                trigger.getScentName(),
-                                trigger.getPerception(),
-                                trigger.getSound(),
+                                resolved.scentName(),
+                                resolved.perception(),
+                                resolved.sound(),
                                 ScentPriority.MEDIUM,
                                 -1,
                                 intensity
                         );
 
-                        String source = "block:" + trigger.getId();
-                        String displayName = getBlockDisplayName(level, trigger.getId());
-
-                        bestCandidate = new TriggerCandidate(scentTrigger, source, displayName,
+                        bestCandidate = new TriggerCandidate(scentTrigger, resolved.source(), resolved.displayName(),
                                 TriggerType.BLOCK, (int) activationRange, distance);
                     }
                 }
@@ -516,6 +549,60 @@ public final class PassiveModeManager {
             }
         }
         return null;
+    }
+
+    private record ResolvedBlockScent(
+            String scentName,
+            String perception,
+            SoundRef sound,
+            String source,
+            String displayName
+    ) {
+    }
+
+    private static ResolvedBlockScent resolveBlockScent(Level level, BlockPos pos, Block block, BlockTriggerDefinition trigger) {
+        if (block == Blocks.SPAWNER) {
+            ResolvedBlockScent spawnerScent = resolveSpawnerScent(level, pos);
+            if (spawnerScent != null) {
+                return spawnerScent;
+            }
+        }
+        return new ResolvedBlockScent(
+                trigger.getScentName(),
+                trigger.getPerception(),
+                trigger.getSound(),
+                "block:" + trigger.getId(),
+                getBlockDisplayName(level, trigger.getId()));
+    }
+
+    private static ResolvedBlockScent resolveSpawnerScent(Level level, BlockPos pos) {
+        try {
+            if (!(level.getBlockEntity(pos) instanceof SpawnerBlockEntity spawnerEntity)) {
+                return null;
+            }
+            Entity display = spawnerEntity.getSpawner().getOrCreateDisplayEntity(level, pos);
+            if (display == null) {
+                return null;
+            }
+            Identifier typeId = BuiltInRegistries.ENTITY_TYPE.getKey(display.getType());
+            if (typeId == null) {
+                return null;
+            }
+            Optional<MobTriggerDefinition> mobTrigger = ScentTriggerConfigLoader.getMobTrigger(typeId.toString());
+            if (mobTrigger.isEmpty() || !mobTrigger.get().isValid()) {
+                return null;
+            }
+            MobTriggerDefinition mob = mobTrigger.get();
+            return new ResolvedBlockScent(
+                    mob.getScentName(),
+                    mob.getPerception(),
+                    mob.getSound(),
+                    "spawner:" + typeId,
+                    getMobDisplayName(display));
+        } catch (Exception e) {
+            AromaAffect.LOGGER.debug("Could not resolve spawner mob at {}: {}", pos, e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -580,7 +667,6 @@ public final class PassiveModeManager {
         String currentStructureId = serverStructureId;
 
         if (currentStructureId == null) {
-            // Not inside any tracked structure - reset tracking
             if (lastStructureId != null) {
                 if (DEV_MODE) {
                     AromaAffect.LOGGER.info("[PassiveMode] Left structure: {}", lastStructureId);
@@ -590,21 +676,10 @@ public final class PassiveModeManager {
             return null;
         }
 
-        // One-time trigger: only fire when entering a NEW structure
         if (currentStructureId.equals(lastStructureId)) {
             return null;
         }
 
-        // New structure entered
-        String previousStructure = lastStructureId;
-        lastStructureId = currentStructureId;
-
-        if (DEV_MODE) {
-            AromaAffect.LOGGER.info("[PassiveMode] Entered structure: {} (previous: {})",
-                    currentStructureId, previousStructure);
-        }
-
-        // Find the matching trigger definition for scent name and priority
         for (StructureTriggerDefinition trigger : ScentTriggerConfigLoader.getAllStructureTriggers()) {
             if (!trigger.isProximityTrigger() || !trigger.isValid()) continue;
             if (!trigger.getId().equals(currentStructureId)) continue;
@@ -620,11 +695,11 @@ public final class PassiveModeManager {
 
             String source = "structure:" + currentStructureId;
             String displayName = formatResourceId(currentStructureId);
-
             return new TriggerCandidate(scentTrigger, source, displayName,
-                    TriggerType.STRUCTURE, 0, 0);
+                    TriggerType.STRUCTURE, 0, 0, currentStructureId);
         }
 
+        lastStructureId = currentStructureId;
         return null;
     }
 
@@ -638,44 +713,29 @@ public final class PassiveModeManager {
         String currentBiomeId = Objects.requireNonNull(level.registryAccess().lookupOrThrow(Registries.BIOME)
                 .getKey(biomeHolder.value())).toString();
 
-        // Only trigger if biome changed
         if (currentBiomeId.equals(lastBiomeId)) {
-            return null; // Same biome, don't trigger again
-        }
-
-        // Biome changed - update tracking
-        String previousBiome = lastBiomeId;
-        lastBiomeId = currentBiomeId;
-
-        if (DEV_MODE) {
-            AromaAffect.LOGGER.info("[PassiveMode] Biome changed: {} -> {}", previousBiome, currentBiomeId);
+            return null;
         }
 
         Optional<BiomeTriggerDefinition> triggerOpt = ScentTriggerConfigLoader.getBiomeTrigger(currentBiomeId);
-
-        if (triggerOpt.isPresent()) {
-            BiomeTriggerDefinition trigger = triggerOpt.get();
-
-            // Biome triggers use full intensity (1.0) since player just entered
-            double intensity = 1.0;
-
-            ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                    trigger.getScentName(),
-                    trigger.getPerception(),
-                    trigger.getSound(),
-                    trigger.getPriority(),
-                    -1,
-                    intensity
-            );
-
-            String source = "biome:" + currentBiomeId;
-            String displayName = getBiomeDisplayName(currentBiomeId);
-
-            // Biomes don't have range/distance concept - player is "inside" the biome
-            return new TriggerCandidate(scentTrigger, source, displayName, TriggerType.BIOME, 0, 0);
+        if (triggerOpt.isEmpty()) {
+            lastBiomeId = currentBiomeId;
+            return null;
         }
 
-        return null;
+        BiomeTriggerDefinition trigger = triggerOpt.get();
+        ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
+                trigger.getScentName(),
+                trigger.getPerception(),
+                trigger.getSound(),
+                trigger.getPriority(),
+                -1,
+                1.0
+        );
+
+        String source = "biome:" + currentBiomeId;
+        String displayName = getBiomeDisplayName(currentBiomeId);
+        return new TriggerCandidate(scentTrigger, source, displayName, TriggerType.BIOME, 0, 0, currentBiomeId);
     }
 
     /**
@@ -708,6 +768,12 @@ public final class PassiveModeManager {
 
 
         if (triggered) {
+            switch (candidate.type) {
+                case MOB -> announcedMobSource = candidate.source;
+                case BLOCK -> announcedBlockSource = candidate.source;
+                case STRUCTURE -> lastStructureId = candidate.enteredId;
+                case BIOME -> lastBiomeId = candidate.enteredId;
+            }
             // Play sound when scent trigger conditions are met
             SoundTrigger.playEventSound(player, candidate.trigger.perception(), candidate.trigger.sound());
 
@@ -928,7 +994,8 @@ public final class PassiveModeManager {
             currentPassiveTrigger = null;
             currentTriggerSource = null;
             currentTriggerType = null;
-            lastStructureId = null;
+            announcedMobSource = null;
+            announcedBlockSource = null;
         }
     }
 
@@ -943,6 +1010,9 @@ public final class PassiveModeManager {
             currentTriggerSource = null;
             currentTriggerType = null;
             lastStructureId = null;
+            lastBiomeId = null;
+            announcedMobSource = null;
+            announcedBlockSource = null;
         }
     }
 
@@ -1009,6 +1079,13 @@ public final class PassiveModeManager {
             return 0;
         }
         return getCooldownForType(currentTriggerType);
+    }
+
+    public static long getCurrentTypeLastTriggerTime() {
+        if (currentTriggerType == null) {
+            return 0;
+        }
+        return typeTriggerTimes.getOrDefault(currentTriggerType, 0L);
     }
 
     /**
