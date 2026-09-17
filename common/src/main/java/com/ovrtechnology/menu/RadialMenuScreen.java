@@ -154,6 +154,9 @@ public class RadialMenuScreen extends BaseMenuScreen {
         cachedLockedSlots = new boolean[entries.size()];
         selectedIndex = -1;
         previousHoverIndex = -1;
+        if (Minecraft.getInstance().getConnection() != null) {
+            com.ovrtechnology.network.RespawnTrackingNetworking.request(false);
+        }
     }
 
     @Override
@@ -611,7 +614,8 @@ public class RadialMenuScreen extends BaseMenuScreen {
      */
     private void renderBedButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
         isHoveringBedButton = false;
-        if (!RespawnSyncState.hasRespawnPoint()) {
+        if (!RespawnSyncState.hasRespawnPoint()
+                || !EquippedNoseHelper.canTrackRespawn(Minecraft.getInstance().player)) {
             return;
         }
         float appear = Mth.clamp((animationProgress - 0.4f) / 0.6f, 0.0f, 1.0f);
@@ -649,7 +653,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
     private void executeTrackBed() {
         var player = Minecraft.getInstance().player;
-        if (player == null || !RespawnSyncState.hasRespawnPoint()) {
+        if (player == null || !RespawnSyncState.hasRespawnPoint() || !EquippedNoseHelper.canTrackRespawn(player)) {
             return;
         }
         if (!RespawnSyncState.isInDimension(player.level())) {
@@ -657,16 +661,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return;
         }
         MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
-        Identifier target = RespawnSyncState.getBlockId();
-        BlockPos pos = RespawnSyncState.getPos();
-        ItemStack icon = RespawnSyncState.getIcon();
-        ActiveTrackingState.set(target, icon.getHoverName(), icon, TrackingCategoryRegistry.fromId("blocks"));
-        if (Minecraft.getInstance().getConnection() != null) {
-            String command = String.format("aromatest path recall %s %d %d %d %s",
-                    target, pos.getX(), pos.getY(), pos.getZ(), RespawnSyncState.getDimension());
-            Minecraft.getInstance().getConnection().sendCommand(command);
-            AromaAffect.LOGGER.debug("Tracking respawn point via: {}", command);
+        if (PassiveModeManager.isPassiveModeEnabled()) {
+            showErrorNotification(Component.translatable("message.aromaaffect.tracking.passive_mode_active"));
+            return;
         }
+        com.ovrtechnology.network.RespawnTrackingNetworking.request(true);
         if (minecraft != null) {
             minecraft.setScreenAndShow(null);
         }
@@ -678,7 +677,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         // Send the stop path command to the server
         if (Minecraft.getInstance().getConnection() != null) {
-            Minecraft.getInstance().getConnection().sendCommand("aromatest path stop");
+            com.ovrtechnology.network.RespawnTrackingNetworking.stop();
             AromaAffect.LOGGER.debug("Sent stop path command");
         }
 

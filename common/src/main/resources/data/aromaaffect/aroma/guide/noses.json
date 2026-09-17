@@ -42,6 +42,8 @@
         { "type": "spacer", "height": 8 },
         { "type": "subheader", "translate": "guide.aromaaffect.noses.prospectors_nose.detects_header" },
         { "type": "detection_label", "translate": "guide.aromaaffect.noses.prospectors_nose.detects_blocks" },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.prospectors_nose.detect_player_bed", "items": ["minecraft:red_bed"] },
+        { "type": "icon_text", "translate": "guide.aromaaffect.noses.prospectors_nose.detect_player_respawn_anchor", "items": ["minecraft:respawn_anchor"] },
         { "type": "icon_text", "translate": "guide.aromaaffect.noses.prospectors_nose.detect_gold", "items": ["minecraft:gold_ore", "minecraft:deepslate_gold_ore", "minecraft:nether_gold_ore"] },
         { "type": "icon_text", "translate": "guide.aromaaffect.noses.prospectors_nose.detect_lapis", "items": ["minecraft:lapis_ore", "minecraft:deepslate_lapis_ore"] },
         { "type": "icon_text", "translate": "guide.aromaaffect.noses.prospectors_nose.detect_copper", "items": ["minecraft:copper_ore", "minecraft:deepslate_copper_ore"] },

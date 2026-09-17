@@ -1087,7 +1087,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     private boolean canRetrackTarget(String targetId, String categoryId) {
         var player = Minecraft.getInstance().player;
         if (player == null) return false;
-        if (RespawnSyncState.isRespawnBlock(Identifier.tryParse(targetId))) return true;
+        if (RespawnSyncState.isRespawnBlock(Identifier.tryParse(targetId))) return EquippedNoseHelper.canTrackRespawn(player);
 
         return switch (categoryId) {
             case "blocks" -> EquippedNoseHelper.canDetectBlock(player, targetId);
@@ -1112,6 +1112,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
             }
             AromaAffect.LOGGER.info("Cannot start tracking while passive mode is active");
+            return;
+        }
+
+        // Bed history always resolves the current personal spawn on the server;
+        // saved coordinates must not bypass tier checks or track another player's bed.
+        if (RespawnSyncState.isRespawnBlock(Identifier.tryParse(targetId))) {
+            com.ovrtechnology.network.RespawnTrackingNetworking.request(true);
+            MenuManager.returnToRadialMenu();
             return;
         }
 

@@ -665,5 +665,11 @@
   "structure.minecraft.trial_chambers": "Cámaras de desafío",
   "structure.minecraft.fortress": "Fortaleza del Nether",
   "structure.minecraft.bastion_remnant": "Resto de bastión",
-  "structure.minecraft.end_city": "Ciudad del End"
+  "structure.minecraft.end_city": "Ciudad del End",
+  "guide.aromaaffect.noses.prospectors_nose.detect_player_bed": "Cama del jugador",
+  "guide.aromaaffect.noses.prospectors_nose.detect_player_respawn_anchor": "Ancla de reaparición del jugador",
+  "message.aromaaffect.respawn.tier_required": "Equipa una nariz de nivel 2 o superior para rastrear tu punto de reaparici\u00f3n.",
+  "message.aromaaffect.respawn.missing": "Tu cama no existe o el ancla no tiene carga. Establece un punto de reaparici\u00f3n v\u00e1lido.",
+  "message.aromaaffect.respawn.other_dimension": "Tu punto de reaparici\u00f3n est\u00e1 en otra dimensi\u00f3n.",
+  "message.aromaaffect.respawn.durability": "Tu nariz no tiene suficiente durabilidad para rastrear tu punto de reaparici\u00f3n."
 }

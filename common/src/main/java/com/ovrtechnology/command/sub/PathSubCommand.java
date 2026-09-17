@@ -654,6 +654,11 @@ public class PathSubCommand implements SubCommand {
             }
         }
 
+        if (com.ovrtechnology.tracking.RespawnSyncState.isRespawnBlock(targetId)) {
+            com.ovrtechnology.network.RespawnTrackingNetworking.track(player);
+            return Command.SINGLE_SUCCESS;
+        }
+
         // Determine target type by checking which registry contains the ID
         String idStr = targetId.toString();
         ActivePathManager.TargetType targetType;
