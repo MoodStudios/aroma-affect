@@ -29,6 +29,9 @@ import java.util.Set;
  * click sounds, and smooth animations.
  */
 public class GuideScreen extends BaseMenuScreen {
+    @Override protected int minimumLayoutWidth() { return 500; }
+    @Override protected int minimumLayoutHeight() { return 300; }
+
 
     // ── Layout Constants ───────────────────────────────────────────
     private static final int WINDOW_MARGIN = 16;
@@ -148,6 +151,7 @@ public class GuideScreen extends BaseMenuScreen {
     @Override
     protected void init() {
         super.init();
+        dragging = DragTarget.NONE;
         if (currentPage == null) {
             // Restore last opened page if available
             if (lastOpenedPageId != null) {
@@ -330,6 +334,9 @@ public class GuideScreen extends BaseMenuScreen {
         sidebarScrollbarW = SCROLLBAR_WIDTH;
         sidebarScrollbarH = areaHeight - 2;
         sidebarVisibleHeight = areaHeight;
+        int sidebarMaxScroll = Math.max(0, sidebarTotalHeight - sidebarVisibleHeight + 12);
+        sidebarScrollTarget = Mth.clamp(sidebarScrollTarget, 0, sidebarMaxScroll);
+        sidebarScrollOffset = Mth.clamp(sidebarScrollOffset, 0, sidebarMaxScroll);
 
         if (sidebarTotalHeight > areaHeight) {
             renderScrollbar(g, sidebarScrollbarX, sidebarScrollbarY, sidebarScrollbarW,
@@ -526,7 +533,8 @@ public class GuideScreen extends BaseMenuScreen {
             titleTextX = left + 16 + font.width(pageIcon.getSymbol()) + 4;
         }
 
-        g.text(font, currentPage.getTitle(), titleTextX, top + 10,
+        String pageTitle = font.plainSubstrByWidth(currentPage.getTitle().getString(), Math.max(1, right - titleTextX - 10));
+        g.text(font, pageTitle, titleTextX, top + 10,
                 applyAlpha(COLOR_TITLE, alpha), true);
 
         // Breadcrumb (category > page)
@@ -572,6 +580,9 @@ public class GuideScreen extends BaseMenuScreen {
         contentScrollbarW = SCROLLBAR_WIDTH;
         contentScrollbarH = areaHeight - 2;
         contentVisibleHeight = areaHeight;
+        int contentMaxScroll = Math.max(0, contentTotalHeight - contentVisibleHeight);
+        contentScrollTarget = Mth.clamp(contentScrollTarget, 0, contentMaxScroll);
+        contentScrollOffset = Mth.clamp(contentScrollOffset, 0, contentMaxScroll);
 
         if (contentTotalHeight > areaHeight) {
             renderScrollbar(g, contentScrollbarX, contentScrollbarY, contentScrollbarW,
@@ -580,14 +591,7 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Render deferred crafting tooltip on top of everything
         if (!craftingTooltipItem.isEmpty()) {
-            List<Component> tooltipLines = Screen.getTooltipFromItem(Minecraft.getInstance(), craftingTooltipItem);
-            List<net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent> clientComponents = new ArrayList<>();
-            for (Component line : tooltipLines) {
-                clientComponents.add(net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent.create(line.getVisualOrderText()));
-            }
-            g.tooltip(font, clientComponents, mouseX, mouseY,
-                    net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner.INSTANCE,
-                    craftingTooltipItem.get(net.minecraft.core.component.DataComponents.TOOLTIP_STYLE));
+            g.setTooltipForNextFrame(font, craftingTooltipItem, screenX(mouseX), screenY(mouseY));
         }
     }
 
@@ -619,10 +623,14 @@ public class GuideScreen extends BaseMenuScreen {
         float scale = 1.5f;
         g.pose().translate(x, y);
         g.pose().scale(scale, scale);
-        g.text(font, text, 0, 0, applyAlpha(0xFFFFFFFF, alpha), true);
+        var lines = font.split(text, Math.max(1, (int) (width / scale)));
+        int lineHeight = font.lineHeight + 2;
+        for (int i = 0; i < lines.size(); i++) {
+            g.text(font, lines.get(i), 0, i * lineHeight, applyAlpha(0xFFFFFFFF, alpha), true);
+        }
         g.pose().popMatrix();
 
-        int textHeight = (int) (font.lineHeight * scale);
+        int textHeight = (int) Math.ceil(lines.size() * lineHeight * scale);
 
         // Accent underline with gradient fade
         g.fill(x, y + textHeight + 3, x + width, y + textHeight + 4, applyAlpha(COLOR_ACCENT, alpha));
@@ -756,9 +764,12 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Draw subheader text in bold
         Component boldText = Component.literal(str).withStyle(ChatFormatting.BOLD);
-        g.text(font, boldText, x + 8 + iconOffset, y + 2, applyAlpha(element.getColor(), alpha), true);
-
-        return font.lineHeight + 6;
+        var lines = font.split(boldText, Math.max(1, width - 8 - iconOffset));
+        int lineHeight = font.lineHeight + 2;
+        for (int i = 0; i < lines.size(); i++) {
+            g.text(font, lines.get(i), x + 8 + iconOffset, y + 2 + i * lineHeight, applyAlpha(element.getColor(), alpha), true);
+        }
+        return lines.size() * lineHeight + 4;
     }
 
     private int renderTextElement(GuiGraphicsExtractor g, GuideElement element, int x, int y,
@@ -780,7 +791,10 @@ public class GuideScreen extends BaseMenuScreen {
 
     private int renderItemShowcase(GuiGraphicsExtractor g, GuideElement element, int x, int y,
                                    int width, float alpha) {
-        int boxHeight = 28;
+        var lines = element.getText() == null ? List.<FormattedCharSequence>of()
+                : font.split(element.getText(), Math.max(1, width - 34));
+        int lineHeight = font.lineHeight + 2;
+        int boxHeight = Math.max(28, lines.size() * lineHeight + 12);
 
         // Card background with subtle border
         g.fill(x, y, x + width, y + boxHeight, applyAlpha(COLOR_ITEM_SHOWCASE_BG, alpha));
@@ -788,12 +802,12 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Item at native 16x16 size
         if (element.getItemStack() != null) {
-            g.item(element.getItemStack(), x + 6, y + 6);
+            g.item(element.getItemStack(), x + 6, y + (boxHeight - 16) / 2);
         }
 
         // Description text
-        if (element.getText() != null) {
-            g.text(font, element.getText(), x + 28, y + 10,
+        for (int i = 0; i < lines.size(); i++) {
+            g.text(font, lines.get(i), x + 28, y + (boxHeight - lines.size() * lineHeight) / 2 + i * lineHeight,
                     applyAlpha(element.getColor(), alpha), false);
         }
 
@@ -807,18 +821,18 @@ public class GuideScreen extends BaseMenuScreen {
         int texW = element.getImageWidth();
         int texH = element.getImageHeight();
 
-        // Render at native texture size (image pre-sized to fit content area)
-        int imgW = texW;
-        int imgH = texH;
+        // Fit wide illustrations inside the current content column.
+        int imgW = Math.max(1, Math.min(texW, width - 4));
+        int imgH = Math.max(1, Math.round(texH * (imgW / (float) texW)));
         int imgX = x + (width - imgW) / 2;
 
         // Drop shadow
         g.fill(imgX + 2, y + 2, imgX + imgW + 2, y + imgH + 2,
                 applyAlpha(COLOR_IMAGE_SHADOW, alpha));
 
-        // 10-param blit: width==texW so the full texture UV range (0..1) is sampled
+        // Keep the full texture UV range when scaling the destination rectangle.
         g.blit(RenderPipelines.GUI_TEXTURED, element.getImageTexture(),
-                imgX, y, 0.0f, 0.0f, texW, texH, texW, texH);
+                imgX, y, 0.0f, 0.0f, imgW, imgH, texW, texH, texW, texH);
 
         // Border frame
         drawBorder(g, imgX - 1, y - 1, imgX + imgW + 1, y + imgH + 1,
@@ -899,9 +913,12 @@ public class GuideScreen extends BaseMenuScreen {
         int labelHeight = 0;
         Component label = element.getText();
         if (label != null && !label.getString().isEmpty()) {
-            int labelX = startX + (totalWidth - font.width(label)) / 2;
-            g.text(font, label, labelX, y, applyAlpha(0xFFCCCCCC, alpha), false);
-            labelHeight = font.lineHeight + 8;
+            var lines = font.split(label, Math.max(1, width));
+            for (var line : lines) {
+                g.text(font, line, x + (width - font.width(line)) / 2, y + labelHeight, applyAlpha(0xFFCCCCCC, alpha), false);
+                labelHeight += font.lineHeight + 2;
+            }
+            labelHeight += 6;
         }
 
         int gridY = y + labelHeight;
@@ -992,22 +1009,17 @@ public class GuideScreen extends BaseMenuScreen {
         g.text(font, bullet, x, y, applyAlpha(0xFFD0D0D0, alpha), false);
 
         // Ability name
-        String nameStr = name.getString();
-        int nameWidth = font.width(nameStr);
-        g.text(font, nameStr, x + bulletWidth, y, applyAlpha(0xFFD0D0D0, alpha), false);
+        var lines = font.split(name, Math.max(1, width - bulletWidth - 13));
+        int nameWidth = lines.stream().mapToInt(font::width).max().orElse(0);
+        for (int i = 0; i < lines.size(); i++) {
+            g.text(font, lines.get(i), x + bulletWidth, y + i * lineHeight, applyAlpha(0xFFD0D0D0, alpha), false);
+        }
+        lineHeight *= Math.max(1, lines.size());
 
-        // " (inherited)" in bold
-        Component inherited = Component.literal(" (inherited)").withStyle(ChatFormatting.BOLD);
-        int inheritedWidth = font.width(inherited);
-        int inheritedX = x + bulletWidth + nameWidth;
-        g.text(font, inherited, inheritedX, y, applyAlpha(0xFFAAAACC, alpha), false);
-
-        // Link icon (drawn as a small chain/link shape)
-        int iconX = inheritedX + inheritedWidth + 3;
+        // The label and link icon navigate directly to the guide page.
+        int iconX = x + bulletWidth + nameWidth + 3;
         int iconW = 10;
-
-        // Check hover over the clickable region (inherited text + icon)
-        int linkLeft = inheritedX;
+        int linkLeft = x + bulletWidth;
         int linkRight = iconX + iconW;
         boolean hovered = mouseX >= linkLeft && mouseX < linkRight && mouseY >= y && mouseY < y + lineHeight;
 
@@ -1087,9 +1099,9 @@ public class GuideScreen extends BaseMenuScreen {
         Component label = element.getText();
         if (label == null) return 0;
 
-        int lineHeight = font.lineHeight + 4;
-        String labelStr = label.getString();
-        int textWidth = font.width(labelStr);
+        var lines = font.split(label.copy().withStyle(ChatFormatting.UNDERLINE), Math.max(1, width - 13));
+        int textWidth = lines.stream().mapToInt(font::width).max().orElse(0);
+        int lineHeight = Math.max(1, lines.size()) * (font.lineHeight + 2) + 2;
 
         // Chain link icon width
         int iconW = 10;
@@ -1116,8 +1128,9 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Draw text with underline
         int textX = startX + iconW + 3;
-        Component underlined = Component.literal(labelStr).withStyle(ChatFormatting.UNDERLINE);
-        g.text(font, underlined, textX, y + 1, textColor, false);
+        for (int i = 0; i < lines.size(); i++) {
+            g.text(font, lines.get(i), textX, y + 1 + i * (font.lineHeight + 2), textColor, false);
+        }
 
         // Register clickable region
         if (element.getTargetPageId() != null) {
@@ -1269,7 +1282,7 @@ public class GuideScreen extends BaseMenuScreen {
     }
 
     @Override
-    public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event, double dragX, double dragY) {
+    protected boolean handleMouseDrag(net.minecraft.client.input.MouseButtonEvent event, double dragX, double dragY) {
         if (event.button() == 0 && dragging != DragTarget.NONE) {
             double deltaY = event.y() - dragStartMouseY;
             if (dragging == DragTarget.CONTENT_SCROLLBAR) {
@@ -1289,16 +1302,16 @@ public class GuideScreen extends BaseMenuScreen {
             }
             return true;
         }
-        return super.mouseDragged(event, dragX, dragY);
+        return super.handleMouseDrag(event, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(net.minecraft.client.input.MouseButtonEvent event) {
+    protected boolean handleMouseRelease(net.minecraft.client.input.MouseButtonEvent event) {
         if (event.button() == 0 && dragging != DragTarget.NONE) {
             dragging = DragTarget.NONE;
             return true;
         }
-        return super.mouseReleased(event);
+        return super.handleMouseRelease(event);
     }
 
     private int getThumbHeight(int trackHeight, int totalHeight, int visibleHeight) {

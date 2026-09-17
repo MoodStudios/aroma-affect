@@ -173,6 +173,9 @@ public final class TrackingHud {
         int screenW = mc.getWindow().getGuiScaledWidth();
         var font = mc.font;
 
+        int availableText = Math.max(1, screenW - 36);
+        text = font.plainSubstrByWidth(text, availableText);
+        targetText = font.plainSubstrByWidth(targetText, availableText);
         int textW = Math.max(font.width(text), font.width(targetText));
         int boxW = textW + 20;
         int boxH = targetText.isEmpty() ? 24 : 36;
@@ -289,7 +292,13 @@ public final class TrackingHud {
         if (targetIdStr != null && status == ActiveTrackingState.TrackingStatus.TRACKING) lineCount++;
         if (distText != null) lineCount++;
 
-        int panelWidth = maxText + iconSpace + pad * 2;
+        int panelWidth = Math.min(screenW - 8, maxText + iconSpace + pad * 2);
+        int textLimit = Math.max(1, panelWidth - iconSpace - pad * 2);
+        headerText = font.plainSubstrByWidth(headerText, textLimit);
+        if (targetName != null) targetName = Component.literal(font.plainSubstrByWidth(targetName.getString(), textLimit));
+        if (targetIdStr != null) targetIdStr = font.plainSubstrByWidth(targetIdStr, textLimit);
+        if (distText != null) distText = font.plainSubstrByWidth(distText,
+                Math.max(1, textLimit - TrackingDirectionIndicator.getColumnWidth()));
         int panelHeight = 10 + lineCount * 11;
         int panelLeft = panelRight - panelWidth;
 

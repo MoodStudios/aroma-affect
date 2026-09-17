@@ -127,6 +127,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
     @Override
     protected void init() {
+        int previousScroll = listScrollOffset;
         super.init();
 
         int listWidth = Math.min(MAX_LIST_WIDTH, width - 40);
@@ -141,10 +142,12 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
             searchQuery = query;
             applyFilters();
         });
+        searchBox.setValue(searchQuery);
         addWidget(searchBox);
 
         loadCards();
         applyFilters();
+        listScrollOffset = previousScroll;
     }
 
     // ── Filtering ────────────────────────────────────────────────────────
@@ -198,6 +201,8 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         }
 
         int listBottom = height - 10;
+        int maxScroll = Math.max(0, filteredCards.size() * (getRowHeight() + ROW_PADDING) - (listBottom - listTop));
+        listScrollOffset = Math.max(0, Math.min(listScrollOffset, maxScroll));
         renderItemList(graphics, listX, listTop, listWidth, listBottom, mouseX, mouseY, animationProgress);
     }
 

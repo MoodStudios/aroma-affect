@@ -7,8 +7,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import com.ovrtechnology.menu.BaseMenuScreen;
+import com.ovrtechnology.menu.MenuRenderUtils;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -26,7 +26,30 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class NoseSmithDialogueScreen extends Screen {
+public final class NoseSmithDialogueScreen extends BaseMenuScreen {
+    @Override protected int minimumLayoutWidth() { return 500; }
+    @Override protected int minimumLayoutHeight() { return 300; }
+    private int dialogueScrollLine;
+
+    private int dialogueBoxHeight() {
+        return Math.min(height - BOX_MARGIN * 2, Math.max(BOX_HEIGHT,
+                HEADER_HEIGHT + PADDING * 2 + wrappedLines.size() * (font.lineHeight + 2) + 26));
+    }
+
+    private int visibleDialogueLines() {
+        return Math.max(1, (dialogueBoxHeight() - HEADER_HEIGHT - PADDING * 2 - 26) / (font.lineHeight + 2));
+    }
+
+    @Override protected boolean handleMouseScroll(double x, double y, double dx, double dy) {
+        dialogueScrollLine = Math.max(0, Math.min(Math.max(0, wrappedLines.size() - visibleDialogueLines()),
+                dialogueScrollLine - (int) dy));
+        return true;
+    }
+
+    @Override public void onClose() {
+        if (minecraft != null) minecraft.setScreenAndShow(null);
+    }
+
     private static final int KEEPALIVE_INTERVAL_TICKS = 20;
     private static final int BOX_MARGIN = 18;
     private static final int BOX_HEIGHT = 110;
@@ -76,7 +99,8 @@ public final class NoseSmithDialogueScreen extends Screen {
 
     @Override
     protected void init() {
-        rebuildDialogue(true);
+        super.init();
+        rebuildDialogue(totalCodepoints == 0);
         sendTalkingState(true);
 
         int bottom = this.height - BOX_MARGIN;
@@ -103,6 +127,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
         addRenderableWidget(closeButton);
         addRenderableWidget(shopButton);
+        if (finished) showButtons();
     }
 
     @Override
@@ -159,11 +184,11 @@ public final class NoseSmithDialogueScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
         int left = BOX_MARGIN;
         int right = this.width - BOX_MARGIN;
         int bottom = this.height - BOX_MARGIN;
-        int top = bottom - BOX_HEIGHT;
+        int top = bottom - dialogueBoxHeight();
 
         graphics.fill(left, top, right, bottom, COLOR_BOX_BG);
         graphics.fill(left, top, right, top + HEADER_HEIGHT, COLOR_HEADER_BG);
@@ -188,7 +213,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         int portraitBottom = bottom - PADDING;
 
         int portraitScale = Math.min(portraitRight - portraitLeft, portraitBottom - portraitTop) - 8;
-        InventoryScreen.extractEntityInInventoryFollowsMouse(
+        MenuRenderUtils.renderEntityInViewport(
                 graphics,
                 portraitLeft,
                 portraitTop,
@@ -207,7 +232,7 @@ public final class NoseSmithDialogueScreen extends Screen {
 
         drawTypewriterText(graphics, textLeft, textTop, textWidth);
 
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+
     }
 
     private void sendTalkingState(boolean talking) {
@@ -224,9 +249,12 @@ public final class NoseSmithDialogueScreen extends Screen {
             return;
         }
 
+        int visible = visibleDialogueLines();
+        dialogueScrollLine = Math.max(0, Math.min(dialogueScrollLine, wrappedLines.size() - visible));
         int remaining = typedCodepoints;
+        for (int i = 0; i < dialogueScrollLine; i++) remaining -= lineCodepointCounts[i];
         int lineY = y;
-        for (int i = 0; i < wrappedLines.size(); i++) {
+        for (int i = dialogueScrollLine; i < Math.min(wrappedLines.size(), dialogueScrollLine + visible); i++) {
             int lineChars = lineCodepointCounts[i];
             int toShow = Math.min(remaining, lineChars);
             if (toShow <= 0) {
@@ -238,23 +266,21 @@ public final class NoseSmithDialogueScreen extends Screen {
             remaining -= toShow;
             lineY += this.font.lineHeight + 2;
 
-            if (lineY > y + 4 * (this.font.lineHeight + 2)) {
-                break;
-            }
+
         }
 
         // Buttons handle close/shop actions when typing is finished
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
         if (!finished) {
             finishTyping();
             return true;
         }
 
         if (buttonsVisible) {
-            return super.mouseClicked(event, doubleClick);
+            return false;
         }
 
         onClose();
@@ -314,7 +340,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         int left = BOX_MARGIN;
         int right = this.width - BOX_MARGIN;
         int bottom = this.height - BOX_MARGIN;
-        int top = bottom - BOX_HEIGHT;
+        int top = bottom - dialogueBoxHeight();
 
         int textLeft = left + PADDING + PORTRAIT_WIDTH + PADDING;
         int portraitTop = top + HEADER_HEIGHT + PADDING;
@@ -333,6 +359,7 @@ public final class NoseSmithDialogueScreen extends Screen {
         this.lineCodepointCounts = counts.stream().mapToInt(Integer::intValue).toArray();
 
         if (resetTypewriter) {
+            dialogueScrollLine = 0;
             this.typeProgress = 0.0F;
             this.typedCodepoints = 0;
             this.finished = false;

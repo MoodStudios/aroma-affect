@@ -15,6 +15,9 @@ import java.net.URI;
  * Features an animated product showcase with info and buy actions.
  */
 public class ShopScreen extends BaseMenuScreen {
+    @Override protected int minimumLayoutWidth() { return 460; }
+    @Override protected int minimumLayoutHeight() { return 360; }
+
 
     private static final Identifier OMARA_COVER = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/shop/omara_cover.png");

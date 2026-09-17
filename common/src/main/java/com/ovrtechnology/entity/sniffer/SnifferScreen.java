@@ -1,14 +1,14 @@
 package com.ovrtechnology.entity.sniffer;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import com.ovrtechnology.menu.ResponsiveContainerScreen;
+import com.ovrtechnology.menu.MenuRenderUtils;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
+public class SnifferScreen extends ResponsiveContainerScreen<SnifferMenu> {
 
     private static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
     private static final Identifier HORSE_INVENTORY_LOCATION =
@@ -22,7 +22,7 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         int k = (this.width - this.imageWidth) / 2;
         int l = (this.height - this.imageHeight) / 2;
 
@@ -37,7 +37,7 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
 
         // Renderizar el Sniffer en la pantalla
         if (this.menu.getSniffer() != null) {
-            InventoryScreen.extractEntityInInventoryFollowsMouse(
+            MenuRenderUtils.renderEntityInViewport(
                     graphics,
                     k + 26, l + 18,
                     k + 78, l + 70,
@@ -54,10 +54,10 @@ public class SnifferScreen extends AbstractContainerScreen<SnifferMenu> {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContainerContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         this.xMouse = (float) mouseX;
         this.yMouse = (float) mouseY;
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        super.extractContainerContent(graphics, mouseX, mouseY, partialTick);
         this.extractTooltip(graphics, mouseX, mouseY);
     }
 }

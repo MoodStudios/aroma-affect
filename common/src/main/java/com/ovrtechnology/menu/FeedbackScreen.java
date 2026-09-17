@@ -18,6 +18,9 @@ import java.util.List;
  * Submissions are POSTed asynchronously to the OVR/OMARA backend via {@link FeedbackClient}.
  */
 public class FeedbackScreen extends BaseMenuScreen {
+    @Override protected int minimumLayoutWidth() { return 440; }
+    @Override protected int minimumLayoutHeight() { return 360; }
+
 
     private static final Identifier ICON_BACK = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_back.png");

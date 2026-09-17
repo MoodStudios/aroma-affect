@@ -44,6 +44,9 @@ import java.util.Map;
  * slices can be added in the future without changing the rendering logic.</p>
  */
 public class RadialMenuScreen extends BaseMenuScreen {
+    @Override protected int minimumLayoutWidth() { return 640; }
+    @Override protected int minimumLayoutHeight() { return 360; }
+
 
     private static final float TWO_PI = (float) (Math.PI * 2.0);
 
@@ -224,7 +227,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return;
         }
 
-        int centerX = width / 2;
+        int centerX = radialCenterX();
         int centerY = height / 2;
 
         int outerRadius = computeOuterRadiusPx(width, height);
@@ -581,7 +584,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return false;
         }
 
-        int centerX = width / 2;
+        int centerX = radialCenterX();
         int centerY = height / 2;
         int outerRadius = computeOuterRadiusPx(width, height);
         float innerRadius = outerRadius * INNER_RADIUS_RATIO;
@@ -640,7 +643,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             Component tip = reachable
                     ? Component.translatable("menu.aromaaffect.track_bed")
                     : Component.translatable("menu.aromaaffect.track_bed.other_dimension");
-            graphics.setTooltipForNextFrame(tip, mouseX, mouseY);
+            graphics.setTooltipForNextFrame(tip, screenX(mouseX), screenY(mouseY));
         }
     }
 
@@ -945,7 +948,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             maxText = Math.max(maxText, font.width(failureReason));
         }
 
-        int panelWidth = maxText + iconSpace + pad * 2;
+        int panelWidth = Math.min(212, maxText + iconSpace + pad * 2);
+        int textLimit = panelWidth - iconSpace - pad * 2;
+        headerText = font.plainSubstrByWidth(headerText, textLimit);
+        if (targetName != null) targetName = Component.literal(font.plainSubstrByWidth(targetName.getString(), textLimit));
+        if (targetIdStr != null) targetIdStr = font.plainSubstrByWidth(targetIdStr, textLimit);
+        if (failureReason != null) failureReason = font.plainSubstrByWidth(failureReason, textLimit);
 
         // Calculate panel height based on content
         int lineCount = 1; // header always present
@@ -1223,7 +1231,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int boundsTop = centerY - outerRadius - boundsPadding;
         int boundsSize = (outerRadius + boundsPadding) * 2;
 
-        ScreenRectangle bounds = new ScreenRectangle(boundsLeft, boundsTop, boundsSize, boundsSize);
+        ScreenRectangle bounds = new ScreenRectangle(boundsLeft, boundsTop, boundsSize, boundsSize).transformMaxBounds(graphics.pose());
         GuiRenderState renderState = getGuiRenderState(graphics);
         renderState.addGuiElement(new RadialRingRenderState(
                 RenderPipelines.GUI,
@@ -1244,6 +1252,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 bounds,
                 null
         ));
+    }
+
+    private int radialCenterX() {
+        // Tracking feedback stays in the corner and must not move the wheel or its hit regions.
+        return width / 2;
     }
 
     private static int computeOuterRadiusPx(int width, int height) {
