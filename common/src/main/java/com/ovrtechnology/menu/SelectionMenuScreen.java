@@ -231,7 +231,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
 
         Component description = category.getDescription();
         int descColor = (int) (200 * alpha) << 24 | 0xAAAAAA;
-        graphics.centeredText(font, description, centerX, 35, descColor);
+        graphics.centeredText(font, font.plainSubstrByWidth(description.getString(), width - 24), centerX, 35, descColor);
     }
 
     protected void renderBackButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float animationProgress) {
@@ -366,6 +366,13 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
     }
 
     // ── Cost rendering helper ─────────────────────────────────────────────
+
+    protected int rowActionWidth(SelectionCard card, boolean tracking) {
+        if (tracking) return font.width(Component.translatable("menu.aromaaffect.tracking.label")) + 16;
+        int result = ROW_PADDING + 16 + font.width(String.valueOf(card.trackCost)) + 6;
+        if (card.requiredItem != null && !card.requiredItem.isEmpty()) result += 22 + font.width("x" + card.requiredItemCount);
+        return result;
+    }
 
     protected void renderCostSection(GuiGraphicsExtractor graphics, SelectionCard card,
                                       int rowRight, int rowCenterY, float animationProgress) {

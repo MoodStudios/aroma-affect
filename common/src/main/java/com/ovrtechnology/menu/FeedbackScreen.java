@@ -18,8 +18,6 @@ import java.util.List;
  * Submissions are POSTed asynchronously to the OVR/OMARA backend via {@link FeedbackClient}.
  */
 public class FeedbackScreen extends BaseMenuScreen {
-    @Override protected int minimumLayoutWidth() { return 440; }
-    @Override protected int minimumLayoutHeight() { return 360; }
 
 
     private static final Identifier ICON_BACK = Identifier.fromNamespaceAndPath(
@@ -71,6 +69,9 @@ public class FeedbackScreen extends BaseMenuScreen {
 
     private String nameText = "";
     private boolean anonymous = false;
+    private double formScroll;
+    private int maxFormScroll;
+    private int formTop, formBottom;
 
     private boolean isHoveringBack = false;
     private boolean isHoveringSubmit = false;
@@ -153,7 +154,7 @@ public class FeedbackScreen extends BaseMenuScreen {
                 + SUBMIT_BTN_HEIGHT
                 + INNER_PAD; // bottom padding
 
-        int maxPanelH = height - 30;
+        int maxPanelH = height - 54;
         int feedbackBoxH = FEEDBACK_BOX_PREFERRED_HEIGHT;
         int panelH = fixedH + feedbackBoxH;
         if (panelH > maxPanelH) {
@@ -163,16 +164,22 @@ public class FeedbackScreen extends BaseMenuScreen {
         }
 
         int panelLeft = centerX - panelW / 2;
-        int panelTop = centerY - panelH / 2;
+        formTop = Math.max(44, centerY - Math.min(panelH, height - 54) / 2);
+        formBottom = height - 10;
+        maxFormScroll = Math.max(0, panelH - (formBottom - formTop));
+        formScroll = Math.max(0, Math.min(formScroll, maxFormScroll));
+        int panelTop = formTop - (int) formScroll;
         int panelRight = panelLeft + panelW;
         int panelBottom = panelTop + panelH;
 
+        g.enableScissor(panelLeft, formTop, panelRight, formBottom);
         drawPanel(g, panelLeft, panelTop, panelRight, panelBottom, panelW, panelH, a);
 
         Component title = Texts.tr("feedback.aromaaffect.title");
         drawCentered(g, title, centerX, panelTop + 12, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         boolean ready = a > 0.95f;
+        boolean mouseInForm = mouseY >= formTop && mouseY < formBottom;
         int y = panelTop + 12 + 18;
 
         // Intro paragraph.
@@ -212,7 +219,7 @@ public class FeedbackScreen extends BaseMenuScreen {
         // "Submit anonymously" checkbox.
         checkboxX = contentLeft0;
         checkboxY = y;
-        isHoveringCheckbox = ready
+        isHoveringCheckbox = ready && mouseInForm
                 && isInBounds(mouseX, mouseY, checkboxX, checkboxY, contentW, CHECKBOX_SIZE);
         int boxBg = isHoveringCheckbox
                 ? MenuRenderUtils.withAlpha(COL_HOVER, a)
@@ -244,7 +251,7 @@ public class FeedbackScreen extends BaseMenuScreen {
         submitY = y;
 
         boolean canSubmit = state == State.FORM && !feedbackText.isBlank();
-        isHoveringSubmit = ready && canSubmit
+        isHoveringSubmit = ready && mouseInForm && canSubmit
                 && isInBounds(mouseX, mouseY, submitX, submitY, submitW, submitH);
 
         int submitBg;
@@ -266,7 +273,21 @@ public class FeedbackScreen extends BaseMenuScreen {
         drawCentered(g, submitLabel, submitX + submitW / 2, submitY + (submitH - 8) / 2,
                 MenuRenderUtils.withAlpha(canSubmit || state == State.SUBMITTING ? COL_TEXT : COL_TEXT_DIM, a));
 
+        g.disableScissor();
+        if (maxFormScroll > 0) {
+            int barH = Math.max(12, (formBottom - formTop) * (formBottom - formTop) / panelH);
+            int barY = formTop + (int) (formScroll / maxFormScroll * (formBottom - formTop - barH));
+            g.fill(panelRight - 4, barY, panelRight - 1, barY + barH, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        }
         renderBackButton(g, mouseX, mouseY, a);
+    }
+
+    @Override
+    protected boolean handleMouseScroll(double x, double y, double dx, double dy) {
+        if (state != State.FORM || y < formTop || y >= formBottom) return false;
+        if (feedbackBox.isMouseOver(x, y) && feedbackBox.mouseScrolled(x, y, dx, dy)) return true;
+        formScroll = Math.max(0, Math.min(maxFormScroll, formScroll - dy * 20));
+        return true;
     }
 
     private void drawPanel(GuiGraphicsExtractor g, int panelLeft, int panelTop, int panelRight,
@@ -363,6 +384,8 @@ public class FeedbackScreen extends BaseMenuScreen {
             MenuManager.returnToRadialMenu();
             return true;
         }
+
+        if (state != State.THANKS && (mouseY < formTop || mouseY >= formBottom)) return true;
 
         if (state == State.THANKS) {
             if (isHoveringClose) {

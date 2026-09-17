@@ -30,8 +30,6 @@ import com.ovrtechnology.tracking.RespawnSyncState;
  * Allows reviewing past tracking results, saving favorites, and blacklisting positions.
  */
 public class HistoryMenuScreen extends BaseMenuScreen {
-    @Override protected int minimumLayoutWidth() { return 480; }
-    @Override protected int minimumLayoutHeight() { return 300; }
 
 
     private enum Tab { HISTORY, SAVED, BLACKLIST }
@@ -219,16 +217,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
     }
 
     private void renderTooltip(GuiGraphicsExtractor g, Component text, int x, int y, float ap) {
-        int tw = font.width(text) + 8;
-        int th = 14;
-        // Ensure tooltip stays on screen
-        int tx = Math.max(2, Math.min(x, width - tw - 2));
-        int ty = y - th - 2;
-        if (ty < 2) ty = y + 16;
-
-        g.fill(tx, ty, tx + tw, ty + th, MenuRenderUtils.withAlpha(0xF0181820, ap));
-        MenuRenderUtils.renderOutline(g, tx, ty, tw, th, MenuRenderUtils.withAlpha(0x889A7CFF, ap));
-        g.text(font, text, tx + 4, ty + 3, MenuRenderUtils.withAlpha(0xFFDDDDDD, ap));
+        g.setTooltipForNextFrame(font, text, x, y);
     }
 
     private void renderBackButton(GuiGraphicsExtractor g, int mouseX, int mouseY, float ap) {
@@ -365,6 +354,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         // Name
         int textX = x + 28;
+        int textRight = x + w - (hovered ? 144 : 4);
+        g.enableScissor(textX, y, Math.max(textX + 1, textRight), y + ROW_HEIGHT);
         g.text(font, entry.displayName, textX, y + 4,
                 MenuRenderUtils.withAlpha(0xFFFFFFFF, ap));
 
@@ -400,6 +391,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 MenuRenderUtils.withAlpha(0xFF666666, ap));
 
         // Action buttons when hovered
+        g.disableScissor();
+
         if (hovered) {
             // Cross-dimension check: disable Go button if player is in wrong dimension
             boolean wrongDimension = entry.dimension != null
@@ -447,6 +440,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         renderEntryIcon(g, iconX, iconY, icon, entry.categoryId, ap);
 
         int textX = x + 28;
+        int textRight = x + w - (hovered ? 124 : 4);
+        g.enableScissor(textX, y, Math.max(textX + 1, textRight), y + ROW_HEIGHT);
         g.text(font, entry.customName, textX, y + 4,
                 MenuRenderUtils.withAlpha(0xFFFFCC44, ap));
 
@@ -472,6 +467,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             renderBadge(g, dimX + font.width(dimLabel) + 4, y + 14,
                     "BLOCKED", 0xFFFF6B6B, 0x60FF4444, ap);
         }
+
+        g.disableScissor();
 
         if (hovered) {
             boolean wrongDimension = entry.dimension != null
@@ -509,6 +506,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         renderEntryIcon(g, iconX, iconY, icon, entry.categoryId, ap);
 
         int textX = x + 28;
+        int textRight = x + w - (hovered ? 28 : 4);
+        g.enableScissor(textX, y, Math.max(textX + 1, textRight), y + ROW_HEIGHT);
         String name = entry.displayName != null ? entry.displayName : entry.targetId;
         g.text(font, name, textX, y + 4,
                 MenuRenderUtils.withAlpha(0xFFFF8888, ap));
@@ -528,6 +527,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         int dimColor = getDimensionColor(entry.dimension);
         g.text(font, dimLabel, coordsX + font.width(coords) + 4, y + 15,
                 MenuRenderUtils.withAlpha(dimColor, ap));
+
+        g.disableScissor();
 
         if (hovered) {
             int btnX = x + w - 4;
@@ -1105,6 +1106,14 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
         var player = Minecraft.getInstance().player;
 
+        // Bed history always resolves the current personal spawn on the server;
+        // saved coordinates must not bypass tier checks or track another player's bed.
+        if (RespawnSyncState.isRespawnBlock(Identifier.tryParse(targetId))) {
+            com.ovrtechnology.network.RespawnTrackingNetworking.request(true);
+            MenuManager.returnToRadialMenu();
+            return;
+        }
+
         // Check if passive mode is active - cannot use active tracking while passive mode is enabled
         if (PassiveModeManager.isPassiveModeEnabled()) {
             showErrorNotification(Component.translatable("message.aromaaffect.tracking.passive_mode_active"));
@@ -1112,14 +1121,6 @@ public class HistoryMenuScreen extends BaseMenuScreen {
                 player.playSound(SoundEvents.VILLAGER_NO, 1.0f, 1.0f);
             }
             AromaAffect.LOGGER.info("Cannot start tracking while passive mode is active");
-            return;
-        }
-
-        // Bed history always resolves the current personal spawn on the server;
-        // saved coordinates must not bypass tier checks or track another player's bed.
-        if (RespawnSyncState.isRespawnBlock(Identifier.tryParse(targetId))) {
-            com.ovrtechnology.network.RespawnTrackingNetworking.request(true);
-            MenuManager.returnToRadialMenu();
             return;
         }
 

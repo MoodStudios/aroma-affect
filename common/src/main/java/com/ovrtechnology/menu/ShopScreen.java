@@ -15,8 +15,6 @@ import java.net.URI;
  * Features an animated product showcase with info and buy actions.
  */
 public class ShopScreen extends BaseMenuScreen {
-    @Override protected int minimumLayoutWidth() { return 460; }
-    @Override protected int minimumLayoutHeight() { return 360; }
 
 
     private static final Identifier OMARA_COVER = Identifier.fromNamespaceAndPath(
@@ -58,6 +56,8 @@ public class ShopScreen extends BaseMenuScreen {
 
     // Floating animation tick
     private int tickCount = 0;
+    private double infoScroll;
+    private int maxInfoScroll;
 
     public ShopScreen() {
         super(Component.translatable("shop.aromaaffect.title"));
@@ -115,13 +115,13 @@ public class ShopScreen extends BaseMenuScreen {
 
         // Content area
         int contentTop = panelTop + 40;
-        int contentH = panelBottom - contentTop - 10;
+        int contentH = panelBottom - contentTop - 40;
 
         // Interpolated transition value for smooth lerp
         float t = easeOutCubic(infoTransition);
 
         // Image area — slides from center to left
-        int imgMaxW = Math.min(160, panelW / 2 - 20);
+        int imgMaxW = Math.max(32, Math.min(contentH - 12, Math.min(160, panelW / 2 - 20)));
         int imgH = (int) (imgMaxW * 1.0f); // square-ish
         int imgCenterX = centerX; // product view: centered
         int imgInfoX = panelLeft + 20 + imgMaxW / 2; // info view: left side
@@ -133,6 +133,7 @@ public class ShopScreen extends BaseMenuScreen {
         float floatOffset = (float) Math.sin((tickCount + partialTick) * 0.08) * 3f;
         imgDrawY += (int) ((1f - t) * floatOffset); // only float in product view
 
+        if (panelW >= 380 || t < 0.5f) {
         // Subtle glow behind image
         int glowPad = 6;
         int glowAlpha = (int) (40 * a * (1f - t * 0.5f));
@@ -150,10 +151,12 @@ public class ShopScreen extends BaseMenuScreen {
                 imgMaxW, imgH
         );
 
+        }
+
         // Render info text on the right side (fades in with transition)
         if (t > 0.05f) {
-            renderInfoPanel(graphics, panelLeft + panelW / 2 + 10, contentTop + 8,
-                    panelW / 2 - 30, contentH - 16, t, a);
+            renderInfoPanel(graphics, panelLeft + (panelW < 380 ? 12 : panelW / 2 + 10), contentTop + 8,
+                    panelW < 380 ? panelW - 24 : panelW / 2 - 30, contentH - 16, t, a);
         }
 
         // Buttons at the bottom (fade based on view state)
@@ -196,7 +199,7 @@ public class ShopScreen extends BaseMenuScreen {
         // Info view: back arrow button (top-left of info area)
         if (t > 0.3f) {
             float backAlpha = (t - 0.3f) / 0.7f * a;
-            int backX = panelLeft + panelW / 2 + 10;
+            int backX = panelLeft + (panelW < 380 ? 12 : panelW / 2 + 10);
             int backY = contentTop + 8;
             int backSize = 16;
 
@@ -248,42 +251,36 @@ public class ShopScreen extends BaseMenuScreen {
         int dimColor = MenuRenderUtils.withAlpha(COL_TEXT_DIM, alpha);
         int accentColor = MenuRenderUtils.withAlpha(COL_ACCENT, alpha);
 
-        int textX = x + 24; // offset for back button space
-        int textY = y + 4;
-
-        // Product name
-        Component name = Component.translatable("shop.aromaaffect.product_name");
-        graphics.text(font, name, textX, textY, accentColor);
-        textY += 14;
-
-        // Tagline
-        Component tagline = Component.translatable("shop.aromaaffect.tagline");
-        graphics.text(font, tagline, textX, textY, textColor);
-        textY += 16;
-
-        // Features list
-        String[] featureKeys = {
-                "shop.aromaaffect.feature1",
-                "shop.aromaaffect.feature2",
-                "shop.aromaaffect.feature3",
-                "shop.aromaaffect.feature4",
-                "shop.aromaaffect.feature5",
-                "shop.aromaaffect.feature6"
-        };
-
-        for (String key : featureKeys) {
-            Component feature = Component.translatable(key);
-            // Bullet point
-            graphics.text(font, "\u2022", textX, textY, accentColor);
-            graphics.text(font, feature, textX + 10, textY, dimColor);
-            textY += 12;
+        int textX = x + 24;
+        int textW = Math.max(30, w - 24);
+        String[] keys = {"product_name", "tagline", "feature1", "feature2", "feature3",
+                "feature4", "feature5", "feature6", "compatible"};
+        int totalHeight = 0;
+        for (String key : keys) totalHeight += font.split(Component.translatable("shop.aromaaffect." + key), textW).size() * font.lineHeight + 6;
+        maxInfoScroll = Math.max(0, totalHeight - h);
+        infoScroll = Mth.clamp(infoScroll, 0, maxInfoScroll);
+        graphics.enableScissor(textX, y, x + w, y + h);
+        int textY = y - (int) infoScroll;
+        for (String key : keys) {
+            for (var line : font.split(Component.translatable("shop.aromaaffect." + key), textW)) {
+                graphics.text(font, line, textX, textY, key.equals("product_name") ? accentColor : dimColor, false);
+                textY += font.lineHeight;
+            }
+            textY += 6;
         }
+        graphics.disableScissor();
+        if (maxInfoScroll > 0) {
+            int barH = Math.max(10, h * h / totalHeight);
+            int barY = y + (int) (infoScroll / maxInfoScroll * (h - barH));
+            graphics.fill(x + w - 2, barY, x + w, barY + barH, accentColor);
+        }
+    }
 
-        textY += 6;
-
-        // Compatible badge
-        Component compatible = Component.translatable("shop.aromaaffect.compatible");
-        graphics.text(font, compatible, textX, textY, MenuRenderUtils.withAlpha(COL_GREEN, alpha));
+    @Override
+    protected boolean handleMouseScroll(double x, double y, double dx, double dy) {
+        if (viewState != ViewState.INFO) return false;
+        infoScroll = Mth.clamp(infoScroll - dy * 18, 0, maxInfoScroll);
+        return true;
     }
 
     private void renderBackButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {

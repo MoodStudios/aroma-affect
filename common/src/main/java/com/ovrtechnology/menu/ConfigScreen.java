@@ -37,8 +37,6 @@ import java.util.function.Function;
  * Three sections: General, Passive Mode, Scent Values.
  */
 public class ConfigScreen extends BaseMenuScreen {
-    @Override protected int minimumLayoutWidth() { return 640; }
-    @Override protected int minimumLayoutHeight() { return 360; }
 
 
     private static final Identifier ICON_CONFIG = Identifier.fromNamespaceAndPath(
@@ -79,15 +77,29 @@ public class ConfigScreen extends BaseMenuScreen {
     private boolean capturingKey = false;
 
     // Layout constants
-    private static final int SIDEBAR_WIDTH = 120;
-    private static final int CONTENT_PAD = 16;
-    private static final int ROW_HEIGHT = 28;
+    private int sidebarWidth() { return width < 600 ? 88 : 120; }
+    private int contentPadding() { return width < 600 ? 8 : 16; }
+    private int rowHeight() { return compactControls() ? 54 : 28; }
     private static final int TOGGLE_W = 40;
     private static final int TOGGLE_H = 18;
-    private static final int SLIDER_W = 150;
+    private int sliderWidth() { return Math.min(150, contentWidth() - 54); }
     private static final int SLIDER_H = 12;
     private static final int SELECTOR_BTN_W = 80;
     private static final int SELECTOR_BTN_H = 20;
+
+    private int panelMargin() { return width < 600 ? 8 : 30; }
+    private int contentWidth() { return width - 2 * panelMargin() - sidebarWidth() - 2 * contentPadding(); }
+    private boolean compactControls() { return contentWidth() < 430; }
+    private int controlOffset() { return compactControls() ? 24 : 0; }
+
+    private void rowLabel(GuiGraphicsExtractor graphics, Component label, int x, int y, int color) {
+        int labelY = y - controlOffset();
+        int limit = compactControls() ? contentWidth() : contentWidth() - 200;
+        for (var line : font.split(label, Math.max(40, limit))) {
+            graphics.text(font, line, x, labelY, color, false);
+            labelY += font.lineHeight;
+        }
+    }
 
     // Colors
     private static final int COL_GREEN = 0xFF9A7CFF;
@@ -141,9 +153,9 @@ public class ConfigScreen extends BaseMenuScreen {
 
         float a = animationProgress;
 
-        int panelLeft = 30;
+        int panelLeft = panelMargin();
         int panelTop = 20;
-        int panelRight = width - 30;
+        int panelRight = width - panelMargin();
         int panelBottom = height - 20;
         int panelW = panelRight - panelLeft;
         int panelH = panelBottom - panelTop;
@@ -156,7 +168,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int titleBarH = 24;
         graphics.fill(panelLeft, panelTop, panelRight, panelTop + titleBarH, MenuRenderUtils.withAlpha(0xDD222244, a));
         Component title = Component.translatable("config.aromaaffect.title");
-        graphics.centeredText(font, title, panelLeft + panelW / 2, panelTop + 8, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.centeredText(font, font.plainSubstrByWidth(title.getString(), panelW - 96), panelLeft + panelW / 2 + 20, panelTop + 8, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         // Back button (top-left of title bar)
         int backW = 40;
@@ -172,21 +184,21 @@ public class ConfigScreen extends BaseMenuScreen {
         int sidebarLeft = panelLeft;
         int sidebarTop = panelTop + titleBarH;
         int sidebarBottom = panelBottom;
-        graphics.fill(sidebarLeft, sidebarTop, sidebarLeft + SIDEBAR_WIDTH, sidebarBottom, MenuRenderUtils.withAlpha(COL_BG_SIDEBAR, a));
+        graphics.fill(sidebarLeft, sidebarTop, sidebarLeft + sidebarWidth(), sidebarBottom, MenuRenderUtils.withAlpha(COL_BG_SIDEBAR, a));
 
         // Section tabs
         int tabY = sidebarTop + 8;
         for (Section section : Section.values()) {
             int tabH = 24;
             boolean isActive = section == activeSection;
-            boolean isHovering = mouseX >= sidebarLeft && mouseX < sidebarLeft + SIDEBAR_WIDTH
+            boolean isHovering = mouseX >= sidebarLeft && mouseX < sidebarLeft + sidebarWidth()
                     && mouseY >= tabY && mouseY < tabY + tabH;
 
             if (isActive) {
                 graphics.fill(sidebarLeft, tabY, sidebarLeft + 3, tabY + tabH, MenuRenderUtils.withAlpha(COL_ACCENT, a));
-                graphics.fill(sidebarLeft, tabY, sidebarLeft + SIDEBAR_WIDTH, tabY + tabH, MenuRenderUtils.withAlpha(0x30FFFFFF, a));
+                graphics.fill(sidebarLeft, tabY, sidebarLeft + sidebarWidth(), tabY + tabH, MenuRenderUtils.withAlpha(0x30FFFFFF, a));
             } else if (isHovering) {
-                graphics.fill(sidebarLeft, tabY, sidebarLeft + SIDEBAR_WIDTH, tabY + tabH, MenuRenderUtils.withAlpha(COL_HOVER, a));
+                graphics.fill(sidebarLeft, tabY, sidebarLeft + sidebarWidth(), tabY + tabH, MenuRenderUtils.withAlpha(COL_HOVER, a));
             }
 
             String labelKey = switch (section) {
@@ -197,22 +209,26 @@ public class ConfigScreen extends BaseMenuScreen {
                 case WEBSOCKET -> "config.aromaaffect.section.websocket";
             };
             Component label = Component.translatable(labelKey);
-            graphics.text(font, label, sidebarLeft + 12, tabY + (tabH - 8) / 2, MenuRenderUtils.withAlpha(isActive ? COL_TEXT : COL_TEXT_DIM, a));
+            int labelY = tabY + 3;
+            for (var line : font.split(label, sidebarWidth() - 16)) {
+                graphics.text(font, line, sidebarLeft + 8, labelY, MenuRenderUtils.withAlpha(isActive ? COL_TEXT : COL_TEXT_DIM, a), false);
+                labelY += font.lineHeight;
+            }
             tabY += tabH + 2;
         }
 
         // Content area
-        int contentLeft = sidebarLeft + SIDEBAR_WIDTH + CONTENT_PAD;
-        int contentTop = sidebarTop + CONTENT_PAD;
-        int contentRight = panelRight - CONTENT_PAD;
+        int contentLeft = sidebarLeft + sidebarWidth() + contentPadding();
+        int contentTop = sidebarTop + contentPadding();
+        int contentRight = panelRight - contentPadding();
         int contentW = contentRight - contentLeft;
 
         switch (activeSection) {
-            case GENERAL -> renderGeneralSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
-            case PASSIVE -> renderPassiveSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
-            case EVENTS -> renderEventsSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
-            case SCENT_VALUES -> renderScentValuesSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
-            case WEBSOCKET -> renderWebSocketSection(graphics, contentLeft, contentTop, contentW, panelBottom - CONTENT_PAD - contentTop, mouseX, mouseY, a);
+            case GENERAL -> renderGeneralSection(graphics, contentLeft, contentTop, contentW, panelBottom - contentPadding() - contentTop, mouseX, mouseY, a);
+            case PASSIVE -> renderPassiveSection(graphics, contentLeft, contentTop, contentW, panelBottom - contentPadding() - contentTop, mouseX, mouseY, a);
+            case EVENTS -> renderEventsSection(graphics, contentLeft, contentTop, contentW, panelBottom - contentPadding() - contentTop, mouseX, mouseY, a);
+            case SCENT_VALUES -> renderScentValuesSection(graphics, contentLeft, contentTop, contentW, panelBottom - contentPadding() - contentTop, mouseX, mouseY, a);
+            case WEBSOCKET -> renderWebSocketSection(graphics, contentLeft, contentTop, contentW, panelBottom - contentPadding() - contentTop, mouseX, mouseY, a);
         }
     }
 
@@ -221,8 +237,8 @@ public class ConfigScreen extends BaseMenuScreen {
         boolean isAutomatic = "automatic".equals(config.getPuffMode());
 
         // Calculate total content height
-        int totalContentH = (ROW_HEIGHT + 4) * 8 + (ROW_HEIGHT + 4); // 9 rows always visible
-        if (!isAutomatic) totalContentH += (ROW_HEIGHT + 4); // manual key row
+        int totalContentH = (rowHeight() + 4) * 8 + (rowHeight() + 4); // 9 rows always visible
+        if (!isAutomatic) totalContentH += (rowHeight() + 4); // manual key row
 
         int maxScroll = Math.max(0, totalContentH - h);
         generalScrollOffset = Mth.clamp(generalScrollOffset, 0, maxScroll);
@@ -230,10 +246,10 @@ public class ConfigScreen extends BaseMenuScreen {
         // Scissor clip the content area
         graphics.enableScissor(x, y, x + w, y + h);
 
-        int rowY = y - (int) generalScrollOffset;
+        int rowY = y - (int) generalScrollOffset + controlOffset();
 
         // Puff Mode selector
-        graphics.text(font, Component.translatable("config.aromaaffect.puff_mode"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.puff_mode"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         int selX = x + w - SELECTOR_BTN_W * 2 - 2;
 
         // Automatic button
@@ -252,11 +268,11 @@ public class ConfigScreen extends BaseMenuScreen {
         graphics.fill(manSelX, rowY, manSelX + SELECTOR_BTN_W, rowY + SELECTOR_BTN_H, manBg);
         graphics.centeredText(font, Component.translatable("config.aromaaffect.puff_mode.manual"),
                 manSelX + SELECTOR_BTN_W / 2, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Manual Puff Key (only visible in manual mode)
         if (!isAutomatic) {
-            graphics.text(font, Component.translatable("config.aromaaffect.manual_key"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
+            rowLabel(graphics, Component.translatable("config.aromaaffect.manual_key"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
             int keyBtnX = x + w - 80;
             int keyBtnW = 80;
             int keyBtnH = 20;
@@ -269,74 +285,74 @@ public class ConfigScreen extends BaseMenuScreen {
                     : config.getManualPuffKey();
             int keyColor = capturingKey ? MenuRenderUtils.withAlpha(COL_KEY_CAPTURE, a) : MenuRenderUtils.withAlpha(COL_TEXT, a);
             graphics.centeredText(font, keyText, keyBtnX + keyBtnW / 2, rowY + 6, keyColor);
-            rowY += ROW_HEIGHT + 4;
+            rowY += rowHeight() + 4;
         }
 
         // Global Intensity slider
-        graphics.text(font, Component.translatable("config.aromaaffect.intensity"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        int sliderX = x + w - SLIDER_W - 40;
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, (float) config.getGlobalIntensityMultiplier(), 0f, 1f, a);
+        rowLabel(graphics, Component.translatable("config.aromaaffect.intensity"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        int sliderX = x + w - sliderWidth() - 40;
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), (float) config.getGlobalIntensityMultiplier(), 0f, 1f, a);
         int pct = (int) (config.getGlobalIntensityMultiplier() * 100);
-        graphics.text(font, pct + "%", sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT + 4;
+        graphics.text(font, pct + "%", sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += rowHeight() + 4;
 
         // Global Cooldown slider
-        graphics.text(font, Component.translatable("config.aromaaffect.cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float cooldownSec = config.getGlobalCooldownMs() / 1000f;
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, cooldownSec, 1f, 60f, a);
-        graphics.text(font, String.format("%.0fs", cooldownSec), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT + 4;
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), cooldownSec, 1f, 60f, a);
+        graphics.text(font, String.format("%.0fs", cooldownSec), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += rowHeight() + 4;
 
         // 3D Nose Render toggle
-        graphics.text(font, Component.translatable("config.aromaaffect.nose_render"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.nose_render"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         int toggleX = x + w - TOGGLE_W - 30;
         renderTogglePill(graphics, toggleX, rowY + 1, config.isNoseRenderEnabled(), a);
         Component toggleLabel = config.isNoseRenderEnabled()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.text(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Nose Strap toggle (only interactive when 3D Nose Render is enabled)
         boolean strapActive = config.isNoseRenderEnabled() && config.isStrapEnabled();
         int strapTextColor = config.isNoseRenderEnabled() ? COL_TEXT : COL_TEXT_DIM;
-        graphics.text(font, Component.translatable("config.aromaaffect.nose_strap"), x, rowY + 4, MenuRenderUtils.withAlpha(strapTextColor, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.nose_strap"), x, rowY + 4, MenuRenderUtils.withAlpha(strapTextColor, a));
         renderTogglePill(graphics, toggleX, rowY + 1, strapActive, a);
         Component strapLabel = strapActive
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.text(font, strapLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Tracking Toast (persistent, outside radial menu)
-        graphics.text(font, Component.translatable("config.aromaaffect.tracking_toast_persistent"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.tracking_toast_persistent"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         renderTogglePill(graphics, toggleX, rowY + 1, config.isTrackingToastPersistent(), a);
         Component trackingToastLabel = config.isTrackingToastPersistent()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.text(font, trackingToastLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Passive Puff Overlay toggle
-        graphics.text(font, Component.translatable("config.aromaaffect.passive_puff_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive_puff_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         renderTogglePill(graphics, toggleX, rowY + 1, config.isPassivePuffOverlay(), a);
         Component puffOverlayLabel = config.isPassivePuffOverlay()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.text(font, puffOverlayLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Debug Scent Messages toggle
-        graphics.text(font, Component.translatable("config.aromaaffect.debug_scent_messages"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.debug_scent_messages"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         renderTogglePill(graphics, toggleX, rowY + 1, config.isDebugScentMessages(), a);
         Component debugScentLabel = config.isDebugScentMessages()
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.text(font, debugScentLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Omara Status Overlay toggle
-        graphics.text(font, Component.translatable("config.aromaaffect.omara_status_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.omara_status_overlay"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         renderTogglePill(graphics, toggleX, rowY + 1, config.isOmaraStatusOverlay(), a);
         Component omaraStatusLabel = config.isOmaraStatusOverlay()
                 ? Component.translatable("config.aromaaffect.on")
@@ -356,72 +372,72 @@ public class ConfigScreen extends BaseMenuScreen {
 
     private void renderPassiveSection(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int mx, int my, float a) {
         ClientConfig config = ClientConfig.getInstance();
-        int sliderX = x + w - SLIDER_W - 40;
+        int sliderX = x + w - sliderWidth() - 40;
         int toggleX = x + w - TOGGLE_W - 30;
 
         // Calculate total content height to determine if scrolling is needed
         // Toggle(28+8) + header(16) + 3 sliders(28*3) + gap(8) + header(16) + 2 sliders(28*2) + gap(8) + button(20) = 188
-        int totalContentH = (ROW_HEIGHT + 8) + 16 + (ROW_HEIGHT * 3) + 8 + 16 + (ROW_HEIGHT * 2) + 8 + 20;
+        int totalContentH = (rowHeight() + 8) + 16 + (rowHeight() * 3) + 8 + 16 + (rowHeight() * 2) + 8 + 20;
         int maxScroll = Math.max(0, totalContentH - h);
         passiveScrollOffset = Mth.clamp(passiveScrollOffset, 0, maxScroll);
 
         // Scissor clip the content area
         graphics.enableScissor(x, y, x + w, y + h);
 
-        int rowY = y - (int) passiveScrollOffset;
+        int rowY = y - (int) passiveScrollOffset + controlOffset();
 
         // Passive Enabled toggle
-        graphics.text(font, Component.translatable("config.aromaaffect.passive_enabled"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive_enabled"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         boolean passiveEnabled = PassiveModeManager.isPassiveModeEnabled();
         renderTogglePill(graphics, toggleX, rowY + 1, passiveEnabled, a);
         Component toggleLabel = passiveEnabled
                 ? Component.translatable("config.aromaaffect.on")
                 : Component.translatable("config.aromaaffect.off");
         graphics.text(font, toggleLabel, toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
 
         // Cooldowns
-        graphics.text(font, Component.translatable("config.aromaaffect.passive.cooldowns"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive.cooldowns"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
         // Block Cooldown (1s - 30s)
-        graphics.text(font, Component.translatable("config.aromaaffect.passive.block_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive.block_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockCd = config.getPassiveBlockCooldownMs() / 1000f;
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, blockCd, 1f, 30f, a);
-        graphics.text(font, String.format("%.0fs", blockCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT;
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), blockCd, 1f, 30f, a);
+        graphics.text(font, String.format("%.0fs", blockCd), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += rowHeight();
 
         // Hostile Mob CD (1s - 30s)
-        graphics.text(font, Component.translatable("config.aromaaffect.passive.hostile_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive.hostile_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobCd = config.getPassiveMobCooldownMs() / 1000f;
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, mobCd, 1f, 30f, a);
-        graphics.text(font, String.format("%.0fs", mobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT;
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), mobCd, 1f, 30f, a);
+        graphics.text(font, String.format("%.0fs", mobCd), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += rowHeight();
 
         // Passive Mob CD (1s - 30s)
-        graphics.text(font, Component.translatable("config.aromaaffect.passive.passive_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive.passive_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float passiveMobCd = config.getPassivePassiveMobCooldownMs() / 1000f;
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, passiveMobCd, 1f, 30f, a);
-        graphics.text(font, String.format("%.0fs", passiveMobCd), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT + 8;
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), passiveMobCd, 1f, 30f, a);
+        graphics.text(font, String.format("%.0fs", passiveMobCd), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += rowHeight() + 8;
 
         // Ranges
-        graphics.text(font, Component.translatable("config.aromaaffect.passive.ranges"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive.ranges"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
         // Block Range (1 - 5 blocks)
-        graphics.text(font, Component.translatable("config.aromaaffect.passive.block_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive.block_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockRange = (float) config.getPassiveBlockRange();
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, blockRange, 1f, 5f, a);
-        graphics.text(font, String.format("%.1f", blockRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT;
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), blockRange, 1f, 5f, a);
+        graphics.text(font, String.format("%.1f", blockRange), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += rowHeight();
 
         // Mob Range (1 - 15 blocks)
-        graphics.text(font, Component.translatable("config.aromaaffect.passive.mob_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Component.translatable("config.aromaaffect.passive.mob_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobRange = (float) config.getPassiveMobRange();
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, mobRange, 1f, 15f, a);
-        graphics.text(font, String.format("%.1f", mobRange), sliderX + SLIDER_W + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT + 8;
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), mobRange, 1f, 15f, a);
+        graphics.text(font, String.format("%.1f", mobRange), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowY += rowHeight() + 8;
 
         // Reset Defaults button
         int resetBtnW = 100;
@@ -449,54 +465,49 @@ public class ConfigScreen extends BaseMenuScreen {
         int toggleX = x + w - TOGGLE_W - 30;
         int sliderX = getSliderX();
 
-        int totalContentH = (ROW_HEIGHT + 8) + 16 + EVENT_CATEGORIES.length * (ROW_HEIGHT * 2 + 6)
-                + 8 + (ROW_HEIGHT + 8) + 28;
+        int totalContentH = (rowHeight() + 8) + 16 + EVENT_CATEGORIES.length * (rowHeight() * 2 + 6)
+                + 8 + (rowHeight() + 8) + 28;
         int maxScroll = Math.max(0, totalContentH - h);
         eventsScrollOffset = Mth.clamp(eventsScrollOffset, 0, maxScroll);
 
         graphics.enableScissor(x, y, x + w, y + h);
-        int rowY = y - (int) eventsScrollOffset;
+        int rowY = y - (int) eventsScrollOffset + controlOffset();
 
         // Master enable toggle
-        graphics.text(font, Texts.tr("config.aromaaffect.events.master_enabled"), x, rowY + 4,
-                MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Texts.tr("config.aromaaffect.events.master_enabled"), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
         boolean masterEnabled = config.isEventTriggersEnabled();
         renderTogglePill(graphics, toggleX, rowY + 1, masterEnabled, a);
         graphics.text(font,
                 masterEnabled ? Texts.tr("config.aromaaffect.on") : Texts.tr("config.aromaaffect.off"),
                 toggleX + TOGGLE_W + 6, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
 
         // Categories header
-        graphics.text(font, Texts.tr("config.aromaaffect.events.categories_header"), x, rowY + 2,
-                MenuRenderUtils.withAlpha(COL_ACCENT, a));
+        rowLabel(graphics, Texts.tr("config.aromaaffect.events.categories_header"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_ACCENT, a));
         rowY += 16;
 
         // Per-category: enable toggle + cooldown slider
         for (String category : EVENT_CATEGORIES) {
-            graphics.text(font, Texts.tr(categoryLabelKey(category)), x, rowY + 4,
-                    MenuRenderUtils.withAlpha(COL_TEXT, a));
+            rowLabel(graphics, Texts.tr(categoryLabelKey(category)), x, rowY + 4, MenuRenderUtils.withAlpha(COL_TEXT, a));
             renderTogglePill(graphics, toggleX, rowY + 1, config.isCategoryEnabled(category), a);
-            rowY += ROW_HEIGHT;
+            rowY += rowHeight();
 
-            graphics.text(font, Texts.tr("config.aromaaffect.events.cooldown"), x + 12, rowY + 2,
-                    MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+            rowLabel(graphics, Texts.tr("config.aromaaffect.events.cooldown"), x + 12, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
             float cdSec = config.getCategoryCooldownMs(category) / 1000f;
-            renderSlider(graphics, sliderX, rowY, SLIDER_W, cdSec, 0f, 60f, a);
-            graphics.text(font, String.format("%.0fs", cdSec), sliderX + SLIDER_W + 6, rowY + 2,
+            renderSlider(graphics, sliderX, rowY, sliderWidth(), cdSec, 0f, 60f, a);
+            graphics.text(font, String.format("%.0fs", cdSec), sliderX + sliderWidth() + 6, rowY + 2,
                     MenuRenderUtils.withAlpha(COL_TEXT, a));
-            rowY += ROW_HEIGHT + 6;
+            rowY += rowHeight() + 6;
         }
 
         // Global throttle slider
         rowY += 8;
-        graphics.text(font, Texts.tr("config.aromaaffect.events.throttle"), x, rowY + 2,
-                MenuRenderUtils.withAlpha(COL_TEXT, a));
+        rowLabel(graphics, Texts.tr("config.aromaaffect.events.throttle"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float throttle = config.getGlobalThrottlePerMinute();
-        renderSlider(graphics, sliderX, rowY, SLIDER_W, throttle, 5f, 120f, a);
-        graphics.text(font, String.format("%.0f / min", throttle), sliderX + SLIDER_W + 6, rowY + 2,
+        renderSlider(graphics, sliderX, rowY, sliderWidth(), throttle, 5f, 120f, a);
+        graphics.text(font, String.format("%.0f / min", throttle), sliderX + sliderWidth() + 6, rowY + 2,
                 MenuRenderUtils.withAlpha(COL_TEXT, a));
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
 
         // Reset defaults button
         int resetBtnW = 110;
@@ -518,7 +529,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int toggleX = x + w - TOGGLE_W - 30;
         int sliderX = getSliderX();
         int adjustedMy = my + (int) eventsScrollOffset;
-        int rowY = y;
+        int rowY = y + controlOffset();
 
         // Master enable toggle
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
@@ -527,7 +538,7 @@ public class ConfigScreen extends BaseMenuScreen {
             MenuRenderUtils.playToggleSound(config.isEventTriggersEnabled());
             return true;
         }
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
         rowY += 16;
 
         // Per-category: toggle + cooldown slider
@@ -539,31 +550,31 @@ public class ConfigScreen extends BaseMenuScreen {
                 MenuRenderUtils.playToggleSound(!current);
                 return true;
             }
-            rowY += ROW_HEIGHT;
+            rowY += rowHeight();
 
-            if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+            if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
                 MenuRenderUtils.playSliderSound();
-                float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+                float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
                 config.setCategoryCooldownMs(category, (long) (ratio * 60000));
                 config.save();
                 activeDrag = DragTarget.EVENTS_CATEGORY_CD;
                 activeDragCategory = category;
                 return true;
             }
-            rowY += ROW_HEIGHT + 6;
+            rowY += rowHeight() + 6;
         }
 
         // Global throttle slider
         rowY += 8;
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             config.setGlobalThrottlePerMinute((int) (5 + ratio * 115));
             config.save();
             activeDrag = DragTarget.EVENTS_THROTTLE;
             return true;
         }
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
 
         // Reset defaults
         int resetBtnW = 110;
@@ -594,20 +605,21 @@ public class ConfigScreen extends BaseMenuScreen {
                 case MOBS -> "config.aromaaffect.scent_values.mobs";
             };
             Component label = Component.translatable(labelKey);
-            int tabW = font.width(label) + 16;
+            int tabW = (w - 8) / 3;
+            if (tabX + tabW > x + w) { tabX = x; y += 22; }
             int tabH = 18;
             boolean isActive = filter == activeScentFilter;
             boolean isHover = mx >= tabX && mx < tabX + tabW && my >= y && my < y + tabH;
 
             int bg = isActive ? MenuRenderUtils.withAlpha(COL_ACCENT, a) : (isHover ? MenuRenderUtils.withAlpha(COL_HOVER, a) : MenuRenderUtils.withAlpha(0x20FFFFFF, a));
             graphics.fill(tabX, y, tabX + tabW, y + tabH, bg);
-            graphics.centeredText(font, label, tabX + tabW / 2, y + 5, MenuRenderUtils.withAlpha(COL_TEXT, a));
+            graphics.centeredText(font, font.plainSubstrByWidth(label.getString(), tabW - 4), tabX + tabW / 2, y + 5, MenuRenderUtils.withAlpha(COL_TEXT, a));
             tabX += tabW + 4;
         }
 
         // List area
         int listTop = y + 24;
-        int listH = h - 24;
+        int listH = h - 46;
 
         List<String[]> entries = getScentValueEntries();
         int entryH = 14;
@@ -630,9 +642,9 @@ public class ConfigScreen extends BaseMenuScreen {
         for (String[] entry : entries) {
             if (drawY + entryH >= listTop && drawY < listTop + listH) {
                 int textColor = MenuRenderUtils.withAlpha(COL_TEXT_DIM, a);
-                graphics.text(font, entry[0], x, drawY, textColor);
-                graphics.text(font, entry[1], x + w / 3, drawY, textColor);
-                graphics.text(font, entry[2], x + 2 * w / 3, drawY, textColor);
+                graphics.text(font, font.plainSubstrByWidth(entry[0], w / 3 - 6), x, drawY, textColor);
+                graphics.text(font, font.plainSubstrByWidth(entry[1], w / 3 - 6), x + w / 3, drawY, textColor);
+                graphics.text(font, font.plainSubstrByWidth(entry[2], w / 3 - 6), x + 2 * w / 3, drawY, textColor);
             }
             drawY += entryH;
         }
@@ -871,12 +883,12 @@ public class ConfigScreen extends BaseMenuScreen {
     // --- Slider drag handling ---
 
     private int getSliderX() {
-        int panelLeft = 30;
-        int panelRight = width - 30;
-        int contentLeft = panelLeft + SIDEBAR_WIDTH + CONTENT_PAD + (24 /* titleBarH handled via sidebarTop */);
+        int panelLeft = panelMargin();
+        int panelRight = width - panelMargin();
+        int contentLeft = panelLeft + sidebarWidth() + contentPadding() + (24 /* titleBarH handled via sidebarTop */);
         // Recalculate same as in render
-        int contentW = panelRight - CONTENT_PAD - (panelLeft + SIDEBAR_WIDTH + CONTENT_PAD);
-        return panelLeft + SIDEBAR_WIDTH + CONTENT_PAD + contentW - SLIDER_W - 40;
+        int contentW = panelRight - contentPadding() - (panelLeft + sidebarWidth() + contentPadding());
+        return panelLeft + sidebarWidth() + contentPadding() + contentW - sliderWidth() - 40;
     }
 
     private void updateSliderDrag(int mouseX) {
@@ -890,7 +902,7 @@ public class ConfigScreen extends BaseMenuScreen {
         }
 
         int sliderX = getSliderX();
-        float ratio = Mth.clamp((float) (mouseX - sliderX) / SLIDER_W, 0f, 1f);
+        float ratio = Mth.clamp((float) (mouseX - sliderX) / sliderWidth(), 0f, 1f);
         ClientConfig config = ClientConfig.getInstance();
 
         switch (activeDrag) {
@@ -955,9 +967,9 @@ public class ConfigScreen extends BaseMenuScreen {
             return true;
         }
 
-        int panelLeft = 30;
+        int panelLeft = panelMargin();
         int panelTop = 20;
-        int panelRight = width - 30;
+        int panelRight = width - panelMargin();
         int titleBarH = 24;
         int sidebarTop = panelTop + titleBarH;
 
@@ -965,7 +977,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int tabY = sidebarTop + 8;
         for (Section section : Section.values()) {
             int tabH = 24;
-            if (mx >= panelLeft && mx < panelLeft + SIDEBAR_WIDTH && my >= tabY && my < tabY + tabH) {
+            if (mx >= panelLeft && mx < panelLeft + sidebarWidth() && my >= tabY && my < tabY + tabH) {
                 MenuRenderUtils.playClickSound();
                 activeSection = section;
                 generalScrollOffset = 0;
@@ -979,9 +991,10 @@ public class ConfigScreen extends BaseMenuScreen {
         }
 
         // Content area interactions
-        int contentLeft = panelLeft + SIDEBAR_WIDTH + CONTENT_PAD;
-        int contentTop = sidebarTop + CONTENT_PAD;
-        int contentW = panelRight - CONTENT_PAD - contentLeft;
+        int contentLeft = panelLeft + sidebarWidth() + contentPadding();
+        int contentTop = sidebarTop + contentPadding();
+        int contentW = panelRight - contentPadding() - contentLeft;
+        if (mx < contentLeft || mx >= contentLeft + contentW || my < contentTop || my >= height - 20 - contentPadding()) return false;
 
         if (activeSection == Section.GENERAL) {
             return handleGeneralClick(mx, my, contentLeft, contentTop, contentW);
@@ -1000,7 +1013,7 @@ public class ConfigScreen extends BaseMenuScreen {
         ClientConfig config = ClientConfig.getInstance();
         // Adjust mouse Y for scroll offset so clicks match rendered positions
         int adjustedMy = my + (int) generalScrollOffset;
-        int rowY = y;
+        int rowY = y + controlOffset();
 
         // Puff Mode selector
         int selX = x + w - SELECTOR_BTN_W * 2 - 2;
@@ -1020,7 +1033,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 return true;
             }
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Manual key (only if manual mode)
         if (!"automatic".equals(config.getPuffMode())) {
@@ -1030,32 +1043,32 @@ public class ConfigScreen extends BaseMenuScreen {
                 capturingKey = true;
                 return true;
             }
-            rowY += ROW_HEIGHT + 4;
+            rowY += rowHeight() + 4;
         }
 
         // Intensity slider
-        int sliderX = x + w - SLIDER_W - 40;
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        int sliderX = x + w - sliderWidth() - 40;
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             config.setGlobalIntensityMultiplier(Math.round(ratio * 100.0) / 100.0);
             config.save();
             activeDrag = DragTarget.INTENSITY;
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Cooldown slider
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             long ms = (long) (1000 + ratio * 59000); // 1s to 60s
             config.setGlobalCooldownMs(ms);
             config.save();
             activeDrag = DragTarget.COOLDOWN;
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Nose render toggle
         int toggleX = x + w - TOGGLE_W - 30;
@@ -1072,7 +1085,7 @@ public class ConfigScreen extends BaseMenuScreen {
             syncNosePrefsToServer(config);
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Nose strap toggle (only if nose render is enabled)
         if (config.isNoseRenderEnabled() && mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
@@ -1083,7 +1096,7 @@ public class ConfigScreen extends BaseMenuScreen {
             syncNosePrefsToServer(config);
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Tracking toast persistent toggle
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
@@ -1092,7 +1105,7 @@ public class ConfigScreen extends BaseMenuScreen {
             config.save();
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Passive puff overlay toggle
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
@@ -1101,7 +1114,7 @@ public class ConfigScreen extends BaseMenuScreen {
             config.save();
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Debug scent messages toggle
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
@@ -1110,7 +1123,7 @@ public class ConfigScreen extends BaseMenuScreen {
             config.save();
             return true;
         }
-        rowY += ROW_HEIGHT + 4;
+        rowY += rowHeight() + 4;
 
         // Omara status overlay toggle
         if (mx >= toggleX && mx < toggleX + TOGGLE_W && adjustedMy >= rowY && adjustedMy < rowY + TOGGLE_H + 2) {
@@ -1139,8 +1152,8 @@ public class ConfigScreen extends BaseMenuScreen {
         ClientConfig config = ClientConfig.getInstance();
         // Adjust mouse Y for scroll offset so clicks match rendered positions
         int adjustedMy = my + (int) passiveScrollOffset;
-        int rowY = y;
-        int sliderX = x + w - SLIDER_W - 40;
+        int rowY = y + controlOffset();
+        int sliderX = x + w - sliderWidth() - 40;
         int toggleX = x + w - TOGGLE_W - 30;
 
         // Passive toggle
@@ -1149,68 +1162,68 @@ public class ConfigScreen extends BaseMenuScreen {
             MenuRenderUtils.playToggleSound(PassiveModeManager.isPassiveModeEnabled());
             return true;
         }
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
 
         // "Cooldowns" header
         rowY += 16;
 
         // Block Cooldown slider (1s - 30s)
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             config.setPassiveBlockCooldownMs((long) (1000 + ratio * 29000));
             config.save();
             activeDrag = DragTarget.PASSIVE_BLOCK_CD;
             return true;
         }
-        rowY += ROW_HEIGHT;
+        rowY += rowHeight();
 
         // Hostile Mob CD slider (1s - 30s)
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             config.setPassiveMobCooldownMs((long) (1000 + ratio * 29000));
             config.save();
             activeDrag = DragTarget.PASSIVE_MOB_CD;
             return true;
         }
-        rowY += ROW_HEIGHT;
+        rowY += rowHeight();
 
         // Passive Mob CD slider (1s - 30s)
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             config.setPassivePassiveMobCooldownMs((long) (1000 + ratio * 29000));
             config.save();
             activeDrag = DragTarget.PASSIVE_PASSIVE_MOB_CD;
             return true;
         }
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
 
         // "Ranges" header
         rowY += 16;
 
         // Block Range slider (1 - 5)
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             config.setPassiveBlockRange(Math.round((1.0 + ratio * 4.0) * 10.0) / 10.0);
             config.save();
             activeDrag = DragTarget.PASSIVE_BLOCK_RANGE;
             return true;
         }
-        rowY += ROW_HEIGHT;
+        rowY += rowHeight();
 
         // Mob Range slider (1 - 15)
-        if (mx >= sliderX && mx < sliderX + SLIDER_W && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
+        if (mx >= sliderX && mx < sliderX + sliderWidth() && adjustedMy >= rowY && adjustedMy < rowY + SLIDER_H + 8) {
             MenuRenderUtils.playSliderSound();
-            float ratio = Mth.clamp((float) (mx - sliderX) / SLIDER_W, 0f, 1f);
+            float ratio = Mth.clamp((float) (mx - sliderX) / sliderWidth(), 0f, 1f);
             config.setPassiveMobRange(Math.round((1.0 + ratio * 14.0) * 10.0) / 10.0);
             config.save();
             activeDrag = DragTarget.PASSIVE_MOB_RANGE;
             return true;
         }
-        rowY += ROW_HEIGHT + 8;
+        rowY += rowHeight() + 8;
 
         // Reset Defaults button
         int resetBtnW = 100;
@@ -1237,7 +1250,8 @@ public class ConfigScreen extends BaseMenuScreen {
                 case MOBS -> "config.aromaaffect.scent_values.mobs";
             };
             Component label = Component.translatable(labelKey);
-            int tabW = font.width(label) + 16;
+            int tabW = (w - 8) / 3;
+            if (tabX + tabW > x + w) { tabX = x; y += 22; }
             if (mx >= tabX && mx < tabX + tabW && my >= y && my < y + 18) {
                 MenuRenderUtils.playClickSound();
                 activeScentFilter = filter;
