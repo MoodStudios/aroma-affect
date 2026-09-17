@@ -20,6 +20,11 @@ import java.util.Optional;
  */
 public final class EquippedNoseHelper {
 
+    /** Personal respawn tracking unlocks with the second nose and higher tiers. */
+    public static boolean canTrackRespawn(Player player) {
+        return getEquippedNoseTier(player) >= 2;
+    }
+
     private EquippedNoseHelper() {
         // Utility class
     }
@@ -154,9 +159,15 @@ public final class EquippedNoseHelper {
      * @return the nose tier (1-6), or 0 if no nose is equipped
      */
     public static int getEquippedNoseTier(Player player) {
-        return getEquippedNose(player)
-                .map(NoseItem::getTier)
-                .orElse(0);
+        if (player == null) return 0;
+        ItemStack stack = NoseAccessory.getEquipped(player);
+        if (stack.getItem() instanceof NoseItem nose) return nose.getTier();
+        if (stack.getItem() instanceof CustomNoseItem) {
+            return CustomNoseItem.getVariantId(stack)
+                    .flatMap(com.ovrtechnology.variant.NoseVariantRegistry::get)
+                    .map(com.ovrtechnology.variant.NoseVariant::getTier).orElse(0);
+        }
+        return 0;
     }
 
     /**

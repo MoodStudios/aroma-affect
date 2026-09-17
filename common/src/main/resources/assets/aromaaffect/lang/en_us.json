@@ -666,5 +666,11 @@
   "structure.minecraft.fortress": "Nether Fortress",
   "structure.minecraft.bastion_remnant": "Bastion Remnant",
   "structure.minecraft.end_city": "End City",
-  "key.category.aromaaffect.keybinds": "Aroma Affect"
+  "key.category.aromaaffect.keybinds": "Aroma Affect",
+  "guide.aromaaffect.noses.prospectors_nose.detect_player_bed": "Player's bed",
+  "guide.aromaaffect.noses.prospectors_nose.detect_player_respawn_anchor": "Player's respawn anchor",
+  "message.aromaaffect.respawn.tier_required": "Equip a tier 2 or higher nose to track your respawn point.",
+  "message.aromaaffect.respawn.missing": "Your bed is missing or your respawn anchor is uncharged. Set a valid respawn point first.",
+  "message.aromaaffect.respawn.other_dimension": "Your respawn point is in another dimension.",
+  "message.aromaaffect.respawn.durability": "Your nose does not have enough durability to track your respawn point."
 }

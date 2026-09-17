@@ -183,6 +183,8 @@ public final class AromaAffectClient {
                 // Flush and invalidate per-world tracking history so the next
                 // world/server loads its own file.
                 TrackingHistoryData.invalidate();
+                com.ovrtechnology.tracking.RespawnSyncState.clear();
+                com.ovrtechnology.menu.ActiveTrackingState.clear();
             }
         });
     }

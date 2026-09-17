@@ -42,8 +42,10 @@ public final class RespawnSyncHandler {
                 return;
             }
             BlockPos pos = data.pos();
-            Block block = level.getBlockState(pos).getBlock();
-            if (!(block instanceof BedBlock) && !(block instanceof RespawnAnchorBlock)) {
+            var state = level.getBlockState(pos);
+            Block block = state.getBlock();
+            if (!(block instanceof BedBlock) && !(block instanceof RespawnAnchorBlock
+                    && state.getValue(RespawnAnchorBlock.CHARGE) > 0)) {
                 PathScentNetworking.sendRespawnCleared(player);
                 return;
             }
@@ -51,6 +53,7 @@ public final class RespawnSyncHandler {
             String dimensionId = data.dimension().identifier().toString();
             PathScentNetworking.sendRespawnSync(player, dimensionId, pos, blockId);
         } catch (Exception e) {
+            PathScentNetworking.sendRespawnCleared(player);
             AromaAffect.LOGGER.warn("Could not sync respawn point for {}: {}", player.getName().getString(), e.getMessage());
         }
     }

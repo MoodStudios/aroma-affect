@@ -164,6 +164,27 @@ public final class ActivePathManager {
                 continue;
             }
 
+            // A personal spawn route cannot survive a downgrade or a changed spawn point.
+            if (path.targetId() != null && com.ovrtechnology.tracking.RespawnSyncState.isRespawnBlock(
+                    net.minecraft.resources.Identifier.tryParse(path.targetId()))) {
+                var respawn = player.getRespawnConfig();
+                boolean valid = EquippedNoseHelper.canTrackRespawn(player)
+                        && respawn != null && respawn.respawnData() != null
+                        && respawn.respawnData().dimension().identifier().equals(path.dimension())
+                        && respawn.respawnData().pos().equals(path.destination());
+                if (valid && player.level().hasChunkAt(path.destination())) {
+                    var state = player.level().getBlockState(path.destination());
+                    valid = state.getBlock() instanceof net.minecraft.world.level.block.BedBlock
+                            || (state.getBlock() instanceof net.minecraft.world.level.block.RespawnAnchorBlock
+                                && state.getValue(net.minecraft.world.level.block.RespawnAnchorBlock.CHARGE) > 0);
+                }
+                if (!valid) {
+                    PathScentNetworking.sendPathNotFound(player, "Respawn point or equipped nose changed");
+                    iterator.remove();
+                    continue;
+                }
+            }
+
             // Check if player is in the same dimension
             if (!player.level().dimension().identifier().equals(path.dimension())) {
                 // Player changed dimension, remove path

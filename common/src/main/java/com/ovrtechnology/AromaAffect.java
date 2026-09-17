@@ -135,6 +135,7 @@ public final class AromaAffect {
         NoseSmithDialogueNetworking.init();
         NoseSmithTradeNetworking.init();
         PathScentNetworking.init();
+        com.ovrtechnology.network.RespawnTrackingNetworking.init();
         SnifferEquipmentNetworking.init();
         IronGolemNoseNetworking.init();
         NoseRenderNetworking.init();
