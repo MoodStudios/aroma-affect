@@ -37,6 +37,9 @@ import java.util.function.Function;
  * Three sections: General, Passive Mode, Scent Values.
  */
 public class ConfigScreen extends BaseMenuScreen {
+    @Override protected int minimumLayoutWidth() { return 640; }
+    @Override protected int minimumLayoutHeight() { return 360; }
+
 
     private static final Identifier ICON_CONFIG = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/sprites/radial/icon_config.png");
@@ -117,6 +120,8 @@ public class ConfigScreen extends BaseMenuScreen {
     @Override
     protected void init() {
         super.init();
+        activeDrag = DragTarget.NONE;
+        activeDragCategory = null;
         // Load current config values into NoseRenderToggles on screen open
         ClientConfig cfg = ClientConfig.getInstance();
         NoseRenderToggles.setNoseEnabled(cfg.isNoseRenderEnabled());

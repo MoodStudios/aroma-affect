@@ -30,6 +30,9 @@ import com.ovrtechnology.tracking.RespawnSyncState;
  * Allows reviewing past tracking results, saving favorites, and blacklisting positions.
  */
 public class HistoryMenuScreen extends BaseMenuScreen {
+    @Override protected int minimumLayoutWidth() { return 480; }
+    @Override protected int minimumLayoutHeight() { return 300; }
+
 
     private enum Tab { HISTORY, SAVED, BLACKLIST }
 
@@ -101,6 +104,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
 
     @Override
     protected void init() {
+        int previousScroll = listScrollOffset;
         super.init();
 
         int listWidth = Math.min(MAX_LIST_WIDTH, width - 40);
@@ -115,9 +119,15 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             searchQuery = query;
             rebuildFilteredList();
         });
+        searchBox.setValue(searchQuery);
         addWidget(searchBox);
 
         rebuildFilteredList();
+        listScrollOffset = previousScroll;
+        if (showNamePopup && nameEditBox != null) {
+            addWidget(nameEditBox);
+            setFocused(nameEditBox);
+        }
     }
 
     // ── Filtering ────────────────────────────────────────────────────────
@@ -192,6 +202,8 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         // List
         int listTop = searchY + SEARCH_BOX_HEIGHT + 6;
         int listBottom = height - 10;
+        int maxScroll = Math.max(0, filteredIndices.size() * (ROW_HEIGHT + ROW_PADDING) - (listBottom - listTop));
+        listScrollOffset = Math.max(0, Math.min(listScrollOffset, maxScroll));
         pendingTooltip = null;
         renderList(g, listX, listTop, listWidth, listBottom, mouseX, mouseY, animationProgress);
 

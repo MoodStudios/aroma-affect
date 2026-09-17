@@ -6,7 +6,7 @@ import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.scentitem.ScentItem;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import com.ovrtechnology.menu.ResponsiveContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
-public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> {
+public class OmaraDeviceScreen extends ResponsiveContainerScreen<OmaraDeviceMenu> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(
             AromaAffect.MOD_ID, "textures/gui/container/omara_device.png");
@@ -40,15 +40,15 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContainerBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
         graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+    protected void extractContainerContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractContainerContent(graphics, mouseX, mouseY, partialTick);
 
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
@@ -70,7 +70,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
+    protected boolean handleContainerClick(MouseButtonEvent event, boolean isValidClickButton) {
         if (event.button() == 0) {
             int x = (this.width - this.imageWidth) / 2;
             int y = (this.height - this.imageHeight) / 2;
@@ -96,7 +96,7 @@ public class OmaraDeviceScreen extends AbstractContainerScreen<OmaraDeviceMenu> 
             }
         }
 
-        return super.mouseClicked(event, isValidClickButton);
+        return super.handleContainerClick(event, isValidClickButton);
     }
 
     // ========================================

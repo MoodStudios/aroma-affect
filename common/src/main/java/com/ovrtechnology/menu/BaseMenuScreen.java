@@ -49,7 +49,7 @@ public abstract class BaseMenuScreen extends Screen {
      */
     protected int backgroundColor = 0x80000000;
 
-    // ── Notification System ──────────────────────────────────────────────
+    // â”€â”€ Notification System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Duration in milliseconds before notifications auto-hide.
@@ -71,6 +71,20 @@ public abstract class BaseMenuScreen extends Screen {
      */
     private boolean notificationIsError = false;
     
+    private MenuViewport viewport = MenuViewport.fit(1, 1, 1, 1);
+    private boolean layoutReady;
+
+    protected int minimumLayoutWidth() { return 400; }
+    protected int minimumLayoutHeight() { return 280; }
+    protected final int screenX(double x) { return viewport.screenX(x); }
+    protected final int screenY(double y) { return viewport.screenY(y); }
+    protected final double localX(double x) { return viewport.localX(x); }
+    protected final double localY(double y) { return viewport.localY(y); }
+
+    private MouseButtonEvent localEvent(MouseButtonEvent event) {
+        return new MouseButtonEvent(localX(event.x()), localY(event.y()), event.buttonInfo());
+    }
+
     protected BaseMenuScreen(Component title) {
         super(title);
     }
@@ -78,6 +92,12 @@ public abstract class BaseMenuScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        viewport = MenuViewport.fitPixels(minecraft.getWindow().getWidth(),
+                minecraft.getWindow().getHeight(), minecraft.getWindow().getGuiScale(), minimumLayoutWidth(), minimumLayoutHeight());
+        width = viewport.width();
+        height = viewport.height();
+        layoutReady = false;
+        setDragging(false);
         // Reset animation state when screen is opened
         animationProgress = 0.0f;
         isAnimatingIn = true;
@@ -108,36 +128,79 @@ public abstract class BaseMenuScreen extends Screen {
     
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        // Calculate interpolated animation progress
-        float smoothProgress = getSmoothAnimationProgress(partialTick);
-
-        // Render darkened background
-        renderMenuBackground(graphics, smoothProgress);
-
-        // Let subclasses render their content
-        renderContent(graphics, mouseX, mouseY, partialTick, smoothProgress);
-
-        // Render notification on top of everything
-        renderNotification(graphics);
-
-        // Render widgets on top
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        int logicalMouseX = (int) Math.floor(localX(mouseX));
+        int logicalMouseY = (int) Math.floor(localY(mouseY));
+        graphics.pose().pushMatrix();
+        graphics.pose().translate((float) viewport.offsetX(), (float) viewport.offsetY());
+        graphics.pose().scale((float) viewport.scale(), (float) viewport.scale());
+        try {
+            float smoothProgress = getSmoothAnimationProgress(partialTick);
+            renderMenuBackground(graphics, smoothProgress);
+            renderContent(graphics, logicalMouseX, logicalMouseY, partialTick, smoothProgress);
+            renderNotification(graphics);
+            super.extractRenderState(graphics, logicalMouseX, logicalMouseY, partialTick);
+            layoutReady = true;
+        } finally {
+            graphics.pose().popMatrix();
+        }
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
-        if (handleMouseClick(event.x(), event.y(), event.button())) {
-            return true;
+    protected void repositionElements() {
+        int focusedIndex = children().indexOf(getFocused());
+        float progress = animationProgress;
+        boolean opening = isAnimatingIn;
+        boolean closing = isAnimatingOut;
+        int ticks = animationTicks;
+        super.repositionElements();
+        if (focusedIndex >= 0 && focusedIndex < children().size()) {
+            setFocused(children().get(focusedIndex));
         }
-        return super.mouseClicked(event, isValidClickButton);
+        animationProgress = progress;
+        isAnimatingIn = opening;
+        isAnimatingOut = closing;
+        animationTicks = ticks;
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (handleMouseScroll(mouseX, mouseY, scrollX, scrollY)) {
-            return true;
-        }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    public final boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
+        if (!layoutReady) return false;
+        MouseButtonEvent local = localEvent(event);
+        if (handleMouseClick(local.x(), local.y(), local.button())) return true;
+        return super.mouseClicked(local, isValidClickButton);
+    }
+
+    @Override
+    public final boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (!layoutReady) return false;
+        double x = localX(mouseX), y = localY(mouseY);
+        if (handleMouseScroll(x, y, scrollX, scrollY)) return true;
+        return super.mouseScrolled(x, y, scrollX, scrollY);
+    }
+
+    @Override
+    public final boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if (!layoutReady) return false;
+        MouseButtonEvent local = localEvent(event);
+        return handleMouseDrag(local, dx / viewport.scale(), dy / viewport.scale());
+    }
+
+    protected boolean handleMouseDrag(MouseButtonEvent event, double dx, double dy) {
+        return super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public final boolean mouseReleased(MouseButtonEvent event) {
+        return handleMouseRelease(localEvent(event));
+    }
+
+    protected boolean handleMouseRelease(MouseButtonEvent event) {
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public void mouseMoved(double x, double y) {
+        super.mouseMoved(localX(x), localY(y));
     }
 
     @Override
@@ -193,7 +256,7 @@ public abstract class BaseMenuScreen extends Screen {
     protected abstract void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                                           float partialTick, float animationProgress);
 
-    // ── Notification Methods ─────────────────────────────────────────────
+    // â”€â”€ Notification Methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * Shows an error notification at the top of the screen.
@@ -243,10 +306,10 @@ public abstract class BaseMenuScreen extends Screen {
         }
 
         // Calculate dimensions
-        int textWidth = font.width(notificationMessage);
         int padding = 12;
-        int bannerWidth = textWidth + padding * 2;
-        int bannerHeight = 24;
+        int bannerWidth = Math.min(width - 24, font.width(notificationMessage) + padding * 2);
+        var lines = font.split(notificationMessage, bannerWidth - padding * 2);
+        int bannerHeight = Math.max(24, lines.size() * font.lineHeight + 12);
         int bannerX = (width - bannerWidth) / 2;
         int bannerY = 20;
 
@@ -277,8 +340,11 @@ public abstract class BaseMenuScreen extends Screen {
 
         // Draw text centered
         int textX = bannerX + padding;
-        int textY = bannerY + (bannerHeight - 8) / 2;
-        graphics.text(font, notificationMessage, textX, textY, textColor, false);
+        int textY = bannerY + 6;
+        for (var line : lines) {
+            graphics.text(font, line, textX, textY, textColor, false);
+            textY += font.lineHeight;
+        }
     }
 
     /**

@@ -13,6 +13,25 @@ public final class MenuRenderUtils {
 
     private MenuRenderUtils() {}
 
+    /** Entity previews use GUI pixels directly, unlike ordinary primitives which apply the pose. */
+    public static void renderEntityInViewport(GuiGraphicsExtractor graphics,
+            int x0, int y0, int x1, int y1, int size, float offsetY,
+            float mouseX, float mouseY, net.minecraft.world.entity.LivingEntity entity) {
+        var start = graphics.pose().transformPosition(x0, y0, new org.joml.Vector2f());
+        var end = graphics.pose().transformPosition(x1, y1, new org.joml.Vector2f());
+        var mouse = graphics.pose().transformPosition(mouseX, mouseY, new org.joml.Vector2f());
+        float scale = Math.min((end.x - start.x) / Math.max(1, x1 - x0),
+                (end.y - start.y) / Math.max(1, y1 - y0));
+        graphics.enableScissor(x0, y0, x1, y1);
+        try {
+            net.minecraft.client.gui.screens.inventory.InventoryScreen.extractEntityInInventoryFollowsMouse(
+                    graphics, Math.round(start.x), Math.round(start.y), Math.round(end.x), Math.round(end.y),
+                    Math.max(1, Math.round(size * scale)), offsetY, mouse.x, mouse.y, entity);
+        } finally {
+            graphics.disableScissor();
+        }
+    }
+
     /**
      * Multiplies the alpha channel of an ARGB color by the given factor.
      */

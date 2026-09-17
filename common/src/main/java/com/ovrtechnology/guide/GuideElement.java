@@ -150,7 +150,7 @@ public final class GuideElement {
     }
 
     /**
-     * Creates an ability link element that shows as "• AbilityName (inherited) →"
+     * Creates an ability link element that shows as "• AbilityName →"
      * and navigates to the specified page when clicked.
      */
     public static GuideElement abilityLink(String abilityName, String targetPageId) {
