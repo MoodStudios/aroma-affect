@@ -221,10 +221,10 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
         int nameColor = isTracking
                 ? (int) (255 * animationProgress) << 24 | 0x66FF66
                 : (int) (255 * animationProgress) << 24 | 0xFFFFFF;
-        graphics.text(font, card.displayName, textX, y + rowHeight / 2 - 10, nameColor);
+        graphics.text(font, font.plainSubstrByWidth(card.displayName.getString(), Math.max(20, x + rowWidth - textX - rowActionWidth(card, isTracking))), textX, y + rowHeight / 2 - 10, nameColor);
 
         int idColor = (int) (180 * animationProgress) << 24 | 0x888888;
-        graphics.text(font, card.id.toString(), textX, y + rowHeight / 2 + 2, idColor);
+        graphics.text(font, font.plainSubstrByWidth(card.id.toString(), Math.max(20, x + rowWidth - textX - rowActionWidth(card, isTracking))), textX, y + rowHeight / 2 + 2, idColor);
 
         // Tracking indicator or cost section
         if (isTracking) {

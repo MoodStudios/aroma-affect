@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class NoseSmithDialogueScreen extends BaseMenuScreen {
-    @Override protected int minimumLayoutWidth() { return 500; }
-    @Override protected int minimumLayoutHeight() { return 300; }
     private int dialogueScrollLine;
 
     private int dialogueBoxHeight() {

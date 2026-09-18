@@ -29,13 +29,11 @@ import java.util.Set;
  * click sounds, and smooth animations.
  */
 public class GuideScreen extends BaseMenuScreen {
-    @Override protected int minimumLayoutWidth() { return 500; }
-    @Override protected int minimumLayoutHeight() { return 300; }
 
 
     // ── Layout Constants ───────────────────────────────────────────
-    private static final int WINDOW_MARGIN = 16;
-    private static final int SIDEBAR_WIDTH = 150;
+    private int windowMargin() { return width < 500 ? 8 : 16; }
+    private int sidebarWidth() { return Math.min(150, width / 3); }
     private static final int SIDEBAR_ITEM_HEIGHT = 22;
     private static final int SIDEBAR_CATEGORY_HEIGHT = 32;
     private static final int HEADER_HEIGHT = 42;
@@ -202,10 +200,10 @@ public class GuideScreen extends BaseMenuScreen {
 
         // Opening animation: window grows from center
         int extraMargin = (int) ((1.0f - alpha) * 30);
-        int wLeft = WINDOW_MARGIN + extraMargin;
-        int wTop = WINDOW_MARGIN + extraMargin;
-        int wRight = width - WINDOW_MARGIN - extraMargin;
-        int wBottom = height - WINDOW_MARGIN - extraMargin;
+        int wLeft = windowMargin() + extraMargin;
+        int wTop = windowMargin() + extraMargin;
+        int wRight = width - windowMargin() - extraMargin;
+        int wBottom = height - windowMargin() - extraMargin;
 
         // Window background with subtle gradient effect
         g.fill(wLeft, wTop, wRight, wBottom, applyAlpha(COLOR_WINDOW_BG, alpha));
@@ -226,7 +224,7 @@ public class GuideScreen extends BaseMenuScreen {
         int bodyTop = wTop + HEADER_HEIGHT;
 
         // Sidebar
-        int sidebarRight = wLeft + SIDEBAR_WIDTH;
+        int sidebarRight = wLeft + sidebarWidth();
         renderSidebar(g, wLeft, bodyTop, sidebarRight, wBottom, mouseX, mouseY, alpha);
 
         // Separator between sidebar and content (double line for depth)
@@ -249,7 +247,7 @@ public class GuideScreen extends BaseMenuScreen {
         g.pose().pushMatrix();
         g.pose().translate(textLeftX, titleY);
         g.pose().scale(titleScale, titleScale);
-        g.text(font, title, 0, 0, applyAlpha(COLOR_TITLE, alpha), true);
+        g.text(font, font.plainSubstrByWidth(title.getString(), (int) ((right - textLeftX - 40) / titleScale)), 0, 0, applyAlpha(COLOR_TITLE, alpha), true);
         g.pose().popMatrix();
 
         // Subtitle below the title, aligned to same left edge
@@ -265,7 +263,7 @@ public class GuideScreen extends BaseMenuScreen {
             int gC = Mth.clamp((int) (baseG + (255 - baseG) * shimmer * 0.3f), 0, 255);
             int b = Mth.clamp((int) (baseB + (255 - baseB) * shimmer * 0.3f), 0, 255);
             int shimmerColor = 0xFF000000 | (r << 16) | (gC << 8) | b;
-            g.text(font, subtitle, textLeftX, subtitleY, applyAlpha(shimmerColor, alpha), false);
+            g.text(font, font.plainSubstrByWidth(subtitle.getString(), right - textLeftX - 40), textLeftX, subtitleY, applyAlpha(shimmerColor, alpha), false);
         }
 
         // Close button — circular style, centered vertically
@@ -1171,10 +1169,10 @@ public class GuideScreen extends BaseMenuScreen {
             return true;
         }
 
-        int wLeft = WINDOW_MARGIN;
-        int wTop = WINDOW_MARGIN + HEADER_HEIGHT;
-        int sidebarRight = wLeft + SIDEBAR_WIDTH;
-        int wBottom = height - WINDOW_MARGIN;
+        int wLeft = windowMargin();
+        int wTop = windowMargin() + HEADER_HEIGHT;
+        int sidebarRight = wLeft + sidebarWidth();
+        int wBottom = height - windowMargin();
 
         if (mouseX >= wLeft && mouseX < sidebarRight && mouseY >= wTop && mouseY < wBottom) {
             return handleSidebarClick(mouseX, mouseY);
@@ -1255,11 +1253,11 @@ public class GuideScreen extends BaseMenuScreen {
 
     @Override
     protected boolean handleMouseScroll(double mouseX, double mouseY, double scrollX, double scrollY) {
-        int wLeft = WINDOW_MARGIN;
-        int wTop = WINDOW_MARGIN + HEADER_HEIGHT;
-        int wRight = width - WINDOW_MARGIN;
-        int wBottom = height - WINDOW_MARGIN;
-        int sidebarRight = wLeft + SIDEBAR_WIDTH;
+        int wLeft = windowMargin();
+        int wTop = windowMargin() + HEADER_HEIGHT;
+        int wRight = width - windowMargin();
+        int wBottom = height - windowMargin();
+        int sidebarRight = wLeft + sidebarWidth();
 
         double scrollAmount = -scrollY * 20;
 

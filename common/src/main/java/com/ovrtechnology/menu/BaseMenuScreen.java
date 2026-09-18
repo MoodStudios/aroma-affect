@@ -71,19 +71,11 @@ public abstract class BaseMenuScreen extends Screen {
      */
     private boolean notificationIsError = false;
     
-    private MenuViewport viewport = MenuViewport.fit(1, 1, 1, 1);
     private boolean layoutReady;
 
-    protected int minimumLayoutWidth() { return 400; }
-    protected int minimumLayoutHeight() { return 280; }
-    protected final int screenX(double x) { return viewport.screenX(x); }
-    protected final int screenY(double y) { return viewport.screenY(y); }
-    protected final double localX(double x) { return viewport.localX(x); }
-    protected final double localY(double y) { return viewport.localY(y); }
+    protected final int screenX(double x) { return (int) Math.round(x); }
+    protected final int screenY(double y) { return (int) Math.round(y); }
 
-    private MouseButtonEvent localEvent(MouseButtonEvent event) {
-        return new MouseButtonEvent(localX(event.x()), localY(event.y()), event.buttonInfo());
-    }
 
     protected BaseMenuScreen(Component title) {
         super(title);
@@ -92,10 +84,6 @@ public abstract class BaseMenuScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        viewport = MenuViewport.fitPixels(minecraft.getWindow().getWidth(),
-                minecraft.getWindow().getHeight(), minecraft.getWindow().getGuiScale(), minimumLayoutWidth(), minimumLayoutHeight());
-        width = viewport.width();
-        height = viewport.height();
         layoutReady = false;
         setDragging(false);
         // Reset animation state when screen is opened
@@ -128,11 +116,9 @@ public abstract class BaseMenuScreen extends Screen {
     
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        int logicalMouseX = (int) Math.floor(localX(mouseX));
-        int logicalMouseY = (int) Math.floor(localY(mouseY));
+        int logicalMouseX = mouseX;
+        int logicalMouseY = mouseY;
         graphics.pose().pushMatrix();
-        graphics.pose().translate((float) viewport.offsetX(), (float) viewport.offsetY());
-        graphics.pose().scale((float) viewport.scale(), (float) viewport.scale());
         try {
             float smoothProgress = getSmoothAnimationProgress(partialTick);
             renderMenuBackground(graphics, smoothProgress);
@@ -165,7 +151,7 @@ public abstract class BaseMenuScreen extends Screen {
     @Override
     public final boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
         if (!layoutReady) return false;
-        MouseButtonEvent local = localEvent(event);
+        MouseButtonEvent local = event;
         if (handleMouseClick(local.x(), local.y(), local.button())) return true;
         return super.mouseClicked(local, isValidClickButton);
     }
@@ -173,7 +159,7 @@ public abstract class BaseMenuScreen extends Screen {
     @Override
     public final boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (!layoutReady) return false;
-        double x = localX(mouseX), y = localY(mouseY);
+        double x = mouseX, y = mouseY;
         if (handleMouseScroll(x, y, scrollX, scrollY)) return true;
         return super.mouseScrolled(x, y, scrollX, scrollY);
     }
@@ -181,8 +167,8 @@ public abstract class BaseMenuScreen extends Screen {
     @Override
     public final boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
         if (!layoutReady) return false;
-        MouseButtonEvent local = localEvent(event);
-        return handleMouseDrag(local, dx / viewport.scale(), dy / viewport.scale());
+        MouseButtonEvent local = event;
+        return handleMouseDrag(local, dx, dy);
     }
 
     protected boolean handleMouseDrag(MouseButtonEvent event, double dx, double dy) {
@@ -191,7 +177,7 @@ public abstract class BaseMenuScreen extends Screen {
 
     @Override
     public final boolean mouseReleased(MouseButtonEvent event) {
-        return handleMouseRelease(localEvent(event));
+        return handleMouseRelease(event);
     }
 
     protected boolean handleMouseRelease(MouseButtonEvent event) {
@@ -200,7 +186,7 @@ public abstract class BaseMenuScreen extends Screen {
 
     @Override
     public void mouseMoved(double x, double y) {
-        super.mouseMoved(localX(x), localY(y));
+        super.mouseMoved(x, y);
     }
 
     @Override

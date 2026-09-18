@@ -44,8 +44,6 @@ import java.util.Map;
  * slices can be added in the future without changing the rendering logic.</p>
  */
 public class RadialMenuScreen extends BaseMenuScreen {
-    @Override protected int minimumLayoutWidth() { return 640; }
-    @Override protected int minimumLayoutHeight() { return 360; }
 
 
     private static final float TWO_PI = (float) (Math.PI * 2.0);
@@ -231,7 +229,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         int centerX = radialCenterX();
-        int centerY = height / 2;
+        int centerY = radialCenterY();
 
         int outerRadius = computeOuterRadiusPx(width, height);
         float innerRadius = outerRadius * INNER_RADIUS_RATIO;
@@ -474,16 +472,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
                     MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         }
         if (isHoveringConfigGear) {
-            graphics.text(font, Component.translatable("config.aromaaffect.button.settings"),
-                    tooltipX,
-                    gearY + gearBtnSize / 2 - 4,
-                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+            graphics.setTooltipForNextFrame(font, Component.translatable("config.aromaaffect.button.settings"), mouseX, mouseY);
         }
         if (isHoveringGuide) {
-            graphics.text(font, Component.translatable("guide.aromaaffect.button"),
-                    tooltipX,
-                    guideY + guideBtnSize / 2 - 4,
-                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+            graphics.setTooltipForNextFrame(font, Component.translatable("guide.aromaaffect.button"), mouseX, mouseY);
         }
         // Shop button tooltip disabled (button hidden).
         // if (isHoveringShop) {
@@ -493,22 +485,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
         //             MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
         // }
         if (isHoveringDiscord) {
-            graphics.text(font, Component.translatable("discord.aromaaffect.button"),
-                    tooltipX,
-                    discordY + discordBtnSize / 2 - 4,
-                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+            graphics.setTooltipForNextFrame(font, Component.translatable("discord.aromaaffect.button"), mouseX, mouseY);
         }
         if (isHoveringHistory) {
-            graphics.text(font, Component.translatable("history.aromaaffect.button"),
-                    tooltipX,
-                    histY + histBtnSize / 2 - 4,
-                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+            graphics.setTooltipForNextFrame(font, Component.translatable("history.aromaaffect.button"), mouseX, mouseY);
         }
         if (isHoveringFeedback) {
-            graphics.text(font, Component.translatable("feedback.aromaaffect.button"),
-                    tooltipX,
-                    fbY + fbBtnSize / 2 - 4,
-                    MenuRenderUtils.withAlpha(0xFFFFFFFF, appear));
+            graphics.setTooltipForNextFrame(font, Component.translatable("feedback.aromaaffect.button"), mouseX, mouseY);
         }
     }
 
@@ -588,7 +571,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
 
         int centerX = radialCenterX();
-        int centerY = height / 2;
+        int centerY = radialCenterY();
         int outerRadius = computeOuterRadiusPx(width, height);
         float innerRadius = outerRadius * INNER_RADIUS_RATIO;
 
@@ -661,10 +644,6 @@ public class RadialMenuScreen extends BaseMenuScreen {
             return;
         }
         MenuRenderUtils.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.6f, 1.0f);
-        if (PassiveModeManager.isPassiveModeEnabled()) {
-            showErrorNotification(Component.translatable("message.aromaaffect.tracking.passive_mode_active"));
-            return;
-        }
         com.ovrtechnology.network.RespawnTrackingNetworking.request(true);
         if (minecraft != null) {
             minecraft.setScreenAndShow(null);
@@ -749,7 +728,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
             // Scale factor for selection feedback and appear animation
             float scale = (1.0f + 0.2f * selectionProgress[i]) * appear;
-            int iconSize = (int) (ICON_DISPLAY_SIZE * scale);
+            int iconSize = (int) (Math.min(ICON_DISPLAY_SIZE, outerRadius * 0.36f) * scale);
             int halfSize = iconSize / 2;
 
             int drawX = (int)(x - halfSize);
@@ -869,7 +848,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         int pad = 6;
         int iconSpace = 20;
-        int panelTop = 4;
+        int panelTop = width < 600 ? 40 : 4;
         int panelRight = width - 4;
 
         // Choose accent color and content based on status
@@ -1159,7 +1138,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
 
         float alpha = Mth.clamp((animationProgress - 0.45f) / 0.55f, 0.0f, 1.0f);
         RadialEntry entry = entries.get(selectedIndex);
-        int y = centerY + outerRadius + 16;
+        int y = centerY + outerRadius + 8;
 
         boolean locked = selectedIndex < cachedLockedSlots.length && cachedLockedSlots[selectedIndex];
         if (locked) {
@@ -1171,7 +1150,12 @@ public class RadialMenuScreen extends BaseMenuScreen {
             int titleColor = ((int) (255 * alpha) << 24) | 0xFFFFFF;
             int descColor = ((int) (200 * alpha) << 24) | 0xD0D0D0;
             graphics.centeredText(font, entry.title, centerX, y, titleColor);
-            graphics.centeredText(font, entry.description, centerX, y + 12, descColor);
+            int lineY = y + 12;
+            for (var line : font.split(entry.description, width - 24)) {
+                if (lineY + font.lineHeight > height - 2) break;
+                graphics.centeredText(font, line, centerX, lineY, descColor);
+                lineY += font.lineHeight;
+            }
         }
     }
 
@@ -1258,10 +1242,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
         return width / 2;
     }
 
+    private int radialCenterY() {
+        return height / 2;
+    }
+
     private static int computeOuterRadiusPx(int width, int height) {
-        int minDim = Math.min(width, height);
-        int target = (int) (minDim * 0.20f);
-        return Mth.clamp(target, MIN_OUTER_RADIUS, MAX_OUTER_RADIUS);
+        int availableHeight = width < 600 || height < 360 ? height - 158 : height - 100;
+        return Math.max(24, Math.min(112, Math.min((width - 80) / 2, availableHeight / 2)));
     }
 
     private static int computeSelectedIndex(double mouseX, double mouseY, int centerX, int centerY,

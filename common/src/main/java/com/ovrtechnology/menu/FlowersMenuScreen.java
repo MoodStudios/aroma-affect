@@ -208,12 +208,13 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         }
         totalWidth += FILTER_CHIP_GAP * (filters.length - 1);
 
-        int chipX = startX + (availableWidth - totalWidth) / 2;
+        int chipX = startX + Math.max(0, (availableWidth - totalWidth) / 2);
         float alpha = animationProgress;
 
         for (int i = 0; i < filters.length; i++) {
             FlowerFilter filter = filters[i];
-            int cw = chipWidths[i];
+            int cw = Math.min(availableWidth, chipWidths[i]);
+            if (chipX + cw > startX + availableWidth) { chipX = startX; y += FILTER_CHIP_HEIGHT + FILTER_CHIP_GAP; }
             boolean isActive = filter == activeFilter;
             boolean isHovered = mouseX >= chipX && mouseX < chipX + cw
                     && mouseY >= y && mouseY < y + FILTER_CHIP_HEIGHT;
@@ -287,10 +288,10 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
         int nameColor = isTracking
                 ? (int) (255 * animationProgress) << 24 | 0x66FF66
                 : (int) (255 * animationProgress) << 24 | 0xFFFFFF;
-        graphics.text(font, card.displayName, textX, y + 6, nameColor);
+        graphics.text(font, font.plainSubstrByWidth(card.displayName.getString(), Math.max(20, x + rowWidth - textX - rowActionWidth(card, isTracking))), textX, y + 6, nameColor);
 
         int idColor = (int) (180 * animationProgress) << 24 | 0x888888;
-        graphics.text(font, card.id.toString(), textX, y + 18, idColor);
+        graphics.text(font, font.plainSubstrByWidth(card.id.toString(), Math.max(20, x + rowWidth - textX - rowActionWidth(card, isTracking))), textX, y + 18, idColor);
 
         if (isTracking) {
             int indicatorColor = (int) (255 * animationProgress) << 24 | 0x44FF44;
