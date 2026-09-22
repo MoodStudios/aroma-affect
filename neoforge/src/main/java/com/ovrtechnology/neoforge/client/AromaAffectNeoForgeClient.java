@@ -2,6 +2,7 @@ package com.ovrtechnology.neoforge.client;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.AromaAffectClient;
+import com.ovrtechnology.menu.ConfigScreen;
 import com.ovrtechnology.nose.NoseRegistry;
 import net.blay09.mods.balm.client.BalmClient;
 import net.blay09.mods.balm.neoforge.platform.runtime.NeoForgeLoadContext;
@@ -14,6 +15,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 /**
  * NeoForge-specific client initialization for Aroma Affect.
@@ -32,6 +34,10 @@ public final class AromaAffectNeoForgeClient {
         BalmClient.initializeMod(AromaAffect.MOD_ID, new NeoForgeLoadContext(modContainer, modEventBus), AromaAffectClient::initialize);
 
         modEventBus.addListener(this::onRegisterClientExtensions);
+
+        // Enables the Config button for this mod in NeoForge's mod list.
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class,
+                (container, parent) -> new ConfigScreen(parent));
 
         // CURIOS DISABLED (no 26.2 release) — restore the curios client-setup listener
         // (and onClientSetup below) when Curios publishes for 26.2.

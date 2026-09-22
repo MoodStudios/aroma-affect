@@ -3,6 +3,7 @@ package com.ovrtechnology.history;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.ConfigPaths;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -211,7 +212,7 @@ public final class TrackingHistoryData {
         }
 
         // Migrate legacy global file once (rename it after migration so it never repeats)
-        Path legacyPath = java.nio.file.Path.of("config").resolve(LEGACY_CONFIG_FILE_NAME);
+        Path legacyPath = ConfigPaths.resolve(LEGACY_CONFIG_FILE_NAME);
         if (Files.exists(legacyPath)) {
             TrackingHistoryData data = loadFrom(legacyPath);
             if (data != null) {
@@ -272,8 +273,6 @@ public final class TrackingHistoryData {
 
     private static Path getConfigPath() {
         String worldId = WorldIdentifier.getCurrentWorldId();
-        return java.nio.file.Path.of("config")
-                .resolve("aromaaffect")
-                .resolve("history_" + worldId + ".json");
+        return ConfigPaths.resolve("aromaaffect", "history_" + worldId + ".json");
     }
 }

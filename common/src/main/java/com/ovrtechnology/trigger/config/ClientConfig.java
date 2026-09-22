@@ -3,6 +3,7 @@ package com.ovrtechnology.trigger.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.ConfigPaths;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -152,6 +153,6 @@ public final class ClientConfig {
     }
 
     private static Path getConfigPath() {
-        return java.nio.file.Path.of("config").resolve(CONFIG_FILE_NAME);
+        return ConfigPaths.resolve(CONFIG_FILE_NAME);
     }
 }

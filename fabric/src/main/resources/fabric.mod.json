@@ -23,6 +23,9 @@
     ],
     "client": [
       "com.ovrtechnology.fabric.client.ExampleModFabricClient"
+    ],
+    "modmenu": [
+      "com.ovrtechnology.fabric.client.ModMenuIntegration"
     ]
   },
   "accessWidener": "${mod_id}.classtweaker",
