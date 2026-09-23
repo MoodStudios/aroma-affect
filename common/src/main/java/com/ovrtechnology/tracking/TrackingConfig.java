@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.ConfigPaths;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -42,13 +43,7 @@ public class TrackingConfig {
     }
 
     private static TrackingConfig load() {
-        Path configDir = getConfigDir();
-        if (configDir == null) {
-            AromaAffect.LOGGER.warn("Config directory not available, using default TrackingConfig");
-            return new TrackingConfig();
-        }
-
-        Path configFile = configDir.resolve(CONFIG_FILE_NAME);
+        Path configFile = ConfigPaths.resolve(CONFIG_FILE_NAME);
 
         if (Files.exists(configFile)) {
             try (Reader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
@@ -65,7 +60,7 @@ public class TrackingConfig {
         // Create default config file
         TrackingConfig defaults = new TrackingConfig();
         try {
-            Files.createDirectories(configDir);
+            Files.createDirectories(configFile.getParent());
             try (Writer writer = Files.newBufferedWriter(configFile, StandardCharsets.UTF_8)) {
                 GSON.toJson(defaults, writer);
             }
@@ -75,17 +70,6 @@ public class TrackingConfig {
         }
 
         return defaults;
-    }
-
-    private static Path getConfigDir() {
-        try {
-            // Try common Minecraft config paths
-            Path gameDir = Path.of(System.getProperty("user.dir", "."));
-            Path configDir = gameDir.resolve("config");
-            return configDir;
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     /**

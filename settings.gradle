@@ -53,6 +53,7 @@ dependencyResolutionManagement {
             version('fabricLoader', providers.gradleProperty('fabric_loader_version').get())
             version('balm', providers.gradleProperty('balm_version').get())
             version('curios', providers.gradleProperty('curios_version').get())
+            version('modmenu', providers.gradleProperty('modmenu_version').get())
         }
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.ConfigPaths;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -109,7 +110,7 @@ public final class SnifferConfigLoader {
      * Gets the path to the external config file.
      */
     private static Path getExternalConfigPath() {
-        return Path.of("config", AromaAffect.MOD_ID, "sniffer_config.json");
+        return ConfigPaths.resolve(AromaAffect.MOD_ID, "sniffer_config.json");
     }
 
     /**

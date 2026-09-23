@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.util.ConfigPaths;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -159,8 +160,6 @@ public final class EventTriggersConfig {
     }
 
     private static Path getConfigPath() {
-        // Balm 26.1 has no getConfigFolder() helper; the working dir is the game
-        // dir, so config/ matches where Platform.getConfigFolder() pointed.
-        return Path.of("config").resolve(CONFIG_FILE_NAME);
+        return ConfigPaths.resolve(CONFIG_FILE_NAME);
     }
 }

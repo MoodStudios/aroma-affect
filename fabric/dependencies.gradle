@@ -3,6 +3,11 @@ dependencies {
         changing = libs.versions.balm.get().contains("SNAPSHOT")
     }
 
+    // Mod Menu is optional at runtime; it is only on the dev classpath so the
+    // config button can be tried from the Fabric client run.
+    compileOnly libs.modmenu
+    runtimeOnly libs.modmenu
+
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 }

@@ -20,6 +20,7 @@ import com.ovrtechnology.websocket.OvrWebSocketClient;
 import com.ovrtechnology.websocket.WebSocketMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -125,8 +126,24 @@ public class ConfigScreen extends BaseMenuScreen {
     private DragTarget activeDrag = DragTarget.NONE;
     private String activeDragCategory = null;
 
+    // Set when opened from the loader's mod list; null when opened from the radial menu.
+    private final Screen parent;
+
     public ConfigScreen() {
+        this(null);
+    }
+
+    public ConfigScreen(Screen parent) {
         super(Component.translatable("config.aromaaffect.title"));
+        this.parent = parent;
+    }
+
+    private void goBack() {
+        if (parent != null) {
+            Minecraft.getInstance().setScreenAndShow(parent);
+        } else {
+            MenuManager.returnToRadialMenu();
+        }
     }
 
     @Override
@@ -963,7 +980,7 @@ public class ConfigScreen extends BaseMenuScreen {
         // Back button
         if (hoveringBack) {
             MenuRenderUtils.playClickSound();
-            MenuManager.returnToRadialMenu();
+            goBack();
             return true;
         }
 
@@ -1306,7 +1323,7 @@ public class ConfigScreen extends BaseMenuScreen {
         }
 
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            MenuManager.returnToRadialMenu();
+            goBack();
             return true;
         }
         return false;
