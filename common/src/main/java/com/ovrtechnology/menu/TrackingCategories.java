@@ -10,7 +10,6 @@ public final class TrackingCategories {
 
     public static final TrackingCategory STRUCTURES = TrackingCategory.builder("structures")
             .lookupType(LookupType.STRUCTURE)
-            .pathCommandType("structure")
             .iconItem(Items.BELL::getDefaultInstance)
             .headerIcon(radialTexture("icon_structures"))
             .trailDomain(TrailDomain.STRUCTURE)
@@ -21,7 +20,6 @@ public final class TrackingCategories {
 
     public static final TrackingCategory BIOMES = TrackingCategory.builder("biomes")
             .lookupType(LookupType.BIOME)
-            .pathCommandType("biome")
             .iconItem(Items.OAK_SAPLING::getDefaultInstance)
             .headerIcon(radialTexture("icon_biomes"))
             .trailDomain(TrailDomain.BIOME)
@@ -32,7 +30,6 @@ public final class TrackingCategories {
 
     public static final TrackingCategory BLOCKS = TrackingCategory.builder("blocks")
             .lookupType(LookupType.BLOCK)
-            .pathCommandType("block")
             .iconItem(Items.DIAMOND_ORE::getDefaultInstance)
             .headerIcon(radialTexture("icon_blocks"))
             .trailDomain(TrailDomain.BLOCK)
@@ -43,7 +40,6 @@ public final class TrackingCategories {
 
     public static final TrackingCategory FLOWERS = TrackingCategory.builder("flowers")
             .lookupType(LookupType.FLOWER)
-            .pathCommandType("block")
             .iconItem(Items.POPPY::getDefaultInstance)
             .headerIcon(radialTexture("icon_flowers"))
             .trailDomain(TrailDomain.BLOCK)

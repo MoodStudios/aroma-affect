@@ -1,9 +1,11 @@
 package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.history.BlacklistEntry;
 import com.ovrtechnology.history.HistoryEntry;
 import com.ovrtechnology.history.TrackingHistoryData;
+import com.ovrtechnology.lookup.LookupType;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.trigger.client.PathTrackingMaskOverlay;
 import com.ovrtechnology.tracking.RespawnSyncState;
@@ -14,6 +16,7 @@ import com.ovrtechnology.trigger.ScentTriggerManager;
 import com.ovrtechnology.trigger.ScentTriggerSource;
 import com.ovrtechnology.util.SoundRef;
 import net.blay09.mods.balm.Balm;
+import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.BlockPos;
@@ -31,10 +34,9 @@ import java.util.List;
  *
  * <p>Note on threading: under Architectury the {@code PathBlacklistSyncC2S}
  * receiver ran on the netty thread to guarantee the blacklist was updated
- * before the path command that followed. Under Balm the receiver runs on the
- * main server thread; callers must either send the blacklist in the same tick
- * as the command (Balm queues both in order) or read a sync timestamp from
- * {@link BlacklistSyncManager} before processing.</p>
+ * before the path request that followed. Under Balm every C2S receiver runs on
+ * the main server thread in arrival order, so sending the blacklist right before
+ * {@code PathTrackC2S} keeps them ordered.</p>
  */
 public final class PathScentNetworking {
 
@@ -163,6 +165,36 @@ public final class PathScentNetworking {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    public record PathTrackC2S(String lookupType, Identifier targetId) implements CustomPacketPayload {
+        public static final Type<PathTrackC2S> TYPE = new Type<>(
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_track"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, PathTrackC2S> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeUtf(payload.lookupType, 16);
+                    Identifier.STREAM_CODEC.encode(buf, payload.targetId);
+                },
+                buf -> new PathTrackC2S(buf.readUtf(16), Identifier.STREAM_CODEC.decode(buf))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
+    public record PathRecallC2S(String lookupType, Identifier targetId, BlockPos destination, Identifier dimension)
+            implements CustomPacketPayload {
+        public static final Type<PathRecallC2S> TYPE = new Type<>(
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "path_recall"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, PathRecallC2S> STREAM_CODEC = StreamCodec.of(
+                (buf, payload) -> {
+                    buf.writeUtf(payload.lookupType, 16);
+                    Identifier.STREAM_CODEC.encode(buf, payload.targetId);
+                    buf.writeBlockPos(payload.destination);
+                    Identifier.STREAM_CODEC.encode(buf, payload.dimension);
+                },
+                buf -> new PathRecallC2S(buf.readUtf(16), Identifier.STREAM_CODEC.decode(buf),
+                        buf.readBlockPos(), Identifier.STREAM_CODEC.decode(buf))
+        );
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Default duration for path tracking scent triggers (in ticks). 5 seconds = 100 ticks. */
     private static final int PATH_SCENT_DURATION_TICKS = 100;
 
@@ -276,8 +308,8 @@ public final class PathScentNetworking {
 
         // Server-side receiver for blacklist sync. Under Balm this runs on the main
         // server thread; BlacklistSyncManager uses ConcurrentHashMap so the update
-        // is still safe and ordering is preserved because the same tick processes
-        // the packet and the following /aromatest path command.
+        // is still safe and ordering is preserved because C2S packets are handled
+        // in arrival order, before the PathTrackC2S that follows.
         Balm.networking().registerServerboundPacket(
                 PathBlacklistSyncC2S.TYPE,
                 PathBlacklistSyncC2S.class,
@@ -287,6 +319,24 @@ public final class PathScentNetworking {
                     AromaAffect.LOGGER.debug("Received blacklist sync from {}: {} entries",
                             serverPlayer.getName().getString(), payload.positions().size());
                 });
+
+        // Menu tracking goes through packets instead of /aromatest, which is OP-only
+        Balm.networking().registerServerboundPacket(
+                PathTrackC2S.TYPE,
+                PathTrackC2S.class,
+                PathTrackC2S.STREAM_CODEC,
+                (serverPlayer, payload) -> PathSubCommand.trackFromMenu(
+                        serverPlayer, LookupType.fromId(payload.lookupType()), payload.targetId()));
+
+        Balm.networking().registerServerboundPacket(
+                PathRecallC2S.TYPE,
+                PathRecallC2S.class,
+                PathRecallC2S.STREAM_CODEC,
+                (serverPlayer, payload) -> PathSubCommand.recallFromMenu(
+                        serverPlayer, LookupType.fromId(payload.lookupType()), payload.targetId(),
+                        payload.destination(), payload.dimension()));
+
+        ServerPlayerCallback.Leave.EVENT.register(player -> PathSubCommand.removePlayer(player.getUUID()));
 
         AromaAffect.LOGGER.info("PathScentNetworking initialized");
     }
@@ -334,5 +384,13 @@ public final class PathScentNetworking {
 
         Balm.networking().sendToServer(new PathBlacklistSyncC2S(positions));
         AromaAffect.LOGGER.debug("Sent blacklist sync to server: {} entries", blacklist.size());
+    }
+
+    public static void sendTrackRequest(LookupType type, Identifier targetId) {
+        Balm.networking().sendToServer(new PathTrackC2S(type.getId(), targetId));
+    }
+
+    public static void sendRecallRequest(LookupType type, Identifier targetId, BlockPos destination, Identifier dimension) {
+        Balm.networking().sendToServer(new PathRecallC2S(type.getId(), targetId, destination, dimension));
     }
 }

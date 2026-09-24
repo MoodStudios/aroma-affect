@@ -2,6 +2,7 @@ package com.ovrtechnology.menu;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
+import com.ovrtechnology.network.RespawnTrackingNetworking;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -492,24 +493,18 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        // Sync blacklist to server before path command
-        if (Minecraft.getInstance().getConnection() != null) {
-            PathScentNetworking.sendBlacklistSync(
-                    Minecraft.getInstance().getConnection().registryAccess());
-        }
+        if (Minecraft.getInstance().getConnection() == null) return;
 
-        String command = String.format("aromatest path %s %s",
-                category.getPathCommandType(), targetId.toString());
-        AromaAffect.LOGGER.debug("Executing path command: {}", command);
+        // Sync blacklist to server before the path request
+        PathScentNetworking.sendBlacklistSync(Minecraft.getInstance().getConnection().registryAccess());
 
-        if (Minecraft.getInstance().getConnection() != null) {
-            Minecraft.getInstance().getConnection().sendCommand(command);
-        }
+        AromaAffect.LOGGER.debug("Requesting {} path to {}", category.getLookupType().getId(), targetId);
+        PathScentNetworking.sendTrackRequest(category.getLookupType(), targetId);
     }
 
     protected void stopPath() {
         if (Minecraft.getInstance().getConnection() != null) {
-            Minecraft.getInstance().getConnection().sendCommand("aromatest path stop");
+            RespawnTrackingNetworking.stop();
         }
     }
 

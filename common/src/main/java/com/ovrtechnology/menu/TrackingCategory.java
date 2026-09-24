@@ -16,7 +16,6 @@ public final class TrackingCategory {
 
     private final String id;
     private final LookupType lookupType;
-    private final String pathCommandType;
     private final Supplier<ItemStack> iconItem;
     private final Identifier headerIcon;
     private final Identifier radialIcon;
@@ -30,7 +29,6 @@ public final class TrackingCategory {
     private TrackingCategory(Builder b) {
         this.id = Objects.requireNonNull(b.id, "id");
         this.lookupType = Objects.requireNonNull(b.lookupType, "lookupType");
-        this.pathCommandType = Objects.requireNonNull(b.pathCommandType, "pathCommandType");
         this.iconItem = Objects.requireNonNull(b.iconItem, "iconItem");
         this.headerIcon = Objects.requireNonNull(b.headerIcon, "headerIcon");
         this.radialIcon = b.radialIcon != null ? b.radialIcon : b.headerIcon;
@@ -48,10 +46,6 @@ public final class TrackingCategory {
 
     public LookupType getLookupType() {
         return lookupType;
-    }
-
-    public String getPathCommandType() {
-        return pathCommandType;
     }
 
     public ItemStack getIconItem() {
@@ -97,7 +91,6 @@ public final class TrackingCategory {
     public static final class Builder {
         private final String id;
         private LookupType lookupType;
-        private String pathCommandType;
         private Supplier<ItemStack> iconItem;
         private Identifier headerIcon;
         private Identifier radialIcon;
@@ -114,11 +107,6 @@ public final class TrackingCategory {
 
         public Builder lookupType(LookupType lookupType) {
             this.lookupType = lookupType;
-            return this;
-        }
-
-        public Builder pathCommandType(String pathCommandType) {
-            this.pathCommandType = pathCommandType;
             return this;
         }
 

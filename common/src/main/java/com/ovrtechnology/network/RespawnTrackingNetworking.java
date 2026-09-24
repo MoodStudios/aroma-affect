@@ -1,6 +1,7 @@
 package com.ovrtechnology.network;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.command.sub.PathSubCommand;
 import com.ovrtechnology.command.path.ActivePathManager;
 import com.ovrtechnology.menu.ActiveTrackingState;
 import com.ovrtechnology.menu.TrackingCategoryRegistry;
@@ -56,7 +57,10 @@ public final class RespawnTrackingNetworking {
                     else if (allow(lastRefresh, player)) RespawnSyncHandler.sync(player);
                 });
         Balm.networking().registerServerboundPacket(StopC2S.TYPE, StopC2S.class, StopC2S.CODEC,
-                (player, request) -> ActivePathManager.getInstance().removePath(player.getUUID()));
+                (player, request) -> {
+                    PathSubCommand.cancelSearch(player);
+                    ActivePathManager.getInstance().removePath(player.getUUID());
+                });
         Balm.networking().registerClientboundPacket(StartedS2C.TYPE, StartedS2C.class, StartedS2C.CODEC,
                 (player, response) -> {
                     // The authoritative respawn sync is sent immediately before this packet.
@@ -81,6 +85,7 @@ public final class RespawnTrackingNetworking {
 
     public static void track(ServerPlayer player) {
         if (!allow(lastTrack, player)) return;
+        PathSubCommand.cancelSearch(player);
         if (!player.isAlive() || player.isSpectator() || !EquippedNoseHelper.canTrackRespawn(player)) {
             reject(player, "tier_required");
             return;

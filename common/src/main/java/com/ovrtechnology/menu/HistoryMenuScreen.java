@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -1151,13 +1152,12 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         ItemStack icon = getItemForTarget(targetId, categoryId);
         ActiveTrackingState.set(targetLoc, Component.literal(displayName), icon, cat);
 
-        // Use recall command to go directly to known coordinates (no search needed)
-        String dimArg = dimension != null ? dimension : "minecraft:overworld";
-        String command = String.format("aromatest path recall %s %d %d %d %s", targetId, x, y, z, dimArg);
-        AromaAffect.LOGGER.debug("Re-tracking via recall: {}", command);
+        // Recall goes directly to known coordinates (no search needed)
+        Identifier dimensionId = Identifier.parse(dimension != null ? dimension : "minecraft:overworld");
+        AromaAffect.LOGGER.debug("Re-tracking {} via recall at ({}, {}, {}) in {}", targetId, x, y, z, dimensionId);
 
         if (Minecraft.getInstance().getConnection() != null) {
-            Minecraft.getInstance().getConnection().sendCommand(command);
+            PathScentNetworking.sendRecallRequest(cat.getLookupType(), targetLoc, new BlockPos(x, y, z), dimensionId);
         }
 
         MenuManager.returnToRadialMenu();
