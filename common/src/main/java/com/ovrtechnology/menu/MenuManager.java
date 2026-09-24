@@ -169,7 +169,7 @@ public final class MenuManager {
         }
 
         AromaAffect.LOGGER.debug("Joining Discord");
-        Util.getPlatform().openUri("https://discord.gg/f9Cf3xKCET");
+        Util.getPlatform().openUri("https://discord.gg/ovr-omara");
     }
 
     /**
