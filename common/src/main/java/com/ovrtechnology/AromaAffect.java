@@ -180,8 +180,8 @@ public final class AromaAffect {
         ActivePathManager.init();
         AbilityHandler.init();
         StructureSyncHandler.init();
-        RespawnSyncHandler.init();
         AromaTestCommand.init();
+        RespawnSyncHandler.init();
         AromaGuideFirstJoinHandler.init();
         VillagePoolInjector.init();
 
