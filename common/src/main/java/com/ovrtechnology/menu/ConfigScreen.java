@@ -87,6 +87,7 @@ public class ConfigScreen extends BaseMenuScreen {
     private static final int SLIDER_H = 12;
     private static final int SELECTOR_BTN_W = 80;
     private static final int SELECTOR_BTN_H = 20;
+    private static final int SCROLLBAR_GUTTER = 10;
 
     private int panelMargin() { return width < 600 ? 8 : 30; }
     private int contentWidth() { return width - 2 * panelMargin() - sidebarWidth() - 2 * contentPadding(); }
@@ -226,8 +227,9 @@ public class ConfigScreen extends BaseMenuScreen {
                 case WEBSOCKET -> "config.aromaaffect.section.websocket";
             };
             Component label = Component.translatable(labelKey);
-            int labelY = tabY + 3;
-            for (var line : font.split(label, sidebarWidth() - 16)) {
+            var lines = font.split(label, sidebarWidth() - 16);
+            int labelY = tabY + (tabH - (lines.size() * font.lineHeight - 1)) / 2;
+            for (var line : lines) {
                 graphics.text(font, line, sidebarLeft + 8, labelY, MenuRenderUtils.withAlpha(isActive ? COL_TEXT : COL_TEXT_DIM, a), false);
                 labelY += font.lineHeight;
             }
@@ -267,7 +269,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
         // Puff Mode selector
         rowLabel(graphics, Component.translatable("config.aromaaffect.puff_mode"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
-        int selX = x + w - SELECTOR_BTN_W * 2 - 2;
+        int selX = x + w - SCROLLBAR_GUTTER - SELECTOR_BTN_W * 2 - 2;
 
         // Automatic button
         int autoBg = isAutomatic ? MenuRenderUtils.withAlpha(COL_ACCENT, a) : MenuRenderUtils.withAlpha(0xFF333333, a);
@@ -290,7 +292,7 @@ public class ConfigScreen extends BaseMenuScreen {
         // Manual Puff Key (only visible in manual mode)
         if (!isAutomatic) {
             rowLabel(graphics, Component.translatable("config.aromaaffect.manual_key"), x, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
-            int keyBtnX = x + w - 80;
+            int keyBtnX = x + w - SCROLLBAR_GUTTER - 80;
             int keyBtnW = 80;
             int keyBtnH = 20;
             int keyBg = capturingKey ? MenuRenderUtils.withAlpha(0xFF666622, a) : MenuRenderUtils.withAlpha(0xFF333333, a);
@@ -310,14 +312,14 @@ public class ConfigScreen extends BaseMenuScreen {
         int sliderX = x + w - sliderWidth() - 40;
         renderSlider(graphics, sliderX, rowY, sliderWidth(), (float) config.getGlobalIntensityMultiplier(), 0f, 1f, a);
         int pct = (int) (config.getGlobalIntensityMultiplier() * 100);
-        graphics.text(font, pct + "%", sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, pct + "%", sliderX + sliderWidth() + 8, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight() + 4;
 
         // Global Cooldown slider
         rowLabel(graphics, Component.translatable("config.aromaaffect.cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float cooldownSec = config.getGlobalCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, sliderWidth(), cooldownSec, 1f, 60f, a);
-        graphics.text(font, String.format("%.0fs", cooldownSec), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", cooldownSec), sliderX + sliderWidth() + 8, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight() + 4;
 
         // 3D Nose Render toggle
@@ -394,7 +396,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
         // Calculate total content height to determine if scrolling is needed
         // Toggle(28+8) + header(16) + 3 sliders(28*3) + gap(8) + header(16) + 2 sliders(28*2) + gap(8) + button(20) = 188
-        int totalContentH = (rowHeight() + 8) + 16 + (rowHeight() * 3) + 8 + 16 + (rowHeight() * 2) + 8 + 20;
+        int totalContentH = controlOffset() + (rowHeight() + 8) + 16 + (rowHeight() * 3) + 8 + 16 + (rowHeight() * 2) + 8 + 20;
         int maxScroll = Math.max(0, totalContentH - h);
         passiveScrollOffset = Mth.clamp(passiveScrollOffset, 0, maxScroll);
 
@@ -421,21 +423,21 @@ public class ConfigScreen extends BaseMenuScreen {
         rowLabel(graphics, Component.translatable("config.aromaaffect.passive.block_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockCd = config.getPassiveBlockCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, sliderWidth(), blockCd, 1f, 30f, a);
-        graphics.text(font, String.format("%.0fs", blockCd), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", blockCd), sliderX + sliderWidth() + 8, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight();
 
         // Hostile Mob CD (1s - 30s)
         rowLabel(graphics, Component.translatable("config.aromaaffect.passive.hostile_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobCd = config.getPassiveMobCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, sliderWidth(), mobCd, 1f, 30f, a);
-        graphics.text(font, String.format("%.0fs", mobCd), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", mobCd), sliderX + sliderWidth() + 8, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight();
 
         // Passive Mob CD (1s - 30s)
         rowLabel(graphics, Component.translatable("config.aromaaffect.passive.passive_mob_cooldown"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float passiveMobCd = config.getPassivePassiveMobCooldownMs() / 1000f;
         renderSlider(graphics, sliderX, rowY, sliderWidth(), passiveMobCd, 1f, 30f, a);
-        graphics.text(font, String.format("%.0fs", passiveMobCd), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.0fs", passiveMobCd), sliderX + sliderWidth() + 8, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight() + 8;
 
         // Ranges
@@ -446,14 +448,14 @@ public class ConfigScreen extends BaseMenuScreen {
         rowLabel(graphics, Component.translatable("config.aromaaffect.passive.block_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float blockRange = (float) config.getPassiveBlockRange();
         renderSlider(graphics, sliderX, rowY, sliderWidth(), blockRange, 1f, 5f, a);
-        graphics.text(font, String.format("%.1f", blockRange), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.1f", blockRange), sliderX + sliderWidth() + 8, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight();
 
         // Mob Range (1 - 15 blocks)
         rowLabel(graphics, Component.translatable("config.aromaaffect.passive.mob_range"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float mobRange = (float) config.getPassiveMobRange();
         renderSlider(graphics, sliderX, rowY, sliderWidth(), mobRange, 1f, 15f, a);
-        graphics.text(font, String.format("%.1f", mobRange), sliderX + sliderWidth() + 6, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
+        graphics.text(font, String.format("%.1f", mobRange), sliderX + sliderWidth() + 8, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight() + 8;
 
         // Reset Defaults button
@@ -482,7 +484,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int toggleX = x + w - TOGGLE_W - 30;
         int sliderX = getSliderX();
 
-        int totalContentH = (rowHeight() + 8) + 16 + EVENT_CATEGORIES.length * (rowHeight() * 2 + 6)
+        int totalContentH = controlOffset() + (rowHeight() + 8) + 16 + EVENT_CATEGORIES.length * (rowHeight() * 2 + 6)
                 + 8 + (rowHeight() + 8) + 28;
         int maxScroll = Math.max(0, totalContentH - h);
         eventsScrollOffset = Mth.clamp(eventsScrollOffset, 0, maxScroll);
@@ -512,7 +514,7 @@ public class ConfigScreen extends BaseMenuScreen {
             rowLabel(graphics, Texts.tr("config.aromaaffect.events.cooldown"), x + 12, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
             float cdSec = config.getCategoryCooldownMs(category) / 1000f;
             renderSlider(graphics, sliderX, rowY, sliderWidth(), cdSec, 0f, 60f, a);
-            graphics.text(font, String.format("%.0fs", cdSec), sliderX + sliderWidth() + 6, rowY + 2,
+            graphics.text(font, String.format("%.0fs", cdSec), sliderX + sliderWidth() + 8, rowY + 6,
                     MenuRenderUtils.withAlpha(COL_TEXT, a));
             rowY += rowHeight() + 6;
         }
@@ -522,7 +524,7 @@ public class ConfigScreen extends BaseMenuScreen {
         rowLabel(graphics, Texts.tr("config.aromaaffect.events.throttle"), x, rowY + 2, MenuRenderUtils.withAlpha(COL_TEXT, a));
         float throttle = config.getGlobalThrottlePerMinute();
         renderSlider(graphics, sliderX, rowY, sliderWidth(), throttle, 5f, 120f, a);
-        graphics.text(font, String.format("%.0f / min", throttle), sliderX + sliderWidth() + 6, rowY + 2,
+        graphics.text(font, String.format("%.0f / min", throttle), sliderX + sliderWidth() + 8, rowY + 6,
                 MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += rowHeight() + 8;
 
@@ -539,6 +541,13 @@ public class ConfigScreen extends BaseMenuScreen {
                 resetBtnX + resetBtnW / 2, rowY + 6, MenuRenderUtils.withAlpha(COL_TEXT, a));
 
         graphics.disableScissor();
+
+        if (totalContentH > h && h > 0) {
+            int scrollBarX = x + w - 4;
+            int scrollBarH = Math.max(10, (int) ((float) h / totalContentH * h));
+            int scrollBarY = y + (int) ((float) eventsScrollOffset / maxScroll * (h - scrollBarH));
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 3, scrollBarY + scrollBarH, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
+        }
     }
 
     private boolean handleEventsClick(int mx, int my, int x, int y, int w) {
@@ -1033,7 +1042,7 @@ public class ConfigScreen extends BaseMenuScreen {
         int rowY = y + controlOffset();
 
         // Puff Mode selector
-        int selX = x + w - SELECTOR_BTN_W * 2 - 2;
+        int selX = x + w - SCROLLBAR_GUTTER - SELECTOR_BTN_W * 2 - 2;
         if (adjustedMy >= rowY && adjustedMy < rowY + SELECTOR_BTN_H) {
             if (mx >= selX && mx < selX + SELECTOR_BTN_W) {
                 MenuRenderUtils.playClickSound();
@@ -1054,7 +1063,7 @@ public class ConfigScreen extends BaseMenuScreen {
 
         // Manual key (only if manual mode)
         if (!"automatic".equals(config.getPuffMode())) {
-            int keyBtnX = x + w - 80;
+            int keyBtnX = x + w - SCROLLBAR_GUTTER - 80;
             if (mx >= keyBtnX && mx < keyBtnX + 80 && adjustedMy >= rowY && adjustedMy < rowY + 20) {
                 MenuRenderUtils.playClickSound();
                 capturingKey = true;

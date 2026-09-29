@@ -41,7 +41,7 @@
         { "type": "spacer", "height": 4 },
         { "type": "text", "translate": "guide.aromaaffect.welcome.ovr_bridge_desc" },
         { "type": "spacer", "height": 4 },
-        { "type": "url_link", "translate": "guide.aromaaffect.welcome.ovr_link", "url": "https://www.ovrtechnology.com/" },
+        { "type": "url_link", "translate": "guide.aromaaffect.welcome.ovr_link", "url": "https://ovrtechnology.com/pages/omara-scent-studio-app" },
         { "type": "spacer", "height": 6 },
         { "type": "tip", "translate": "guide.aromaaffect.welcome.bridge_tip" }
       ]

@@ -13,6 +13,7 @@ import com.ovrtechnology.menu.TrackingCategory;
 import com.ovrtechnology.menu.TrailDomain;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -58,7 +59,7 @@ public final class BlockOutlineRenderer {
     private BlockOutlineRenderer() {}
 
     public static void renderOutline(PoseStack poseStack, Vec3 cameraPos, OrderedSubmitNodeCollector collector) {
-        if (!ActiveTrackingState.shouldShowOutline()) {
+        if (!ActiveTrackingState.shouldShowOutline() || Minecraft.getInstance().isPaused()) {
             return;
         }
 

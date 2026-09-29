@@ -219,7 +219,7 @@ public final class PathTrailRenderer {
         if (dest == null) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
+        if (mc.player == null || mc.level == null || mc.isPaused()) return;
 
         Vec3 playerPos = getPlayerTrailAnchor(mc.player);
         long now = System.currentTimeMillis();
@@ -299,13 +299,14 @@ public final class PathTrailRenderer {
                     adjustedForPlayer(prevStablePath, prevPathOrigin, playerPos), playerPos);
             double prevTotalLen = totalLength(adjustedPrev);
             long lastPointReach = prevPulseStart + prevPulseDurationMs;
-            if (now - lastPointReach < WAKE_VISIBLE_MS + WAKE_FADE_MS) {
+            float prevFade = 1.0f - Math.min(1.0f, Math.max(0.0f, (float) elapsed / currentPulseDurationMs));
+            if (prevFade > 0.0f && now - lastPointReach < WAKE_VISIBLE_MS + WAKE_FADE_MS) {
                 RenderType prevGlow = prevPulseIsPower ? TRAIL_GLOW_POWER : TRAIL_GLOW;
                 RenderType prevCore = prevPulseIsPower ? TRAIL_CORE_POWER : TRAIL_CORE;
                 float prevGlowWidth = prevPulseIsPower ? TRAIL_GLOW_POWER_WIDTH : TRAIL_GLOW_WIDTH;
                 float prevCoreWidth = prevPulseIsPower ? TRAIL_CORE_POWER_WIDTH : TRAIL_CORE_WIDTH;
-                float prevGlowAlpha = prevPulseIsPower ? 0.20f : 0.12f;
-                float prevCoreAlpha = prevPulseIsPower ? 0.75f : 0.55f;
+                float prevGlowAlpha = (prevPulseIsPower ? 0.20f : 0.12f) * prevFade;
+                float prevCoreAlpha = (prevPulseIsPower ? 0.75f : 0.55f) * prevFade;
                 collector.submitCustomGeometry(poseStack, prevGlow, (pose, consumer) ->
                         renderLayer(pose, cameraPos, consumer, prevGlowWidth,
                                 adjustedPrev, r, g, b, prevGlowAlpha * breathe,
