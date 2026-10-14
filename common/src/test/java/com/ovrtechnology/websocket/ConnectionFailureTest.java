@@ -95,7 +95,7 @@ class ConnectionFailureTest {
         }
 
         @Test
-        @DisplayName("unrecognised errors and null are UNKNOWN")
+        @DisplayName("unrecognized errors and null are UNKNOWN")
         void unknown() {
             assertThat(ConnectionFailure.classify(new IllegalStateException("boom")))
                     .isEqualTo(ConnectionFailure.UNKNOWN);

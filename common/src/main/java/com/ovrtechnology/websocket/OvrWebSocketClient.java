@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalInt;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,6 +88,24 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     private final AtomicLong currentReconnectDelay = new AtomicLong(0);
     private final AtomicBoolean reconnectScheduled = new AtomicBoolean(false);
     private final AtomicBoolean everConnected = new AtomicBoolean(false);
+
+    // Start of the current outage and connection attempts made during it, reported once
+    // the connection is established. 0 means no outage is in progress.
+    private final AtomicLong outageStartedAtMs = new AtomicLong(0);
+    private final AtomicInteger outageAttempts = new AtomicInteger(0);
+    // When the current connection was established, or 0 if not connected
+    private final AtomicLong connectedAtMs = new AtomicLong(0);
+
+    // ========================================
+    // Diagnostic logging
+    // ========================================
+
+    private static final long REPEAT_LOG_INTERVAL_MS = 60_000;
+    private final LogThrottle failureLog = new LogThrottle(REPEAT_LOG_INTERVAL_MS);
+    private final LogThrottle retryLog = new LogThrottle(REPEAT_LOG_INTERVAL_MS);
+    private final LogThrottle connectLog = new LogThrottle(REPEAT_LOG_INTERVAL_MS);
+    private static final String CONNECTED_EVENT = "connected";
+    private volatile ConnectionFailure lastFailureType = ConnectionFailure.UNKNOWN;
 
     // ========================================
     // Threading
@@ -237,14 +256,19 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         }
 
         setState(ConnectionState.CONNECTING);
+        markOutageStart();
+        outageAttempts.incrementAndGet();
+        // Captured so a slow attempt is reported against the URI it used, even if the
+        // configuration changes while it is in flight
+        String targetUri = config.getUri();
 
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (config.isDebugLogging()) {
-                    AromaAffect.LOGGER.debug("Connecting to {}...", config.getUri());
+                    AromaAffect.LOGGER.debug("Connecting to {}...", targetUri);
                 }
 
-                URI uri = URI.create(config.getUri());
+                URI uri = URI.create(targetUri);
 
                 WebSocket ws = httpClient.newWebSocketBuilder()
                         .connectTimeout(Duration.ofMillis(config.getConnectionTimeoutMs()))
@@ -258,8 +282,11 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 // Reset reconnect counters on successful connection
                 reconnectAttempts.set(0);
                 currentReconnectDelay.set(config.getInitialReconnectDelayMs());
-
-                AromaAffect.LOGGER.info("=== OVR WebSocket CONNECTED to {} ===", config.getUri());
+                long now = System.currentTimeMillis();
+                long elapsedMs = now - outageStartedAtMs.getAndSet(0);
+                int attemptsNeeded = outageAttempts.getAndSet(0);
+                connectedAtMs.set(now);
+                logConnected(targetUri, attemptsNeeded, elapsedMs);
 
                 // Start health monitoring (can be disabled for debugging by setting interval to 0)
                 if (config.getHealthCheckIntervalMs() > 0) {
@@ -279,11 +306,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                     }
                 });
 
-                AromaAffect.LOGGER.info("OVR WebSocket ready to send/receive messages");
+                if (config.isDebugLogging()) {
+                    AromaAffect.LOGGER.debug("OVR WebSocket ready to send/receive messages");
+                }
                 return true;
 
             } catch (Exception e) {
-                handleConnectionFailure(e);
+                handleConnectionFailure(e, targetUri);
                 return false;
             }
         }, scheduler);
@@ -310,6 +339,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         if (cancelReconnect) {
             cancelReconnectTask();
             this.deviceName = null;
+            // A deliberate disconnect ends the outage instead of extending it
+            outageStartedAtMs.set(0);
+            outageAttempts.set(0);
+            connectedAtMs.set(0);
+            failureLog.reset();
+            retryLog.reset();
+            connectLog.reset();
         }
 
         stopHealthMonitoring();
@@ -320,7 +356,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 ws.sendClose(WebSocket.NORMAL_CLOSURE, reason);
             } catch (Exception e) {
                 if (config.isDebugLogging()) {
-                    AromaAffect.LOGGER.debug("Error during disconnect: {}", e.getMessage());
+                    AromaAffect.LOGGER.debug("Error during disconnect: {}", ConnectionFailure.describeCauseChain(e), e);
                 }
             }
             this.webSocket = null;
@@ -406,7 +442,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
             return true;
         } catch (Exception e) {
-            AromaAffect.LOGGER.error("Error sending message: {}", e.getMessage());
+            AromaAffect.LOGGER.error("Error sending message to OVR bridge: {}", ConnectionFailure.describeCauseChain(e), e);
             return false;
         }
     }
@@ -640,12 +676,11 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-        AromaAffect.LOGGER.info("WebSocket closed: {} (code: {})", reason, statusCode);
-
         this.webSocket = null;
         stopHealthMonitoring();
 
         boolean wasClean = statusCode == WebSocket.NORMAL_CLOSURE;
+        logClose(statusCode, reason, wasClean);
 
         executeOnMainThread(() -> {
             for (WebSocketConnectionListener listener : connectionListeners) {
@@ -668,7 +703,8 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-        AromaAffect.LOGGER.error("WebSocket error: {}", error.getMessage());
+        onConnectionLost();
+        logConnectionFailure("Connection error", error, config.getUri());
 
         // Clean up current connection
         this.webSocket = null;
@@ -697,18 +733,9 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     // Reconnection logic
     // ========================================
 
-    private void handleConnectionFailure(Exception e) {
+    private void handleConnectionFailure(Exception e, String targetUri) {
         setState(ConnectionState.CONNECTION_FAILED);
-
-        // Log details on first failure to aid diagnosis, then go quiet
-        if (reconnectAttempts.get() == 0) {
-            String errorMsg = e.getMessage();
-            if (e.getCause() != null) {
-                errorMsg = e.getCause().getMessage();
-            }
-            AromaAffect.LOGGER.info("OVR WebSocket connection failed ({}): {}", config.getUri(), errorMsg);
-            AromaAffect.LOGGER.info("Will keep trying to reconnect in background...");
-        }
+        logConnectionFailure("Connection attempt failed", e, targetUri);
 
         executeOnMainThread(() -> {
             for (WebSocketConnectionListener listener : connectionListeners) {
@@ -757,9 +784,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
         final long finalDelay = delay;
 
-        if (config.isDebugLogging()) {
-            AromaAffect.LOGGER.debug("Reconnecting in {} ms (attempt {})...", delay, attempts);
-        }
+        logRetry(attempts, delay);
 
         setState(ConnectionState.RECONNECTING);
 
@@ -791,6 +816,136 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         if (reconnectTask != null) {
             reconnectTask.cancel(false);
             reconnectTask = null;
+        }
+    }
+
+    // ========================================
+    // Diagnostic logging
+    // ========================================
+
+    private void markOutageStart() {
+        outageStartedAtMs.compareAndSet(0, System.currentTimeMillis());
+    }
+
+    /**
+     * Starts an outage when an established connection drops. Throttles are reset only if
+     * the connection had been stable for a full log interval, so a bridge that keeps
+     * dropping right after connecting stays rate limited while a fresh outage after a
+     * stable session is logged in detail again.
+     */
+    private void onConnectionLost() {
+        long now = System.currentTimeMillis();
+        long connectedAt = connectedAtMs.getAndSet(0);
+        if (connectedAt != 0 && now - connectedAt >= REPEAT_LOG_INTERVAL_MS) {
+            failureLog.reset();
+            retryLog.reset();
+            connectLog.reset();
+        }
+        outageStartedAtMs.compareAndSet(0, now);
+    }
+
+    private long outageElapsedMs() {
+        long start = outageStartedAtMs.get();
+        return start == 0 ? 0 : System.currentTimeMillis() - start;
+    }
+
+    private static String formatSeconds(long ms) {
+        return String.format(Locale.ROOT, "%.1f", ms / 1000.0);
+    }
+
+    /**
+     * Logs a connection error with its category. The first error of a category is logged
+     * with the full cause chain and stack trace; repeats are summarized once per
+     * {@link #REPEAT_LOG_INTERVAL_MS}.
+     */
+    private void logConnectionFailure(String what, Throwable error, String targetUri) {
+        ConnectionFailure type = ConnectionFailure.classify(error);
+        lastFailureType = type;
+        String chain = ConnectionFailure.describeCauseChain(error);
+        LogThrottle.Decision decision = failureLog.record(type);
+
+        switch (decision.level()) {
+            case DETAILED -> {
+                OptionalInt status = ConnectionFailure.handshakeStatus(error);
+                String detail = status.isPresent() ? " (HTTP " + status.getAsInt() + ")" : "";
+                String message = "{} [{}] to OVR bridge at {}{}: {}";
+                // Without hardware a refused connection at startup is the normal case
+                if (type == ConnectionFailure.REFUSED && !everConnected.get()) {
+                    AromaAffect.LOGGER.info(message, what, type, targetUri, detail, chain, error);
+                } else {
+                    AromaAffect.LOGGER.warn(message, what, type, targetUri, detail, chain, error);
+                }
+            }
+            case SUMMARY -> AromaAffect.LOGGER.info(
+                    "Still unable to reach OVR bridge at {} [{}]: {} attempt(s) over {} s, {} repeated failure(s) not logged",
+                    targetUri, type, outageAttempts.get(), formatSeconds(outageElapsedMs()),
+                    decision.suppressed());
+            case SUPPRESSED -> {
+                if (config.isDebugLogging()) {
+                    AromaAffect.LOGGER.debug("{} [{}]: {}", what, type, chain);
+                }
+            }
+        }
+    }
+
+    private void logConnected(String targetUri, int attempts, long elapsedMs) {
+        LogThrottle.Decision decision = connectLog.record(CONNECTED_EVENT);
+        switch (decision.level()) {
+            case DETAILED -> AromaAffect.LOGGER.info(
+                    "=== OVR WebSocket CONNECTED to {} after {} attempt(s) / {} s ===",
+                    targetUri, attempts, formatSeconds(elapsedMs));
+            case SUMMARY -> AromaAffect.LOGGER.info(
+                    "=== OVR WebSocket CONNECTED to {} after {} attempt(s) / {} s ({} earlier reconnection(s) not logged) ===",
+                    targetUri, attempts, formatSeconds(elapsedMs), decision.suppressed());
+            case SUPPRESSED -> {
+                if (config.isDebugLogging()) {
+                    AromaAffect.LOGGER.debug("OVR WebSocket connected to {} after {} attempt(s) / {} s",
+                            targetUri, attempts, formatSeconds(elapsedMs));
+                }
+            }
+        }
+    }
+
+    private void logClose(int statusCode, String reason, boolean wasClean) {
+        String code = ConnectionFailure.describeCloseCode(statusCode);
+        String shownReason = reason == null || reason.isEmpty() ? "none" : reason;
+        if (wasClean) {
+            AromaAffect.LOGGER.info("OVR bridge closed the connection: code {}, reason: {}", code, shownReason);
+            return;
+        }
+
+        onConnectionLost();
+        lastFailureType = ConnectionFailure.CLOSED;
+        LogThrottle.Decision decision = failureLog.record(ConnectionFailure.CLOSED);
+        switch (decision.level()) {
+            case DETAILED -> AromaAffect.LOGGER.warn(
+                    "OVR bridge connection closed unexpectedly [{}]: code {}, reason: {}",
+                    ConnectionFailure.CLOSED, code, shownReason);
+            case SUMMARY -> AromaAffect.LOGGER.warn(
+                    "OVR bridge connection keeps closing [{}]: code {}, reason: {}, {} repeated close(s) not logged",
+                    ConnectionFailure.CLOSED, code, shownReason, decision.suppressed());
+            case SUPPRESSED -> {
+                if (config.isDebugLogging()) {
+                    AromaAffect.LOGGER.debug("OVR bridge connection closed: code {}, reason: {}", code, shownReason);
+                }
+            }
+        }
+    }
+
+    private void logRetry(int retry, long delayMs) {
+        LogThrottle.Decision decision = retryLog.record(lastFailureType);
+        switch (decision.level()) {
+            case DETAILED -> AromaAffect.LOGGER.info(
+                    "Retrying OVR bridge connection in {} ms (retry {}, last failure {}); repeats are summarized every {} s",
+                    delayMs, retry, lastFailureType, REPEAT_LOG_INTERVAL_MS / 1000);
+            case SUMMARY -> AromaAffect.LOGGER.info(
+                    "Retrying OVR bridge connection in {} ms (retry {}, last failure {}), {} retry message(s) not logged",
+                    delayMs, retry, lastFailureType, decision.suppressed());
+            case SUPPRESSED -> {
+                if (config.isDebugLogging()) {
+                    AromaAffect.LOGGER.debug("Retrying OVR bridge connection in {} ms (retry {})", delayMs, retry);
+                }
+            }
         }
     }
 
@@ -836,7 +991,10 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         if (awaitingPong.get()) {
             long elapsed = System.currentTimeMillis() - lastPingTime.get();
             if (elapsed > config.getHealthCheckIntervalMs() * 2) {
-                AromaAffect.LOGGER.warn("Health check failed: No pong received in {} ms", elapsed);
+                AromaAffect.LOGGER.warn("Health check failed [{}]: no pong received from OVR bridge in {} ms",
+                        ConnectionFailure.TIMEOUT, elapsed);
+                onConnectionLost();
+                lastFailureType = ConnectionFailure.TIMEOUT;
                 disconnect("Health check timeout", false);
                 if (config.isAutoReconnect()) {
                     scheduleReconnect();
@@ -858,7 +1016,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         try {
             ws.sendPing(ByteBuffer.allocate(0));
         } catch (Exception e) {
-            AromaAffect.LOGGER.warn("Health check ping failed: {}", e.getMessage());
+            AromaAffect.LOGGER.warn("Health check ping failed: {}", ConnectionFailure.describeCauseChain(e), e);
         }
 
         if (config.isDebugLogging()) {

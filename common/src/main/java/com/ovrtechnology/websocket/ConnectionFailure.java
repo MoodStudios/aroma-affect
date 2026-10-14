@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
  * Category of a failed or lost bridge connection.
  *
  * <p>{@link #classify(Throwable)} walks the cause chain from the outermost exception
- * inwards and returns the first recognised category, so wrappers such as
+ * inwards and returns the first recognized category, so wrappers such as
  * {@link java.util.concurrent.ExecutionException} are looked through. The outermost
  * match wins because the JDK HTTP client reports a connect timeout as an
  * {@link java.net.http.HttpConnectTimeoutException} whose cause is a
@@ -64,7 +64,7 @@ public enum ConnectionFailure {
      * Classifies a connection error.
      *
      * @param error the error, possibly wrapped; may be null
-     * @return the category of the first recognised exception in the cause chain,
+     * @return the category of the first recognized exception in the cause chain,
      *         or {@link #UNKNOWN}
      */
     public static ConnectionFailure classify(Throwable error) {
