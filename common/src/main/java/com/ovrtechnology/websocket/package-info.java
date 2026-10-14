@@ -12,6 +12,7 @@
  *   <li>{@link com.ovrtechnology.websocket.WebSocketConfig} - Connection configuration (host, port, etc.)</li>
  *   <li>{@link com.ovrtechnology.websocket.WebSocketMessage} - Message wrapper for send/receive</li>
  *   <li>{@link com.ovrtechnology.websocket.ConnectionState} - Connection state enum</li>
+ *   <li>{@link com.ovrtechnology.websocket.ConnectionFailure} - Classification of connection errors</li>
  * </ul>
  * 
  * <h2>Features</h2>
