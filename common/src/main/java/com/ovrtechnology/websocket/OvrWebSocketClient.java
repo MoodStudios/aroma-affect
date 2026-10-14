@@ -108,6 +108,41 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     private volatile ConnectionFailure lastFailureType = ConnectionFailure.UNKNOWN;
 
     // ========================================
+    // Manual diagnostics (Bridge screen)
+    // ========================================
+
+    /**
+     * The most recent connection problem.
+     *
+     * @param type        the failure category
+     * @param detail      extra context such as {@code "HTTP 403"} or a close code, or null
+     * @param timestampMs when the failure happened
+     */
+    public record FailureInfo(ConnectionFailure type, String detail, long timestampMs) {}
+
+    /**
+     * Outcome of {@link #testConnection()}.
+     *
+     * @param success     whether the bridge answered the test ping in time
+     * @param roundTripMs the ping round trip, or -1 if no answer arrived
+     * @param timestampMs when the test finished
+     */
+    public record TestResult(boolean success, long roundTripMs, long timestampMs) {}
+
+    private static final long TEST_TIMEOUT_MS = 3_000;
+
+    /** The most recent connection problem, or null if none has happened yet. */
+    @Getter
+    private volatile FailureInfo lastFailure;
+
+    /** The result of the most recent connection test, or null if none has finished. */
+    @Getter
+    private volatile TestResult lastTestResult;
+
+    // Send time of the pending test ping, or 0 if no test is running
+    private final AtomicLong testPingSentAtMs = new AtomicLong(0);
+
+    // ========================================
     // Threading
     // ========================================
 
@@ -247,15 +282,19 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
      * @return a future that completes when the connection attempt finishes
      */
     public CompletableFuture<Boolean> connectAsync() {
-        ConnectionState currentState = state.get();
-        if (currentState == ConnectionState.CONNECTING || currentState == ConnectionState.CONNECTED) {
-            if (config.isDebugLogging()) {
-                AromaAffect.LOGGER.debug("Already {} - ignoring connect request", currentState);
+        // Compare-and-set so that the reconnect timer and the Bridge screen's button
+        // cannot start two attempts at once
+        ConnectionState currentState;
+        do {
+            currentState = state.get();
+            if (currentState == ConnectionState.CONNECTING || currentState == ConnectionState.CONNECTED) {
+                if (config.isDebugLogging()) {
+                    AromaAffect.LOGGER.debug("Already {} - ignoring connect request", currentState);
+                }
+                return CompletableFuture.completedFuture(currentState == ConnectionState.CONNECTED);
             }
-            return CompletableFuture.completedFuture(currentState == ConnectionState.CONNECTED);
-        }
-
-        setState(ConnectionState.CONNECTING);
+        } while (!state.compareAndSet(currentState, ConnectionState.CONNECTING));
+        notifyStateChanged(currentState, ConnectionState.CONNECTING);
         markOutageStart();
         outageAttempts.incrementAndGet();
         // Captured so a slow attempt is reported against the URI it used, even if the
@@ -270,10 +309,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
                 URI uri = URI.create(targetUri);
 
+                // The builder's connect timeout bounds the whole opening handshake. The extra
+                // second on get() lets its HttpTimeoutException, which says which phase timed
+                // out, arrive before the generic TimeoutException from get().
                 WebSocket ws = httpClient.newWebSocketBuilder()
                         .connectTimeout(Duration.ofMillis(config.getConnectionTimeoutMs()))
                         .buildAsync(uri, this)
-                        .get(config.getConnectionTimeoutMs(), TimeUnit.MILLISECONDS);
+                        .get(config.getConnectionTimeoutMs() + 1_000, TimeUnit.MILLISECONDS);
 
                 this.webSocket = ws;
                 setState(ConnectionState.CONNECTED);
@@ -286,6 +328,9 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 long elapsedMs = now - outageStartedAtMs.getAndSet(0);
                 int attemptsNeeded = outageAttempts.getAndSet(0);
                 connectedAtMs.set(now);
+                // A test result describes the previous connection, not this one
+                testPingSentAtMs.set(0);
+                lastTestResult = null;
                 logConnected(targetUri, attemptsNeeded, elapsedMs);
 
                 // Start health monitoring (can be disabled for debugging by setting interval to 0)
@@ -376,6 +421,74 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
         });
 
         AromaAffect.LOGGER.info("Disconnected from OVR WebSocket: {}", reason);
+    }
+
+    /**
+     * Connects immediately, skipping any pending reconnection delay. Used by the
+     * Bridge screen's Reconnect button. Failures of this attempt are logged in full
+     * even if the same failure was logged recently.
+     *
+     * @return a future that completes with true if the connection succeeded; completes
+     *         immediately if a connection is already established or in progress
+     */
+    public CompletableFuture<Boolean> reconnectNow() {
+        ConnectionState current = state.get();
+        if (current == ConnectionState.CONNECTING || current == ConnectionState.CONNECTED) {
+            return CompletableFuture.completedFuture(current == ConnectionState.CONNECTED);
+        }
+
+        AromaAffect.LOGGER.info("Manual reconnect to OVR bridge at {} requested (state {})",
+                config.getUri(), current);
+        cancelReconnectTask();
+        reconnectAttempts.set(0);
+        currentReconnectDelay.set(config.getInitialReconnectDelayMs());
+        failureLog.reset();
+        retryLog.reset();
+        return connectAsync();
+    }
+
+    /**
+     * Sends a ping over the open connection and records the round trip in
+     * {@link #getLastTestResult()}. Does nothing if not connected or if a test is
+     * already running.
+     */
+    public void testConnection() {
+        WebSocket ws = this.webSocket;
+        if (state.get() != ConnectionState.CONNECTED || ws == null) {
+            return;
+        }
+        long sentAt = System.currentTimeMillis();
+        if (!testPingSentAtMs.compareAndSet(0, sentAt)) {
+            return;
+        }
+
+        AromaAffect.LOGGER.info("Testing OVR bridge connection at {}", config.getUri());
+        try {
+            ws.sendPing(ByteBuffer.allocate(0));
+        } catch (Exception e) {
+            testPingSentAtMs.set(0);
+            lastTestResult = new TestResult(false, -1, System.currentTimeMillis());
+            AromaAffect.LOGGER.warn("Connection test failed: could not send ping: {}",
+                    ConnectionFailure.describeCauseChain(e), e);
+            return;
+        }
+
+        scheduler.schedule(() -> {
+            if (testPingSentAtMs.compareAndSet(sentAt, 0)) {
+                lastTestResult = new TestResult(false, -1, System.currentTimeMillis());
+                AromaAffect.LOGGER.warn("Connection test failed [{}]: no pong from OVR bridge within {} ms",
+                        ConnectionFailure.TIMEOUT, TEST_TIMEOUT_MS);
+            }
+        }, TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Checks whether a connection test is waiting for an answer.
+     *
+     * @return true while a test ping is pending
+     */
+    public boolean isTestRunning() {
+        return testPingSentAtMs.get() != 0;
     }
 
     /**
@@ -589,6 +702,9 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public void onOpen(WebSocket webSocket) {
+        // Track the new socket as soon as it opens so that close or error callbacks from
+        // a previous socket can be told apart from this one
+        this.webSocket = webSocket;
         if (config.isDebugLogging()) {
             AromaAffect.LOGGER.debug("WebSocket opened");
         }
@@ -665,8 +781,17 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onPong(WebSocket webSocket, ByteBuffer message) {
-        lastPongTime.set(System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        lastPongTime.set(now);
         awaitingPong.set(false);
+        // Any pong after the test ping answers the test; a health check pong arriving in
+        // between only shortens the measured round trip
+        long testSentAt = testPingSentAtMs.get();
+        if (testSentAt != 0 && testPingSentAtMs.compareAndSet(testSentAt, 0)) {
+            long roundTrip = now - testSentAt;
+            lastTestResult = new TestResult(true, roundTrip, now);
+            AromaAffect.LOGGER.info("Connection test OK: OVR bridge answered in {} ms", roundTrip);
+        }
         if (config.isDebugLogging()) {
             AromaAffect.LOGGER.debug("Received WebSocket pong");
         }
@@ -676,6 +801,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+        if (isStale(webSocket)) {
+            if (config.isDebugLogging()) {
+                AromaAffect.LOGGER.debug("Ignoring close of a previous OVR bridge connection: code {}",
+                        ConnectionFailure.describeCloseCode(statusCode));
+            }
+            return null;
+        }
         this.webSocket = null;
         stopHealthMonitoring();
 
@@ -703,6 +835,13 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
+        if (isStale(webSocket)) {
+            if (config.isDebugLogging()) {
+                AromaAffect.LOGGER.debug("Ignoring error of a previous OVR bridge connection: {}",
+                        ConnectionFailure.describeCauseChain(error));
+            }
+            return;
+        }
         onConnectionLost();
         logConnectionFailure("Connection error", error, config.getUri());
 
@@ -823,6 +962,15 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     // Diagnostic logging
     // ========================================
 
+    /**
+     * A socket is stale once it has been replaced or disconnected by this client. Its close
+     * and error callbacks can arrive late, after a newer connection is already up, and
+     * must not tear that connection down or schedule a reconnect.
+     */
+    private boolean isStale(WebSocket socket) {
+        return socket != this.webSocket;
+    }
+
     private void markOutageStart() {
         outageStartedAtMs.compareAndSet(0, System.currentTimeMillis());
     }
@@ -861,12 +1009,14 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
     private void logConnectionFailure(String what, Throwable error, String targetUri) {
         ConnectionFailure type = ConnectionFailure.classify(error);
         lastFailureType = type;
+        OptionalInt status = ConnectionFailure.handshakeStatus(error);
+        lastFailure = new FailureInfo(type, status.isPresent() ? "HTTP " + status.getAsInt() : null,
+                System.currentTimeMillis());
         String chain = ConnectionFailure.describeCauseChain(error);
         LogThrottle.Decision decision = failureLog.record(type);
 
         switch (decision.level()) {
             case DETAILED -> {
-                OptionalInt status = ConnectionFailure.handshakeStatus(error);
                 String detail = status.isPresent() ? " (HTTP " + status.getAsInt() + ")" : "";
                 String message = "{} [{}] to OVR bridge at {}{}: {}";
                 // Without hardware a refused connection at startup is the normal case
@@ -916,6 +1066,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
         onConnectionLost();
         lastFailureType = ConnectionFailure.CLOSED;
+        lastFailure = new FailureInfo(ConnectionFailure.CLOSED, code, System.currentTimeMillis());
         LogThrottle.Decision decision = failureLog.record(ConnectionFailure.CLOSED);
         switch (decision.level()) {
             case DETAILED -> AromaAffect.LOGGER.warn(
@@ -995,6 +1146,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                         ConnectionFailure.TIMEOUT, elapsed);
                 onConnectionLost();
                 lastFailureType = ConnectionFailure.TIMEOUT;
+                lastFailure = new FailureInfo(ConnectionFailure.TIMEOUT, null, System.currentTimeMillis());
                 disconnect("Health check timeout", false);
                 if (config.isAutoReconnect()) {
                     scheduleReconnect();
@@ -1061,7 +1213,10 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     private void setState(ConnectionState newState) {
         ConnectionState oldState = state.getAndSet(newState);
+        notifyStateChanged(oldState, newState);
+    }
 
+    private void notifyStateChanged(ConnectionState oldState, ConnectionState newState) {
         if (oldState != newState) {
             if (config.isDebugLogging()) {
                 AromaAffect.LOGGER.debug("State changed: {} -> {}", oldState, newState);

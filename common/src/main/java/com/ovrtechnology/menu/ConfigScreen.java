@@ -22,7 +22,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
@@ -30,6 +32,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -88,6 +91,9 @@ public class ConfigScreen extends BaseMenuScreen {
     private static final int SELECTOR_BTN_W = 80;
     private static final int SELECTOR_BTN_H = 20;
     private static final int SCROLLBAR_GUTTER = 10;
+    private static final int WS_CARD_PAD = 8;
+    private static final int WS_BTN_W = 100;
+    private static final int WS_BTN_H = 20;
 
     private int panelMargin() { return width < 600 ? 8 : 30; }
     private int contentWidth() { return width - 2 * panelMargin() - sidebarWidth() - 2 * contentPadding(); }
@@ -690,11 +696,30 @@ public class ConfigScreen extends BaseMenuScreen {
         ConnectionState connState = client.getState();
 
         // --- Status Card ---
-        int cardH = 55;
+        int cardPad = WS_CARD_PAD;
+        Component diagnostic = bridgeDiagnosticText(client);
+        List<FormattedCharSequence> diagnosticLines = diagnostic.getString().isEmpty()
+                ? List.of()
+                : font.split(diagnostic, w - 2 * cardPad);
+        if (diagnosticLines.size() > 2) {
+            diagnosticLines = diagnosticLines.subList(0, 2);
+        }
+        int cardH = 55 + diagnosticLines.size() * font.lineHeight;
         graphics.fill(x, y, x + w, y + cardH, MenuRenderUtils.withAlpha(0x30FFFFFF, a));
         MenuRenderUtils.renderOutline(graphics, x, y, w, cardH, MenuRenderUtils.withAlpha(0x44FFFFFF, a));
 
-        int cardPad = 8;
+        // Test/Reconnect button (top-right of the card)
+        int btnX = x + w - cardPad - WS_BTN_W;
+        int btnY = y + cardPad - 2;
+        boolean btnEnabled = isBridgeButtonEnabled(client);
+        boolean hoverBtn = btnEnabled && mx >= btnX && mx < btnX + WS_BTN_W && my >= btnY && my < btnY + WS_BTN_H;
+        int btnBg = !btnEnabled ? 0xFF2A2A2A : hoverBtn ? 0xFF444444 : 0xFF333333;
+        graphics.fill(btnX, btnY, btnX + WS_BTN_W, btnY + WS_BTN_H, MenuRenderUtils.withAlpha(btnBg, a));
+        MenuRenderUtils.renderOutline(graphics, btnX, btnY, WS_BTN_W, WS_BTN_H, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
+        graphics.centeredText(font, bridgeButtonLabel(client), btnX + WS_BTN_W / 2, btnY + 6,
+                MenuRenderUtils.withAlpha(btnEnabled ? COL_TEXT : COL_TEXT_DIM, a));
+
+        int textW = w - 3 * cardPad - WS_BTN_W;
         int rowY = y + cardPad;
 
         // Row 1: colored dot + status text
@@ -704,13 +729,16 @@ public class ConfigScreen extends BaseMenuScreen {
             case DISCONNECTED, CONNECTION_FAILED -> 0xFFFF4444;
         };
         graphics.fill(x + cardPad, rowY + 1, x + cardPad + 8, rowY + 9, MenuRenderUtils.withAlpha(dotColor, a));
-        graphics.text(font, Component.translatable("config.aromaaffect.ws.status").append(": " + connState.getDisplayName()),
+        String statusText = Component.translatable("config.aromaaffect.ws.status").getString()
+                + ": " + connState.getDisplayName();
+        graphics.text(font, font.plainSubstrByWidth(statusText, textW - 12),
                 x + cardPad + 12, rowY, MenuRenderUtils.withAlpha(COL_TEXT, a));
         rowY += 14;
 
         // Row 2: server URI
         String uri = client.getConfig().getUri();
-        graphics.text(font, Component.translatable("config.aromaaffect.ws.server").append(": " + uri),
+        String serverText = Component.translatable("config.aromaaffect.ws.server").getString() + ": " + uri;
+        graphics.text(font, font.plainSubstrByWidth(serverText, textW),
                 x + cardPad, rowY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
         rowY += 14;
 
@@ -719,6 +747,14 @@ public class ConfigScreen extends BaseMenuScreen {
         if (attempts > 0) {
             graphics.text(font, Component.translatable("config.aromaaffect.ws.attempts").append(": " + attempts),
                     x + cardPad, rowY, MenuRenderUtils.withAlpha(COL_TEXT_DIM, a));
+        }
+        rowY += 14;
+
+        // Row 4: last error or connection test result
+        int diagnosticColor = connState == ConnectionState.CONNECTED ? COL_TEXT_DIM : 0xFFFF8888;
+        for (FormattedCharSequence line : diagnosticLines) {
+            graphics.text(font, line, x + cardPad, rowY, MenuRenderUtils.withAlpha(diagnosticColor, a), false);
+            rowY += font.lineHeight;
         }
 
         // --- Message Log ---
@@ -796,6 +832,57 @@ public class ConfigScreen extends BaseMenuScreen {
             int scrollBarY = logTop + (int) ((float) wsScrollOffset / maxScroll * (logH - scrollBarH));
             graphics.fill(scrollBarX, scrollBarY, scrollBarX + 3, scrollBarY + scrollBarH, MenuRenderUtils.withAlpha(0x88FFFFFF, a));
         }
+    }
+
+    private static boolean isBridgeButtonEnabled(OvrWebSocketClient client) {
+        ConnectionState state = client.getState();
+        if (state == ConnectionState.CONNECTING) {
+            return false;
+        }
+        return state != ConnectionState.CONNECTED || !client.isTestRunning();
+    }
+
+    private static Component bridgeButtonLabel(OvrWebSocketClient client) {
+        return switch (client.getState()) {
+            case CONNECTING -> Component.translatable("config.aromaaffect.ws.button.connecting");
+            case CONNECTED -> client.isTestRunning()
+                    ? Component.translatable("config.aromaaffect.ws.button.testing")
+                    : Component.translatable("config.aromaaffect.ws.button.test");
+            case DISCONNECTED, CONNECTION_FAILED, RECONNECTING ->
+                    Component.translatable("config.aromaaffect.ws.button.reconnect");
+        };
+    }
+
+    /**
+     * Text for the diagnostic line of the Bridge status card: the connection test result
+     * while connected, otherwise the last connection error with a troubleshooting hint.
+     */
+    private static Component bridgeDiagnosticText(OvrWebSocketClient client) {
+        if (client.getState() == ConnectionState.CONNECTED) {
+            if (client.isTestRunning()) {
+                return Component.translatable("config.aromaaffect.ws.test_running");
+            }
+            OvrWebSocketClient.TestResult test = client.getLastTestResult();
+            if (test == null) {
+                return Component.empty();
+            }
+            return test.success()
+                    ? Component.translatable("config.aromaaffect.ws.test_ok", test.roundTripMs())
+                    : Component.translatable("config.aromaaffect.ws.test_failed");
+        }
+
+        OvrWebSocketClient.FailureInfo failure = client.getLastFailure();
+        if (failure == null) {
+            return Component.empty();
+        }
+        String hintKey = "config.aromaaffect.ws.hint." + failure.type().name().toLowerCase(Locale.ROOT);
+        MutableComponent text = Component.translatable("config.aromaaffect.ws.last_error")
+                .append(": ")
+                .append(Component.translatable(hintKey));
+        if (failure.detail() != null) {
+            text.append(" [" + failure.detail() + "]");
+        }
+        return text;
     }
 
     private static final Set<String> FLOWER_IDS = Set.of(
@@ -1030,9 +1117,31 @@ public class ConfigScreen extends BaseMenuScreen {
             return handleEventsClick(mx, my, contentLeft, contentTop, contentW);
         } else if (activeSection == Section.SCENT_VALUES) {
             return handleScentFilterClick(mx, my, contentLeft, contentTop, contentW);
+        } else if (activeSection == Section.WEBSOCKET) {
+            return handleWebSocketClick(mx, my, contentLeft, contentTop, contentW);
         }
 
         return false;
+    }
+
+    private boolean handleWebSocketClick(int mx, int my, int x, int y, int w) {
+        int btnX = x + w - WS_CARD_PAD - WS_BTN_W;
+        int btnY = y + WS_CARD_PAD - 2;
+        if (mx < btnX || mx >= btnX + WS_BTN_W || my < btnY || my >= btnY + WS_BTN_H) {
+            return false;
+        }
+
+        OvrWebSocketClient client = OvrWebSocketClient.getInstance();
+        if (!isBridgeButtonEnabled(client)) {
+            return true;
+        }
+        MenuRenderUtils.playClickSound();
+        if (client.getState() == ConnectionState.CONNECTED) {
+            client.testConnection();
+        } else {
+            client.reconnectNow();
+        }
+        return true;
     }
 
     private boolean handleGeneralClick(int mx, int my, int x, int y, int w) {
