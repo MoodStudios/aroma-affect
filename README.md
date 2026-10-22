@@ -71,14 +71,20 @@ To experience real-world scents with OVR hardware, you'll need the **OVR Bridge*
 
 ## Project Structure
 
-Aroma Affect uses [Architectury](https://www.curseforge.com/minecraft/mc-mods/architectury-api) for cross-platform development:
+Aroma Affect is a single codebase that builds for several Minecraft versions and both loaders, using [Stonecutter](https://stonecutter.kikugie.dev/) for version-specific code and [Balm](https://github.com/TwelveIterationMods/Balm) as the cross-loader API:
 
 ```
 aromaaffect/
-├── common/     # Shared code for all platforms
-├── fabric/     # Fabric-specific implementation
-└── neoforge/   # NeoForge-specific implementation
+├── src/main/java/                 # All code; loader-specific classes live in */fabric/* and */neoforge/* packages
+├── src/main/resources/            # Assets, data and mod metadata for both loaders
+├── build.fabric.gradle.kts        # Fabric build (Loom)
+├── build.neoforge.gradle.kts      # NeoForge build (ModDevGradle)
+├── buildSrc/                      # Shared build conventions
+├── stonecutter.properties.toml    # Per-version dependency versions
+└── versions/<mc>-<loader>/        # Generated Stonecutter nodes (build output only)
 ```
+
+Version-specific code is marked with Stonecutter comments, e.g. `//? if >=26.3 {`. The code checked into git is the `26.3-fabric` state; use the Stonecutter IntelliJ plugin or the `Set active project to ...` Gradle tasks to switch the editable version, and `Reset active project` before committing.
 
 ## Building from Source
 
@@ -86,9 +92,13 @@ aromaaffect/
 git clone https://github.com/MoodStudios/aroma-affect.git
 cd aroma-affect
 
+# Every version and loader
 ./gradlew build
 
-# Output JARs in fabric/build/libs and neoforge/build/libs
+# A single target
+./gradlew :26.2-fabric:build
+
+# Output JARs in versions/<mc>-<loader>/build/libs
 ```
 
 ## Why Open Source

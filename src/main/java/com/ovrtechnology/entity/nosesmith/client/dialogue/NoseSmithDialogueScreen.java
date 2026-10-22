@@ -1,0 +1,467 @@
+package com.ovrtechnology.entity.nosesmith.client.dialogue;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
+import com.ovrtechnology.network.NoseSmithDialogueNetworking;
+import com.ovrtechnology.network.NoseSmithTradeNetworking;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import com.ovrtechnology.menu.BaseMenuScreen;
+import com.ovrtechnology.menu.MenuRenderUtils;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public final class NoseSmithDialogueScreen extends BaseMenuScreen {
+    private int dialogueScrollLine;
+
+    private int dialogueBoxHeight() {
+        return Math.min(height - BOX_MARGIN * 2, Math.max(BOX_HEIGHT,
+                HEADER_HEIGHT + PADDING * 2 + wrappedLines.size() * (font.lineHeight + 2) + 26));
+    }
+
+    private int visibleDialogueLines() {
+        return Math.max(1, (dialogueBoxHeight() - HEADER_HEIGHT - PADDING * 2 - 26) / (font.lineHeight + 2));
+    }
+
+    @Override protected boolean handleMouseScroll(double x, double y, double dx, double dy) {
+        dialogueScrollLine = Math.max(0, Math.min(Math.max(0, wrappedLines.size() - visibleDialogueLines()),
+                dialogueScrollLine - (int) dy));
+        return true;
+    }
+
+    @Override public void onClose() {
+        if (minecraft != null) minecraft.setScreenAndShow(null);
+    }
+
+    private static final int KEEPALIVE_INTERVAL_TICKS = 20;
+    private static final int BOX_MARGIN = 18;
+    private static final int BOX_HEIGHT = 110;
+    private static final int HEADER_HEIGHT = 18;
+    private static final int PADDING = 10;
+    private static final int PORTRAIT_WIDTH = 90;
+    private static final float PORTRAIT_Y_OFFSET = 0.35F;
+
+    private static final int COLOR_BOX_BG = 0xCC0B0D12;
+    private static final int COLOR_HEADER_BG = 0xE0141620;
+    private static final int COLOR_BORDER = 0xFF6D5EF8;
+    private static final int COLOR_TEXT = 0xFFE8E8E8;
+
+    private static final float CHARACTERS_PER_SECOND = 30.0F;
+    private static final int[] HARMONY_SEMITONES = {0, 2, 4, 7, 9, 12};
+
+    private final NoseSmithEntity noseSmith;
+
+    @Nullable
+    private Identifier lastFlowerId;
+    private boolean lastHasNose;
+
+    private Component dialogue = Component.empty();
+    private int[] dialogueCodepoints = new int[0];
+    private List<FormattedCharSequence> wrappedLines = List.of();
+    private int[] lineCodepointCounts = new int[0];
+    private int totalCodepoints = 0;
+
+    private float typeProgress = 0.0F;
+    private int typedCodepoints = 0;
+    private boolean finished = false;
+
+    private int keepAliveTicks = 0;
+
+    @Nullable
+    private Button closeButton;
+    @Nullable
+    private Button shopButton;
+    private boolean buttonsVisible = false;
+
+    public NoseSmithDialogueScreen(NoseSmithEntity noseSmith) {
+        super(noseSmith.getName());
+        this.noseSmith = noseSmith;
+        this.lastFlowerId = noseSmith.getRequestedFlowerId();
+        this.lastHasNose = noseSmith.hasNose();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        rebuildDialogue(totalCodepoints == 0);
+        sendTalkingState(true);
+
+        int bottom = this.height - BOX_MARGIN;
+        int right = this.width - BOX_MARGIN;
+        int buttonWidth = 60;
+        int buttonHeight = 20;
+        int buttonY = bottom - PADDING - buttonHeight;
+        int gap = 6;
+
+        shopButton = Button.builder(Component.translatable("shop.aromaaffect.button"), btn -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.level != null) {
+                NoseSmithTradeNetworking.sendOpenShop(minecraft.level.registryAccess(), noseSmith.getId());
+            }
+            onClose();
+        }).bounds(right - PADDING - buttonWidth, buttonY, buttonWidth, buttonHeight).build();
+
+        closeButton = Button.builder(Component.translatable("gui.aromaaffect.close"), btn -> onClose())
+                .bounds(right - PADDING - buttonWidth * 2 - gap, buttonY, buttonWidth, buttonHeight).build();
+
+        shopButton.visible = false;
+        closeButton.visible = false;
+        buttonsVisible = false;
+
+        addRenderableWidget(closeButton);
+        addRenderableWidget(shopButton);
+        if (finished) showButtons();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        Identifier currentFlowerId = noseSmith.getRequestedFlowerId();
+        boolean currentHasNose = noseSmith.hasNose();
+        if (currentHasNose != lastHasNose || !equalsNullable(currentFlowerId, lastFlowerId)) {
+            lastHasNose = currentHasNose;
+            lastFlowerId = currentFlowerId;
+            rebuildDialogue(true);
+        }
+
+        keepAliveTicks++;
+        if (keepAliveTicks >= KEEPALIVE_INTERVAL_TICKS) {
+            keepAliveTicks = 0;
+            sendTalkingState(true);
+        }
+
+        // Live timer refresh: update dialogue text every second while noseless with active timer
+        if (!lastHasNose && noseSmith.getRegrowthSecondsRemaining() > 0 && keepAliveTicks == 0) {
+            rebuildDialogue(false);
+        }
+
+        if (finished) {
+            return;
+        }
+
+        if (typedCodepoints >= totalCodepoints) {
+            finished = true;
+            showButtons();
+            return;
+        }
+
+        typeProgress = Math.min(totalCodepoints, typeProgress + (CHARACTERS_PER_SECOND / 20.0F));
+        int desired = (int) typeProgress;
+        while (typedCodepoints < desired && typedCodepoints < totalCodepoints) {
+            int codePoint = dialogueCodepoints[typedCodepoints];
+            typedCodepoints++;
+            playTypeSoundFor(codePoint);
+        }
+
+        if (typedCodepoints >= totalCodepoints) {
+            finished = true;
+            showButtons();
+        }
+    }
+
+    @Override
+    public void removed() {
+        sendTalkingState(false);
+        super.removed();
+    }
+
+    @Override
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, float animationProgress) {
+        int left = BOX_MARGIN;
+        int right = this.width - BOX_MARGIN;
+        int bottom = this.height - BOX_MARGIN;
+        int top = bottom - dialogueBoxHeight();
+
+        graphics.fill(left, top, right, bottom, COLOR_BOX_BG);
+        graphics.fill(left, top, right, top + HEADER_HEIGHT, COLOR_HEADER_BG);
+
+        drawBorder(graphics, left, top, right, bottom, COLOR_BORDER);
+
+        int headerTextX = left + PADDING;
+        int headerTextY = top + 5;
+        graphics.text(this.font, this.title, headerTextX, headerTextY, COLOR_TEXT, true);
+
+        Block flowerBlock = getRequestedFlowerBlock();
+        if (lastHasNose && flowerBlock != null) {
+            ItemStack flowerStack = new ItemStack(flowerBlock.asItem());
+            int iconX = right - PADDING - 16;
+            int iconY = top + 1;
+            graphics.item(flowerStack, iconX, iconY);
+        }
+
+        int portraitLeft = left + PADDING;
+        int portraitTop = top + HEADER_HEIGHT + PADDING;
+        int portraitRight = portraitLeft + PORTRAIT_WIDTH;
+        int portraitBottom = bottom - PADDING;
+
+        int portraitScale = Math.min(portraitRight - portraitLeft, portraitBottom - portraitTop) - 8;
+        MenuRenderUtils.renderEntityInViewport(
+                graphics,
+                portraitLeft,
+                portraitTop,
+                portraitRight,
+                portraitBottom,
+                portraitScale,
+                PORTRAIT_Y_OFFSET,
+                (float) mouseX,
+                (float) mouseY,
+                noseSmith
+        );
+
+        int textLeft = portraitRight + PADDING;
+        int textTop = portraitTop;
+        int textWidth = (right - PADDING) - textLeft;
+
+        drawTypewriterText(graphics, textLeft, textTop, textWidth);
+
+
+    }
+
+    private void sendTalkingState(boolean talking) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.getConnection() == null || minecraft.level == null) {
+            return;
+        }
+
+        NoseSmithDialogueNetworking.sendDialogueState(minecraft.level.registryAccess(), noseSmith.getId(), talking);
+    }
+
+    private void drawTypewriterText(GuiGraphicsExtractor graphics, int x, int y, int width) {
+        if (wrappedLines.isEmpty()) {
+            return;
+        }
+
+        int visible = visibleDialogueLines();
+        dialogueScrollLine = Math.max(0, Math.min(dialogueScrollLine, wrappedLines.size() - visible));
+        int remaining = typedCodepoints;
+        for (int i = 0; i < dialogueScrollLine; i++) remaining -= lineCodepointCounts[i];
+        int lineY = y;
+        for (int i = dialogueScrollLine; i < Math.min(wrappedLines.size(), dialogueScrollLine + visible); i++) {
+            int lineChars = lineCodepointCounts[i];
+            int toShow = Math.min(remaining, lineChars);
+            if (toShow <= 0) {
+                break;
+            }
+
+            FormattedCharSequence partial = take(wrappedLines.get(i), toShow);
+            graphics.text(this.font, partial, x, lineY, COLOR_TEXT, true);
+            remaining -= toShow;
+            lineY += this.font.lineHeight + 2;
+
+
+        }
+
+        // Buttons handle close/shop actions when typing is finished
+    }
+
+    @Override
+    protected boolean handleMouseClick(double mouseX, double mouseY, int button) {
+        if (!finished) {
+            finishTyping();
+            return true;
+        }
+
+        if (buttonsVisible) {
+            return false;
+        }
+
+        onClose();
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
+        if (event.isEscape()) {
+            onClose();
+            return true;
+        }
+
+        if (keyCode == InputConstants.KEY_SPACE || keyCode == InputConstants.KEY_RETURN) {
+            if (!finished) {
+                finishTyping();
+                return true;
+            }
+            if (!buttonsVisible) {
+                onClose();
+                return true;
+            }
+        }
+
+        return super.keyPressed(event);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    private void finishTyping() {
+        typedCodepoints = totalCodepoints;
+        finished = true;
+        showButtons();
+    }
+
+    private void showButtons() {
+        if (buttonsVisible) {
+            return;
+        }
+        buttonsVisible = true;
+        if (closeButton != null) {
+            closeButton.visible = true;
+        }
+        if (shopButton != null) {
+            shopButton.visible = true;
+        }
+    }
+
+    private void rebuildDialogue(boolean resetTypewriter) {
+        this.dialogue = buildDialogue();
+        this.dialogueCodepoints = this.dialogue.getString().codePoints().toArray();
+
+        int left = BOX_MARGIN;
+        int right = this.width - BOX_MARGIN;
+        int bottom = this.height - BOX_MARGIN;
+        int top = bottom - dialogueBoxHeight();
+
+        int textLeft = left + PADDING + PORTRAIT_WIDTH + PADDING;
+        int portraitTop = top + HEADER_HEIGHT + PADDING;
+        int textWidth = (right - PADDING) - textLeft;
+
+        this.wrappedLines = this.font.split(this.dialogue, Math.max(16, textWidth));
+
+        List<Integer> counts = new ArrayList<>(this.wrappedLines.size());
+        int total = 0;
+        for (FormattedCharSequence seq : this.wrappedLines) {
+            int c = countCodepoints(seq);
+            counts.add(c);
+            total += c;
+        }
+        this.totalCodepoints = total;
+        this.lineCodepointCounts = counts.stream().mapToInt(Integer::intValue).toArray();
+
+        if (resetTypewriter) {
+            dialogueScrollLine = 0;
+            this.typeProgress = 0.0F;
+            this.typedCodepoints = 0;
+            this.finished = false;
+        } else if (finished) {
+            // Snap to new total so updated text displays fully
+            this.typedCodepoints = this.totalCodepoints;
+            this.typeProgress = this.totalCodepoints;
+        }
+    }
+
+    private Component buildDialogue() {
+        if (!noseSmith.hasNose()) {
+            int seconds = noseSmith.getRegrowthSecondsRemaining();
+            if (seconds > 0) {
+                int min = seconds / 60;
+                int sec = seconds % 60;
+                Component time = Component.literal(String.format("%d:%02d", min, sec))
+                        .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
+                return Component.translatable("dialogue.aromaaffect.nose_smith.regrowing", time);
+            }
+            return Component.translatable("dialogue.aromaaffect.nose_smith.traded");
+        }
+
+        Block flower = getRequestedFlowerBlock();
+        if (flower == null) {
+            return Component.translatable("dialogue.aromaaffect.nose_smith.undecided");
+        }
+
+        Component flowerName = Component.translatable(flower.getDescriptionId())
+                .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD);
+
+        return Component.translatable("dialogue.aromaaffect.nose_smith.request", flowerName);
+    }
+
+    @Nullable
+    private Block getRequestedFlowerBlock() {
+        Identifier flowerId = noseSmith.getRequestedFlowerId();
+        if (flowerId == null) {
+            return null;
+        }
+
+        return BuiltInRegistries.BLOCK.get(flowerId).map(holder -> holder.value()).orElse(null);
+    }
+
+    private void playTypeSoundFor(int codePoint) {
+        if (Character.isWhitespace(codePoint)) {
+            return;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.getSoundManager() == null) {
+            return;
+        }
+
+        RandomSource random = minecraft.player != null ? minecraft.player.getRandom() : RandomSource.create();
+
+        int octaveRoll = random.nextInt(10);
+        int octaveShift = octaveRoll == 0 ? -12 : (octaveRoll <= 2 ? 12 : 0);
+        int semitone = HARMONY_SEMITONES[random.nextInt(HARMONY_SEMITONES.length)] + octaveShift;
+        float pitch = (float) Math.pow(2.0D, semitone / 12.0D);
+
+        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_HARP.value(), 0.175F, pitch));
+    }
+
+    private static void drawBorder(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int color) {
+        graphics.fill(left, top, right, top + 1, color);
+        graphics.fill(left, bottom - 1, right, bottom, color);
+        graphics.fill(left, top, left + 1, bottom, color);
+        graphics.fill(right - 1, top, right, bottom, color);
+    }
+
+    private static int countCodepoints(FormattedCharSequence sequence) {
+        int[] count = {0};
+        sequence.accept((i, style, codePoint) -> {
+            count[0]++;
+            return true;
+        });
+        return count[0];
+    }
+
+    private static FormattedCharSequence take(FormattedCharSequence sequence, int codepoints) {
+        if (codepoints <= 0) {
+            return FormattedCharSequence.EMPTY;
+        }
+
+        return sink -> {
+            int[] count = {0};
+            return sequence.accept((i, style, codePoint) -> {
+                if (count[0] >= codepoints) {
+                    return false;
+                }
+                count[0]++;
+                return sink.accept(i, style, codePoint);
+            });
+        };
+    }
+
+    private static boolean equalsNullable(@Nullable Object a, @Nullable Object b) {
+        if (a == b) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        return a.equals(b);
+    }
+}
