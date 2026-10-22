@@ -449,7 +449,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
 
     /**
      * Sends a ping over the open connection and records the round trip in
-     * {@link #getLastTestResult()}. Does nothing if not connected or if a test is
+     * {@code getLastTestResult()}. Does nothing if not connected or if a test is
      * already running.
      */
     public void testConnection() {
