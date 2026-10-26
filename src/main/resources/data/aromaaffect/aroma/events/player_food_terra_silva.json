@@ -12,7 +12,8 @@
       "minecraft:carrot",
       "minecraft:potato",
       "minecraft:baked_potato",
-      "minecraft:beetroot"
+      "minecraft:beetroot",
+      "minecraft:poisonous_potato"
     ]
   }
 }

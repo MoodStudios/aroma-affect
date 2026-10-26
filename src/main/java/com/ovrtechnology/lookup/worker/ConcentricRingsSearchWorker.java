@@ -27,14 +27,14 @@ public class ConcentricRingsSearchWorker extends AbstractStructureSearchWorker<C
     public ConcentricRingsSearchWorker(
             ServerLevel level,
             BlockPos startPos,
-            Structure structure,
+            List<Structure> structures,
             Identifier structureId,
             ConcentricRingsStructurePlacement placement,
             int maxRadius,
             int maxSamples,
             Consumer<StructureSearchResult> callback
     ) {
-        super(level, startPos, structure, structureId, placement, maxRadius, maxSamples, callback);
+        super(level, startPos, structures, structureId, placement, maxRadius, maxSamples, callback);
         
         this.ringPositions = level.getChunkSource()
                 .getGeneratorState()

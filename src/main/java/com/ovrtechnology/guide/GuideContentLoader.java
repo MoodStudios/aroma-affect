@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Loads guide content from JSON resource files and converts them into
@@ -149,14 +151,21 @@ public final class GuideContentLoader {
 
         if (json.has("items")) {
             JsonArray itemsArr = json.getAsJsonArray("items");
-            ItemStack[] icons = new ItemStack[itemsArr.size()];
+            // Items that do not exist in the running Minecraft version are skipped
+            List<ItemStack> icons = new ArrayList<>();
             for (int i = 0; i < itemsArr.size(); i++) {
-                icons[i] = resolveItem(itemsArr.get(i).getAsString());
+                ItemStack icon = resolveItem(itemsArr.get(i).getAsString());
+                if (!icon.isEmpty()) {
+                    icons.add(icon);
+                }
             }
-            if (icons.length == 1) {
-                return GuideElement.iconText(icons[0], text);
+            if (icons.isEmpty()) {
+                return GuideElement.text(text);
             }
-            return GuideElement.iconText(text, icons);
+            if (icons.size() == 1) {
+                return GuideElement.iconText(icons.get(0), text);
+            }
+            return GuideElement.iconText(text, icons.toArray(ItemStack[]::new));
         }
         // Fallback: single item field
         if (json.has("item")) {

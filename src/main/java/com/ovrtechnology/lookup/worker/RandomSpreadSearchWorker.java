@@ -8,6 +8,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -32,14 +33,14 @@ public class RandomSpreadSearchWorker extends AbstractStructureSearchWorker<Rand
     public RandomSpreadSearchWorker(
             ServerLevel level,
             BlockPos startPos,
-            Structure structure,
+            List<Structure> structures,
             Identifier structureId,
             RandomSpreadStructurePlacement placement,
             int maxRadius,
             int maxSamples,
             Consumer<StructureSearchResult> callback
     ) {
-        super(level, startPos, structure, structureId, placement, maxRadius, maxSamples, callback);
+        super(level, startPos, structures, structureId, placement, maxRadius, maxSamples, callback);
         
         this.spacing = placement.spacing();
         this.startSectionX = SectionPos.blockToSectionCoord(startPos.getX());

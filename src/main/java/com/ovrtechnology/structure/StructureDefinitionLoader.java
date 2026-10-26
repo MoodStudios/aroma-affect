@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.block.BlockRegistry;
+import com.ovrtechnology.compat.StructureCompat;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -102,6 +103,9 @@ public class StructureDefinitionLoader {
         for (Map.Entry<Identifier, JsonElement> entry : files.entrySet()) {
             try {
                 StructureDefinition structure = GSON.fromJson(entry.getValue(), StructureDefinition.class);
+                if (structure != null && !StructureCompat.isAvailable(structure.getId())) {
+                    continue;
+                }
                 processStructure(structure);
             } catch (Exception e) {
                 AromaAffect.LOGGER.error("Failed to parse structure {}: {}", entry.getKey(), e.getMessage());

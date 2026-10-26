@@ -14,6 +14,7 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -28,7 +29,8 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
     protected final String id;
     protected final ServerLevel level;
     protected final BlockPos startPos;
-    protected final Structure structure;
+    /** Structures that share {@link #placement}; a sample matches if any of them starts there. */
+    protected final List<Structure> structures;
     protected final Identifier structureId;
     protected final T placement;
     protected final int maxRadius;
@@ -48,7 +50,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
     protected AbstractStructureSearchWorker(
             ServerLevel level,
             BlockPos startPos,
-            Structure structure,
+            List<Structure> structures,
             Identifier structureId,
             T placement,
             int maxRadius,
@@ -58,7 +60,7 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
         this.id = UUID.randomUUID().toString().substring(0, 8);
         this.level = level;
         this.startPos = startPos;
-        this.structure = structure;
+        this.structures = List.copyOf(structures);
         this.structureId = structureId;
         this.placement = placement;
         this.maxRadius = maxRadius;
@@ -151,6 +153,17 @@ public abstract class AbstractStructureSearchWorker<T extends StructurePlacement
      */
     @Nullable
     protected BlockPos checkStructureAt(ChunkPos chunkPos) {
+        for (Structure structure : structures) {
+            BlockPos pos = checkStructureAt(chunkPos, structure);
+            if (pos != null) {
+                return pos;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private BlockPos checkStructureAt(ChunkPos chunkPos, Structure structure) {
         try {
             StructureCheckResult result = level.structureManager()
                     .checkStructurePresence(chunkPos, structure, placement, false);

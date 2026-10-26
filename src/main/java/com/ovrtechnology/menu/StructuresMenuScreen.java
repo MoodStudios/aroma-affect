@@ -73,6 +73,7 @@ public class StructuresMenuScreen extends SelectionMenuScreen {
         STRUCTURE_INFO.put("minecraft:ancient_city", new StructureInfo(Items.SCULK.getDefaultInstance(), "Ancient City"));
         STRUCTURE_INFO.put("minecraft:trail_ruins", new StructureInfo(Items.BRUSH.getDefaultInstance(), "Trail Ruins"));
         STRUCTURE_INFO.put("minecraft:trial_chambers", new StructureInfo(Items.TRIAL_KEY.getDefaultInstance(), "Trial Chambers"));
+        STRUCTURE_INFO.put("minecraft:abandoned_camp", new StructureInfo(Items.CAMPFIRE.getDefaultInstance(), "Abandoned Camp"));
 
         // Nether structures
         STRUCTURE_INFO.put("minecraft:fortress", new StructureInfo(Items.NETHER_BRICK.getDefaultInstance(), "Nether Fortress"));

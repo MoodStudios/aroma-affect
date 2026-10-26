@@ -1,6 +1,6 @@
 {
   "id": "minecraft:warped_fungus",
-  "scent_id": "floral",
+  "scent_id": "machina",
   "fallback_name": "Warped Fungus",
   "color": "#14B485",
   "trigger_on": "PROXIMITY",

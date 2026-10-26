@@ -24,6 +24,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.squid.Squid;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -35,6 +36,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.BellBlock;
+import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CopperBulbBlock;
 import net.minecraft.world.level.block.CrafterBlock;
@@ -102,6 +104,10 @@ public final class ServerEventBusHandler {
     public static final String TT_LINGERING_POTION_THROWN = "LINGERING_POTION_THROWN";
     public static final String TT_DRAGON_BREATH_EXPOSURE = "DRAGON_BREATH_EXPOSURE";
     public static final String TT_LINGERING_CLOUD_EXPOSURE = "LINGERING_CLOUD_EXPOSURE";
+    public static final String TT_COMPOSTER_FILLED = "COMPOSTER_FILLED";
+    public static final String TT_BONE_MEAL_USED = "BONE_MEAL_USED";
+    public static final String TT_DRAGON_BREATH_BOTTLED = "DRAGON_BREATH_BOTTLED";
+    public static final String TT_SQUID_INK = "SQUID_INK";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -428,6 +434,41 @@ public final class ServerEventBusHandler {
                     player,
                     TT_LINGERING_CLOUD_EXPOSURE,
                     def -> matchesPotion(def.getConditions(), keys));
+        }
+    }
+
+    /**
+     * A player added material to a composter. A composter at level 7 is about to
+     * finish and accepts nothing, so that click is ignored.
+     */
+    public static void onComposterFilled(ServerPlayer player, BlockState state) {
+        if (player == null || state == null) return;
+        if (state.getValue(ComposterBlock.LEVEL) >= ComposterBlock.MAX_LEVEL) return;
+        fireSimpleEvent(player, TT_COMPOSTER_FILLED);
+    }
+
+    /** Bone meal was applied and grew something. */
+    public static void onBoneMealUsed(ServerPlayer player) {
+        fireSimpleEvent(player, TT_BONE_MEAL_USED);
+    }
+
+    /** A glass bottle was filled from a dragon breath cloud. */
+    public static void onDragonBreathBottled(ServerPlayer player) {
+        fireSimpleEvent(player, TT_DRAGON_BREATH_BOTTLED);
+    }
+
+    /** Radius (blocks) around an inking squid within which players receive the scent. */
+    private static final double SQUID_INK_RADIUS = 8.0;
+
+    /**
+     * A squid or glow squid released ink after being attacked. The squid has no
+     * player of its own, so the scent goes to every player nearby, the attacker included.
+     */
+    public static void onSquidInk(Squid squid) {
+        if (squid == null || squid.level().isClientSide()) return;
+        AABB area = squid.getBoundingBox().inflate(SQUID_INK_RADIUS);
+        for (ServerPlayer player : squid.level().getEntitiesOfClass(ServerPlayer.class, area)) {
+            fireSimpleEvent(player, TT_SQUID_INK);
         }
     }
 

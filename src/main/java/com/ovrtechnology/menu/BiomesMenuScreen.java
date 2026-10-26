@@ -113,6 +113,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         // Overworld - Caves
         BIOME_ICONS.put("minecraft:lush_caves", Items.GLOW_BERRIES.getDefaultInstance());
         BIOME_ICONS.put("minecraft:dripstone_caves", Items.POINTED_DRIPSTONE.getDefaultInstance());
+        BIOME_ICONS.put("minecraft:sulfur_caves", Items.SULFUR.getDefaultInstance());
         BIOME_ICONS.put("minecraft:deep_dark", Items.SCULK.getDefaultInstance());
 
         // Overworld - Mushroom

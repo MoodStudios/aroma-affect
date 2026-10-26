@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:squid_ink",
+  "category": "PLAYER_STATE",
+  "trigger_type": "SQUID_INK",
+  "scent_id": "marine",
+  "intensity": 0.7,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}

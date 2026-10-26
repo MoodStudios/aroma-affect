@@ -5,6 +5,7 @@ import com.ovrtechnology.biome.BiomeDefinition;
 import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockDefinition;
 import com.ovrtechnology.block.BlockRegistry;
+import com.ovrtechnology.lookup.StructureTargets;
 import com.ovrtechnology.structure.StructureDefinition;
 import com.ovrtechnology.structure.StructureRegistry;
 import net.blay09.mods.balm.platform.event.callback.ServerLifecycleCallback;
@@ -241,7 +242,7 @@ public final class RegistryValidator {
                 continue;
             }
             
-            if (!structureRegistry.containsKey(resourceLocation)) {
+            if (!StructureTargets.exists(structureRegistry, resourceLocation)) {
                 // Check if it's a modded structure that might not be loaded
                 String namespace = structure.getNamespace();
                 if ("minecraft".equals(namespace)) {

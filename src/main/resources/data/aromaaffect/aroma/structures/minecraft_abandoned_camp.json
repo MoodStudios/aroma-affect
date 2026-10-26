@@ -1,0 +1,14 @@
+{
+  "id": "minecraft:abandoned_camp",
+  "image": "structure/abandoned_camp",
+  "fallback_name": "Abandoned Camp",
+  "color": "#8C6A43",
+  "scent_id": "smoky",
+  "range": 20,
+  "blocks": [
+    "minecraft:campfire",
+    "minecraft:barrel",
+    "minecraft:white_wool_stairs"
+  ],
+  "track_cost": 10
+}

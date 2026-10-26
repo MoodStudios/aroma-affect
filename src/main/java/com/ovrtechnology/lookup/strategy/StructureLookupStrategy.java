@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.lookup.LookupResult;
 import com.ovrtechnology.lookup.LookupTarget;
 import com.ovrtechnology.lookup.LookupType;
+import com.ovrtechnology.lookup.StructureTargets;
 import com.ovrtechnology.lookup.worker.ConcentricRingsSearchWorker;
 import com.ovrtechnology.lookup.worker.GenericSearchWorker;
 import com.ovrtechnology.lookup.worker.RandomSpreadSearchWorker;
@@ -19,7 +20,10 @@ import net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStr
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -161,8 +165,8 @@ public class StructureLookupStrategy implements LookupStrategy {
             // Get the structure from the registry
             Registry<Structure> structureRegistry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
             
-            Structure structure = structureRegistry.getValue(target.resourceId());
-            if (structure == null) {
+            List<Holder<Structure>> structures = StructureTargets.resolve(structureRegistry, target.resourceId());
+            if (structures.isEmpty()) {
                 AromaAffect.LOGGER.warn("Structure not found in registry: {}", target.resourceId());
                 callback.accept(LookupResult.failure(
                         target,
@@ -174,14 +178,18 @@ public class StructureLookupStrategy implements LookupStrategy {
                 return false;
             }
             
-            Holder<Structure> structureHolder = structureRegistry.wrapAsHolder(structure);
+            // Variants that share a placement, such as abandoned camps, are searched by one worker
+            Map<StructurePlacement, List<Structure>> structuresByPlacement = new LinkedHashMap<>();
+            for (Holder<Structure> structureHolder : structures) {
+                for (StructurePlacement placement : level.getChunkSource()
+                        .getGeneratorState()
+                        .getPlacementsForStructure(structureHolder)) {
+                    structuresByPlacement.computeIfAbsent(placement, key -> new ArrayList<>())
+                            .add(structureHolder.value());
+                }
+            }
             
-            // Get the placements for this structure
-            List<StructurePlacement> placements = level.getChunkSource()
-                    .getGeneratorState()
-                    .getPlacementsForStructure(structureHolder);
-            
-            if (placements.isEmpty()) {
+            if (structuresByPlacement.isEmpty()) {
                 AromaAffect.LOGGER.debug("No placements found for structure: {}", target.resourceId());
                 callback.accept(LookupResult.notFound(
                         target,
@@ -195,7 +203,7 @@ public class StructureLookupStrategy implements LookupStrategy {
             // Track results from multiple workers
             final AtomicReference<BlockPos> bestResult = new AtomicReference<>(null);
             final AtomicReference<Double> bestDistance = new AtomicReference<>(Double.MAX_VALUE);
-            final int[] pendingWorkers = {placements.size()};
+            final int[] pendingWorkers = {structuresByPlacement.size()};
             final long startTime = System.currentTimeMillis();
             
             // Callback for each worker
@@ -237,15 +245,15 @@ public class StructureLookupStrategy implements LookupStrategy {
             };
             
             // Create workers for each placement type
-            for (StructurePlacement placement : placements) {
+            for (Map.Entry<StructurePlacement, List<Structure>> entry : structuresByPlacement.entrySet()) {
                 createAndStartWorker(
-                        level, origin, structure, target.resourceId(),
-                        placement, effectiveRadius, workerCallback
+                        level, origin, entry.getValue(), target.resourceId(),
+                        entry.getKey(), effectiveRadius, workerCallback
                 );
             }
             
             AromaAffect.LOGGER.debug("Started {} structure search workers for {}",
-                    placements.size(), target.resourceId());
+                    structuresByPlacement.size(), target.resourceId());
             
             return true;
             
@@ -269,7 +277,7 @@ public class StructureLookupStrategy implements LookupStrategy {
     private void createAndStartWorker(
             ServerLevel level,
             BlockPos origin,
-            Structure structure,
+            List<Structure> structures,
             net.minecraft.resources.Identifier structureId,
             StructurePlacement placement,
             int maxRadius,
@@ -280,7 +288,7 @@ public class StructureLookupStrategy implements LookupStrategy {
                     structureId, maxRadius);
             StructureSearchWorkerManager.getInstance().addWorker(
                     new ConcentricRingsSearchWorker(
-                            level, origin, structure, structureId,
+                            level, origin, structures, structureId,
                             concentricPlacement, maxRadius, MAX_SAMPLES, callback
                     )
             );
@@ -289,7 +297,7 @@ public class StructureLookupStrategy implements LookupStrategy {
                     structureId, randomPlacement.spacing(), randomPlacement.separation(), maxRadius);
             StructureSearchWorkerManager.getInstance().addWorker(
                     new RandomSpreadSearchWorker(
-                            level, origin, structure, structureId,
+                            level, origin, structures, structureId,
                             randomPlacement, maxRadius, MAX_SAMPLES, callback
                     )
             );
@@ -298,7 +306,7 @@ public class StructureLookupStrategy implements LookupStrategy {
                     structureId, maxRadius);
             StructureSearchWorkerManager.getInstance().addWorker(
                     new GenericSearchWorker(
-                            level, origin, structure, structureId,
+                            level, origin, structures, structureId,
                             placement, maxRadius, MAX_SAMPLES, callback
                     )
             );

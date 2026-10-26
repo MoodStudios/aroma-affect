@@ -9,6 +9,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -33,14 +34,14 @@ public class GenericSearchWorker extends AbstractStructureSearchWorker<Structure
     public GenericSearchWorker(
             ServerLevel level,
             BlockPos startPos,
-            Structure structure,
+            List<Structure> structures,
             Identifier structureId,
             StructurePlacement placement,
             int maxRadius,
             int maxSamples,
             Consumer<StructureSearchResult> callback
     ) {
-        super(level, startPos, structure, structureId, placement, maxRadius, maxSamples, callback);
+        super(level, startPos, structures, structureId, placement, maxRadius, maxSamples, callback);
         
         this.startChunkX = startPos.getX() >> 4;
         this.startChunkZ = startPos.getZ() >> 4;

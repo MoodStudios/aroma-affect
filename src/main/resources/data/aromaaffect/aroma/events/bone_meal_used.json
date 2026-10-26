@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:bone_meal_used",
+  "category": "PLAYER_ACTION",
+  "trigger_type": "BONE_MEAL_USED",
+  "scent_id": "evergreen",
+  "intensity": 0.8,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}

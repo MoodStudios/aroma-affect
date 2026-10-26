@@ -7,6 +7,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockRegistry;
+import com.ovrtechnology.compat.StructureCompat;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.data.DataSourceInfo;
@@ -171,6 +172,13 @@ public class NoseDefinitionLoader {
                 }
             }
             
+            // Structures from newer Minecraft versions are dropped without a warning
+            if (unlock.hasStructureUnlocks()) {
+                List<String> availableStructures = new ArrayList<>(unlock.getStructures());
+                availableStructures.removeIf(id -> !StructureCompat.isAvailable(id));
+                unlock.setStructures(availableStructures);
+            }
+
             // Validate and filter structure references against StructureRegistry
             if (unlock.hasStructureUnlocks() && StructureRegistry.isInitialized()) {
                 List<String> invalidStructures = StructureRegistry.validateStructureIds(unlock.getStructures());

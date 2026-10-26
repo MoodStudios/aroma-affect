@@ -1,6 +1,7 @@
 package com.ovrtechnology.lookup;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -61,23 +62,20 @@ public final class StructurePositionRefiner {
     public static BlockPos refine(ServerLevel level, BlockPos approxPos, Identifier structureId) {
         try {
             Registry<Structure> structureRegistry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-            Structure structure = structureRegistry.getValue(structureId);
-            if (structure == null) {
-                return approxPos;
-            }
 
             ChunkPos chunkPos = ChunkPos.containing(approxPos);
             ChunkAccess chunk = level.getChunk(chunkPos.x(), chunkPos.z());
 
-            //? if >=26.3 {
-            StructureStart start = level.structureManager().getStartForStructure(structure, chunk);
-            //?} else {
-            /*StructureStart start = level.structureManager().getStartForStructure(
-                    SectionPos.bottomOf(chunk), structure, chunk
-            );
-            *///?}
+            StructureStart start = null;
+            for (Holder<Structure> structure : StructureTargets.resolve(structureRegistry, structureId)) {
+                StructureStart candidate = getStart(level, chunk, structure.value());
+                if (candidate != null && candidate.isValid()) {
+                    start = candidate;
+                    break;
+                }
+            }
 
-            if (start == null || !start.isValid()) {
+            if (start == null) {
                 return approxPos;
             }
 
@@ -119,6 +117,16 @@ public final class StructurePositionRefiner {
         } catch (Exception e) {
             return approxPos;
         }
+    }
+
+    private static StructureStart getStart(ServerLevel level, ChunkAccess chunk, Structure structure) {
+        //? if >=26.3 {
+        return level.structureManager().getStartForStructure(structure, chunk);
+        //?} else {
+        /*return level.structureManager().getStartForStructure(
+                SectionPos.bottomOf(chunk), structure, chunk
+        );
+        *///?}
     }
 
     private static boolean isStructureBlock(BlockState state) {

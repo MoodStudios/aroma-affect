@@ -4,6 +4,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.variant.NoseVariant;
 import com.ovrtechnology.variant.NoseVariantRegistry;
 import lombok.Getter;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 
 import java.util.*;
@@ -137,7 +138,13 @@ public final class NoseAbilityResolver {
         blocks.addAll(unlock.getBlocks());
         biomes.addAll(unlock.getBiomes());
         structures.addAll(unlock.getStructures());
-        flowers.addAll(unlock.getFlowers());
+        // Flowers whose block does not exist in the running Minecraft version are skipped
+        for (String flowerId : unlock.getFlowers()) {
+            Identifier flowerLocation = Identifier.tryParse(flowerId);
+            if (flowerLocation != null && BuiltInRegistries.BLOCK.containsKey(flowerLocation)) {
+                flowers.add(flowerId);
+            }
+        }
 
         // Recursively resolve inherited noses
         for (String inheritedNoseId : unlock.getNoses()) {

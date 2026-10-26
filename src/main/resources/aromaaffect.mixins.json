@@ -51,7 +51,11 @@
     "EnderEyeItemServerMixin",
     "LingeringPotionUseServerMixin",
     "AreaEffectCloudServerMixin",
-    "ServerPlayerRespawnMixin"
+    "ServerPlayerRespawnMixin",
+    "ComposterUseServerMixin",
+    "BoneMealUseServerMixin",
+    "DragonBreathBottleServerMixin",
+    "SquidInkServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

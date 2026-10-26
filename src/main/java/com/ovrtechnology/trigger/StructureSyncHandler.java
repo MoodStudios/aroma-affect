@@ -1,12 +1,14 @@
 package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.lookup.StructureTargets;
 import com.ovrtechnology.network.PathScentNetworking;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
 import net.blay09.mods.balm.platform.event.callback.ServerPlayerCallback;
 import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -16,6 +18,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -88,45 +91,50 @@ public final class StructureSyncHandler {
     private static boolean isInsideStructure(ServerLevel level, BlockPos playerPos, String structureId) {
         try {
             Identifier location = Identifier.parse(structureId);
-            var structureOpt = level.registryAccess()
-                    .lookupOrThrow(Registries.STRUCTURE)
-                    .getOptional(location);
+            List<Holder<Structure>> structures = StructureTargets.resolve(
+                    level.registryAccess().lookupOrThrow(Registries.STRUCTURE), location);
 
-            if (structureOpt.isEmpty()) return false;
-
-            Structure structure = structureOpt.get();
-            SectionPos playerSection = SectionPos.of(playerPos);
-            int chunkRange = 2;
-
-            for (int cx = -chunkRange; cx <= chunkRange; cx++) {
-                for (int cz = -chunkRange; cz <= chunkRange; cz++) {
-                    int chunkX = playerSection.x() + cx;
-                    int chunkZ = playerSection.z() + cz;
-
-                    //? if >=26.3 {
-                    StructureStart start = level.structureManager()
-                            .getStartForStructure(structure, level.getChunk(chunkX, chunkZ));
-                    //?} else {
-                    /*StructureStart start = level.structureManager()
-                            .getStartForStructure(
-                                    SectionPos.of(chunkX, 0, chunkZ),
-                                    structure,
-                                    level.getChunk(chunkX, chunkZ)
-                            );
-                    *///?}
-
-                    if (start != null && start.isValid()) {
-                        var bb = start.getBoundingBox();
-                        if (playerPos.getX() >= bb.minX() && playerPos.getX() <= bb.maxX()
-                                && playerPos.getY() >= bb.minY() && playerPos.getY() <= bb.maxY()
-                                && playerPos.getZ() >= bb.minZ() && playerPos.getZ() <= bb.maxZ()) {
-                            return true;
-                        }
-                    }
+            for (Holder<Structure> structure : structures) {
+                if (isInsideStructure(level, playerPos, structure.value())) {
+                    return true;
                 }
             }
         } catch (Exception e) {
             AromaAffect.LOGGER.debug("Error checking structure {}: {}", structureId, e.getMessage());
+        }
+        return false;
+    }
+
+    private static boolean isInsideStructure(ServerLevel level, BlockPos playerPos, Structure structure) {
+        SectionPos playerSection = SectionPos.of(playerPos);
+        int chunkRange = 2;
+
+        for (int cx = -chunkRange; cx <= chunkRange; cx++) {
+            for (int cz = -chunkRange; cz <= chunkRange; cz++) {
+                int chunkX = playerSection.x() + cx;
+                int chunkZ = playerSection.z() + cz;
+
+                //? if >=26.3 {
+                StructureStart start = level.structureManager()
+                        .getStartForStructure(structure, level.getChunk(chunkX, chunkZ));
+                //?} else {
+                /*StructureStart start = level.structureManager()
+                        .getStartForStructure(
+                                SectionPos.of(chunkX, 0, chunkZ),
+                                structure,
+                                level.getChunk(chunkX, chunkZ)
+                        );
+                *///?}
+
+                if (start != null && start.isValid()) {
+                    var bb = start.getBoundingBox();
+                    if (playerPos.getX() >= bb.minX() && playerPos.getX() <= bb.maxX()
+                            && playerPos.getY() >= bb.minY() && playerPos.getY() <= bb.maxY()
+                            && playerPos.getZ() >= bb.minZ() && playerPos.getZ() <= bb.maxZ()) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }

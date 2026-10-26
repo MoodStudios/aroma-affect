@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:shelf_mushroom",
+  "scent_id": "petrichor",
+  "fallback_name": "Shelf Mushroom",
+  "color": "#B07A4A",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 5
+}

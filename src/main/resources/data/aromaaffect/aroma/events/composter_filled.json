@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:composter_filled",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "COMPOSTER_FILLED",
+  "scent_id": "terra_silva",
+  "intensity": 0.8,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}
