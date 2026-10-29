@@ -73,5 +73,9 @@
   "composter_filled",
   "bone_meal_used",
   "dragon_breath_bottled",
-  "squid_ink"
+  "squid_ink",
+  "tnt_ignited",
+  "explosion",
+  "block_place_mud",
+  "concrete_hardened"
 ]

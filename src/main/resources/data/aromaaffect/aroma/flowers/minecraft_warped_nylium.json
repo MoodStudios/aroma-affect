@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:warped_nylium",
+  "scent_id": "machina",
+  "fallback_name": "Warped Nylium",
+  "color": "#2B8C7E",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDLOW",
+  "track_cost": 10
+}

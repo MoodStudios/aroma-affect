@@ -32,6 +32,8 @@ class GuideConsistencyTest {
     private static final String LANG_PATH = "assets/aromaaffect/lang/en_us.json";
     private static final String ITEM_MODEL_DIR = "assets/aromaaffect/items/";
     private static final String MOD_PREFIX = "aromaaffect:";
+    private static final String STRUCTURE_DIR = "data/aromaaffect/aroma/structures";
+    private static final Set<String> REQUIREMENT_KINDS = Set.of("structures", "blocks", "items");
 
     private static final List<String> ITEM_KEYS = List.of("item", "result");
     private static final List<String> ITEM_LIST_KEYS = List.of("grid", "items");
@@ -139,6 +141,43 @@ class GuideConsistencyTest {
             assertThat(pageOwners)
                     .as("target_page '%s' used by %s", link.getKey(), link.getValue())
                     .containsKey(link.getKey());
+        }
+    }
+
+    @Test
+    @DisplayName("every guide requirement should use a known kind and name a defined structure")
+    void guideRequirementsShouldResolve() throws IOException, URISyntaxException {
+        Set<String> structureIds = new TreeSet<>();
+        for (Path file : listJsonFiles(STRUCTURE_DIR)) {
+            structureIds.add(loadObject(file).get("id").getAsString());
+        }
+
+        Map<String, Set<String>> kinds = new TreeMap<>();
+        Map<String, Set<String>> structures = collect((guide, node, found) -> {
+            if (!node.has("requires")) {
+                return;
+            }
+            JsonObject requires = node.getAsJsonObject("requires");
+            for (String kind : requires.keySet()) {
+                record(kinds, guide, kind);
+            }
+            if (requires.has("structures")) {
+                for (JsonElement id : requires.getAsJsonArray("structures")) {
+                    record(found, guide, id.getAsString());
+                }
+            }
+        });
+
+        assertThat(kinds).as("requirement kinds used by guides").isNotEmpty();
+        for (Map.Entry<String, Set<String>> kind : kinds.entrySet()) {
+            assertThat(REQUIREMENT_KINDS)
+                    .as("requirement kind '%s' used by %s", kind.getKey(), kind.getValue())
+                    .contains(kind.getKey());
+        }
+        for (Map.Entry<String, Set<String>> structure : structures.entrySet()) {
+            assertThat(structureIds)
+                    .as("required structure '%s' used by %s", structure.getKey(), structure.getValue())
+                    .contains(structure.getKey());
         }
     }
 

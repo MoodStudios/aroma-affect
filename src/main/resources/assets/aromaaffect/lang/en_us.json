@@ -86,6 +86,7 @@
   "menu.aromaaffect.button.passive.on": "Passive Mode: ON",
   "menu.aromaaffect.button.passive.off": "Passive Mode: OFF",
   "menu.aromaaffect.category.locked": "Equip a Nose to unlock",
+  "menu.aromaaffect.category.locked_requires": "Requires %s",
   
   "menu.aromaaffect.config.title": "Aroma Affect Configuration",
   "menu.aromaaffect.config.placeholder": "Configuration options coming soon...",
@@ -455,9 +456,12 @@
   "guide.aromaaffect.noses.prospectors_nose.detect_copper": "Copper Ore",
   "guide.aromaaffect.noses.prospectors_nose.detect_redstone": "Redstone Ore",
   "guide.aromaaffect.noses.prospectors_nose.detect_lava": "Lava",
+  "guide.aromaaffect.noses.prospectors_nose.detect_potent_sulfur": "Potent Sulfur",
   "guide.aromaaffect.noses.prospectors_nose.detects_flowers": "Flowers",
   "guide.aromaaffect.noses.prospectors_nose.detect_flowers_vanilla": "All vanilla flowers",
   "guide.aromaaffect.noses.prospectors_nose.detect_mushrooms": "Mushrooms",
+  "guide.aromaaffect.noses.prospectors_nose.detects_structures": "Structures",
+  "guide.aromaaffect.noses.prospectors_nose.detect_abandoned_camp": "Abandoned Camps",
   "guide.aromaaffect.noses.prospectors_nose.recipe_header": "Recipe",
   "guide.aromaaffect.noses.prospectors_nose.recipe_label": "Prospector's Nose",
 
@@ -473,6 +477,7 @@
   "guide.aromaaffect.noses.gemseekers_nose.detect_biome_overworld": "Plains, Forests, Pale Garden, Deserts, Taigas",
   "guide.aromaaffect.noses.gemseekers_nose.detect_biome_cold_and_wet": "Snowy Plains, Swamps, Oceans",
   "guide.aromaaffect.noses.gemseekers_nose.detect_biome_meadow_jungle": "Meadows and Jungles",
+  "guide.aromaaffect.noses.gemseekers_nose.detect_biome_sulfur_caves": "Sulfur Caves",
   "guide.aromaaffect.noses.gemseekers_nose.detects_structures": "Structures",
   "guide.aromaaffect.noses.gemseekers_nose.detect_village": "Village (Plains, Desert, Savanna, Snowy, Taiga)",
   "guide.aromaaffect.noses.gemseekers_nose.recipe_header": "Recipe",
@@ -491,6 +496,7 @@
   "guide.aromaaffect.noses.dimensional_nose.detect_nether_biomes": "Nether biomes",
   "guide.aromaaffect.noses.dimensional_nose.detects_flowers": "Flowers",
   "guide.aromaaffect.noses.dimensional_nose.detect_nether_fungi": "Nether fungi",
+  "guide.aromaaffect.noses.dimensional_nose.detect_nether_flora": "Nylium, wart blocks, weeping vines and shroomlights",
   "guide.aromaaffect.noses.dimensional_nose.recipe_header": "Recipe",
   "guide.aromaaffect.noses.dimensional_nose.recipe_label": "Dimensional Nose",
 

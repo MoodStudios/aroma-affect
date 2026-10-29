@@ -2,6 +2,7 @@ package com.ovrtechnology.trigger.event;
 
 import com.google.gson.JsonObject;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.mob.EntityConditions;
 import com.ovrtechnology.network.ScentEventNetworking;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,8 +24,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.AreaEffectCloud;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.squid.Squid;
+import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -33,7 +36,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.BellBlock;
 import net.minecraft.world.level.block.ComposterBlock;
@@ -108,6 +113,10 @@ public final class ServerEventBusHandler {
     public static final String TT_BONE_MEAL_USED = "BONE_MEAL_USED";
     public static final String TT_DRAGON_BREATH_BOTTLED = "DRAGON_BREATH_BOTTLED";
     public static final String TT_SQUID_INK = "SQUID_INK";
+    public static final String TT_TNT_IGNITED = "TNT_IGNITED";
+    public static final String TT_EXPLOSION = "EXPLOSION";
+    public static final String TT_BLOCK_PLACED = "BLOCK_PLACED";
+    public static final String TT_CONCRETE_HARDENED = "CONCRETE_HARDENED";
 
     /** Seed/crop items whose placement counts as "planting" (in a regular class, so safe to init). */
     private static final Set<Item> SEED_ITEMS = Set.of(
@@ -145,7 +154,20 @@ public final class ServerEventBusHandler {
         dispatch(
                 serverPlayer,
                 TT_ANIMAL_TAMED,
-                def -> matchesEntitySimple(def.getConditions(), entityKey));
+                def -> matchesEntitySimple(def.getConditions(), entityKey)
+                        && matchesEntityState(def.getConditions(), animal, serverPlayer));
+    }
+
+    /**
+     * Checks the optional {@code "entity"} object of an event's conditions against the
+     * entity involved, for example {@code {"entity": {"baby": true}}}. Events without
+     * it match any state. See {@link EntityConditions} for the keys.
+     */
+    private static boolean matchesEntityState(JsonObject conditions, Entity entity, ServerPlayer player) {
+        if (conditions == null || !conditions.has("entity") || !conditions.get("entity").isJsonObject()) {
+            return true;
+        }
+        return EntityConditions.matches(conditions.getAsJsonObject("entity"), entity, player);
     }
 
     private static boolean matchesEntitySimple(JsonObject conditions, String entityKey) {
@@ -472,6 +494,80 @@ public final class ServerEventBusHandler {
         }
     }
 
+    /** Radius (blocks) around lit TNT within which players receive the scent. */
+    private static final double TNT_IGNITE_RADIUS = 12.0;
+
+    /**
+     * TNT was lit. The scent goes to every player nearby, plus whoever lit it if they
+     * have already stepped away.
+     */
+    public static void onTntIgnited(PrimedTnt tnt) {
+        if (tnt == null || tnt.level().isClientSide()) return;
+        AABB area = tnt.getBoundingBox().inflate(TNT_IGNITE_RADIUS);
+        Set<ServerPlayer> players = new HashSet<>(tnt.level().getEntitiesOfClass(ServerPlayer.class, area));
+        if (tnt.getOwner() instanceof ServerPlayer owner) {
+            players.add(owner);
+        }
+        for (ServerPlayer player : players) {
+            fireSimpleEvent(player, TT_TNT_IGNITED);
+        }
+    }
+
+    /** Distance (blocks) beyond the blast radius at which players still smell an explosion. */
+    private static final double EXPLOSION_EXTRA_RADIUS = 12.0;
+
+    /**
+     * Something exploded. Wind charges also run through the explosion code but only
+     * push things around, so they are skipped. Events can filter on what exploded with
+     * {@code source_entity_ids} (for example {@code minecraft:tnt} or {@code minecraft:creeper});
+     * beds and respawn anchors have no source entity.
+     */
+    public static void onExplosion(ServerExplosion explosion) {
+        if (explosion == null) return;
+        if (explosion.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK) return;
+
+        Entity source = explosion.getDirectSourceEntity();
+        String sourceKey = source == null ? null : BuiltInRegistries.ENTITY_TYPE.getKey(source.getType()).toString();
+        double size = 2 * (explosion.radius() + EXPLOSION_EXTRA_RADIUS);
+        AABB area = AABB.ofSize(explosion.center(), size, size, size);
+        for (ServerPlayer player : explosion.level().getEntitiesOfClass(ServerPlayer.class, area)) {
+            dispatch(player, TT_EXPLOSION, def -> matchesExplosionSource(def.getConditions(), sourceKey));
+        }
+    }
+
+    private static boolean matchesExplosionSource(JsonObject conditions, String sourceKey) {
+        List<String> ids = EventConditionUtils.getStringArray(conditions, "source_entity_ids");
+        if (!ids.isEmpty()) return sourceKey != null && ids.contains(sourceKey);
+        return EventConditionUtils.getBoolean(conditions, "default", true);
+    }
+
+    /**
+     * A player placed a block, or made one appear (a water bottle turning dirt into mud
+     * counts as placing mud). Events filter with {@code block_ids} and {@code block_tags}.
+     */
+    public static void onBlockPlaced(ServerPlayer player, BlockState state) {
+        if (player == null || state == null) return;
+        String blockKey = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
+        Set<String> tags = collectBlockTags(state);
+        dispatch(player, TT_BLOCK_PLACED, def -> matchesBlock(def.getConditions(), blockKey, tags));
+    }
+
+    /** Radius (blocks) around hardening concrete within which players receive the scent. */
+    private static final double CONCRETE_HARDENED_RADIUS = 8.0;
+
+    /**
+     * Concrete powder turned into concrete. Nothing links the change to a player, so the
+     * scent goes to everyone nearby; the event cooldown keeps a row of powder hardening
+     * at once down to a single puff.
+     */
+    public static void onConcreteHardened(Level level, BlockPos pos) {
+        if (level == null || level.isClientSide() || pos == null) return;
+        AABB area = new AABB(pos).inflate(CONCRETE_HARDENED_RADIUS);
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, area)) {
+            fireSimpleEvent(player, TT_CONCRETE_HARDENED);
+        }
+    }
+
     private record PotionKeys(String potionKey, String effectKey) {
         static PotionKeys of(PotionContents contents) {
             if (contents == null) return new PotionKeys(null, null);
@@ -554,7 +650,8 @@ public final class ServerEventBusHandler {
         String entityKey = entityId.toString();
         Set<String> tags = collectEntityTags(entity);
 
-        dispatch(killer, TT_MOB_KILLED, def -> matchesEntity(def.getConditions(), entityKey, tags));
+        dispatch(killer, TT_MOB_KILLED, def -> matchesEntity(def.getConditions(), entityKey, tags)
+                && matchesEntityState(def.getConditions(), entity, killer));
     }
 
     private static ServerPlayer resolvePlayerSource(DamageSource source) {

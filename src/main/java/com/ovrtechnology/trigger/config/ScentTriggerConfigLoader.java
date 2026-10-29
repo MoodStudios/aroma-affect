@@ -12,6 +12,7 @@ import com.ovrtechnology.flower.FlowerDefinition;
 import com.ovrtechnology.flower.FlowerDefinitionLoader;
 import com.ovrtechnology.mob.MobDefinition;
 import com.ovrtechnology.mob.MobDefinitionLoader;
+import com.ovrtechnology.mob.MobScentVariant;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.structure.StructureDefinition;
 import com.ovrtechnology.structure.StructureDefinitionLoader;
@@ -327,12 +328,31 @@ public final class ScentTriggerConfigLoader {
             trigger.setIntensity(mob.getIntensity());
             trigger.setPerception(mob.getPerception());
             trigger.setSound(mob.getSound());
+            trigger.setVariants(resolveMobVariants(mob));
 
             validateScentName(scentName, "mob", mob.getId());
             mobTriggerMap.put(mob.getId(), trigger);
             AromaAffect.LOGGER.debug("Registered mob trigger: {} -> {}",
                     mob.getId(), scentName);
         }
+    }
+
+    private static List<MobTriggerDefinition.Variant> resolveMobVariants(MobDefinition mob) {
+        if (mob.getVariants() == null || mob.getVariants().isEmpty()) return List.of();
+
+        List<MobTriggerDefinition.Variant> variants = new ArrayList<>();
+        for (MobScentVariant variant : mob.getVariants()) {
+            String variantScent = resolveScentName(variant.getScentId());
+            if (variantScent == null || "Unknown Scent".equals(variantScent)) {
+                AromaAffect.LOGGER.warn("Could not resolve scent_id '{}' in a variant of mob '{}'",
+                        variant.getScentId(), mob.getId());
+                continue;
+            }
+            validateScentName(variantScent, "mob variant", mob.getId());
+            String perception = variant.getPerception() != null ? variant.getPerception() : mob.getPerception();
+            variants.add(new MobTriggerDefinition.Variant(variant.getConditions(), variantScent, perception));
+        }
+        return List.copyOf(variants);
     }
 
     /**

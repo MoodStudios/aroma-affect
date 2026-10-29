@@ -3,6 +3,7 @@ package com.ovrtechnology.lookup.strategy;
 import com.ovrtechnology.lookup.LookupResult;
 import com.ovrtechnology.lookup.LookupTarget;
 import com.ovrtechnology.lookup.LookupType;
+import com.ovrtechnology.util.BlockVariants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -206,7 +207,7 @@ public class BlockLookupStrategy implements LookupStrategy {
                     mutablePos.set(chunkMinX + x, y, chunkMinZ + z);
                     
                     BlockState state = chunk.getBlockState(mutablePos);
-                    if (state.is(targetBlock)
+                    if (BlockVariants.matches(state, targetBlock)
                             && (excludedPositions.isEmpty() || !excludedPositions.contains(mutablePos))) {
                         double distSq = origin.distSqr(mutablePos);
                         if (distSq < closestDistSq) {

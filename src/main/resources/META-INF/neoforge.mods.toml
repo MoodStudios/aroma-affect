@@ -9,6 +9,8 @@ version = "${version}"
 displayName = "${mod_name}"
 displayURL = "${homepage}"
 logoFile = "assets/aromaaffect/icon.png"
+# Small icon shown next to the name in the mod list; logoFile is only used in the details panel.
+iconFile = "assets/aromaaffect/icon.png"
 authors = "${mod_author}"
 description = '''${description}'''
 

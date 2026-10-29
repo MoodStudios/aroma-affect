@@ -4,5 +4,15 @@
   "fallback_name": "Wolf",
   "color": "#D7D3D3",
   "range": 4,
-  "priority": "MEDLOW"
+  "priority": "MEDLOW",
+  "variants": [
+    {
+      "conditions": { "wet": true },
+      "scent_id": "petrichor"
+    },
+    {
+      "conditions": { "owned_by_player": true },
+      "scent_id": "kindred"
+    }
+  ]
 }

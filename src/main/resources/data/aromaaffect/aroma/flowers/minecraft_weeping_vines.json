@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:weeping_vines",
+  "scent_id": "smoky",
+  "fallback_name": "Weeping Vines",
+  "color": "#A01E1E",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

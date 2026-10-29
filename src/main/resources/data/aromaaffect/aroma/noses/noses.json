@@ -52,7 +52,8 @@
           "minecraft:deepslate_copper_ore",
           "minecraft:redstone_ore",
           "minecraft:deepslate_redstone_ore",
-          "minecraft:lava"
+          "minecraft:lava",
+          "minecraft:potent_sulfur"
         ],
         "biomes": [],
         "structures": [
@@ -119,7 +120,8 @@
           "minecraft:ocean",
           "minecraft:snowy_plains",
           "minecraft:meadow",
-          "minecraft:jungle"
+          "minecraft:jungle",
+          "minecraft:sulfur_caves"
         ],
         "structures": [
         ],
@@ -157,7 +159,13 @@
         ],
         "flowers": [
           "minecraft:crimson_fungus",
-          "minecraft:warped_fungus"
+          "minecraft:warped_fungus",
+          "minecraft:warped_wart_block",
+          "minecraft:warped_nylium",
+          "minecraft:crimson_nylium",
+          "minecraft:weeping_vines",
+          "minecraft:nether_wart_block",
+          "minecraft:shroomlight"
         ],
         "abilities": [],
         "noses": [

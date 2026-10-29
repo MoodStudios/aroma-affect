@@ -11,6 +11,8 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
+import com.ovrtechnology.nose.NoseItem;
+import com.ovrtechnology.nose.NoseRegistry;
 import com.ovrtechnology.tracking.RespawnSyncState;
 import com.ovrtechnology.trigger.PassiveModeManager;
 import net.minecraft.world.item.DyeColor;
@@ -1135,6 +1137,31 @@ public class RadialMenuScreen extends BaseMenuScreen {
         return locked;
     }
 
+    /**
+     * Explains why a category is locked. Without a nose the player only needs to
+     * equip one; with a nose that cannot track the category, the label names the
+     * lowest-tier nose that can.
+     */
+    private Component lockedReason(TrackingCategory category) {
+        var player = Minecraft.getInstance().player;
+        if (category == null || !EquippedNoseHelper.hasNoseEquipped(player)) {
+            return Component.translatable("menu.aromaaffect.category.locked");
+        }
+
+        NoseItem required = null;
+        for (NoseItem nose : NoseRegistry.getAllNosesAsList()) {
+            if (category.detectableFor(nose.getResolvedAbilities()).isEmpty()) continue;
+            if (required == null || nose.getDefinition().getTier() < required.getDefinition().getTier()) {
+                required = nose;
+            }
+        }
+        if (required == null) {
+            return Component.translatable("menu.aromaaffect.category.locked");
+        }
+        return Component.translatable("menu.aromaaffect.category.locked_requires",
+                required.getDefaultInstance().getHoverName());
+    }
+
     private void renderSelectionText(GuiGraphicsExtractor graphics, int centerX, int centerY, int outerRadius, float animationProgress) {
         if (selectedIndex < 0 || selectedIndex >= entries.size() || animationProgress < 0.45f) {
             return;
@@ -1149,7 +1176,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
             int lockedTitleColor = ((int) (255 * alpha) << 24) | 0x999999;
             int lockedDescColor = ((int) (180 * alpha) << 24) | 0xFF6B6B;
             graphics.centeredText(font, entry.title, centerX, y, lockedTitleColor);
-            graphics.centeredText(font, Component.translatable("menu.aromaaffect.category.locked"), centerX, y + 12, lockedDescColor);
+            graphics.centeredText(font, lockedReason(entry.category()), centerX, y + 12, lockedDescColor);
         } else {
             int titleColor = ((int) (255 * alpha) << 24) | 0xFFFFFF;
             int descColor = ((int) (200 * alpha) << 24) | 0xD0D0D0;

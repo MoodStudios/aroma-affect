@@ -86,6 +86,7 @@
   "menu.aromaaffect.button.passive.on": "Modo pasivo: SÍ",
   "menu.aromaaffect.button.passive.off": "Modo pasivo: NO",
   "menu.aromaaffect.category.locked": "Equípate una Nariz para desbloquear",
+  "menu.aromaaffect.category.locked_requires": "Requiere %s",
 
   "menu.aromaaffect.config.title": "Configuración de Aroma Affect",
   "menu.aromaaffect.config.placeholder": "Opciones de configuración próximamente...",
@@ -455,9 +456,12 @@
   "guide.aromaaffect.noses.prospectors_nose.detect_copper": "Mena de cobre",
   "guide.aromaaffect.noses.prospectors_nose.detect_redstone": "Mena de redstone",
   "guide.aromaaffect.noses.prospectors_nose.detect_lava": "Lava",
+  "guide.aromaaffect.noses.prospectors_nose.detect_potent_sulfur": "Azufre potente",
   "guide.aromaaffect.noses.prospectors_nose.detects_flowers": "Flores",
   "guide.aromaaffect.noses.prospectors_nose.detect_flowers_vanilla": "Todas las flores vanilla",
   "guide.aromaaffect.noses.prospectors_nose.detect_mushrooms": "Setas",
+  "guide.aromaaffect.noses.prospectors_nose.detects_structures": "Estructuras",
+  "guide.aromaaffect.noses.prospectors_nose.detect_abandoned_camp": "Campamentos abandonados",
   "guide.aromaaffect.noses.prospectors_nose.recipe_header": "Receta",
   "guide.aromaaffect.noses.prospectors_nose.recipe_label": "Nariz del Prospector",
 
@@ -473,6 +477,7 @@
   "guide.aromaaffect.noses.gemseekers_nose.detect_biome_overworld": "Llanuras, bosques, jardín pálido, desiertos, taigas",
   "guide.aromaaffect.noses.gemseekers_nose.detect_biome_cold_and_wet": "Llanuras nevadas, pantanos, océanos",
   "guide.aromaaffect.noses.gemseekers_nose.detect_biome_meadow_jungle": "Praderas y junglas",
+  "guide.aromaaffect.noses.gemseekers_nose.detect_biome_sulfur_caves": "Cuevas de azufre",
   "guide.aromaaffect.noses.gemseekers_nose.detects_structures": "Estructuras",
   "guide.aromaaffect.noses.gemseekers_nose.detect_village": "Aldea (llanura, desierto, sabana, nevada, taiga)",
   "guide.aromaaffect.noses.gemseekers_nose.recipe_header": "Receta",
@@ -491,6 +496,7 @@
   "guide.aromaaffect.noses.dimensional_nose.detect_nether_biomes": "Biomas del Nether",
   "guide.aromaaffect.noses.dimensional_nose.detects_flowers": "Flores",
   "guide.aromaaffect.noses.dimensional_nose.detect_nether_fungi": "Hongos del Nether",
+  "guide.aromaaffect.noses.dimensional_nose.detect_nether_flora": "Nilio, bloques de verruga, enredaderas lloronas y brillongos",
   "guide.aromaaffect.noses.dimensional_nose.recipe_header": "Receta",
   "guide.aromaaffect.noses.dimensional_nose.recipe_label": "Nariz Dimensional",
 

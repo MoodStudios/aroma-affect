@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:nether_wart_block",
+  "scent_id": "smoky",
+  "fallback_name": "Nether Wart Block",
+  "color": "#730303",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

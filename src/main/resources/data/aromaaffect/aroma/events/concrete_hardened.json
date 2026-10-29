@@ -1,0 +1,13 @@
+{
+  "id": "aromaaffect:concrete_hardened",
+  "category": "CRAFT_INTERACT",
+  "trigger_type": "CONCRETE_HARDENED",
+  "scent_id": "petrichor",
+  "intensity": 0.7,
+  "priority": "MEDIUM",
+  "duration_mode": "ONE_SHOT",
+  "cooldown_ms": 8000,
+  "conditions": {
+    "default": true
+  }
+}

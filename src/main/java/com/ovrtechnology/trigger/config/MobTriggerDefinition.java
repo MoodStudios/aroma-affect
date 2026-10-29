@@ -1,10 +1,13 @@
 package com.ovrtechnology.trigger.config;
 
+import com.google.gson.JsonObject;
 import com.ovrtechnology.definition.trigger.DefinitionTrigger;
 import com.ovrtechnology.trigger.ScentPriority;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
 
 /**
  * Defines a scent trigger associated with a mob/entity.
@@ -28,6 +31,13 @@ import lombok.ToString;
 @Setter
 @ToString
 public class MobTriggerDefinition extends DefinitionTrigger {
+
+    /** State-dependent scents, checked in order before the default scent. */
+    private List<Variant> variants = List.of();
+
+    /** A scent that applies while the mob matches {@code conditions}; see {@link com.ovrtechnology.mob.EntityConditions}. */
+    public record Variant(JsonObject conditions, String scentName, String perception) {}
+
     /**
      * Default constructor for GSON.
      */

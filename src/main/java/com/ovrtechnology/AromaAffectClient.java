@@ -67,6 +67,10 @@ public final class AromaAffectClient {
                     com.ovrtechnology.omara.OmaraDeviceScreen::new);
         });
 
+        // Lists the mod in Balm's mod list on Fabric, which only shows mods with a
+        // Balm-registered config screen. NeoForge keeps its own registration.
+        registrars.configScreen(configScreens -> configScreens.register(com.ovrtechnology.menu.ConfigScreen::new));
+
         // Register menu + search keybinds via Balm and start the polling tick handler
         registrars.keyMappings(MenuKeyBindings::register);
         registrars.keyMappings(SearchKeyBindings::register);

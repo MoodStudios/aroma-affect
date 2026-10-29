@@ -83,7 +83,9 @@ public class FlowersMenuScreen extends SelectionMenuScreen {
                 "minecraft:pitcher_plant", "minecraft:pink_petals", "minecraft:spore_blossom")) {
             FLOWER_CATEGORIES.put(id, FlowerFilter.SPECIAL);
         }
-        for (String id : List.of("minecraft:crimson_fungus", "minecraft:warped_fungus")) {
+        for (String id : List.of("minecraft:crimson_fungus", "minecraft:warped_fungus",
+                "minecraft:warped_wart_block", "minecraft:warped_nylium", "minecraft:crimson_nylium",
+                "minecraft:weeping_vines", "minecraft:nether_wart_block", "minecraft:shroomlight")) {
             FLOWER_CATEGORIES.put(id, FlowerFilter.NETHER);
         }
     }

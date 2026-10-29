@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:shroomlight",
+  "scent_id": "terra_silva",
+  "fallback_name": "Shroomlight",
+  "color": "#F09A4A",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

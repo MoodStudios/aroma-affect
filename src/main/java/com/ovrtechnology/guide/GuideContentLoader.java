@@ -2,6 +2,7 @@ package com.ovrtechnology.guide;
 
 import com.google.gson.*;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.StructureCompat;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -13,6 +14,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Loads guide content from JSON resource files and converts them into
@@ -88,6 +90,9 @@ public final class GuideContentLoader {
         }
         if (json.has("elements")) {
             for (JsonElement elemEl : json.getAsJsonArray("elements")) {
+                if (!requirementsMet(elemEl.getAsJsonObject())) {
+                    continue;
+                }
                 GuideElement element = parseElement(elemEl.getAsJsonObject());
                 if (element != null) {
                     builder.element(element);
@@ -95,6 +100,47 @@ public final class GuideContentLoader {
             }
         }
         return builder.build();
+    }
+
+    // ── Requirements ────────────────────────────────────────────────
+
+    /**
+     * Whether everything an element's optional {@code "requires"} object names exists
+     * in the running Minecraft version. Elements about content from a newer version
+     * are left out instead of describing something the player cannot find:
+     *
+     * <pre>{@code "requires": { "structures": ["minecraft:abandoned_camp"] }}</pre>
+     *
+     * <p>{@code structures} are checked against {@link StructureCompat}, the same list
+     * that hides them from menus and noses. {@code blocks} and {@code items} are
+     * checked against the game registries.</p>
+     */
+    static boolean requirementsMet(JsonObject json) {
+        if (!json.has("requires")) {
+            return true;
+        }
+        JsonObject requires = json.getAsJsonObject("requires");
+        for (Map.Entry<String, JsonElement> entry : requires.entrySet()) {
+            for (JsonElement idEl : entry.getValue().getAsJsonArray()) {
+                if (!exists(entry.getKey(), idEl.getAsString())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean exists(String kind, String id) {
+        Identifier location = Identifier.tryParse(id);
+        return switch (kind) {
+            case "structures" -> StructureCompat.isAvailable(id);
+            case "blocks" -> location != null && BuiltInRegistries.BLOCK.containsKey(location);
+            case "items" -> location != null && BuiltInRegistries.ITEM.containsKey(location);
+            default -> {
+                AromaAffect.LOGGER.warn("[Guide] Unknown requirement kind '{}'; hiding the element", kind);
+                yield false;
+            }
+        };
     }
 
     // ── Element ─────────────────────────────────────────────────────

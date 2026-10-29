@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:warped_wart_block",
+  "scent_id": "machina",
+  "fallback_name": "Warped Wart Block",
+  "color": "#167E86",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDIUM",
+  "track_cost": 10
+}

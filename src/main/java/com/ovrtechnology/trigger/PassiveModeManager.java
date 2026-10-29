@@ -2,6 +2,7 @@ package com.ovrtechnology.trigger;
 
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.menu.ActiveTrackingState;
+import com.ovrtechnology.mob.EntityConditions;
 import com.ovrtechnology.trigger.client.SoundTrigger;
 import com.ovrtechnology.trigger.config.BiomeTriggerDefinition;
 import com.ovrtechnology.trigger.config.BlockTriggerDefinition;
@@ -13,6 +14,7 @@ import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import com.ovrtechnology.trigger.config.StructureTriggerDefinition;
 import com.ovrtechnology.trigger.event.EventTriggersConfig;
 
+import com.ovrtechnology.util.BlockVariants;
 import com.ovrtechnology.util.SoundRef;
 import com.ovrtechnology.websocket.OvrWebSocketClient;
 import net.minecraft.core.BlockPos;
@@ -31,6 +33,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -530,17 +533,33 @@ public final class PassiveModeManager {
                         || isPlayerLookingAt(player, foundEntity.get().getEyePosition(1.0f)))) {
                     double intensity = calculateIntensityByDistance(distance, getMobActivationRange());
 
+                    // A matching variant (a wet wolf, a pet the player owns) replaces the
+                    // default scent. Its index goes into the source so a change of state
+                    // counts as a new mob and is announced again.
+                    String scentName = trigger.getScentName();
+                    String perception = trigger.getPerception();
+                    String source = "mob:" + entityTypeId;
+                    List<MobTriggerDefinition.Variant> variants = trigger.getVariants();
+                    for (int i = 0; i < variants.size(); i++) {
+                        MobTriggerDefinition.Variant variant = variants.get(i);
+                        if (EntityConditions.matches(variant.conditions(), foundEntity.get(), player)) {
+                            scentName = variant.scentName();
+                            perception = variant.perception();
+                            source = source + "#" + i;
+                            break;
+                        }
+                    }
+
                     // Mobs use HIGH priority for player safety
                     ScentTrigger scentTrigger = ScentTrigger.fromPassiveMode(
-                            trigger.getScentName(),
-                            trigger.getPerception(),
+                            scentName,
+                            perception,
                             trigger.getSound(),
                             ScentPriority.HIGH,
                             -1,
                             intensity
                     );
 
-                    String source = "mob:" + entityTypeId;
                     String displayName = getMobDisplayName(foundEntity.get());
 
                     return new TriggerCandidate(scentTrigger, source, displayName,
@@ -853,7 +872,7 @@ public final class PassiveModeManager {
                         BlockPos checkPos = center.offset(x, y, z);
                         BlockState state = level.getBlockState(checkPos);
 
-                        if (state.is(targetBlock)) {
+                        if (BlockVariants.matches(state, targetBlock)) {
                             double distSq = center.distSqr(checkPos);
                             if (distSq < closestDistSq) {
                                 closestDistSq = distSq;
@@ -958,6 +977,8 @@ public final class PassiveModeManager {
     private static boolean isHostileMob(String source) {
         if (source == null || !source.startsWith("mob:")) return false;
         String entityType = source.substring(4); // Remove "mob:" prefix
+        int variant = entityType.indexOf('#');
+        if (variant >= 0) entityType = entityType.substring(0, variant);
         return HOSTILE_MOBS.contains(entityType);
     }
 

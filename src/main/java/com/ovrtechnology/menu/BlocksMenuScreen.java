@@ -54,7 +54,7 @@ public class BlocksMenuScreen extends SelectionMenuScreen {
         for (String id : List.of("minecraft:spawner", "minecraft:chest")) {
             BLOCK_CATEGORIES.put(id, BlockFilter.DUNGEON);
         }
-        for (String id : List.of("minecraft:amethyst_cluster", "minecraft:budding_amethyst")) {
+        for (String id : List.of("minecraft:amethyst_cluster", "minecraft:budding_amethyst", "minecraft:potent_sulfur")) {
             BLOCK_CATEGORIES.put(id, BlockFilter.NATURE);
         }
     }

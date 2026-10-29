@@ -1,11 +1,14 @@
 package com.ovrtechnology.mob;
 
+import com.google.gson.annotations.SerializedName;
 import com.ovrtechnology.definition.ScentedDefinition;
 import com.ovrtechnology.trigger.ScentPriority;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+
+import java.util.List;
 
 /**
  * Represents a trackable mob/entity definition loaded from JSON.
@@ -18,6 +21,13 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ToString
 public class MobDefinition extends ScentedDefinition {
+    /**
+     * Scents that replace the default one while the mob is in a given state.
+     * The first variant whose conditions match wins.
+     */
+    @SerializedName("variants")
+    private List<MobScentVariant> variants = List.of();
+
     public MobDefinition() {
     }
 

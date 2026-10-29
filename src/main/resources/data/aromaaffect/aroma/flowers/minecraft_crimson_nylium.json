@@ -1,0 +1,10 @@
+{
+  "id": "minecraft:crimson_nylium",
+  "scent_id": "smoky",
+  "fallback_name": "Crimson Nylium",
+  "color": "#8B1C1C",
+  "trigger_on": "PROXIMITY",
+  "range": 3,
+  "priority": "MEDLOW",
+  "track_cost": 10
+}
