@@ -1,16 +1,13 @@
 package com.ovrtechnology.sniffernose;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ModItem;
+import com.ovrtechnology.compat.RegistrationCompat;
 import lombok.Getter;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 
 import java.util.function.Consumer;
 
@@ -20,7 +17,7 @@ import java.util.function.Consumer;
  * <p>Sniffer nose items are designed for the Sniffer mob and are NOT equippable by players.
  * They are regular items that can be used in crafting, dropped by mobs, etc.</p>
  */
-public class SnifferNoseItem extends Item {
+public class SnifferNoseItem extends ModItem {
     
     /**
      * The definition that was used to create this sniffer nose item
@@ -50,13 +47,8 @@ public class SnifferNoseItem extends Item {
      * Create item properties from a sniffer nose definition
      */
     private static Properties createProperties(SnifferNoseDefinition definition, String itemId) {
-        Properties properties = new Properties();
-        
-        // Set the item ID - REQUIRED in Minecraft 1.21.x
-        properties.setId(ResourceKey.create(
-                Registries.ITEM, 
-                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
-        ));
+        Properties properties = RegistrationCompat.itemProperties(
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId));
         
         // Sniffer nose items stack to 1 (they are unique items)
         properties.stacksTo(1);
@@ -84,9 +76,8 @@ public class SnifferNoseItem extends Item {
      * Add tooltip information to the item
      */
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
-        
+    protected void appendTooltip(ItemStack stack, Consumer<Component> tooltipAdder) {
+
         // Add info that this is for the Sniffer mob
         tooltipAdder.accept(Component.literal("§7For the Sniffer mob"));
         tooltipAdder.accept(Component.literal("§8Tier: " + definition.getTier()));

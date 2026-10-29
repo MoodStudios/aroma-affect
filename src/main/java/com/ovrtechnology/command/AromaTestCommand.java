@@ -68,7 +68,11 @@ public final class AromaTestCommand {
      */
     private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> builder = literal("aromatest")
+                //? if >=26 {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
+                //?} else {
+                /*.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS));
+                *///?}
         
         // Add all registered subcommands
         for (SubCommand subCommand : SUB_COMMANDS.values()) {

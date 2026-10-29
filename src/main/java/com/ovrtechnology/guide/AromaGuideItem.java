@@ -1,14 +1,12 @@
 package com.ovrtechnology.guide;
 
 import com.ovrtechnology.AromaAffect;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
+import com.ovrtechnology.compat.ModItem;
+import com.ovrtechnology.compat.RegistrationCompat;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 
@@ -22,21 +20,17 @@ import net.minecraft.world.level.Level;
  * <p>
  * Right-clicking opens the Aroma Affect guide UI.
  */
-public class AromaGuideItem extends Item {
+public class AromaGuideItem extends ModItem {
 
     public AromaGuideItem() {
-        super(new Properties()
-                .setId(ResourceKey.create(
-                        Registries.ITEM,
-                        Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "aroma_guide")
-                ))
+        super(RegistrationCompat.itemProperties(Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "aroma_guide"))
                 .stacksTo(1)
                 .rarity(Rarity.UNCOMMON)
         );
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    protected InteractionResult useItem(Level level, Player player, InteractionHand hand) {
         if (level.isClientSide()) {
             GuideManager.openGuideClient();
         }

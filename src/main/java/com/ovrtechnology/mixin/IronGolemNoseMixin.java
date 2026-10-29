@@ -15,8 +15,12 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+//? if >=26 {
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//?} else {
+/*import net.minecraft.nbt.CompoundTag;
+*///?}
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -59,6 +63,7 @@ public abstract class IronGolemNoseMixin extends AbstractGolem implements IronGo
         aromaaffect$hasNose = hasNose;
     }
 
+    //? if >=26 {
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void aromaaffect$saveNoseData(ValueOutput output, CallbackInfo ci) {
         output.putBoolean("aromaaffect:HasNose", aromaaffect$hasNose);
@@ -68,6 +73,17 @@ public abstract class IronGolemNoseMixin extends AbstractGolem implements IronGo
     private void aromaaffect$loadNoseData(ValueInput input, CallbackInfo ci) {
         aromaaffect$hasNose = input.getBooleanOr("aromaaffect:HasNose", true);
     }
+    //?} else {
+    /*@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void aromaaffect$saveNoseData(CompoundTag tag, CallbackInfo ci) {
+        tag.putBoolean("aromaaffect:HasNose", aromaaffect$hasNose);
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void aromaaffect$loadNoseData(CompoundTag tag, CallbackInfo ci) {
+        aromaaffect$hasNose = !tag.contains("aromaaffect:HasNose") || tag.getBoolean("aromaaffect:HasNose");
+    }
+    *///?}
 
     @Inject(method = "aiStep", at = @At("TAIL"))
     private void aromaaffect$onAiStep(CallbackInfo ci) {

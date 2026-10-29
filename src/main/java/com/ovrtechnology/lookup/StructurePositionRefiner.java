@@ -63,7 +63,11 @@ public final class StructurePositionRefiner {
         try {
             Registry<Structure> structureRegistry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
 
+            //? if >=26 {
             ChunkPos chunkPos = ChunkPos.containing(approxPos);
+            //?} else {
+            /*ChunkPos chunkPos = new ChunkPos(approxPos);
+            *///?}
             ChunkAccess chunk = level.getChunk(chunkPos.x(), chunkPos.z());
 
             StructureStart start = null;

@@ -197,7 +197,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
         searchBox.setX(listX);
         searchBox.setY(searchY);
         searchBox.setWidth(listWidth);
-        searchBox.extractRenderState(g, mouseX, mouseY, partialTick);
+        com.ovrtechnology.compat.GuiCompat.renderWidget(searchBox, g, mouseX, mouseY, partialTick);
 
         // List
         int listTop = searchY + SEARCH_BOX_HEIGHT + 6;
@@ -906,7 +906,7 @@ public class HistoryMenuScreen extends BaseMenuScreen {
             nameEditBox.setX(px + 10);
             nameEditBox.setY(py + 22);
             nameEditBox.setWidth(popupW - 20);
-            nameEditBox.extractRenderState(g, mouseX, mouseY, partialTick);
+            com.ovrtechnology.compat.GuiCompat.renderWidget(nameEditBox, g, mouseX, mouseY, partialTick);
         }
 
         int confirmX = px + 10;

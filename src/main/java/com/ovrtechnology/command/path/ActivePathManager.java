@@ -167,11 +167,11 @@ public final class ActivePathManager {
             // A personal spawn route cannot survive a downgrade or a changed spawn point.
             if (path.targetId() != null && com.ovrtechnology.tracking.RespawnSyncState.isRespawnBlock(
                     net.minecraft.resources.Identifier.tryParse(path.targetId()))) {
-                var respawn = player.getRespawnConfig();
+                var respawn = com.ovrtechnology.compat.RespawnCompat.get(player);
                 boolean valid = EquippedNoseHelper.canTrackRespawn(player)
-                        && respawn != null && respawn.respawnData() != null
-                        && respawn.respawnData().dimension().identifier().equals(path.dimension())
-                        && respawn.respawnData().pos().equals(path.destination());
+                        && respawn != null
+                        && respawn.dimension().identifier().equals(path.dimension())
+                        && respawn.pos().equals(path.destination());
                 if (valid && player.level().hasChunkAt(path.destination())) {
                     var state = player.level().getBlockState(path.destination());
                     valid = state.getBlock() instanceof net.minecraft.world.level.block.BedBlock
@@ -224,7 +224,7 @@ public final class ActivePathManager {
             if (arrived) {
                 // Player has arrived!
                 if (PathSubCommand.isVerbose()) {
-                    player.sendOverlayMessage(Component.literal(
+                    com.ovrtechnology.compat.PlayerCompat.overlay(player, Component.literal(
                             "§6[Aroma Affect] §aYou have arrived at your destination!"
                     ));
                 }

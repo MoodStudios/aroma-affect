@@ -24,10 +24,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class AnvilRepairMixin extends ItemCombinerMenu {
 
     // Dummy constructor required by Java (never called — this is a mixin)
+    //? if >=26 {
     protected AnvilRepairMixin(MenuType<?> menuType, int containerId, Inventory playerInventory,
                                ContainerLevelAccess access, ItemCombinerMenuSlotDefinition slotDef) {
         super(menuType, containerId, playerInventory, access, slotDef);
     }
+    //?} else {
+    /*protected AnvilRepairMixin(MenuType<?> menuType, int containerId, Inventory playerInventory,
+                               ContainerLevelAccess access) {
+        super(menuType, containerId, playerInventory, access);
+    }
+    *///?}
 
     @Shadow private int repairItemCountCost;
     @Shadow @Final private DataSlot cost;
@@ -40,7 +47,11 @@ public abstract class AnvilRepairMixin extends ItemCombinerMenu {
 
         // Only adjust for NoseItem material repair
         if (result.isEmpty() || !(left.getItem() instanceof NoseItem)) return;
+        //? if >=26 {
         if (!left.isDamageableItem() || !left.isValidRepairItem(right)) return;
+        //?} else {
+        /*if (!left.isDamageableItem() || !left.getItem().isValidRepairItem(left, right)) return;
+        *///?}
         if (left.getDamageValue() <= 0) return;
 
         // Recalculate repair with 1/3 per material instead of vanilla's 1/4

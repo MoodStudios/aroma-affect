@@ -192,7 +192,7 @@ public abstract class SelectionMenuScreen extends BaseMenuScreen {
         searchBox.setX(listX);
         searchBox.setY(searchY);
         searchBox.setWidth(listWidth);
-        searchBox.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        com.ovrtechnology.compat.GuiCompat.renderWidget(searchBox, graphics, mouseX, mouseY, partialTick);
 
         // Optional filter chips (subclass hook)
         int chipY = searchY + SEARCH_BOX_HEIGHT + 6;

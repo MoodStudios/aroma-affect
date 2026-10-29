@@ -1,6 +1,7 @@
 package com.ovrtechnology.nose;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.variant.NoseVariant;
 import com.ovrtechnology.variant.NoseVariantRegistry;
 import lombok.Getter;
@@ -140,8 +141,7 @@ public final class NoseAbilityResolver {
         structures.addAll(unlock.getStructures());
         // Flowers whose block does not exist in the running Minecraft version are skipped
         for (String flowerId : unlock.getFlowers()) {
-            Identifier flowerLocation = Identifier.tryParse(flowerId);
-            if (flowerLocation != null && BuiltInRegistries.BLOCK.containsKey(flowerLocation)) {
+            if (ContentAvailability.blockExists(flowerId)) {
                 flowers.add(flowerId);
             }
         }

@@ -1,5 +1,6 @@
 {
   "id": "minecraft:shelf_mushroom",
+  "min_minecraft": "26.3",
   "scent_id": "petrichor",
   "fallback_name": "Shelf Mushroom",
   "color": "#B07A4A",

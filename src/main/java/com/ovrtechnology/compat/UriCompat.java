@@ -9,8 +9,10 @@ public final class UriCompat {
     public static void open(URI uri) {
         //? if >=26.3 {
         com.mojang.blaze3d.Blaze3D.openUri(uri);
-        //?} else {
+        //?} else if >=26 {
         /*net.minecraft.util.Util.getPlatform().openUri(uri);
+        *///?} else {
+        /*net.minecraft.Util.getPlatform().openUri(uri);
         *///?}
     }
 

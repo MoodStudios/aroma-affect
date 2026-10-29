@@ -1,5 +1,7 @@
 package com.ovrtechnology.mixin;
 
+// Render states only exist from 1.21.2; on older versions the renderers read the entity directly
+//? if >=26 {
 import com.ovrtechnology.nose.client.EntityRenderStateAccess;
 import java.util.UUID;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -26,3 +28,4 @@ public class EntityRenderStateMixin implements EntityRenderStateAccess {
         aromaaffect$entityUuid = uuid;
     }
 }
+//?}

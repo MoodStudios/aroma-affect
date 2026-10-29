@@ -71,7 +71,11 @@ public class ClientHooks {
     }
 
     private static void renderStatus(TitleScreen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        //? if >=26 {
         Font font = screen.getFont();
+        //?} else {
+        /*Font font = net.minecraft.client.Minecraft.getInstance().font;
+        *///?}
         OvrWebSocketClient client = OvrWebSocketClient.getInstance();
         ConnectionState state = client.getState();
         boolean connected = state == ConnectionState.CONNECTED;

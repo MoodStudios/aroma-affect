@@ -96,10 +96,15 @@ public class FeedbackScreen extends BaseMenuScreen {
         // (init() re-runs on resize, rebuilding at the new width).
         int contentW = Math.min(PANEL_W, width - 40) - INNER_PAD * 2;
 
+        //? if >=26 {
         feedbackBox = MultiLineEditBox.builder()
                 .setPlaceholder(Texts.tr("feedback.aromaaffect.feedback_placeholder"))
                 .setShowBackground(true)
                 .build(font, contentW, FEEDBACK_BOX_MIN_HEIGHT, Texts.empty());
+        //?} else {
+        /*feedbackBox = new MultiLineEditBox(font, 0, 0, contentW, FEEDBACK_BOX_MIN_HEIGHT,
+                Texts.tr("feedback.aromaaffect.feedback_placeholder"), Texts.empty());
+        *///?}
         feedbackBox.setCharacterLimit(FEEDBACK_CHAR_LIMIT);
         feedbackBox.setValueListener(value -> feedbackText = value);
         feedbackBox.setValue(feedbackText);
@@ -199,7 +204,7 @@ public class FeedbackScreen extends BaseMenuScreen {
             feedbackBox.setY(y);
             feedbackBox.setWidth(contentW);
             feedbackBox.setHeight(feedbackBoxH);
-            feedbackBox.extractRenderState(g, mouseX, mouseY, partialTick);
+            com.ovrtechnology.compat.GuiCompat.renderWidget(feedbackBox, g, mouseX, mouseY, partialTick);
         }
         y += feedbackBoxH + 10;
 
@@ -213,7 +218,7 @@ public class FeedbackScreen extends BaseMenuScreen {
             nameBox.setX(contentLeft0);
             nameBox.setY(y);
             nameBox.setWidth(contentW);
-            nameBox.extractRenderState(g, mouseX, mouseY, partialTick);
+            com.ovrtechnology.compat.GuiCompat.renderWidget(nameBox, g, mouseX, mouseY, partialTick);
         }
         y += NAME_BOX_HEIGHT + 10;
 

@@ -18,9 +18,13 @@ public final class AromaAffectKeyCategory {
      * The shared Aroma Affect keybinding category.
      * Registered once and shared across all keybinding classes.
      */
+    //? if >=26 {
     public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
             Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "keybinds")
     );
+    //?} else {
+    /*public static final String CATEGORY = "key.category." + AromaAffect.MOD_ID + ".keybinds";
+    *///?}
     
     private AromaAffectKeyCategory() {
         // Utility class

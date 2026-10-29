@@ -1,5 +1,6 @@
 {
   "id": "minecraft:potent_sulfur",
+  "min_minecraft": "26.2",
   "color": "#D8CF6A",
   "scent_id": "machina",
   "fallback_name": "Potent Sulfur",

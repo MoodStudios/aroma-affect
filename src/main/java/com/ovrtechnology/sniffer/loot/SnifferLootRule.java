@@ -58,7 +58,7 @@ public class SnifferLootRule {
                 Identifier biomeId = Identifier.tryParse(entry);
                 if (biomeId == null) continue;
                 Identifier thisId =
-                        biomeHolder.unwrapKey().map(ResourceKey::identifier).orElse(null);
+                        biomeHolder.unwrapKey().map(key -> key.identifier()).orElse(null);
                 if (biomeId.equals(thisId)) return true;
             }
         }

@@ -1,5 +1,6 @@
 {
   "id": "minecraft:abandoned_camp",
+  "min_minecraft": "26.3",
   "image": "structure/abandoned_camp",
   "fallback_name": "Abandoned Camp",
   "color": "#8C6A43",

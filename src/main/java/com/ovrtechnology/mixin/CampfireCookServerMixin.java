@@ -22,9 +22,15 @@ public abstract class CampfireCookServerMixin {
 
     @Inject(method = "placeFood", at = @At("RETURN"), require = 0)
     private void aromaaffect$onPlaceFood(
+            //? if >=26 {
             ServerLevel level,
             LivingEntity placer,
             ItemStack stack,
+            //?} else {
+            /*LivingEntity placer,
+            ItemStack stack,
+            int cookTime,
+            *///?}
             CallbackInfoReturnable<Boolean> cir) {
         if (Boolean.TRUE.equals(cir.getReturnValue()) && placer instanceof ServerPlayer player) {
             ServerEventBusHandler.onCampfireCook(player);

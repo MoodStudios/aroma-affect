@@ -24,9 +24,15 @@ public final class MenuRenderUtils {
                 (end.y - start.y) / Math.max(1, y1 - y0));
         graphics.enableScissor(x0, y0, x1, y1);
         try {
+            //? if >=26 {
             net.minecraft.client.gui.screens.inventory.InventoryScreen.extractEntityInInventoryFollowsMouse(
                     graphics, Math.round(start.x), Math.round(start.y), Math.round(end.x), Math.round(end.y),
                     Math.max(1, Math.round(size * scale)), offsetY, mouse.x, mouse.y, entity);
+            //?} else {
+            /*net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(
+                    graphics.raw(), x0, y0, x1, y1, size, offsetY, mouseX, mouseY, entity);
+            graphics.afterDepthWrite();
+            *///?}
         } finally {
             graphics.disableScissor();
         }

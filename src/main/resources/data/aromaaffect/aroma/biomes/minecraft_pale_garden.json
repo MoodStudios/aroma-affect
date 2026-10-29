@@ -1,5 +1,6 @@
 {
   "id": "minecraft:pale_garden",
+  "min_minecraft": "1.21.4",
   "image": "biome/pale_garden",
   "fallback_name": "Pale Garden",
   "color": "#8A8A71",

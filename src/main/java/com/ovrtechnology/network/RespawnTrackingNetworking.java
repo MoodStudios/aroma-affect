@@ -90,18 +90,17 @@ public final class RespawnTrackingNetworking {
             reject(player, "tier_required");
             return;
         }
-        var config = player.getRespawnConfig();
-        if (config == null || config.respawnData() == null) {
+        var data = com.ovrtechnology.compat.RespawnCompat.get(player);
+        if (data == null) {
             PathScentNetworking.sendRespawnCleared(player);
             reject(player, "missing");
             return;
         }
-        var data = config.respawnData();
         if (!player.level().dimension().equals(data.dimension())) {
             reject(player, "other_dimension");
             return;
         }
-        var level = player.level();
+        var level = (net.minecraft.server.level.ServerLevel) player.level();
         var state = level.getBlockState(data.pos());
         if (!(state.getBlock() instanceof BedBlock)
                 && !(state.getBlock() instanceof RespawnAnchorBlock

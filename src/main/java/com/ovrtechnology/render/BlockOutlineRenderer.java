@@ -6,7 +6,7 @@ import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-//?} else {
+//?} else if >=26 {
 /*import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
@@ -22,10 +22,16 @@ import com.ovrtechnology.menu.TrailDomain;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.config.ScentTriggerConfigLoader;
 import net.minecraft.client.Minecraft;
+//? if >=26 {
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+//?} else {
+/*import com.ovrtechnology.legacy.render.LegacyRenderTypes;
+import com.ovrtechnology.legacy.render.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.RenderType;
+*///?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
@@ -46,6 +52,7 @@ public final class BlockOutlineRenderer {
      * vanilla {@code RenderPipelines.LINES_SNIPPET} (shaders, uniforms,
      * vertex format) plus our two overrides.
      */
+    //? if >=26 {
     private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath("aromaaffect", "pipeline/lines_no_depth"))
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
@@ -57,6 +64,10 @@ public final class BlockOutlineRenderer {
             "aromaaffect:lines_no_depth",
             RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).createRenderSetup()
     );
+    //?} else {
+    /*public static final RenderType LINES_NO_DEPTH =
+            LegacyRenderTypes.xrayLines("lines_no_depth", java.util.OptionalDouble.empty());
+    *///?}
 
     /**
      * Line width baked into every vertex. Matches the visual weight of the
@@ -138,15 +149,23 @@ public final class BlockOutlineRenderer {
                             (float) (y1 + offsetY),
                             (float) (z1 + offsetZ))
                     .setColor(red, green, blue, alpha)
+                    //? if >=26 {
                     .setNormal(pose, nx, ny, nz)
                     .setLineWidth(lineWidth);
+                    //?} else {
+                    /*.setNormal(pose, nx, ny, nz);
+                    *///?}
             consumer.addVertex(pose,
                             (float) (x2 + offsetX),
                             (float) (y2 + offsetY),
                             (float) (z2 + offsetZ))
                     .setColor(red, green, blue, alpha)
+                    //? if >=26 {
                     .setNormal(pose, nx, ny, nz)
                     .setLineWidth(lineWidth);
+                    //?} else {
+                    /*.setNormal(pose, nx, ny, nz);
+                    *///?}
         });
     }
 

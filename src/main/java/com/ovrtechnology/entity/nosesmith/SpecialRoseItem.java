@@ -1,15 +1,12 @@
 package com.ovrtechnology.entity.nosesmith;
 
+import com.ovrtechnology.compat.ModItem;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 
-import java.util.function.Consumer;
-
-public class SpecialRoseItem extends Item {
+public class SpecialRoseItem extends ModItem {
 
     public SpecialRoseItem(Properties properties) {
         super(properties);
@@ -21,7 +18,7 @@ public class SpecialRoseItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag tooltipFlag) {
+    protected void appendTooltip(ItemStack stack, Consumer<Component> tooltipAdder) {
         tooltipAdder.accept(Component.translatable("item.aromaaffect.special_rose.lore")
                 .withStyle(ChatFormatting.ITALIC, ChatFormatting.GOLD));
     }

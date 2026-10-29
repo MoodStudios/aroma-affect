@@ -206,9 +206,15 @@ public class LookupSubCommand implements SubCommand {
             MutableComponent teleportText = Component.literal("§8  Teleport: ")
                     .append(Component.literal("§b§n" + tpCommand)
                             .withStyle(Style.EMPTY
+                                    //? if >=26 {
                                     .withClickEvent(new ClickEvent.RunCommand(tpCommand))
                                     .withHoverEvent(new HoverEvent.ShowText(
                                             Component.literal("§aClick to teleport!")))
+                                    //?} else {
+                                    /*.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                            Component.literal("§aClick to teleport!")))
+                                    *///?}
                             ));
             source.sendSuccess(() -> teleportText, false);
             

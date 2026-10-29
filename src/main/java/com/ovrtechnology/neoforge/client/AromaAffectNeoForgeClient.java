@@ -31,9 +31,16 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public final class AromaAffectNeoForgeClient {
 
     public AromaAffectNeoForgeClient(ModContainer modContainer, IEventBus modEventBus) {
+        //? if >=26 {
         BalmClient.initializeMod(AromaAffect.MOD_ID, new NeoForgeLoadContext(modContainer, modEventBus), AromaAffectClient::initialize);
+        //?} else {
+        /*BalmClient.initializeMod(AromaAffect.MOD_ID, new NeoForgeLoadContext(modEventBus), AromaAffectClient::initialize);
+        *///?}
 
         modEventBus.addListener(this::onRegisterClientExtensions);
+        //? if <26 {
+        /*modEventBus.addListener(NoseItemClientExtensions::onAddLayers);
+        *///?}
 
         // Enables the Config button for this mod in NeoForge's mod list.
         modContainer.registerExtensionPoint(IConfigScreenFactory.class,

@@ -53,6 +53,17 @@ public final class AromaAffectClient {
         // Model layers (NoseMaskModel) — must be registered before any render call
         registrars.modelLayers(com.ovrtechnology.nose.client.NoseClient::registerModelLayers);
 
+        //? if <26 {
+        /*registrars.itemProperties(properties -> properties.register(
+                com.ovrtechnology.guide.AromaGuideRegistry.getItem(),
+                net.minecraft.resources.Identifier.withDefaultNamespace("angle"),
+                new net.minecraft.client.renderer.item.CompassItemPropertyFunction((level, stack, entity) -> {
+                    net.minecraft.world.item.component.LodestoneTracker tracker =
+                            stack.get(net.minecraft.core.component.DataComponents.LODESTONE_TRACKER);
+                    return tracker != null ? tracker.target().orElse(null) : null;
+                })));
+        *///?}
+
         // Entity renderers (NoseSmith)
         registrars.entityRenderers(NoseSmithClientRegistry::register);
 

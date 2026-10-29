@@ -1,5 +1,6 @@
 package com.ovrtechnology.tracking;
 
+import com.ovrtechnology.compat.RespawnCompat;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.PathScentNetworking;
 import lombok.experimental.UtilityClass;
@@ -29,12 +30,11 @@ public final class RespawnSyncHandler {
 
     public static void sync(ServerPlayer player) {
         try {
-            ServerPlayer.RespawnConfig config = player.getRespawnConfig();
-            if (config == null || config.respawnData() == null) {
+            RespawnCompat.Point data = RespawnCompat.get(player);
+            if (data == null) {
                 PathScentNetworking.sendRespawnCleared(player);
                 return;
             }
-            LevelData.RespawnData data = config.respawnData();
             MinecraftServer server = player.level().getServer();
             ServerLevel level = server != null ? server.getLevel(data.dimension()) : null;
             if (level == null) {

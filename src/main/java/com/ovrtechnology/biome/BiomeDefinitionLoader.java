@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -99,7 +100,9 @@ public class BiomeDefinitionLoader {
         for (Map.Entry<Identifier, JsonElement> entry : files.entrySet()) {
             try {
                 BiomeDefinition biome = GSON.fromJson(entry.getValue(), BiomeDefinition.class);
-                processBiome(biome);
+                if (ContentAvailability.isAvailable(biome)) {
+                    processBiome(biome);
+                }
             } catch (Exception e) {
                 AromaAffect.LOGGER.error("Failed to parse biome {}: {}", entry.getKey(), e.getMessage());
             }

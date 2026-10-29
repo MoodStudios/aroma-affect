@@ -20,6 +20,25 @@ val javaVersion = if (minecraftVersion.substringBefore('.').toInt() >= 26) 25 el
 fun dep(name: String): String = findProperty("deps.$name")?.toString() ?: ""
 
 version = "$modVersion+MC$minecraftVersion"
+
+// Pre-26 Minecraft builds also compile src/legacy: shims for the 26.x API plus per-file overrides.
+// A file in src/legacy/java or src/legacy/resources replaces the shared file with the same path.
+val legacy = minecraftVersion.startsWith("1.")
+val legacyJava = rootProject.file("src/legacy/java")
+val legacyResources = rootProject.file("src/legacy/resources")
+
+fun overriddenBy(root: File) = Spec<FileTreeElement> { element ->
+    !element.isDirectory &&
+        !element.file.toPath().startsWith(root.toPath()) &&
+        root.resolve(element.relativePath.pathString).isFile
+}
+
+if (legacy) {
+    sourceSets.named("main") {
+        java.srcDir(legacyJava)
+        java.exclude(overriddenBy(legacyJava))
+    }
+}
 group = property("group").toString()
 
 base {
@@ -117,6 +136,7 @@ val generateFeedbackConfig = tasks.register("generateFeedbackConfig") {
 
 tasks.named<JavaCompile>("compileJava") {
     source(generateFeedbackConfig)
+    options.compilerArgs.addAll(listOf("-Xmaxerrs", "10000", "-XDshould-stop.ifError=FLOW"))
 }
 
 tasks.named<Javadoc>("javadoc") {
@@ -136,8 +156,8 @@ val (mcMajor, mcMinor) = mcMatch.destructured
 val expandProps = mapOf(
     "version" to version.toString(),
     "group" to group.toString(),
-    "minecraft_version_range" to "[$mcMajor.$mcMinor-,$mcMajor.${mcMinor.toInt() + 1})",
-    "fabric_minecraft_version_range" to "~$mcMajor.$mcMinor-",
+    "minecraft_version_range" to if (legacy) "[$minecraftVersion,$mcMajor.$mcMinor.2)" else "[$mcMajor.$mcMinor-,$mcMajor.${mcMinor.toInt() + 1})",
+    "fabric_minecraft_version_range" to if (legacy) ">=$minecraftVersion <$mcMajor.$mcMinor.2" else "~$mcMajor.$mcMinor-",
     "fabric_api_version" to dep("fabric_api"),
     "fabric_loader_version" to dep("fabric_loader"),
     "mod_name" to modName,
@@ -153,11 +173,27 @@ val expandProps = mapOf(
     "sources" to property("sources").toString(),
     "balm_version" to dep("balm").substringBefore('+'),
     "curios_version" to dep("curios").substringBefore('+'),
+    "access_widener" to if (minecraftVersion.startsWith("1.")) "$modId.accesswidener" else "$modId.classtweaker",
 )
 val jsonExpandProps = expandProps.mapValues { (_, value) -> value.replace("\n", "\\\\n") }
 
 tasks.named<ProcessResources>("processResources") {
     inputs.properties(expandProps)
+
+    if (legacy) {
+        exclude(overriddenBy(legacyResources))
+        from(legacyResources) {
+            exclude("mixins.json")
+        }
+        inputs.dir(legacyResources).optional()
+        val mixinOverrides = rootProject.file("src/legacy/mixins.json")
+        inputs.file(mixinOverrides).optional()
+        doLast {
+            val out = destinationDir
+            LegacyResources.convertRecipes(out.resolve("data"))
+            LegacyResources.applyMixinOverrides(out.resolve("$modId.mixins.json"), mixinOverrides)
+        }
+    }
 
     filesMatching(listOf("META-INF/mods.toml", "META-INF/neoforge.mods.toml")) {
         expand(expandProps)
@@ -202,6 +238,7 @@ tasks.named<Test>("test") {
     }
 
     jvmArgs("-Xmx512m", "-XX:+EnableDynamicAgentLoading")
+    systemProperty("aromaaffect.legacy", legacy.toString())
 }
 
 tasks.register("prepareMultiplayerDev") {

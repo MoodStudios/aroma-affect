@@ -36,7 +36,7 @@ public final class TrackingHistoryData {
     private TrackingHistoryData() {}
 
     public static TrackingHistoryData getInstance() {
-        String currentWorldId = WorldIdentifier.getCurrentWorldId();
+        String currentWorldId = WorldIds.getCurrentWorldId();
 
         // If the instance was loaded for a different world (e.g. loaded as "unknown"
         // before the server was ready, now the real world ID is available), reload.
@@ -195,7 +195,7 @@ public final class TrackingHistoryData {
     // ── Persistence ──────────────────────────────────────────────────────
 
     private static TrackingHistoryData load() {
-        String worldId = WorldIdentifier.getCurrentWorldId();
+        String worldId = WorldIds.getCurrentWorldId();
 
         // World not ready yet — return empty, non-persisted instance.
         // getInstance() will detect the world ID change and reload once it's available.
@@ -258,7 +258,7 @@ public final class TrackingHistoryData {
 
     public void save() {
         // Never persist when the world is not identified yet.
-        if ("unknown".equals(WorldIdentifier.getCurrentWorldId())) {
+        if ("unknown".equals(WorldIds.getCurrentWorldId())) {
             return;
         }
         Path configPath = getConfigPath();
@@ -272,7 +272,7 @@ public final class TrackingHistoryData {
     }
 
     private static Path getConfigPath() {
-        String worldId = WorldIdentifier.getCurrentWorldId();
+        String worldId = WorldIds.getCurrentWorldId();
         return ConfigPaths.resolve("aromaaffect", "history_" + worldId + ".json");
     }
 }

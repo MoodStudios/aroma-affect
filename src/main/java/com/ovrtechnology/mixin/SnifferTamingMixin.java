@@ -35,8 +35,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+//? if >=26 {
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//?} else {
+/*import net.minecraft.nbt.CompoundTag;
+*///?}
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.resources.ResourceKey;
@@ -119,7 +123,11 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                         if (!player.getAbilities().instabuild) {
                             itemStack.shrink(1);
                         }
+                        //? if >=26 {
                         self.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, 1.0F);
+                        //?} else {
+                        /*self.playSound(SoundEvents.HORSE_SADDLE, 1.0F, 1.0F);
+                        *///?}
                         SnifferContainer container = new SnifferContainer(self);
                         container.setChanged();
                     }
@@ -135,7 +143,11 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
                         if (!player.getAbilities().instabuild) {
                             itemStack.shrink(1);
                         }
+                        //? if >=26 {
                         self.playSound(SoundEvents.HORSE_ARMOR.value(), 1.0F, 1.0F);
+                        //?} else {
+                        /*self.playSound(SoundEvents.HORSE_ARMOR, 1.0F, 1.0F);
+                        *///?}
                         SnifferContainer container = new SnifferContainer(self);
                         container.setChanged();
                     }
@@ -200,7 +212,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
                     // Message to player
                     if (player instanceof Player) {
-                        player.sendOverlayMessage(Component.literal("§aSuccessfully tamed the Sniffer!"));
+                        com.ovrtechnology.compat.PlayerCompat.overlay(player, Component.literal("§aSuccessfully tamed the Sniffer!"));
                     }
                 } else {
                     // Progress particles
@@ -212,7 +224,7 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
                     // Progress message
                     if (player instanceof Player) {
-                        player.sendOverlayMessage(Component.literal("§6Taming progress: §e" + data.tamingProgress + "§6/§e" + torchflowersNeeded));
+                        com.ovrtechnology.compat.PlayerCompat.overlay(player, Component.literal("§6Taming progress: §e" + data.tamingProgress + "§6/§e" + torchflowersNeeded));
                     }
                 }
             }
@@ -823,17 +835,26 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
 
         // Drop saddle if equipped
         if (!data.saddleItem.isEmpty()) {
+            //? if >=26 {
             self.spawnAtLocation(level, data.saddleItem.copy());
+            //?} else {
+            /*self.spawnAtLocation(data.saddleItem.copy());
+            *///?}
             data.saddleItem = ItemStack.EMPTY;
         }
 
         // Drop nose if equipped
         if (!data.decorationItem.isEmpty()) {
+            //? if >=26 {
             self.spawnAtLocation(level, data.decorationItem.copy());
+            //?} else {
+            /*self.spawnAtLocation(data.decorationItem.copy());
+            *///?}
             data.decorationItem = ItemStack.EMPTY;
         }
     }
 
+    //? if >=26 {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
@@ -875,5 +896,50 @@ public abstract class SnifferTamingMixin extends Animal implements HasCustomInve
         data.hasNetherScent = input.getBooleanOr("AromaAffect.HasNetherScent", false);
         data.hasEndScent = input.getBooleanOr("AromaAffect.HasEndScent", false);
     }
+    //?} else {
+    /*@Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+
+        Sniffer self = (Sniffer) (Object) this;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+
+        tag.putInt("AromaAffect.TamingProgress", data.tamingProgress);
+        if (data.ownerUUID != null) {
+            tag.putString("AromaAffect.OwnerUUID", data.ownerUUID.toString());
+        }
+        tag.putBoolean("AromaAffect.HasSaddle", !data.saddleItem.isEmpty());
+        if (!data.decorationItem.isEmpty() && data.decorationItem.getItem() instanceof SnifferNoseItem noseItem) {
+            tag.putString("AromaAffect.DecorationId", noseItem.getItemId());
+        }
+        tag.putBoolean("AromaAffect.HasOverworldScent", data.hasOverworldScent);
+        tag.putBoolean("AromaAffect.HasNetherScent", data.hasNetherScent);
+        tag.putBoolean("AromaAffect.HasEndScent", data.hasEndScent);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+
+        Sniffer self = (Sniffer) (Object) this;
+        SnifferTamingData data = SnifferTamingData.get(self.getUUID());
+
+        data.tamingProgress = tag.getInt("AromaAffect.TamingProgress");
+        if (tag.contains("AromaAffect.OwnerUUID")) {
+            data.ownerUUID = UUID.fromString(tag.getString("AromaAffect.OwnerUUID"));
+        }
+        if (tag.getBoolean("AromaAffect.HasSaddle")) {
+            data.saddleItem = new ItemStack(Items.SADDLE);
+        }
+        if (tag.contains("AromaAffect.DecorationId")) {
+            SnifferNoseRegistry.getSnifferNose(tag.getString("AromaAffect.DecorationId")).ifPresent(nose ->
+                    data.decorationItem = new ItemStack(nose)
+            );
+        }
+        data.hasOverworldScent = tag.getBoolean("AromaAffect.HasOverworldScent");
+        data.hasNetherScent = tag.getBoolean("AromaAffect.HasNetherScent");
+        data.hasEndScent = tag.getBoolean("AromaAffect.HasEndScent");
+    }
+    *///?}
 
 }

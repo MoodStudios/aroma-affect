@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.ovrtechnology.AromaAffect;
 //? if >=26.3 {
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-//?} else {
+//?} else if >=26 {
 /*import com.mojang.blaze3d.pipeline.RenderPipeline;
 *///?}
 import com.mojang.blaze3d.platform.NativeImage;
@@ -19,9 +19,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+//? if >=26 {
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
+//?}
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
@@ -71,9 +73,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
     private static final int COLOR_RING_SEPARATOR = 0x80A88CFF;
     private static final int COLOR_INDICATOR = 0xEEFFFFFF;
 
+    //? if >=26 {
     private static final TextureSetup NO_TEXTURE = TextureSetup.noTexture();
 
     private static final Field GUI_RENDER_STATE_FIELD = findGuiRenderStateField();
+    //?}
 
     private final List<RadialEntry> entries = new ArrayList<>();
     private float[] selectionProgress = new float[0];
@@ -1102,7 +1106,11 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 String texName = original.getPath().replace('/', '_').replace('.', '_');
                 Identifier grayLoc = Identifier.fromNamespaceAndPath(
                         AromaAffect.MOD_ID, "dynamic/gray_" + texName);
+                //? if >=26 {
                 DynamicTexture dynamicTexture = new DynamicTexture(() -> texName, grayscale);
+                //?} else {
+                /*DynamicTexture dynamicTexture = new DynamicTexture(grayscale);
+                *///?}
                 Minecraft.getInstance().getTextureManager().register(grayLoc, dynamicTexture);
                 GRAYSCALE_CACHE.put(original, grayLoc);
                 return grayLoc;
@@ -1218,6 +1226,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         int boundsTop = centerY - outerRadius - boundsPadding;
         int boundsSize = (outerRadius + boundsPadding) * 2;
 
+        //? if >=26 {
         ScreenRectangle bounds = new ScreenRectangle(boundsLeft, boundsTop, boundsSize, boundsSize).transformMaxBounds(graphics.pose());
         GuiRenderState renderState = getGuiRenderState(graphics);
         renderState.addGuiElement(new RadialRingRenderState(
@@ -1239,6 +1248,28 @@ public class RadialMenuScreen extends BaseMenuScreen {
                 bounds,
                 null
         ));
+        //?} else {
+        /*RadialRingRenderState ring = new RadialRingRenderState(
+                new org.joml.Matrix4f(graphics.pose().poseStack().last().pose()),
+                centerX,
+                centerY,
+                innerRadius,
+                outerRadius,
+                baseColor,
+                selectedColor,
+                borderColor,
+                separatorColor,
+                indicatorColor,
+                START_ANGLE_RAD,
+                selectedIndex,
+                selectionProgress,
+                null,
+                null
+        );
+        graphics.raw().flush();
+        ring.buildVertices(graphics.raw().bufferSource().getBuffer(net.minecraft.client.renderer.RenderType.gui()));
+        graphics.raw().flush();
+        *///?}
     }
 
     private int radialCenterX() {
@@ -1300,6 +1331,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
+    //? if >=26 {
     private static GuiRenderState getGuiRenderState(GuiGraphicsExtractor graphics) {
         try {
             return (GuiRenderState) GUI_RENDER_STATE_FIELD.get(graphics);
@@ -1317,6 +1349,7 @@ public class RadialMenuScreen extends BaseMenuScreen {
         }
         throw new IllegalStateException("Unable to locate GuiRenderState field on GuiGraphicsExtractor");
     }
+    //?}
 
     private void drawDistanceLine(
             GuiGraphicsExtractor graphics,
@@ -1342,9 +1375,13 @@ public class RadialMenuScreen extends BaseMenuScreen {
     }
 
     private record RadialRingRenderState(
+            //? if >=26 {
             RenderPipeline pipeline,
             TextureSetup textureSetup,
             Matrix3x2f pose,
+            //?} else {
+            /*org.joml.Matrix4f pose,
+            *///?}
             int centerX,
             int centerY,
             float innerRadius,
@@ -1359,9 +1396,15 @@ public class RadialMenuScreen extends BaseMenuScreen {
             float[] selectionProgress,
             ScreenRectangle bounds,
             ScreenRectangle scissorArea
-    ) implements GuiElementRenderState {
+    )
+            //? if >=26 {
+            implements GuiElementRenderState
+            //?}
+    {
 
+        //? if >=26 {
         @Override
+        //?}
         public void buildVertices(VertexConsumer consumer) {
             int segments = selectionProgress.length;
             if (segments <= 0) {
@@ -1520,10 +1563,17 @@ public class RadialMenuScreen extends BaseMenuScreen {
                              float x3, float y3,
                              int color) {
             // Match vanilla GUI quad winding (culling may be enabled on GUI pipelines).
+            //? if >=26 {
             consumer.addVertexWith2DPose(pose, x0, y0).setColor(color);
             consumer.addVertexWith2DPose(pose, x3, y3).setColor(color);
             consumer.addVertexWith2DPose(pose, x2, y2).setColor(color);
             consumer.addVertexWith2DPose(pose, x1, y1).setColor(color);
+            //?} else {
+            /*consumer.addVertex(pose, x0, y0, 0.0F).setColor(color);
+            consumer.addVertex(pose, x3, y3, 0.0F).setColor(color);
+            consumer.addVertex(pose, x2, y2, 0.0F).setColor(color);
+            consumer.addVertex(pose, x1, y1, 0.0F).setColor(color);
+            *///?}
         }
 
         private static int computeFullArcSteps(float outerRadius) {

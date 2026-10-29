@@ -28,7 +28,7 @@
       "com.ovrtechnology.fabric.client.ModMenuIntegration"
     ]
   },
-  "accessWidener": "${mod_id}.classtweaker",
+  "accessWidener": "${access_widener}",
   "mixins": [
     "${mod_id}.mixins.json"
   ],
