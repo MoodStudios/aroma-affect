@@ -44,6 +44,10 @@ jobs:
             echo "Tag v$VERSION already exists"
             exit 1
           fi
+          if ! grep -qxF "## ${VERSION%%-*}" CHANGELOG.md; then
+            echo "CHANGELOG.md has no section for ${VERSION%%-*}"
+            exit 1
+          fi
 
   build:
     name: Build ${{ matrix.node }}
@@ -107,6 +111,11 @@ jobs:
           ls dist/*/*.jar
           test "$(ls dist/*/*.jar | wc -l)" -eq 6
 
+      - name: Extract release notes
+        run: |
+          awk -v header="## ${VERSION%%-*}" '$0 == header { found = 1; print; next } /^## / { found = 0 } found' CHANGELOG.md > release_notes.md
+          cat release_notes.md
+
       - name: Bump mod_version
         id: bump
         env:
@@ -130,10 +139,7 @@ jobs:
           tag_name: v${{ inputs.version }}
           target_commitish: ${{ steps.bump.outputs.sha }}
           name: AromaAffect ${{ inputs.version }}
-          body: |
-            ## ${{ inputs.version }}
-
-            Minecraft 1.21.1, 26.2 and 26.3 on Fabric and NeoForge.
+          body_path: release_notes.md
           prerelease: ${{ inputs.release_type == 'pre-release' }}
           files: dist/*/*.jar
           fail_on_unmatched_files: true
