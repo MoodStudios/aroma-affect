@@ -1,0 +1,9 @@
+{
+  "id": "minecraft:sulfur_caves",
+  "min_minecraft": "26.2",
+  "image": "biome/caves",
+  "fallback_name": "Sulfur Caves",
+  "color": "#C8B43C",
+  "scent_id": "machina",
+  "track_cost": 25
+}

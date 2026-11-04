@@ -1,0 +1,31 @@
+package com.ovrtechnology.mixin;
+
+// Render states only exist from 1.21.2; on older versions the renderers read the entity directly
+//? if >=26 {
+import com.ovrtechnology.nose.client.EntityRenderStateAccess;
+import java.util.UUID;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+
+/**
+ * Adds an entity UUID field to {@link EntityRenderState} so that the correct
+ * UUID is available during the render phase (not just during extractRenderState).
+ */
+@Mixin(EntityRenderState.class)
+public class EntityRenderStateMixin implements EntityRenderStateAccess {
+
+    @Unique
+    private UUID aromaaffect$entityUuid;
+
+    @Override
+    public UUID aromaaffect$getEntityUuid() {
+        return aromaaffect$entityUuid;
+    }
+
+    @Override
+    public void aromaaffect$setEntityUuid(UUID uuid) {
+        aromaaffect$entityUuid = uuid;
+    }
+}
+//?}

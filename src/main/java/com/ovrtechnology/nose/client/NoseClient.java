@@ -1,0 +1,81 @@
+package com.ovrtechnology.nose.client;
+
+import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.nose.NoseIdRemapper;
+import com.ovrtechnology.nose.NoseItem;
+import net.blay09.mods.balm.client.model.geom.BalmModelLayerRegistrar;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public final class NoseClient {
+
+    /** Animated entity texture frame counts (nose ID → number of frames). */
+    private static final Map<String, Integer> ANIMATED_FRAME_COUNTS = Map.of(
+            "dimensional_nose", 7,
+            "ancient_nose", 6,
+            "dragon_nose", 4
+    );
+
+    /** Ticks per animation frame (matches item texture frametime). */
+    private static final int TICKS_PER_FRAME = 4;
+
+    /** Cached Identifier arrays per animated nose to avoid allocation every frame. */
+    private static final Map<String, Identifier[]> frameCache = new HashMap<>();
+
+    private NoseClient() {
+    }
+
+    /**
+     * Balm model-layer registrar callback. Wire from
+     * {@code AromaAffectClient.initialize} via
+     * {@code clientRegistrars.modelLayers(NoseClient::registerModelLayers)}.
+     */
+    public static void registerModelLayers(BalmModelLayerRegistrar modelLayers) {
+        //? if >=26 {
+        modelLayers.register(NoseModelLayers.NOSE_MASK.model(), NoseMaskModel::createLayer);
+        //?} else {
+        /*modelLayers.register(NoseModelLayers.NOSE_MASK.getModel(), NoseMaskModel::createLayer);
+        *///?}
+        AromaAffect.LOGGER.info("Nose client rendering initialized");
+    }
+
+    public static Identifier getArmorTexture(ItemStack stack) {
+        if (stack.getItem() instanceof NoseItem noseItem) {
+            String resolvedId = NoseIdRemapper.resolve(noseItem.getItemId());
+
+            Integer frameCount = ANIMATED_FRAME_COUNTS.get(resolvedId);
+            if (frameCount != null) {
+                return getAnimatedFrame(resolvedId, frameCount);
+            }
+
+            return Identifier.fromNamespaceAndPath(
+                    AromaAffect.MOD_ID,
+                    "textures/entity/nose/" + resolvedId + ".png"
+            );
+        }
+
+        return Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/entity/nose/foragers_nose.png");
+    }
+
+    private static Identifier getAnimatedFrame(String noseId, int frameCount) {
+        Identifier[] frames = frameCache.computeIfAbsent(noseId, id -> {
+            Identifier[] arr = new Identifier[frameCount];
+            for (int i = 0; i < frameCount; i++) {
+                arr[i] = Identifier.fromNamespaceAndPath(
+                        AromaAffect.MOD_ID,
+                        "textures/entity/nose/" + id + "_" + i + ".png"
+                );
+            }
+            return arr;
+        });
+
+        Minecraft mc = Minecraft.getInstance();
+        long ticks = mc.level != null ? mc.level.getGameTime() : 0;
+        int frameIndex = (int) ((ticks / TICKS_PER_FRAME) % frameCount);
+        return frames[frameIndex];
+    }
+}

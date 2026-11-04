@@ -1,0 +1,18 @@
+{
+  "remove": [
+    "EntityRenderStateMixin",
+    "EntityRendererMixin",
+    "LivingEntityRendererMixin",
+    "IronGolemRendererMixin",
+    "OldMinecartBehaviorServerMixin",
+    "NewMinecartBehaviorServerMixin"
+  ],
+  "mixins": [
+    "legacy.AreaEffectCloudAccessor",
+    "legacy.NoseHurtEquipmentMixin"
+  ],
+  "client": [
+    "legacy.CustomHeadLayerMixin"
+  ],
+  "server": []
+}
