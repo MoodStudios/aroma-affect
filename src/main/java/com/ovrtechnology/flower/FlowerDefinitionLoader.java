@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -49,7 +50,9 @@ public class FlowerDefinitionLoader {
         for (Map.Entry<Identifier, JsonElement> entry : files.entrySet()) {
             try {
                 FlowerDefinition flower = GSON.fromJson(entry.getValue(), FlowerDefinition.class);
-                processFlower(flower);
+                if (ContentAvailability.isAvailable(flower)) {
+                    processFlower(flower);
+                }
             } catch (Exception e) {
                 AromaAffect.LOGGER.error("Failed to parse flower {}: {}", entry.getKey(), e.getMessage());
             }

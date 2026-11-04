@@ -1,27 +1,19 @@
 package com.ovrtechnology.nose;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.HeadWearableItem;
+import com.ovrtechnology.compat.ItemCompat;
+import com.ovrtechnology.compat.RegistrationCompat;
 import com.ovrtechnology.nose.accessory.NoseAccessory;
 import lombok.Getter;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.enchantment.Repairable;
-import net.minecraft.world.item.equipment.EquipmentAssets;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 
 /**
@@ -31,7 +23,7 @@ import net.minecraft.world.level.Level;
  * The nose is worn in the head slot like a helmet and provides different detection
  * capabilities based on its tier and unlock configuration.
  */
-public class NoseItem extends Item {
+public class NoseItem extends HeadWearableItem {
 
     /**
      * The definition that was used to create this nose item
@@ -60,13 +52,8 @@ public class NoseItem extends Item {
      * Create item properties from a nose definition
      */
     private static Properties createProperties(NoseDefinition definition, String itemId) {
-        Properties properties = new Properties();
-
-        // Set the item ID - REQUIRED in Minecraft 1.21.x
-        properties.setId(ResourceKey.create(
-                Registries.ITEM,
-                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
-        ));
+        Properties properties = RegistrationCompat.itemProperties(
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId));
 
         // Set durability
         properties.durability(definition.getDurability());
@@ -77,44 +64,17 @@ public class NoseItem extends Item {
         // Set rarity based on tier
         properties.rarity(getRarityForTier(definition.getTier()));
 
-        // Equippable HEAD slot: noses always work in the vanilla helmet slot.
-        // On NeoForge, Curios provides an additional "face" accessory slot when
-        // installed; NoseAccessory routes equip/lookup to whichever is appropriate.
-        ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> equipmentAsset =
-                getEquipmentAssetFromModel(definition.getModel());
-        Equippable equippable = Equippable.builder(EquipmentSlot.HEAD)
-                .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
-                .setAsset(equipmentAsset)
-                .setSwappable(true)
-                .setDamageOnHurt(true)
-                .build();
-        properties.component(DataComponents.EQUIPPABLE, equippable);
-
-        // Add Repairable component for anvil repair
-        String repairId = definition.getRepair();
-        if (repairId != null && !repairId.isEmpty()) {
-            Identifier repairLoc = Identifier.parse(repairId);
-            BuiltInRegistries.ITEM.getOptional(repairLoc).ifPresent(repairItem -> {
-                Holder<Item> holder = BuiltInRegistries.ITEM.wrapAsHolder(repairItem);
-                properties.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(holder)));
-            });
-        }
+        // Noses always work in the vanilla helmet slot. On NeoForge, Curios provides an
+        // additional "face" accessory slot when installed; NoseAccessory routes equip/lookup.
+        ItemCompat.headEquippable(properties, definition.getModel());
+        ItemCompat.applyRepairItem(properties, definition.getRepair());
 
         return properties;
     }
 
-    /**
-     * Map a helmet-style model id (e.g. "minecraft:iron_helmet") to its equipment asset key.
-     */
-    private static ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> getEquipmentAssetFromModel(String model) {
-        if (model == null || model.isEmpty()) return EquipmentAssets.IRON;
-        String lower = model.toLowerCase();
-        if (lower.contains("diamond")) return EquipmentAssets.DIAMOND;
-        if (lower.contains("gold")) return EquipmentAssets.GOLD;
-        if (lower.contains("netherite")) return EquipmentAssets.NETHERITE;
-        if (lower.contains("leather")) return EquipmentAssets.LEATHER;
-        if (lower.contains("chain")) return EquipmentAssets.CHAINMAIL;
-        return EquipmentAssets.IRON;
+    @Override
+    protected String repairItemId(ItemStack stack) {
+        return definition.getRepair();
     }
 
     /**
@@ -134,7 +94,7 @@ public class NoseItem extends Item {
      * (Curios face slot on NeoForge, vanilla HEAD slot on Fabric).
      */
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    protected InteractionResult useItem(Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
 
         if (!NoseAccessory.hasSlot(player)) {

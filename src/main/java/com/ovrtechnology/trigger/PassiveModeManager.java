@@ -631,7 +631,11 @@ public final class PassiveModeManager {
         try {
             Identifier entityLocation = Identifier.parse(entityTypeId);
             Optional<EntityType<?>> entityTypeOpt = level.registryAccess()
+                    //? if >=26 {
                     .lookupOrThrow(Registries.ENTITY_TYPE)
+                    //?} else {
+                    /*.registryOrThrow(Registries.ENTITY_TYPE)
+                    *///?}
                     .getOptional(entityLocation);
 
             if (entityTypeOpt.isEmpty()) {
@@ -854,7 +858,11 @@ public final class PassiveModeManager {
         try {
             Identifier blockLocation = Identifier.parse(blockId);
             Optional<Block> blockOpt = level.registryAccess()
+                    //? if >=26 {
                     .lookupOrThrow(Registries.BLOCK)
+                    //?} else {
+                    /*.registryOrThrow(Registries.BLOCK)
+                    *///?}
                     .getOptional(blockLocation);
 
             if (blockOpt.isEmpty()) {
@@ -907,7 +915,11 @@ public final class PassiveModeManager {
         try {
             Identifier location = Identifier.parse(blockId);
             Optional<Block> blockOpt = level.registryAccess()
+                    //? if >=26 {
                     .lookupOrThrow(Registries.BLOCK)
+                    //?} else {
+                    /*.registryOrThrow(Registries.BLOCK)
+                    *///?}
                     .getOptional(location);
 
             if (blockOpt.isPresent()) {

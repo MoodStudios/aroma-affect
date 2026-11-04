@@ -1,5 +1,6 @@
 {
   "id": "minecraft:nautilus",
+  "min_minecraft": "1.21.11",
   "scent_id": "marine",
   "fallback_name": "Nautilus",
   "color": "#C0A56E",

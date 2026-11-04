@@ -14,7 +14,11 @@ public final class NoseStrapToggleButton extends ImageButton {
 
     private static final Identifier STRAP_ON = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose/strap_on");
     private static final Identifier STRAP_OFF = Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, "nose/strap_off");
+    //? if >=26 {
     private static final WidgetSprites PLACEHOLDER_SPRITES = new WidgetSprites(STRAP_OFF);
+    //?} else {
+    /*private static final WidgetSprites PLACEHOLDER_SPRITES = new WidgetSprites(STRAP_OFF, STRAP_OFF);
+    *///?}
 
     public NoseStrapToggleButton(int x, int y, OnPress onPress) {
         super(
@@ -29,7 +33,18 @@ public final class NoseStrapToggleButton extends ImageButton {
         setTooltip(Tooltip.create(Component.translatable("gui.aromaaffect.nose_strap.tooltip")));
     }
 
+    //? if <26 {
+    /*@Override
+    public void renderWidget(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        GuiGraphicsExtractor graphics = new GuiGraphicsExtractor(guiGraphics);
+        extractContents(graphics, mouseX, mouseY, partialTick);
+        graphics.flush();
+    }
+    *///?}
+
+    //? if >=26 {
     @Override
+    //?}
     public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         Identifier sprite = NoseRenderToggles.isStrapEnabled() ? STRAP_ON : STRAP_OFF;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, getX(), getY(), width, height);

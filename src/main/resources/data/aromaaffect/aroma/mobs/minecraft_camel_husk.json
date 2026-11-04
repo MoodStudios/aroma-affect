@@ -1,5 +1,6 @@
 {
   "id": "minecraft:camel_husk",
+  "min_minecraft": "1.21.11",
   "scent_id": "smoky",
   "fallback_name": "Camel Husk",
   "color": "#FACB73",

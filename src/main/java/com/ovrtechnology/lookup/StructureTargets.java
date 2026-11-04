@@ -25,11 +25,19 @@ public final class StructureTargets {
      * that ID. Returns an empty list if neither exists.
      */
     public static List<Holder<Structure>> resolve(Registry<Structure> registry, Identifier id) {
+        //? if >=26 {
         var structure = registry.get(id);
+        //?} else {
+        /*var structure = registry.getHolder(id);
+        *///?}
         if (structure.isPresent()) {
             return List.of(structure.get());
         }
+        //? if >=26 {
         return registry.get(TagKey.create(Registries.STRUCTURE, id))
+        //?} else {
+        /*return registry.getTag(TagKey.create(Registries.STRUCTURE, id))
+        *///?}
                 .map(tag -> tag.stream().toList())
                 .orElse(List.of());
     }

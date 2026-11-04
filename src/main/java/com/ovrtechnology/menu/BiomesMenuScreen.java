@@ -3,6 +3,7 @@ package com.ovrtechnology.menu;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.biome.BiomeDefinition;
 import com.ovrtechnology.biome.BiomeDefinitionLoader;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.nose.EquippedNoseHelper;
 import com.ovrtechnology.nose.NoseAbilityResolver;
 import com.ovrtechnology.tracking.RequiredItem;
@@ -51,7 +52,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         BIOME_ICONS.put("minecraft:flower_forest", Items.PEONY.getDefaultInstance());
         BIOME_ICONS.put("minecraft:cherry_grove", Items.CHERRY_LOG.getDefaultInstance());
         BIOME_ICONS.put("minecraft:windswept_forest", Items.OAK_LEAVES.getDefaultInstance());
-        BIOME_ICONS.put("minecraft:pale_garden", Items.PALE_MOSS_BLOCK.getDefaultInstance());
+        putIconIfPresent("minecraft:pale_garden", "minecraft:pale_moss_block");
 
         // Overworld - Taiga
         BIOME_ICONS.put("minecraft:taiga", Items.SPRUCE_LOG.getDefaultInstance());
@@ -113,7 +114,7 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         // Overworld - Caves
         BIOME_ICONS.put("minecraft:lush_caves", Items.GLOW_BERRIES.getDefaultInstance());
         BIOME_ICONS.put("minecraft:dripstone_caves", Items.POINTED_DRIPSTONE.getDefaultInstance());
-        BIOME_ICONS.put("minecraft:sulfur_caves", Items.SULFUR.getDefaultInstance());
+        putIconIfPresent("minecraft:sulfur_caves", "minecraft:sulfur");
         BIOME_ICONS.put("minecraft:deep_dark", Items.SCULK.getDefaultInstance());
 
         // Overworld - Mushroom
@@ -133,6 +134,12 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         BIOME_ICONS.put("minecraft:small_end_islands", Items.END_STONE.getDefaultInstance());
         BIOME_ICONS.put("minecraft:end_barrens", Items.END_STONE.getDefaultInstance());
         BIOME_ICONS.put("minecraft:the_void", Items.BARRIER.getDefaultInstance());
+    }
+
+    // Items of newer biomes are looked up by id so this class compiles on every version
+    private static void putIconIfPresent(String biomeId, String itemId) {
+        BuiltInRegistries.ITEM.getOptional(Identifier.parse(itemId))
+                .ifPresent(item -> BIOME_ICONS.put(biomeId, item.getDefaultInstance()));
     }
 
     public BiomesMenuScreen() {
@@ -170,6 +177,9 @@ public class BiomesMenuScreen extends SelectionMenuScreen {
         }
 
         for (String biomeId : detectableBiomes) {
+            if (!ContentAvailability.biomeExists(player.level().registryAccess(), biomeId)) {
+                continue;
+            }
             Identifier resourceLocation = Identifier.parse(biomeId);
             addBiomeCard(resourceLocation, true);
         }

@@ -21,11 +21,21 @@ public class JigsawPriorityMixin {
     private void aromaaffect$prioritizeNoseSmithHouse(
             StructureTemplateManager manager, BlockPos pos,
             Rotation rotation, RandomSource random,
+            //? if >=26 {
             CallbackInfoReturnable<List<StructureTemplate.JigsawBlockInfo>> cir) {
 
         List<StructureTemplate.JigsawBlockInfo> jigsaws = cir.getReturnValue();
         for (int i = 1; i < jigsaws.size(); i++) {
             Identifier pool = jigsaws.get(i).pool().identifier();
+            //?} else {
+            /*CallbackInfoReturnable<List<StructureTemplate.StructureBlockInfo>> cir) {
+
+        List<StructureTemplate.StructureBlockInfo> jigsaws = cir.getReturnValue();
+        for (int i = 1; i < jigsaws.size(); i++) {
+            var nbt = jigsaws.get(i).nbt();
+            Identifier pool = nbt != null ? Identifier.tryParse(nbt.getString("pool")) : null;
+            if (pool == null) continue;
+            *///?}
             if (pool.getNamespace().equals("aromaaffect")
                     && pool.getPath().contains("nose_smith_house")) {
                 jigsaws.add(0, jigsaws.remove(i));

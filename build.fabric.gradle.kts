@@ -5,6 +5,8 @@ plugins {
 
 val modId = property("mod_id").toString()
 val balmVersion = property("deps.balm").toString()
+val obfuscated = sc.current.version.startsWith("1.")
+val accessFile = if (obfuscated) "$modId.accesswidener" else "$modId.classtweaker"
 
 sourceSets.main {
     java.exclude("**/neoforge/**")
@@ -13,6 +15,7 @@ sourceSets.main {
         "data/aromaaffect/curios/**",
         "data/curios/**",
         "assets/aromaaffect/textures/slot/**",
+        if (obfuscated) "$modId.classtweaker" else "$modId.accesswidener",
     )
 }
 
@@ -24,6 +27,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
     modImplementation("net.blay09.mods:balm-fabric:$balmVersion") {
         isChanging = balmVersion.endsWith("SNAPSHOT")
+        exclude(group = "mezz.jei")
     }
 
     // Mod Menu is optional at runtime; it is only on the dev classpath so the
@@ -34,8 +38,8 @@ dependencies {
 
 loom {
     accessWidenerPath = sc.process(
-        rootProject.file("src/main/resources/$modId.classtweaker"),
-        "build/processed.classtweaker",
+        rootProject.file("src/main/resources/$accessFile"),
+        "build/processed.$accessFile",
     )
 
     runConfigs {

@@ -10,14 +10,25 @@ public final class NoseRenderingFabric {
     }
 
     public static void init() {
+        //? if <26 {
+        /*NoseArmorRenderer renderer = new NoseArmorRenderer();
+        *///?}
         for (Holder<Item> holder : NoseRegistry.getAllNoses()) {
             if (holder.isBound()) {
+                //? if >=26 {
                 ArmorRenderer.register(NoseArmorRenderer::new, holder.value());
+                //?} else {
+                /*ArmorRenderer.register(renderer, holder.value());
+                *///?}
             }
         }
         for (Holder<Item> holder : NoseRegistry.getLegacyItems()) {
             if (holder.isBound()) {
+                //? if >=26 {
                 ArmorRenderer.register(NoseArmorRenderer::new, holder.value());
+                //?} else {
+                /*ArmorRenderer.register(renderer, holder.value());
+                *///?}
             }
         }
     }

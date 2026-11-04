@@ -94,7 +94,11 @@ public final class SnifferLootResolver {
             TagKey<Item> tagKey = TagKey.create(Registries.ITEM, tagId);
             int amount = count;
             BuiltInRegistries.ITEM
+                    //? if >=26 {
                     .get(tagKey)
+                    //?} else {
+                    /*.getTag(tagKey)
+                    *///?}
                     .flatMap(set -> set.getRandomElement(random))
                     .ifPresent(h -> out.add(new ItemStack(h.value(), amount)));
         }

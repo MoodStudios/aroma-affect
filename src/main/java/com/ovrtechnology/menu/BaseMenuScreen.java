@@ -114,7 +114,9 @@ public abstract class BaseMenuScreen extends Screen {
         }
     }
     
+    //? if >=26 {
     @Override
+    //?}
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         int logicalMouseX = mouseX;
         int logicalMouseY = mouseY;
@@ -124,12 +126,44 @@ public abstract class BaseMenuScreen extends Screen {
             renderMenuBackground(graphics, smoothProgress);
             renderContent(graphics, logicalMouseX, logicalMouseY, partialTick, smoothProgress);
             renderNotification(graphics);
+            //? if >=26 {
             super.extractRenderState(graphics, logicalMouseX, logicalMouseY, partialTick);
+            //?} else {
+            /*renderWidgets(graphics, logicalMouseX, logicalMouseY, partialTick);
+            *///?}
             layoutReady = true;
         } finally {
             graphics.pose().popMatrix();
         }
     }
+
+    //? if <26 {
+    /*private boolean renderingWidgets;
+
+    @Override
+    public void render(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        GuiGraphicsExtractor graphics = new GuiGraphicsExtractor(guiGraphics);
+        extractRenderState(graphics, mouseX, mouseY, partialTick);
+        graphics.flush();
+    }
+
+    @Override
+    public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        if (!renderingWidgets) {
+            super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        }
+    }
+
+    private void renderWidgets(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        renderingWidgets = true;
+        try {
+            super.render(graphics.raw(), mouseX, mouseY, partialTick);
+        } finally {
+            renderingWidgets = false;
+        }
+    }
+    *///?}
 
     @Override
     protected void repositionElements() {
@@ -148,12 +182,60 @@ public abstract class BaseMenuScreen extends Screen {
         animationTicks = ticks;
     }
 
+    //? if >=26 {
     @Override
     public final boolean mouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
+        return onMouseClicked(event, isValidClickButton);
+    }
+
+    @Override
+    public final boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        return onMouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public final boolean mouseReleased(MouseButtonEvent event) {
+        return handleMouseRelease(event);
+    }
+
+    //?} else {
+    /*@Override
+    public final boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return onMouseClicked(new MouseButtonEvent(mouseX, mouseY, button), false);
+    }
+
+    @Override
+    public final boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
+        return onMouseDragged(new MouseButtonEvent(mouseX, mouseY, button), dx, dy);
+    }
+
+    @Override
+    public final boolean mouseReleased(double mouseX, double mouseY, int button) {
+        return handleMouseRelease(new MouseButtonEvent(mouseX, mouseY, button));
+    }
+
+    @Override
+    public final boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+    }
+    *///?}
+
+    //? if >=26 {
+    @Override
+    //?}
+    public boolean keyPressed(KeyEvent event) {
+        return onKeyPressed(event);
+    }
+
+    private boolean onMouseClicked(MouseButtonEvent event, boolean isValidClickButton) {
         if (!layoutReady) return false;
         MouseButtonEvent local = event;
         if (handleMouseClick(local.x(), local.y(), local.button())) return true;
+        //? if >=26 {
         return super.mouseClicked(local, isValidClickButton);
+        //?} else {
+        /*return super.mouseClicked(local.x(), local.y(), local.button());
+        *///?}
     }
 
     @Override
@@ -164,24 +246,26 @@ public abstract class BaseMenuScreen extends Screen {
         return super.mouseScrolled(x, y, scrollX, scrollY);
     }
 
-    @Override
-    public final boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+    private boolean onMouseDragged(MouseButtonEvent event, double dx, double dy) {
         if (!layoutReady) return false;
         MouseButtonEvent local = event;
         return handleMouseDrag(local, dx, dy);
     }
 
     protected boolean handleMouseDrag(MouseButtonEvent event, double dx, double dy) {
+        //? if >=26 {
         return super.mouseDragged(event, dx, dy);
-    }
-
-    @Override
-    public final boolean mouseReleased(MouseButtonEvent event) {
-        return handleMouseRelease(event);
+        //?} else {
+        /*return super.mouseDragged(event.x(), event.y(), event.button(), dx, dy);
+        *///?}
     }
 
     protected boolean handleMouseRelease(MouseButtonEvent event) {
+        //? if >=26 {
         return super.mouseReleased(event);
+        //?} else {
+        /*return super.mouseReleased(event.x(), event.y(), event.button());
+        *///?}
     }
 
     @Override
@@ -189,8 +273,7 @@ public abstract class BaseMenuScreen extends Screen {
         super.mouseMoved(x, y);
     }
 
-    @Override
-    public boolean keyPressed(KeyEvent event) {
+    private boolean onKeyPressed(KeyEvent event) {
         //? if >=26.3 {
         int scanCode = event.keycode();
         //?} else {
@@ -199,7 +282,11 @@ public abstract class BaseMenuScreen extends Screen {
         if (handleKeyPress(event.key(), scanCode, event.modifiers())) {
             return true;
         }
+        //? if >=26 {
         return super.keyPressed(event);
+        //?} else {
+        /*return super.keyPressed(event.key(), event.scancode(), event.modifiers());
+        *///?}
     }
 
     /**

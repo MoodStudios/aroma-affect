@@ -102,7 +102,11 @@ public final class VillagePoolInjector {
             // - That meeting point contains a jigsaw connector that *always* spawns the Nose Smith house via a custom pool.
             for (VillageBiome biome : EnumSet.allOf(VillageBiome.class)) {
                 StructureTemplatePool townCenters = pools
+                        //? if >=26 {
                         .get(biome.townCentersPool())
+                        //?} else {
+                        /*.getHolder(biome.townCentersPool())
+                        *///?}
                         .orElseThrow(() -> new IllegalStateException("Missing template pool: " + biome.townCentersPool()))
                         .value();
 

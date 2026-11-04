@@ -10,12 +10,13 @@ val nodeName = project.name
 
 sourceSets.main {
     java.exclude("**/fabric/**")
-    resources.exclude("fabric.mod.json")
+    resources.exclude("fabric.mod.json", "$modId.classtweaker", "$modId.accesswidener")
 }
 
 dependencies {
     implementation("net.blay09.mods:balm-neoforge:$balmVersion") {
         isChanging = balmVersion.endsWith("SNAPSHOT")
+        exclude(group = "mezz.jei")
     }
 
     // CURIOS DISABLED: noses fall back to the vanilla HEAD slot. Restore together with
@@ -25,7 +26,10 @@ dependencies {
 
 neoForge {
     version = property("deps.neoforge").toString()
-    accessTransformers.from(rootProject.file("src/main/resources/META-INF/accesstransformer.cfg"))
+    accessTransformers.from(sc.process(
+        rootProject.file("src/main/resources/META-INF/accesstransformer.cfg"),
+        "build/processed.accesstransformer.cfg",
+    ))
 
     runs {
         val runRoot = rootProject.file("run/$nodeName")

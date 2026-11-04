@@ -448,7 +448,11 @@ public final class ServerEventBusHandler {
             return;
         }
 
+        //? if >=26 {
         PotionContents contents = cloud.get(DataComponents.POTION_CONTENTS);
+        //?} else {
+        /*PotionContents contents = ((com.ovrtechnology.mixin.legacy.AreaEffectCloudAccessor) cloud).aromaaffect$getPotionContents();
+        *///?}
         if (contents == null || !contents.hasEffects()) return;
         PotionKeys keys = PotionKeys.of(contents);
         for (ServerPlayer player : players) {

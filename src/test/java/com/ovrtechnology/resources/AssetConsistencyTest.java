@@ -30,6 +30,20 @@ class AssetConsistencyTest {
     private static final String MOD_PREFIX = "aromaaffect:";
     private static final String MIXIN_CONFIG = "aromaaffect.mixins.json";
     private static final Path SOURCE_ROOT = Path.of("src/main/java");
+    private static final Path LEGACY_SOURCE_ROOT = Path.of("src/legacy/java");
+    private static final Path LEGACY_MIXIN_OVERRIDES = Path.of("src/legacy/mixins.json");
+    private static final boolean LEGACY = Boolean.getBoolean("aromaaffect.legacy");
+
+    private static Path mixinSource(Path packageDir, String name) {
+        String relative = name.replace('.', '/') + ".java";
+        if (LEGACY) {
+            Path legacy = LEGACY_SOURCE_ROOT.resolve(SOURCE_ROOT.relativize(packageDir)).resolve(relative);
+            if (Files.isRegularFile(legacy)) {
+                return legacy;
+            }
+        }
+        return packageDir.resolve(relative);
+    }
 
     @Test
     @DisplayName("every sound in sounds.json should point to a bundled ogg file")
@@ -67,7 +81,7 @@ class AssetConsistencyTest {
             for (JsonElement entry : config.getAsJsonArray(section)) {
                 String name = entry.getAsString();
                 assertThat(configured.add(name)).as("mixin %s listed once", name).isTrue();
-                Path source = packageDir.resolve(name.replace('.', '/') + ".java");
+                Path source = mixinSource(packageDir, name);
                 assertThat(Files.isRegularFile(source))
                         .as("source file %s for mixin %s", source.toAbsolutePath(), name)
                         .isTrue();
@@ -76,14 +90,28 @@ class AssetConsistencyTest {
         assertThat(configured).as("configured mixins").isNotEmpty();
 
         Set<String> present = new TreeSet<>();
-        try (Stream<Path> files = Files.walk(packageDir)) {
-            for (Path file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
-                String content = Files.readString(file, StandardCharsets.UTF_8);
-                if (content.contains("@Mixin(")) {
-                    String relative = packageDir.relativize(file).toString().replace('\\', '/');
-                    present.add(relative.substring(0, relative.length() - ".java".length()).replace('/', '.'));
+        Set<String> scanned = new TreeSet<>();
+        List<Path> packageDirs = LEGACY
+                ? List.of(LEGACY_SOURCE_ROOT.resolve(SOURCE_ROOT.relativize(packageDir)), packageDir)
+                : List.of(packageDir);
+        for (Path dir : packageDirs) {
+            if (!Files.isDirectory(dir)) {
+                continue;
+            }
+            try (Stream<Path> files = Files.walk(dir)) {
+                for (Path file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
+                    String relative = dir.relativize(file).toString().replace('\\', '/');
+                    String name = relative.substring(0, relative.length() - ".java".length()).replace('/', '.');
+                    if (scanned.add(name) && Files.readString(file, StandardCharsets.UTF_8).contains("@Mixin(")) {
+                        present.add(name);
+                    }
                 }
             }
+        }
+        if (LEGACY) {
+            JsonObject overrides = JsonParser.parseString(
+                    Files.readString(LEGACY_MIXIN_OVERRIDES, StandardCharsets.UTF_8)).getAsJsonObject();
+            overrides.getAsJsonArray("remove").forEach(entry -> present.remove(entry.getAsString()));
         }
         assertThat(configured)
                 .as("mixins declared in %s vs @Mixin classes under %s", MIXIN_CONFIG, mixinPackage)

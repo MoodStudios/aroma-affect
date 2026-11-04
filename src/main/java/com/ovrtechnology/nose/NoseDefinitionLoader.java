@@ -7,7 +7,7 @@ import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.ability.AbilityDefinitionLoader;
 import com.ovrtechnology.biome.BiomeRegistry;
 import com.ovrtechnology.block.BlockRegistry;
-import com.ovrtechnology.compat.StructureCompat;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.data.DataSourceInfo;
@@ -156,6 +156,12 @@ public class NoseDefinitionLoader {
                 }
             }
             
+            // Content from newer Minecraft versions is dropped without a warning
+            unlock.setBlocks(withoutSkipped(unlock.getBlocks(), unlock.hasBlockUnlocks()));
+            unlock.setBiomes(withoutSkipped(unlock.getBiomes(), unlock.hasBiomeUnlocks()));
+            unlock.setStructures(withoutSkipped(unlock.getStructures(), unlock.hasStructureUnlocks()));
+            unlock.setFlowers(withoutSkipped(unlock.getFlowers(), unlock.hasFlowerUnlocks()));
+
             // Validate and filter block references against BlockRegistry
             if (unlock.hasBlockUnlocks() && BlockRegistry.isInitialized()) {
                 List<String> invalidBlocks = BlockRegistry.validateBlockIds(unlock.getBlocks());
@@ -172,13 +178,6 @@ public class NoseDefinitionLoader {
                 }
             }
             
-            // Structures from newer Minecraft versions are dropped without a warning
-            if (unlock.hasStructureUnlocks()) {
-                List<String> availableStructures = new ArrayList<>(unlock.getStructures());
-                availableStructures.removeIf(id -> !StructureCompat.isAvailable(id));
-                unlock.setStructures(availableStructures);
-            }
-
             // Validate and filter structure references against StructureRegistry
             if (unlock.hasStructureUnlocks() && StructureRegistry.isInitialized()) {
                 List<String> invalidStructures = StructureRegistry.validateStructureIds(unlock.getStructures());
@@ -229,6 +228,15 @@ public class NoseDefinitionLoader {
         }
     }
     
+    private static List<String> withoutSkipped(List<String> ids, boolean present) {
+        if (!present) {
+            return null;
+        }
+        List<String> kept = new ArrayList<>(ids);
+        kept.removeIf(ContentAvailability::isSkipped);
+        return kept;
+    }
+
     /**
      * Check if a texture file exists in the resources
      */

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -49,7 +50,9 @@ public class MobDefinitionLoader {
         for (Map.Entry<Identifier, JsonElement> entry : files.entrySet()) {
             try {
                 MobDefinition mob = GSON.fromJson(entry.getValue(), MobDefinition.class);
-                processMob(mob);
+                if (ContentAvailability.isAvailable(mob)) {
+                    processMob(mob);
+                }
             } catch (Exception e) {
                 AromaAffect.LOGGER.error("Failed to parse mob {}: {}", entry.getKey(), e.getMessage());
             }

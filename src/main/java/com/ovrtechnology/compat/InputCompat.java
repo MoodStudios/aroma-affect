@@ -21,8 +21,10 @@ public final class InputCompat {
     public static boolean isKeyDown(int key) {
         //? if >=26.3 {
         return InputConstants.isKeyDown(key);
-        //?} else {
+        //?} else if >=26 {
         /*return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), key);
+        *///?} else {
+        /*return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), key);
         *///?}
     }
 

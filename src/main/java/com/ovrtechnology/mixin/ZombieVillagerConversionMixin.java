@@ -3,12 +3,19 @@ package com.ovrtechnology.mixin;
 import com.ovrtechnology.entity.nosesmith.NoseSmithEntity;
 import com.ovrtechnology.entity.nosesmith.NoseSmithRegistry;
 import com.ovrtechnology.entity.nosesmith.NoseSmithZombieMarker;
+//? if >=26 {
 import net.minecraft.world.entity.ConversionParams;
+//?}
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
+//? if >=26 {
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//?} else {
+/*import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+*///?}
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -53,6 +60,7 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
 
     // ── NBT persistence ──────────────────────────────────────────────────
 
+    //? if >=26 {
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void aromaaffect$saveNoseSmithData(ValueOutput output, CallbackInfo ci) {
         if (aromaaffect$wasNoseSmith) {
@@ -114,4 +122,75 @@ public class ZombieVillagerConversionMixin implements NoseSmithZombieMarker {
             }
         });
     }
+    //?} else {
+    /*@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void aromaaffect$saveNoseSmithData(CompoundTag tag, CallbackInfo ci) {
+        if (aromaaffect$wasNoseSmith) {
+            tag.putBoolean("aromaaffect:WasNoseSmith", true);
+            tag.putBoolean("aromaaffect:NoseSmithHasNose", aromaaffect$noseSmithHasNose);
+            tag.putString("aromaaffect:NoseSmithRequestedFlower", aromaaffect$noseSmithRequestedFlower);
+            tag.putBoolean("aromaaffect:NoseSmithHouseDecorated", aromaaffect$noseSmithHouseDecorated);
+            if (aromaaffect$noseSmithNoseRemovedGameTime >= 0) {
+                tag.putString("aromaaffect:NoseSmithNoseRemovedGameTime", Long.toString(aromaaffect$noseSmithNoseRemovedGameTime));
+            }
+        }
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void aromaaffect$loadNoseSmithData(CompoundTag tag, CallbackInfo ci) {
+        aromaaffect$wasNoseSmith = tag.getBoolean("aromaaffect:WasNoseSmith");
+        if (aromaaffect$wasNoseSmith) {
+            aromaaffect$noseSmithHasNose = !tag.contains("aromaaffect:NoseSmithHasNose") || tag.getBoolean("aromaaffect:NoseSmithHasNose");
+            aromaaffect$noseSmithRequestedFlower = tag.getString("aromaaffect:NoseSmithRequestedFlower");
+            aromaaffect$noseSmithHouseDecorated = tag.getBoolean("aromaaffect:NoseSmithHouseDecorated");
+            long removedAt = -1L;
+            if (tag.contains("aromaaffect:NoseSmithNoseRemovedGameTime")) {
+                try {
+                    removedAt = Long.parseLong(tag.getString("aromaaffect:NoseSmithNoseRemovedGameTime"));
+                } catch (NumberFormatException ignored) {
+                    removedAt = -1L;
+                }
+            }
+            aromaaffect$noseSmithNoseRemovedGameTime = removedAt;
+        }
+    }
+
+    @Unique
+    @Nullable
+    private NoseSmithEntity aromaaffect$curedNoseSmith;
+
+    @Redirect(
+            method = "finishConversion",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/monster/ZombieVillager;convertTo(Lnet/minecraft/world/entity/EntityType;Z)Lnet/minecraft/world/entity/Mob;"
+            )
+    )
+    @Nullable
+    private <T extends Mob> T aromaaffect$redirectConversion(ZombieVillager self, EntityType<T> entityType, boolean keepEquipment) {
+        if (!aromaaffect$wasNoseSmith) {
+            return self.convertTo(entityType, keepEquipment);
+        }
+
+        @SuppressWarnings("unchecked")
+        EntityType<T> noseSmithType = (EntityType<T>) (EntityType<?>) NoseSmithRegistry.getNoseSmithType();
+        T converted = self.convertTo(noseSmithType, keepEquipment);
+        aromaaffect$curedNoseSmith = converted instanceof NoseSmithEntity noseSmith ? noseSmith : null;
+        return converted;
+    }
+
+    @Inject(method = "finishConversion", at = @At("TAIL"))
+    private void aromaaffect$restoreNoseSmith(ServerLevel level, CallbackInfo ci) {
+        NoseSmithEntity noseSmith = aromaaffect$curedNoseSmith;
+        aromaaffect$curedNoseSmith = null;
+        if (noseSmith != null) {
+            noseSmith.restoreNoseSmithData(
+                    aromaaffect$noseSmithHasNose,
+                    aromaaffect$noseSmithRequestedFlower,
+                    aromaaffect$noseSmithHouseDecorated,
+                    aromaaffect$noseSmithNoseRemovedGameTime
+            );
+        }
+    }
+    *///?}
 }

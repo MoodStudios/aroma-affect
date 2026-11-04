@@ -58,10 +58,18 @@ public final class RespawnSyncState {
     }
 
     public static ItemStack getIcon() {
-        if (blockId == null) return new ItemStack(Items.BED.pick(DyeColor.RED));
+        if (blockId == null) return defaultBedIcon();
         return BuiltInRegistries.ITEM.getOptional(blockId)
                 .map(ItemStack::new)
-                .orElseGet(() -> new ItemStack(Items.BED.pick(DyeColor.RED)));
+                .orElseGet(RespawnSyncState::defaultBedIcon);
+    }
+
+    private static ItemStack defaultBedIcon() {
+        //? if >=26 {
+        return new ItemStack(Items.BED.pick(DyeColor.RED));
+        //?} else {
+        /*return new ItemStack(Items.RED_BED);
+        *///?}
     }
 
     public static Optional<DyeColor> getBedColor() {

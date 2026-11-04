@@ -1,18 +1,14 @@
 package com.ovrtechnology.variant;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ItemCompat;
+import com.ovrtechnology.compat.ModItem;
+import com.ovrtechnology.compat.RegistrationCompat;
 import com.ovrtechnology.nose.accessory.NoseAccessory;
-import com.ovrtechnology.util.Ids;
-import java.util.List;
 import java.util.Optional;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -21,11 +17,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.component.CustomModelData;
-import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.level.Level;
 
-public class CustomNoseItem extends Item {
+public class CustomNoseItem extends ModItem {
 
     public static final String ITEM_ID = "custom_nose";
     public static final int DEFAULT_DURABILITY = 250;
@@ -35,8 +29,7 @@ public class CustomNoseItem extends Item {
     }
 
     private static Properties baseProperties(Identifier id) {
-        Properties properties = new Properties();
-        properties.setId(ResourceKey.create(Registries.ITEM, id));
+        Properties properties = RegistrationCompat.itemProperties(id);
         properties.stacksTo(1);
         properties.durability(DEFAULT_DURABILITY);
         properties.rarity(Rarity.COMMON);
@@ -51,23 +44,10 @@ public class CustomNoseItem extends Item {
         stack.set(DataComponents.MAX_DAMAGE, variant.getDurability());
         stack.set(DataComponents.MAX_STACK_SIZE, 1);
 
-        String repairId = variant.getRepair();
-        if (repairId != null && !repairId.isEmpty()) {
-            Identifier repairLoc = Ids.parse(repairId);
-            BuiltInRegistries.ITEM.getOptional(repairLoc).ifPresent(repairItem -> {
-                Holder<Item> holder = BuiltInRegistries.ITEM.wrapAsHolder(repairItem);
-                stack.set(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(holder)));
-            });
-        }
+        ItemCompat.applyRepairItem(stack, variant.getRepair());
 
         if (variant.getCustomModelData() > 0) {
-            stack.set(
-                    DataComponents.CUSTOM_MODEL_DATA,
-                    new CustomModelData(
-                            List.of((float) variant.getCustomModelData()),
-                            List.of(),
-                            List.of(),
-                            List.of()));
+            stack.set(DataComponents.CUSTOM_MODEL_DATA, ItemCompat.customModelData(variant.getCustomModelData()));
         }
 
         return stack;
@@ -97,7 +77,7 @@ public class CustomNoseItem extends Item {
     }
 
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    protected InteractionResult useItem(Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
 
         if (!NoseAccessory.hasSlot(player)) {
@@ -112,6 +92,11 @@ public class CustomNoseItem extends Item {
         }
         player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 1.0F);
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected String repairItemId(ItemStack stack) {
+        return getVariant(stack).map(NoseVariant::getRepair).orElse(null);
     }
 
     private static Rarity parseRarity(String name) {

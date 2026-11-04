@@ -43,6 +43,11 @@ public abstract class Definition {
     @Getter
     protected SoundRef sound;
 
+    // First Minecraft version that has this content (e.g. "1.21.4"); older versions skip the definition
+    @SerializedName("min_minecraft")
+    @Getter
+    protected String minMinecraft;
+
     /**
      * Default constructor for GSON deserialization.
      */

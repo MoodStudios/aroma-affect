@@ -1,5 +1,7 @@
 package com.ovrtechnology.mixin;
 
+// Render states only exist from 1.21.2; on older versions the renderers read the entity directly
+//? if >=26 {
 import com.ovrtechnology.entity.irongolem.IronGolemNoseRenderState;
 import com.ovrtechnology.entity.irongolem.IronGolemNoseTracker;
 import net.minecraft.client.renderer.entity.IronGolemRenderer;
@@ -32,3 +34,4 @@ public class IronGolemRendererMixin {
         }
     }
 }
+//?}

@@ -42,11 +42,18 @@ public abstract class FurnaceIgniteServerMixin implements FurnaceLitAccess {
 
     @Inject(method = "serverTick", at = @At("TAIL"), require = 0)
     private static void aromaaffect$onServerTick(
+            //? if >=26 {
             ServerLevel level,
+            //?} else {
+            /*net.minecraft.world.level.Level world,
+            *///?}
             BlockPos pos,
             BlockState state,
             AbstractFurnaceBlockEntity blockEntity,
             CallbackInfo ci) {
+        //? if <26 {
+        /*if (!(world instanceof ServerLevel level)) return;
+        *///?}
         if (level == null) return;
 
         boolean lit =

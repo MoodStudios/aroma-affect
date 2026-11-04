@@ -266,7 +266,7 @@ public class PathSubCommand implements SubCommand {
 
     public static void trackFromMenu(ServerPlayer player, LookupType type, Identifier targetId) {
         if (!acceptMenuRequest(player, type, targetId)) return;
-        startSearch(player.createCommandSourceStack(), player, player.level(), player.blockPosition(),
+        startSearch(player.createCommandSourceStack(), player, (ServerLevel) player.level(), player.blockPosition(),
                 type, targetId, -1, true);
     }
 
@@ -731,7 +731,7 @@ public class PathSubCommand implements SubCommand {
     private static void recall(CommandSourceStack source, ServerPlayer player, LookupType type,
                                Identifier targetId, BlockPos destination, Identifier expectedDimension) {
         cancelSearch(player);
-        ServerLevel level = player.level();
+        ServerLevel level = (ServerLevel) player.level();
 
         if (expectedDimension != null && !level.dimension().identifier().equals(expectedDimension)) {
             PathScentNetworking.sendPathNotFound(player, "Wrong dimension");

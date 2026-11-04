@@ -1,6 +1,7 @@
 package com.ovrtechnology.entity.nosesmith;
 
 import com.ovrtechnology.compat.BalmCompat;
+import com.ovrtechnology.compat.RegistrationCompat;
 import com.ovrtechnology.AromaAffect;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
@@ -48,30 +49,26 @@ public final class NoseSmithRegistry {
 
     @SuppressWarnings("unchecked")
     public static void registerEntities(BalmRegistrar.Scoped<EntityType<?>> entityTypes) {
-        noseSmith = BalmCompat.holder(entityTypes.register(NOSE_SMITH_ID, id -> EntityType.Builder
+        noseSmith = BalmCompat.holder(entityTypes.register(NOSE_SMITH_ID, id -> RegistrationCompat.build(EntityType.Builder
                 .of((EntityType.EntityFactory<NoseSmithEntity>) NoseSmithEntity::new, MobCategory.MISC)
                 .sized(0.6F, 1.95F)
-                .clientTrackingRange(10)
-                .build(ResourceKey.create(Registries.ENTITY_TYPE, id))));
+                .clientTrackingRange(10), id)));
     }
 
     public static void registerItems(BalmRegistrar.Scoped<Item> items) {
         noseSmithSpawnEgg = BalmCompat.holder(items.register(NOSE_SMITH_SPAWN_EGG_ID, id -> new NoseSmithSpawnItem(
-                new Item.Properties()
-                        .stacksTo(64)
-                        .setId(ResourceKey.create(Registries.ITEM, id)))));
+                RegistrationCompat.itemProperties(id)
+                        .stacksTo(64))));
 
         specialRose = BalmCompat.holder(items.register(SPECIAL_ROSE_ID, id -> new SpecialRoseItem(
-                new Item.Properties()
+                RegistrationCompat.itemProperties(id)
                         .stacksTo(16)
-                        .rarity(Rarity.EPIC)
-                        .setId(ResourceKey.create(Registries.ITEM, id)))));
+                        .rarity(Rarity.EPIC))));
 
         ironNose = BalmCompat.holder(items.register(IRON_NOSE_ID, id -> new Item(
-                new Item.Properties()
+                RegistrationCompat.itemProperties(id)
                         .stacksTo(1)
-                        .rarity(Rarity.RARE)
-                        .setId(ResourceKey.create(Registries.ITEM, id)))));
+                        .rarity(Rarity.RARE))));
 
         initialized = true;
         AromaAffect.LOGGER.info("NoseSmithRegistry items registered");

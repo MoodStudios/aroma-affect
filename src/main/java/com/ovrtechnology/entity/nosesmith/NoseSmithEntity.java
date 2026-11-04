@@ -22,7 +22,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
+//? if >=26 {
 import net.minecraft.world.entity.ConversionParams;
+//?}
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,8 +52,12 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+//? if >=26 {
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//?} else {
+/*import net.minecraft.nbt.CompoundTag;
+*///?}
 
 import org.jetbrains.annotations.Nullable;
 
@@ -115,12 +121,20 @@ public class NoseSmithEntity extends Villager {
         super(entityType, level);
         this.setCustomName(Component.translatable("entity.aromaaffect.nose_smith"));
         this.setCustomNameVisible(true);
-        this.setVillagerData(this.getVillagerData().withProfession(BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT)).withLevel(5));
+        this.setVillagerData(withNitwit(this.getVillagerData()));
     }
 
     @Override
     public void setVillagerData(VillagerData villagerData) {
-        super.setVillagerData(villagerData.withProfession(BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT)).withLevel(5));
+        super.setVillagerData(withNitwit(villagerData));
+    }
+
+    private static VillagerData withNitwit(VillagerData data) {
+        //? if >=26 {
+        return data.withProfession(BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NITWIT)).withLevel(5);
+        //?} else {
+        /*return data.setProfession(VillagerProfession.NITWIT).setLevel(5);
+        *///?}
     }
 
     @Override
@@ -153,6 +167,7 @@ public class NoseSmithEntity extends Villager {
         return Identifier.tryParse(value);
     }
     
+    //? if >=26 {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
@@ -198,6 +213,57 @@ public class NoseSmithEntity extends Villager {
         }
         return result;
     }
+    //?} else {
+    /*@Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putBoolean(TAG_HAS_NOSE, hasNose());
+        if (requestedFlower != null) {
+            tag.putString(TAG_REQUESTED_FLOWER, requestedFlower.toString());
+        }
+        tag.putBoolean(TAG_HOUSE_DECORATED, houseDecorated);
+        if (noseRemovedGameTime >= 0) {
+            tag.putString(TAG_NOSE_REMOVED_TIME, Long.toString(noseRemovedGameTime));
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        setHasNose(!tag.contains(TAG_HAS_NOSE) || tag.getBoolean(TAG_HAS_NOSE));
+
+        requestedFlower = tag.contains(TAG_REQUESTED_FLOWER) ? Identifier.tryParse(tag.getString(TAG_REQUESTED_FLOWER)) : null;
+
+        this.entityData.set(REQUESTED_FLOWER_ID, requestedFlower != null ? requestedFlower.toString() : "");
+
+        houseDecorated = tag.getBoolean(TAG_HOUSE_DECORATED);
+
+        long removedAt = -1L;
+        if (tag.contains(TAG_NOSE_REMOVED_TIME)) {
+            try {
+                removedAt = Long.parseLong(tag.getString(TAG_NOSE_REMOVED_TIME));
+            } catch (NumberFormatException ignored) {
+                removedAt = -1L;
+            }
+        }
+        noseRemovedGameTime = removedAt;
+    }
+
+    @Override
+    @Nullable
+    public <T extends Mob> T convertTo(EntityType<T> entityType, boolean keepEquipment) {
+        T result = super.convertTo(entityType, keepEquipment);
+        if (result instanceof NoseSmithZombieMarker marker) {
+            marker.aromaaffect$markAsNoseSmith(
+                    hasNose(),
+                    requestedFlower != null ? requestedFlower.toString() : "",
+                    houseDecorated,
+                    noseRemovedGameTime
+            );
+        }
+        return result;
+    }
+    *///?}
 
     /**
      * Resets the Nose Smith quest to its initial state.
@@ -267,12 +333,21 @@ public class NoseSmithEntity extends Villager {
         tryConsumeRequestedFlowerAndReward(serverLevel);
     }
 
+    //? if >=26 {
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
+    //?} else {
+    /*@Override
+    protected void customServerAiStep() {
+    *///?}
         // Never run Villager AI (profession assignment, trading, gossip, etc.)
         if (isInDialogue()) {
             this.getNavigation().stop();
+            //? if >=26 {
             this.getMoveControl().setWait();
+            //?} else {
+            /*this.getMoveControl().setWantedPosition(this.getX(), this.getY(), this.getZ(), 0.0D);
+            *///?}
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.0D, 1.0D, 0.0D));
 
             Player player = getDialoguePlayer();
@@ -295,7 +370,11 @@ public class NoseSmithEntity extends Villager {
 
         if (this.level() instanceof ServerLevel) {
             keepDialogueAlive(player);
+            //? if >=26 {
             return InteractionResult.SUCCESS_SERVER;
+            //?} else {
+            /*return InteractionResult.SUCCESS;
+            *///?}
         }
 
         return InteractionResult.CONSUME;
@@ -327,7 +406,11 @@ public class NoseSmithEntity extends Villager {
             return;
         }
 
+        //? if >=26 {
         Player player = serverLevel.getPlayerInAnyDimension(dialoguePlayerId);
+        //?} else {
+        /*Player player = serverLevel.getPlayerByUUID(dialoguePlayerId);
+        *///?}
         if (player == null || player.isRemoved() || player.level() != this.level()) {
             clearDialogueSession();
             return;
@@ -354,7 +437,11 @@ public class NoseSmithEntity extends Villager {
             return null;
         }
 
+        //? if >=26 {
         Player player = this.level().getPlayerInAnyDimension(dialoguePlayerId);
+        //?} else {
+        /*Player player = this.level().getPlayerByUUID(dialoguePlayerId);
+        *///?}
         if (player == null || player.level() != this.level()) {
             return null;
         }
@@ -843,7 +930,11 @@ public class NoseSmithEntity extends Villager {
             return;
         }
 
+        //? if >=26 {
         this.spawnAtLocation(level, noseItem);
+        //?} else {
+        /*this.spawnAtLocation(noseItem);
+        *///?}
         setHasNose(false);
     }
 

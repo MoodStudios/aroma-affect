@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.data.ClasspathDataSource;
 import com.ovrtechnology.data.DataSource;
 import com.ovrtechnology.scent.ScentRegistry;
@@ -97,7 +98,9 @@ public class BlockDefinitionLoader {
         for (Map.Entry<Identifier, JsonElement> entry : files.entrySet()) {
             try {
                 BlockDefinition block = GSON.fromJson(entry.getValue(), BlockDefinition.class);
-                processBlock(block);
+                if (ContentAvailability.isAvailable(block)) {
+                    processBlock(block);
+                }
             } catch (Exception e) {
                 AromaAffect.LOGGER.error("Failed to parse block {}: {}", entry.getKey(), e.getMessage());
             }

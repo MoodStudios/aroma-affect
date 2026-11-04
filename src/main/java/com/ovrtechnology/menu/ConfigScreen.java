@@ -2,6 +2,7 @@ package com.ovrtechnology.menu;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ContentAvailability;
 import com.ovrtechnology.network.NoseRenderNetworking;
 import com.ovrtechnology.nose.client.NoseRenderPreferencesManager;
 import com.ovrtechnology.nose.client.NoseRenderToggles;
@@ -899,11 +900,6 @@ public class ConfigScreen extends BaseMenuScreen {
     );
 
     // Hides triggers for blocks that do not exist in the running Minecraft version
-    private static boolean isBlockRegistered(String blockId) {
-        Identifier location = Identifier.tryParse(blockId);
-        return location != null && BuiltInRegistries.BLOCK.containsKey(location);
-    }
-
     private List<String[]> getScentValueEntries() {
         List<String[]> entries = new ArrayList<>();
         switch (activeScentFilter) {
@@ -911,7 +907,7 @@ public class ConfigScreen extends BaseMenuScreen {
                 for (BlockTriggerDefinition trigger : ScentTriggerConfigLoader.getAllBlockTriggers()) {
                     if (!trigger.isValid()) continue;
                     if (FLOWER_IDS.contains(trigger.getId())) continue;
-                    if (!isBlockRegistered(trigger.getId())) continue;
+                    if (!ContentAvailability.blockExists(trigger.getId())) continue;
                     String name = resolveName(trigger.getId(), RegistryNames::block);
                     String scent = localizedScent(trigger.getScentName());
                     entries.add(new String[]{name, scent, formatIntensity(trigger.getIntensity())});

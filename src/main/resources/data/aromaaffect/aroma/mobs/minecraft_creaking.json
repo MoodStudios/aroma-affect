@@ -1,5 +1,6 @@
 {
   "id": "minecraft:creaking",
+  "min_minecraft": "1.21.4",
   "scent_id": "timber",
   "fallback_name": "Creaking",
   "color": "#FACB73",

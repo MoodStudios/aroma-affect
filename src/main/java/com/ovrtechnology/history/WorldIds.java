@@ -7,11 +7,15 @@ import net.minecraft.world.level.storage.LevelResource;
  * Resolves a unique identifier for the current world/server,
  * used to isolate per-world tracking history files.
  */
-public final class WorldIdentifier {
+public final class WorldIds {
 
+    //? if >=26 {
     private static final LevelResource ROOT = new LevelResource("");
+    //?} else {
+    /*private static final LevelResource ROOT = LevelResource.ROOT;
+    *///?}
 
-    private WorldIdentifier() {}
+    private WorldIds() {}
 
     /**
      * Returns a sanitized ID for the current world:
@@ -31,6 +35,7 @@ public final class WorldIdentifier {
             // e.g. "New World" folder vs "New World (2)" folder for two worlds named "New World".
             String folderName = mc.getSingleplayerServer()
                     .getWorldPath(ROOT)
+                    .normalize()
                     .getFileName()
                     .toString();
             return sanitize("sp_" + folderName);

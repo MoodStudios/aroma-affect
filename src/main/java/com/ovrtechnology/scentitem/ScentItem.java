@@ -1,6 +1,9 @@
 package com.ovrtechnology.scentitem;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.compat.ItemCompat;
+import com.ovrtechnology.compat.ModItem;
+import com.ovrtechnology.compat.RegistrationCompat;
 import com.ovrtechnology.scent.ScentDefinition;
 import com.ovrtechnology.scent.ScentRegistry;
 import com.ovrtechnology.trigger.ScentTrigger;
@@ -12,10 +15,8 @@ import com.ovrtechnology.trigger.config.TriggerSettings;
 import lombok.Getter;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -24,11 +25,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 
 import java.util.Optional;
@@ -40,7 +38,7 @@ import java.util.function.Consumer;
  * <p>Scent items are collectible items that represent different scents.
  * They can be used in crafting recipes or as components for the nose system.</p>
  */
-public class ScentItem extends Item {
+public class ScentItem extends ModItem {
 
 
     /**
@@ -71,13 +69,8 @@ public class ScentItem extends Item {
      * Create item properties from a scent item definition
      */
     private static Properties createProperties(ScentItemDefinition definition, String itemId) {
-        Properties properties = new Properties();
-
-        // Set the item ID - REQUIRED in Minecraft 1.21.x
-        properties.setId(ResourceKey.create(
-                Registries.ITEM,
-                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId)
-        ));
+        Properties properties = RegistrationCompat.itemProperties(
+                Identifier.fromNamespaceAndPath(AromaAffect.MOD_ID, itemId));
 
         // Capsule items have durability (100 uses); other scent items stack normally
         if (definition.isCapsule()) {
@@ -120,14 +113,14 @@ public class ScentItem extends Item {
      * <p>If the scent is on cooldown, the item is NOT consumed and a message is shown.</p>
      */
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    protected InteractionResult useItem(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
         // Server-side: handle capsule durability deduction (only if not on cooldown)
         if (!level.isClientSide()) {
             if (definition.isCapsule()) {
                 // Check server-side cooldown to prevent consumption while on cooldown
-                if (player.getCooldowns().isOnCooldown(stack)) {
+                if (ItemCompat.isOnCooldown(player, stack)) {
                     return InteractionResult.FAIL;
                 }
 
@@ -138,7 +131,7 @@ public class ScentItem extends Item {
                 // Apply server-side cooldown (convert ms to ticks: default 5000ms = 100 ticks)
                 String fullId = AromaAffect.MOD_ID + ":" + itemId;
                 int cooldownTicks = getCooldownTicks(fullId);
-                player.getCooldowns().addCooldown(stack, cooldownTicks);
+                ItemCompat.addCooldown(player, stack, cooldownTicks);
 
                 level.playSound(null, player.blockPosition(), SoundEvents.BOTTLE_EMPTY,
                         SoundSource.PLAYERS, 1.0f,
@@ -177,7 +170,7 @@ public class ScentItem extends Item {
         // Check cooldown BEFORE consuming — returns FAIL so server is not called
         if (!ScentTriggerManager.getInstance().canTrigger(scentName, cooldownMs)) {
             long remaining = ScentTriggerManager.getInstance().getRemainingCooldown(scentName);
-            player.sendOverlayMessage(Component.translatable("message.aromaaffect.scent_cooldown",
+            com.ovrtechnology.compat.PlayerCompat.overlay(player, Component.translatable("message.aromaaffect.scent_cooldown",
                     String.format("%.1f", remaining / 1000.0)));
             return InteractionResult.FAIL;
         }
@@ -265,9 +258,8 @@ public class ScentItem extends Item {
      * Add tooltip information to the item
      */
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
-        
+    protected void appendTooltip(ItemStack stack, Consumer<Component> tooltipAdder) {
+
         // Add scent description as tooltip, localized when a translation exists
         String descriptionKey = definition.getDescriptionTranslationKey();
         String description = Language.getInstance().has(descriptionKey)

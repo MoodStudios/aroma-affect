@@ -99,12 +99,12 @@ public final class AromaGuideTracker {
         // Display distance on action bar
         if (compassTargetPos != null) {
             int distance = (int) Math.sqrt(player.blockPosition().distSqr(compassTargetPos));
-            player.sendOverlayMessage(Component.translatable("item.aromaaffect.aroma_guide.distance", distance));
+            com.ovrtechnology.compat.PlayerCompat.overlay(player, Component.translatable("item.aromaaffect.aroma_guide.distance", distance));
         } else if (nearestVillagePos != null) {
             int distance = (int) Math.sqrt(player.blockPosition().distSqr(nearestVillagePos));
-            player.sendOverlayMessage(Component.translatable("item.aromaaffect.aroma_guide.distance", distance));
+            com.ovrtechnology.compat.PlayerCompat.overlay(player, Component.translatable("item.aromaaffect.aroma_guide.distance", distance));
         } else {
-            player.sendOverlayMessage(Component.translatable("item.aromaaffect.aroma_guide.searching"));
+            com.ovrtechnology.compat.PlayerCompat.overlay(player, Component.translatable("item.aromaaffect.aroma_guide.searching"));
         }
     }
 

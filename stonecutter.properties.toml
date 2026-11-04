@@ -1,6 +1,17 @@
 deps.fabric_loader = "0.19.5"
 loomx.loom_version = "1.18.4"
 
+["1.21.1"]
+deps.balm = "21.0.66+1.21.1"
+
+[fabric."1.21.1"]
+deps.fabric_api = "0.116.17+1.21.1"
+deps.modmenu = "11.0.3"
+
+[neoforge."1.21.1"]
+deps.neoforge = "21.1.265"
+deps.curios = "9.5.1+1.21.1"
+
 ["26.2"]
 deps.balm = "26.2.0.9"
 

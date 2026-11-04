@@ -23,8 +23,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+//? if >=26 {
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//?} else {
+/*import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+*///?}
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -147,6 +152,7 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         return new OmaraDeviceMenu(containerId, inventory, this, this.dataAccess);
     }
 
+    //? if >=26 {
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
@@ -167,6 +173,28 @@ public class OmaraDeviceBlockEntity extends BaseContainerBlockEntity {
         this.intervalIndex = input.getIntOr("IntervalIndex", 0);
         this.statusTicks = input.getIntOr("StatusTicks", 0);
     }
+    //?} else {
+    /*@Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, this.items, registries);
+        tag.putInt("CooldownTicks", cooldownTicks);
+        tag.putInt("Mode", mode);
+        tag.putInt("IntervalIndex", intervalIndex);
+        tag.putInt("StatusTicks", statusTicks);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, this.items, registries);
+        this.cooldownTicks = tag.getInt("CooldownTicks");
+        this.mode = tag.contains("Mode") ? tag.getInt("Mode") : MODE_AUTO;
+        this.intervalIndex = tag.getInt("IntervalIndex");
+        this.statusTicks = tag.getInt("StatusTicks");
+    }
+    *///?}
 
     // ========================================
     // Server Tick

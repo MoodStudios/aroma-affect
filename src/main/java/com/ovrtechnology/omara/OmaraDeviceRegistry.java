@@ -1,6 +1,7 @@
 package com.ovrtechnology.omara;
 
 import com.ovrtechnology.compat.BalmCompat;
+import com.ovrtechnology.compat.RegistrationCompat;
 import com.ovrtechnology.AromaAffect;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
@@ -37,16 +38,15 @@ public final class OmaraDeviceRegistry {
     public static Holder<MenuType<OmaraDeviceMenu>> OMARA_DEVICE_MENU;
 
     public static void registerBlocks(BalmRegistrar.Scoped<Block> blocks) {
-        OMARA_DEVICE = BalmCompat.holder(blocks.register(OMARA_DEVICE_ID, id -> new OmaraDeviceBlock(BlockBehaviour.Properties.of()
+        OMARA_DEVICE = BalmCompat.holder(blocks.register(OMARA_DEVICE_ID, id -> new OmaraDeviceBlock(RegistrationCompat.withId(BlockBehaviour.Properties.of()
                 .strength(1.0F)
-                .noOcclusion()
-                .setId(ResourceKey.create(Registries.BLOCK, id)))));
+                .noOcclusion(), id))));
     }
 
     public static void registerItems(BalmRegistrar.Scoped<Item> items) {
         OMARA_DEVICE_ITEM = BalmCompat.holder(items.register(OMARA_DEVICE_ID, id -> new BlockItem(
                 (Block) OMARA_DEVICE.value(),
-                new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id)))));
+                RegistrationCompat.itemProperties(id))));
     }
 
     public static void registerBlockEntities(BalmBlockEntityTypeRegistrar blockEntities) {

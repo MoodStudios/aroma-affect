@@ -8,8 +8,13 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+//? if >=26 {
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+//?} else {
+/*import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.entity.LivingEntity;
+*///?}
 
 /**
  * Nose mask model exported from Blockbench and adapted for HumanoidModel.
@@ -21,7 +26,11 @@ import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
  * hat; that helper was removed in MC 26.1, but the empty-part design makes
  * the call a no-op anyway.</p>
  */
+//? if >=26 {
 public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
+//?} else {
+/*public final class NoseMaskModel extends HumanoidModel<LivingEntity> {
+*///?}
     private static final int TEXTURE_WIDTH = 32;
     private static final int TEXTURE_HEIGHT = 32;
 
@@ -29,7 +38,11 @@ public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
     private final ModelPart strap;
 
     public NoseMaskModel(ModelPart root) {
+        //? if >=26 {
         super(root, RenderTypes::armorCutoutNoCull);
+        //?} else {
+        /*super(root, RenderType::armorCutoutNoCull);
+        *///?}
         this.noseMask = this.head.getChild("nose_mask");
         this.strap = this.noseMask.getChild("strap");
     }
@@ -54,7 +67,11 @@ public final class NoseMaskModel extends HumanoidModel<HumanoidRenderState> {
 
         // Required HumanoidModel parts (empty)
         PartDefinition head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.ZERO);
+        //? if >=26 {
         head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+        //?} else {
+        /*partdefinition.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+        *///?}
         partdefinition.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.ZERO);
         partdefinition.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.ZERO);
         partdefinition.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.ZERO);

@@ -6,7 +6,7 @@ import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-//?} else {
+//?} else if >=26 {
 /*import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
@@ -31,10 +31,16 @@ import com.ovrtechnology.trigger.config.TriggerSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.multiplayer.ClientLevel;
+//? if >=26 {
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+//?} else {
+/*import com.ovrtechnology.legacy.render.LegacyRenderTypes;
+import com.ovrtechnology.legacy.render.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.RenderType;
+*///?}
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -177,12 +183,14 @@ public final class PathTrailRenderer {
      * into LINES_SNIPPET), so glow vs. core differentiation happens at the
      * VertexConsumer call site -- both render types share this pipeline.
      */
+    //? if >=26 {
     private static final RenderPipeline TRAIL_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath("aromaaffect", "pipeline/trail_no_depth"))
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .withCull(false)
             .build();
+    //?}
 
     // ── Render types (different line widths) ─────────────────────────────
     // Line width is a per-vertex attribute in 26.1 (LINES_SNIPPET uses
@@ -194,11 +202,19 @@ public final class PathTrailRenderer {
     private static final float TRAIL_GLOW_POWER_WIDTH = 8.0f;
     private static final float TRAIL_CORE_POWER_WIDTH = 2.5f;
 
+    //? if >=26 {
     private static final RenderType TRAIL_GLOW = TrailRenderType.create("aromaaffect_trail_glow");
     private static final RenderType TRAIL_CORE = TrailRenderType.create("aromaaffect_trail_core");
 
     private static final RenderType TRAIL_GLOW_POWER = TrailRenderType.create("aromaaffect_trail_glow_power");
     private static final RenderType TRAIL_CORE_POWER = TrailRenderType.create("aromaaffect_trail_core_power");
+    //?} else {
+    /*private static final RenderType TRAIL_GLOW = LegacyRenderTypes.xrayLines("trail_glow", java.util.OptionalDouble.of(TRAIL_GLOW_WIDTH));
+    private static final RenderType TRAIL_CORE = LegacyRenderTypes.xrayLines("trail_core", java.util.OptionalDouble.of(TRAIL_CORE_WIDTH));
+
+    private static final RenderType TRAIL_GLOW_POWER = LegacyRenderTypes.xrayLines("trail_glow_power", java.util.OptionalDouble.of(TRAIL_GLOW_POWER_WIDTH));
+    private static final RenderType TRAIL_CORE_POWER = LegacyRenderTypes.xrayLines("trail_core_power", java.util.OptionalDouble.of(TRAIL_CORE_POWER_WIDTH));
+    *///?}
 
     private PathTrailRenderer() {}
 
@@ -569,12 +585,20 @@ public final class PathTrailRenderer {
 
             consumer.addVertex(pose, (float) (a.x - cam.x), (float) (a.y - cam.y), (float) (a.z - cam.z))
                     .setColor(r, g, b, alphaA)
+                    //? if >=26 {
                     .setNormal(pose, nx, ny, nz)
                     .setLineWidth(lineWidth);
+                    //?} else {
+                    /*.setNormal(pose, nx, ny, nz);
+                    *///?}
             consumer.addVertex(pose, (float) (next.x - cam.x), (float) (next.y - cam.y), (float) (next.z - cam.z))
                     .setColor(r, g, b, alphaB)
+                    //? if >=26 {
                     .setNormal(pose, nx, ny, nz)
                     .setLineWidth(lineWidth);
+                    //?} else {
+                    /*.setNormal(pose, nx, ny, nz);
+                    *///?}
         }
     }
 
@@ -723,12 +747,20 @@ public final class PathTrailRenderer {
             // "Missing elements in vertex: LineWidth".
             consumer.addVertex(pose, ax, ay, az)
                     .setColor(rA, gA, bA, alphaA)
+                    //? if >=26 {
                     .setNormal(pose, nx, ny, nz)
                     .setLineWidth(lineWidth);
+                    //?} else {
+                    /*.setNormal(pose, nx, ny, nz);
+                    *///?}
             consumer.addVertex(pose, bx, by, bz)
                     .setColor(rB, gB, bB, alphaB)
+                    //? if >=26 {
                     .setNormal(pose, nx, ny, nz)
                     .setLineWidth(lineWidth);
+                    //?} else {
+                    /*.setNormal(pose, nx, ny, nz);
+                    *///?}
 
             accumulated += segLen;
         }
@@ -1097,6 +1129,7 @@ public final class PathTrailRenderer {
 
     // ── Inner RenderType factory ────────────────────────────────────────
 
+    //? if >=26 {
     private static final class TrailRenderType {
         private TrailRenderType() {}
 
@@ -1107,4 +1140,5 @@ public final class PathTrailRenderer {
             );
         }
     }
+    //?}
 }
