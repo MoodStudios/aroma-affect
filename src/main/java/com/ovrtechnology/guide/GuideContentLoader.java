@@ -2,7 +2,7 @@ package com.ovrtechnology.guide;
 
 import com.google.gson.*;
 import com.ovrtechnology.AromaAffect;
-import com.ovrtechnology.compat.StructureCompat;
+import com.ovrtechnology.compat.ContentAvailability;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -111,7 +111,7 @@ public final class GuideContentLoader {
      *
      * <pre>{@code "requires": { "structures": ["minecraft:abandoned_camp"] }}</pre>
      *
-     * <p>{@code structures} are checked against {@link StructureCompat}, the same list
+     * <p>{@code structures} are checked against {@link ContentAvailability}, the same check
      * that hides them from menus and noses. {@code blocks} and {@code items} are
      * checked against the game registries.</p>
      */
@@ -133,7 +133,7 @@ public final class GuideContentLoader {
     private static boolean exists(String kind, String id) {
         Identifier location = Identifier.tryParse(id);
         return switch (kind) {
-            case "structures" -> StructureCompat.isAvailable(id);
+            case "structures" -> !ContentAvailability.isSkipped(id);
             case "blocks" -> location != null && BuiltInRegistries.BLOCK.containsKey(location);
             case "items" -> location != null && BuiltInRegistries.ITEM.containsKey(location);
             default -> {

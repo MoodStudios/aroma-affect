@@ -637,9 +637,10 @@ public class RadialMenuScreen extends BaseMenuScreen {
         graphics.item(icon, x + (size - 16) / 2, y + (size - 16) / 2);
 
         if (isHoveringBedButton) {
-            Component tip = reachable
-                    ? Component.translatable("menu.aromaaffect.track_bed")
-                    : Component.translatable("menu.aromaaffect.track_bed.other_dimension");
+            String tipKey = RespawnSyncState.getBedColor().isPresent()
+                    ? "menu.aromaaffect.track_bed"
+                    : "menu.aromaaffect.track_respawn_anchor";
+            Component tip = Component.translatable(reachable ? tipKey : tipKey + ".other_dimension");
             graphics.setTooltipForNextFrame(tip, screenX(mouseX), screenY(mouseY));
         }
     }

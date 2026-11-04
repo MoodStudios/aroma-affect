@@ -1,6 +1,7 @@
 package com.ovrtechnology.websocket;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.menu.FeedbackConfig;
 import net.blay09.mods.balm.client.platform.event.callback.ClientTickCallback;
 import lombok.Getter;
 
@@ -318,6 +319,7 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                         .get(config.getConnectionTimeoutMs() + 1_000, TimeUnit.MILLISECONDS);
 
                 this.webSocket = ws;
+                sendHello(ws);
                 setState(ConnectionState.CONNECTED);
                 everConnected.set(true);
 
@@ -361,6 +363,19 @@ public final class OvrWebSocketClient implements WebSocket.Listener {
                 return false;
             }
         }, scheduler);
+    }
+
+    // Runs before the state becomes CONNECTED so nothing can be sent ahead of it. Waits for
+    // completion because the JDK client rejects a send while another one is pending.
+    private void sendHello(WebSocket ws) {
+        WebSocketMessage hello = WebSocketMessage.hello(FeedbackConfig.MOD_VERSION);
+        try {
+            ws.sendText(hello.toRawText(), true).get(config.getConnectionTimeoutMs(), TimeUnit.MILLISECONDS);
+            addToHistory(hello);
+            AromaAffect.LOGGER.info("WebSocket SENT: {}", hello.toRawText());
+        } catch (Exception e) {
+            AromaAffect.LOGGER.warn("Could not send hello to OVR bridge: {}", ConnectionFailure.describeCauseChain(e), e);
+        }
     }
 
     /**

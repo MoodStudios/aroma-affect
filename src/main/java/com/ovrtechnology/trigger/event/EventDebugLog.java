@@ -24,7 +24,7 @@ public final class EventDebugLog {
 
             if (debugChat) {
                 int intensityPercent = (int) Math.round(intensity * 100);
-                String modeTag = def.isContinuous() ? "§dCONT§7" : "§9ONE§7";
+                String modeTag = def.isContinuous() ? "§dCONT§8" : "§9ONE§8";
 
                 String message = String.format("§a[Event] §e%s §7→ §b%s §8[%d%% · %s · %s]", def.getId(), scentName, intensityPercent, def.getCategory(), modeTag);
                 player.sendSystemMessage(Texts.lit(message));

@@ -167,6 +167,23 @@ public class WebSocketMessage {
     }
     
     /**
+     * Creates the hello message that identifies this mod to the OVR bridge.
+     *
+     * <p>Sent once per connection, before any other command.</p>
+     *
+     * @param version the mod's release version
+     * @return a new hello message
+     */
+    public static WebSocketMessage hello(String version) {
+        String payload = String.format(
+                Locale.ROOT,
+                "{\"type\":\"hello\",\"id\":\"intro-1\",\"protocol\":1,\"role\":\"legacy_client\","
+                        + "\"client\":{\"id\":\"ovr.aromaaffect\",\"name\":\"Aroma Affect\",\"version\":\"%s\"}}",
+                version);
+        return new WebSocketMessage("raw", payload);
+    }
+
+    /**
      * Parses a raw text message received from WebSocket.
      * 
      * <p>Expected format: type:payload or just type if no payload.</p>

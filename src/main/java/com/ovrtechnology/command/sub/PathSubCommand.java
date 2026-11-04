@@ -398,7 +398,7 @@ public class PathSubCommand implements SubCommand {
             BlockPos destination = result.getPosition();
 
             // For BLOCK and FLOWER, the search already found the exact block position.
-            // Only use findYLevel for STRUCTURE and BIOME where we need a walkable surface.
+            // STRUCTURE and BIOME resolve to a walkable position.
             BlockPos finalDestination;
             LookupType lookupType = result.target().type();
             if (lookupType == LookupType.BLOCK || lookupType == LookupType.FLOWER) {
@@ -406,6 +406,9 @@ public class PathSubCommand implements SubCommand {
             } else if (lookupType == LookupType.STRUCTURE) {
                 BlockPos refined = StructurePositionRefiner.refine(level, destination, result.target().resourceId());
                 finalDestination = refined;
+            } else if (lookupType == LookupType.BIOME) {
+                finalDestination = LookupManager.getInstance().findBiomeDestination(
+                        level, destination, ResourceKey.create(Registries.BIOME, result.target().resourceId()));
             } else {
                 int yLevel = LookupManager.getInstance().findYLevel(level, destination.getX(), destination.getZ(), lookupType);
                 finalDestination = new BlockPos(destination.getX(), yLevel, destination.getZ());
@@ -584,13 +587,15 @@ public class PathSubCommand implements SubCommand {
 
         // Sample biome along the line at intervals
         int samples = Math.max(2, (int) (distance / BIOME_SAMPLE_INTERVAL));
+        // Cave biomes are not present at sea level, so sample them at their own depth
         int seaLevel = level.getSeaLevel();
+        int sampleY = level.getBiome(new BlockPos(b.getX(), seaLevel, b.getZ())).is(biomeKey) ? seaLevel : b.getY();
 
         for (int i = 0; i <= samples; i++) {
             double t = (double) i / samples;
             int x = (int) (a.getX() + dx * t);
             int z = (int) (a.getZ() + dz * t);
-            BlockPos samplePos = new BlockPos(x, seaLevel, z);
+            BlockPos samplePos = new BlockPos(x, sampleY, z);
 
             if (!level.getBiome(samplePos).is(biomeKey)) {
                 return false; // Gap found — different biome region

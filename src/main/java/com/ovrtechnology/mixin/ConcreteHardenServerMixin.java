@@ -7,8 +7,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+//? if >=26 {
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
+//?} else {
+/*import net.minecraft.world.level.LevelAccessor;
+*///?}
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ConcretePowderBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,7 +51,11 @@ public abstract class ConcreteHardenServerMixin {
     }
 
     @Inject(method = "updateShape", at = @At("RETURN"), require = 0)
+    //? if >=26 {
     private void aromaaffect$onUpdateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random, CallbackInfoReturnable<BlockState> cir) {
+    //?} else {
+    /*private void aromaaffect$onUpdateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos, CallbackInfoReturnable<BlockState> cir) {
+    *///?}
         if (!state.is(concrete) && cir.getReturnValue().is(concrete) && level instanceof Level realLevel) {
             ServerEventBusHandler.onConcreteHardened(realLevel, pos);
         }

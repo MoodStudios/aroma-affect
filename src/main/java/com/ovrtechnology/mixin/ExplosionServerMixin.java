@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ExplosionServerMixin {
     @Inject(method = "explode", at = @At("HEAD"), require = 0)
     private void aromaaffect$onExplode(CallbackInfoReturnable<Integer> cir) {
-        ServerEventBusHandler.onExplosion((ServerExplosion) (Object) this);
+        ServerExplosion explosion = (ServerExplosion) (Object) this;
+        ServerEventBusHandler.onExplosion(explosion, explosion.level());
     }
 }

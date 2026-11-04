@@ -317,5 +317,18 @@ class WebSocketMessageTest {
             assertThat(str.length()).isLessThan(200);
         }
     }
+
+    @Nested
+    @DisplayName("Hello")
+    class Hello {
+
+        @Test
+        @DisplayName("should send the bridge intro as plain JSON")
+        void shouldSendIntroAsPlainJson() {
+            assertThat(WebSocketMessage.hello("1.2.3").toRawText()).isEqualTo(
+                    "{\"type\":\"hello\",\"id\":\"intro-1\",\"protocol\":1,\"role\":\"legacy_client\","
+                            + "\"client\":{\"id\":\"ovr.aromaaffect\",\"name\":\"Aroma Affect\",\"version\":\"1.2.3\"}}");
+        }
+    }
 }
 

@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -820,17 +821,17 @@ public final class PassiveModeManager {
 
             // Build message based on trigger type
             String message;
-            if (candidate.type == TriggerType.BIOME) {
-                // Biomes don't have range/distance
-                message = String.format("§6[Aroma Lib] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%%]",
+            if (candidate.range <= 0) {
+                // Biomes and structures don't have range/distance
+                message = String.format("§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%%]",
                         candidate.trigger.scentName(),
                         triggerTypeName,
                         candidate.displayName,
                         intensityPercent
                 );
             } else {
-                // Blocks, mobs, structures have range and distance
-                message = String.format("§6[Aroma Lib] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%% | %.1fm / %dm]",
+                // Blocks and mobs have range and distance
+                message = String.format(Locale.ROOT, "§6[Aroma Affect] §7Scent: §e%s §7(%s: §b%s§7) §8[%d%% | %.1fm / %dm]",
                         candidate.trigger.scentName(),
                         triggerTypeName,
                         candidate.displayName,
@@ -923,13 +924,7 @@ public final class PassiveModeManager {
                     .getOptional(location);
 
             if (blockOpt.isPresent()) {
-                Block block = blockOpt.get();
-                String displayName = block.getDescriptionId();
-                if (displayName.startsWith("block.")) {
-                    displayName = displayName.substring(6);
-                }
-                displayName = formatResourceName(displayName);
-                return displayName;
+                return blockOpt.get().getName().getString();
             }
         } catch (Exception e) {
             AromaAffect.LOGGER.debug("Error getting block display name for {}: {}", blockId, e.getMessage());

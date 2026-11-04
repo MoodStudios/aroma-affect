@@ -9,9 +9,13 @@ import com.ovrtechnology.lookup.worker.StructureSearchWorkerManager;
 import net.blay09.mods.balm.platform.event.callback.ServerLifecycleCallback;
 import net.blay09.mods.balm.platform.event.callback.ServerTickCallback;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.Collections;
@@ -494,6 +498,49 @@ public final class LookupManager {
         }
     }
     
+    /**
+     * Finds where a path to a biome should end. Surface biomes end on the walkable surface.
+     * Cave biomes such as Sulfur Caves stay underground, because the surface above them is
+     * a different biome and the player could never arrive there.
+     * <p>
+     * Dimensions with a bedrock ceiling (the Nether) skip the surface entirely: the surface
+     * scan ends on top of the roof, and Nether biomes are the same through the whole column.
+     */
+    public BlockPos findBiomeDestination(ServerLevel level, BlockPos found, ResourceKey<Biome> biomeKey) {
+        if (!level.dimensionType().hasCeiling()) {
+            int surfaceY = findYLevel(level, found.getX(), found.getZ(), LookupType.BIOME);
+            BlockPos surface = new BlockPos(found.getX(), surfaceY, found.getZ());
+            if (level.getBiome(surface).is(biomeKey)) {
+                return surface;
+            }
+        }
+
+        // Closest standable spot in the column, kept below the ceiling and with room for the head
+        int bottom = level.getMinY() + 1;
+        int top = Math.min(level.getMaxY(), level.getMinY() + level.dimensionType().logicalHeight() - 1) - 1;
+        int range = Math.max(found.getY() - bottom, top - found.getY());
+        for (int offset = 0; offset <= range; offset++) {
+            for (int y : new int[]{found.getY() - offset, found.getY() + offset}) {
+                if (y < bottom || y > top) {
+                    continue;
+                }
+                BlockPos pos = new BlockPos(found.getX(), y, found.getZ());
+                if (isStandable(level, pos) && level.getBiome(pos).is(biomeKey)) {
+                    return pos;
+                }
+            }
+        }
+        return found;
+    }
+
+    private static boolean isStandable(ServerLevel level, BlockPos pos) {
+        BlockState floor = level.getBlockState(pos.below());
+        return level.getBlockState(pos).isAir()
+                && level.getBlockState(pos.above()).isAir()
+                && floor.isSolid()
+                && !floor.is(Blocks.BEDROCK);
+    }
+
     /**
      * Gets the strategy for a lookup type.
      */

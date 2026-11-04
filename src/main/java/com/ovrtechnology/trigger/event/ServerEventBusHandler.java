@@ -38,7 +38,9 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+//? if >=26 {
 import net.minecraft.world.level.ServerExplosion;
+//?}
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.BellBlock;
 import net.minecraft.world.level.block.ComposterBlock;
@@ -526,15 +528,19 @@ public final class ServerEventBusHandler {
      * {@code source_entity_ids} (for example {@code minecraft:tnt} or {@code minecraft:creeper});
      * beds and respawn anchors have no source entity.
      */
-    public static void onExplosion(ServerExplosion explosion) {
-        if (explosion == null) return;
+    //? if >=26 {
+    public static void onExplosion(ServerExplosion explosion, Level level) {
+    //?} else {
+    /*public static void onExplosion(Explosion explosion, Level level) {
+    *///?}
+        if (explosion == null || level == null) return;
         if (explosion.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK) return;
 
         Entity source = explosion.getDirectSourceEntity();
         String sourceKey = source == null ? null : BuiltInRegistries.ENTITY_TYPE.getKey(source.getType()).toString();
         double size = 2 * (explosion.radius() + EXPLOSION_EXTRA_RADIUS);
         AABB area = AABB.ofSize(explosion.center(), size, size, size);
-        for (ServerPlayer player : explosion.level().getEntitiesOfClass(ServerPlayer.class, area)) {
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, area)) {
             dispatch(player, TT_EXPLOSION, def -> matchesExplosionSource(def.getConditions(), sourceKey));
         }
     }

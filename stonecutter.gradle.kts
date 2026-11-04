@@ -50,6 +50,7 @@ stonecutter parameters {
         "net.minecraft.world.entity.animal.golem.IronGolem;" to "net.minecraft.world.entity.animal.IronGolem;",
         "net.minecraft.world.entity.animal.golem.AbstractGolem;" to "net.minecraft.world.entity.animal.AbstractGolem;",
         "net.minecraft.world.entity.animal.squid.Squid;" to "net.minecraft.world.entity.animal.Squid;",
+        "net.minecraft.world.entity.animal.wolf.Wolf;" to "net.minecraft.world.entity.animal.Wolf;",
         "net.minecraft.world.entity.animal.parrot.ShoulderRidingEntity;" to "net.minecraft.world.entity.animal.ShoulderRidingEntity;",
         "net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;" to "net.minecraft.world.entity.vehicle.AbstractMinecart;",
         "net.minecraft.client.model.npc.VillagerModel;" to "net.minecraft.client.model.VillagerModel;",

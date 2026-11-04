@@ -31,7 +31,8 @@ import org.jetbrains.annotations.Nullable;
  *   <li>{@code owned_by_player}: is owned by the player who smells it.</li>
  *   <li>{@code components}: data components the entity must carry, as
  *       {@code {"minecraft:sheep/color": "red"}}. Values are written the same way
- *       as in commands and data packs.</li>
+ *       as in commands and data packs. Never matches on 1.21.1, where entities
+ *       have no data components.</li>
  * </ul>
  *
  * <p>Uses only state the client also receives, so the same conditions work in
@@ -75,11 +76,16 @@ public final class EntityConditions {
     }
 
     private static boolean isOwnedBy(Entity entity, @Nullable Player player) {
-        return player != null && entity instanceof OwnableEntity ownable
-                && ownable.getOwnerReference() != null
+        if (player == null || !(entity instanceof OwnableEntity ownable)) return false;
+        //? if >=26 {
+        return ownable.getOwnerReference() != null
                 && ownable.getOwnerReference().getUUID().equals(player.getUUID());
+        //?} else {
+        /*return player.getUUID().equals(ownable.getOwnerUUID());
+        *///?}
     }
 
+    //? if >=26 {
     private static boolean matchesComponents(JsonObject components, Entity entity) {
         for (Map.Entry<String, JsonElement> entry : components.entrySet()) {
             Identifier id = Identifier.tryParse(entry.getKey());
@@ -105,6 +111,12 @@ public final class EntityConditions {
                 .result()
                 .orElse(null);
     }
+    //?} else {
+    /*// Entities only carry data components from 1.21.5 on, so a components condition never matches
+    private static boolean matchesComponents(JsonObject components, Entity entity) {
+        return false;
+    }
+    *///?}
 
     /** Compares two values, treating {@code "red"} and {@code "minecraft:red"} as the same ID. */
     private static boolean sameValue(JsonElement expected, JsonElement actual) {

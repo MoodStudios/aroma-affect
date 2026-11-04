@@ -80,7 +80,10 @@ public final class AromaAffectClient {
 
         // Lists the mod in Balm's mod list on Fabric, which only shows mods with a
         // Balm-registered config screen. NeoForge keeps its own registration.
+        // Balm 21 (1.21.1) has no config screen registrar.
+        //? if >=26 {
         registrars.configScreen(configScreens -> configScreens.register(com.ovrtechnology.menu.ConfigScreen::new));
+        //?}
 
         // Register menu + search keybinds via Balm and start the polling tick handler
         registrars.keyMappings(MenuKeyBindings::register);
