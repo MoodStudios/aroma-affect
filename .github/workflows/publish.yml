@@ -1,0 +1,92 @@
+name: Publish Aroma Affect
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'GitHub release tag (e.g. v1.2.5)'
+        required: true
+        type: string
+      channel:
+        description: 'Channel'
+        required: true
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+        default: release
+      node:
+        description: 'Node'
+        required: true
+        type: choice
+        options:
+          - all
+          - 1.21.1-fabric
+          - 1.21.1-neoforge
+          - 26.2-fabric
+          - 26.2-neoforge
+          - 26.3-fabric
+          - 26.3-neoforge
+        default: all
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(inputs.node == 'all' && '["1.21.1-fabric","1.21.1-neoforge","26.2-fabric","26.2-neoforge","26.3-fabric","26.3-neoforge"]' || format('["{0}"]', inputs.node)) }}
+
+    steps:
+      - name: Download jar and changelog
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NODE: ${{ matrix.node }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          mc="${NODE%-*}"
+          loader="${NODE#*-}"
+          version="${TAG#v}"
+
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir dist --pattern "aromaaffect-$loader-$version+MC$mc.jar"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body > changelog.md
+
+          {
+            echo "mc=$mc"
+            echo "loader=$loader"
+            echo "version=$version+MC$mc"
+            echo "name=$version ${loader^} $mc"
+            echo "dependencies<<EOF"
+            echo "balm(required)"
+            if [ "$loader" = "fabric" ]; then echo "fabric-api(required)"; fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: Kira-NT/mc-publish@c23376546a97f5ba7984e94445da359459b14419 # v3.3.2
+        with:
+          modrinth-id: RO0DNa4M
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-featured: false
+          modrinth-unfeature-mode: none
+          curseforge-id: 1513431
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: dist/*.jar
+          name: ${{ steps.meta.outputs.name }}
+          version: ${{ steps.meta.outputs.version }}
+          version-type: ${{ inputs.channel }}
+          changelog-file: changelog.md
+          loaders: ${{ steps.meta.outputs.loader }}
+          game-versions: ${{ steps.meta.outputs.mc }}
+          game-version-filter: none
+          dependencies: ${{ steps.meta.outputs.dependencies }}
