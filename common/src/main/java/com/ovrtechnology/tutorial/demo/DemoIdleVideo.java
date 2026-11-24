@@ -53,6 +53,9 @@ public final class DemoIdleVideo implements AutoCloseable {
 
     private final Path file;
     private final long frameNanos;
+    private final int fps;
+    /** Position in the video of the newest decoded frame, counted from its start. */
+    private volatile int latestFrame = 0;
     private final int maxSide;
     private final AtomicReference<Frame> pending = new AtomicReference<>();
     private final Thread worker;
@@ -65,6 +68,7 @@ public final class DemoIdleVideo implements AutoCloseable {
 
     private DemoIdleVideo(Path file, int fps) {
         this.file = file;
+        this.fps = fps;
         this.frameNanos = 1_000_000_000L / fps;
         this.maxSide = Math.min(MAX_FRAME_SIDE, RenderSystem.getDevice().getMaxTextureSize());
         this.worker = new Thread(this::decodeLoop, "AromaAffect idle video");
@@ -84,6 +88,11 @@ public final class DemoIdleVideo implements AutoCloseable {
     /** True once the video has stopped for good: unreadable file, or a frame the screen cannot take. */
     public boolean isBroken() {
         return broken;
+    }
+
+    /** Seconds from the start of the video to the frame on screen, starting over on every loop. */
+    public float seconds() {
+        return latestFrame / (float) fps;
     }
 
     /** Width over height of the video, or 0 until the first frame is ready. */
@@ -225,6 +234,7 @@ public final class DemoIdleVideo implements AutoCloseable {
                 }
                 badFrames = 0;
 
+                latestFrame = framesThisPass - 1;
                 Frame old = pending.getAndSet(frame);
                 if (old != null) {
                     old.free();

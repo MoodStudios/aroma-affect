@@ -125,6 +125,18 @@ public final class DemoAutopilot {
                 if (stageTicks == 60) {
                     shot(mc, "intro");
                 }
+                String introShots = System.getenv("AROMAAFFECT_DEMO_INTROSHOTS");
+                if (introShots != null && !introShots.isBlank() && sessionsStarted == 0) {
+                    // Only looks at the start screen as the video plays: a shot at each listed tick, then quits
+                    int last = 0;
+                    for (String part : introShots.split(",")) {
+                        int at = Integer.parseInt(part.trim());
+                        last = Math.max(last, at);
+                        if (stageTicks == at) shot(mc, "intro_t" + at);
+                    }
+                    if (stageTicks == last + 20) mc.stop();
+                    return;
+                }
                 if (stageTicks == (sessionsStarted == 0 ? CAMERA_CHECK_FROM_TICK + 100 : 80)) {
                     if (introFrames > 0) {
                         AromaAffect.LOGGER.info(TAG + "start screen camera moved on {} of {} frames", introFramesMoved, introFrames);

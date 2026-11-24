@@ -13,13 +13,19 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 
 /**
  * Start screen of the station.
  * <p>
  * Without a video: the Aroma Affect logo in the middle with the button under it, over the intro flight.
- * With a video ({@link DemoIdleVideo}): the video in a column on the left, sized to keep its proportions
- * (a vertical video fills the height), and the logo and the button centered in the rest of the screen.
+ * With a video ({@link DemoIdleVideo}), one of two layouts (see {@code idleVideoLayout} in the demo config):
+ * <ul>
+ *   <li>column: the video on the left, sized to keep its proportions (a vertical video fills the height),
+ *       and the logo and the button centered in the rest of the screen;</li>
+ *   <li>background: the video over the whole screen with the logo and the button on top. The logo can
+ *       fade out while the video shows its own title ({@code idleVideoHideLogo}), or stay off.</li>
+ * </ul>
  * The OVR logo comes inside the video, so it is only drawn here when there is no video.
  * <p>
  * The station shows a single Start button that goes to the free walkaround; the guided demo comes back
@@ -47,6 +53,8 @@ public class TutorialIntroScreen extends Screen {
     private static final float MAX_VIDEO_SHARE = 0.45f;
     /** Proportions assumed for the column until the first frame says otherwise. */
     private static final float DEFAULT_VIDEO_ASPECT = 9.0f / 16.0f;
+    /** Seconds the logo takes to fade in or out around a stretch of the video where it hides. */
+    private static final float LOGO_FADE_SECONDS = 0.4f;
 
     // Fade-in animation: 1.5 seconds = 30 ticks
     private static final int FADE_IN_TICKS = 30;
@@ -64,6 +72,9 @@ public class TutorialIntroScreen extends Screen {
     private int videoX, videoY, videoW, videoH;
     private int columnW;
     private int logoX, logoY, logoW, logoH;
+    private boolean background;
+    private boolean showLogo;
+    private java.util.List<float[]> hideLogoRanges = java.util.List.of();
 
     public TutorialIntroScreen() {
         super(Component.literal("Tutorial Intro"));
@@ -110,9 +121,21 @@ public class TutorialIntroScreen extends Screen {
 
         columnW = 0;
         videoW = videoH = 0;
+        background = false;
+        showLogo = true;
+        float aspect = video != null && video.aspect() > 0 ? video.aspect() : DEFAULT_VIDEO_ASPECT;
         if (video != null) {
-            float aspect = video.aspect() > 0 ? video.aspect() : DEFAULT_VIDEO_ASPECT;
             laidOutAspect = aspect;
+            String mode = DemoConfig.get().idleVideoLayout();
+            background = mode.equals("background") || (mode.equals("auto") && video.aspect() > 1.0f);
+        }
+        if (background) {
+            videoX = videoY = 0;
+            videoW = this.width;
+            videoH = this.height;
+            showLogo = DemoConfig.get().idleVideoShowLogo();
+            hideLogoRanges = DemoConfig.get().idleVideoHideLogoRanges();
+        } else if (video != null) {
             int maxW = Math.round(this.width * MAX_VIDEO_SHARE);
             videoH = this.height;
             videoW = Math.round(videoH * aspect);
@@ -133,14 +156,23 @@ public class TutorialIntroScreen extends Screen {
 
         // The logo takes what is left, without growing past its usual size by much
         int maxLogoH = this.height - buttonsH - GAP - 40;
+        // Over a background video the top strip is left clear for the video's own captions
+        int top = background ? Math.round(this.height * 0.26f) : 0;
+        if (background) {
+            maxLogoH = Math.min(maxLogoH, Math.round(this.height * 0.42f));
+        }
         logoW = Math.min(Math.round(LOGO_WIDTH * 1.25f), Math.round(areaW * 0.7f));
         logoW = Math.max(40, Math.min(logoW, Math.round(maxLogoH * LOGO_ASPECT)));
         logoH = Math.round(logoW / LOGO_ASPECT);
 
         int totalH = logoH + GAP + buttonsH;
         logoX = areaX + (areaW - logoW) / 2;
-        logoY = (this.height - totalH) / 2;
+        logoY = top + (this.height - top - totalH) / 2;
         int buttonY = logoY + logoH + GAP;
+        if (!showLogo) {
+            // Only the button, low on the screen so the video stays clear
+            buttonY = this.height - buttonsH - Math.max(24, this.height / 8);
+        }
 
         if (walkaroundButton == null) {
             primaryButton.setRectangle(buttonW, BUTTON_HEIGHT, areaX + (areaW - buttonW) / 2, buttonY);
@@ -198,7 +230,14 @@ public class TutorialIntroScreen extends Screen {
         // The intro flight shows through, darkened, behind the logo
         graphics.fill(-100, -100, this.width + 100, this.height + 100, 0xAA << 24);
 
-        if (video != null) {
+        float logoAlpha = 1.0f;
+        if (background) {
+            if (video.render(graphics, videoX, videoY, videoW, videoH)) {
+                // A shade at the bottom so the button reads over any frame
+                graphics.fillGradient(0, this.height * 2 / 3, this.width, this.height, 0x00000000, 0x90000000);
+                logoAlpha = logoAlpha(video.seconds());
+            }
+        } else if (video != null) {
             graphics.fill(0, 0, columnW, this.height, 0xFF000000);
             if (video.render(graphics, videoX, videoY, videoW, videoH)) {
                 // A thin edge between the column and the rest
@@ -210,13 +249,26 @@ public class TutorialIntroScreen extends Screen {
 
         // The logo floats gently, so the screen never looks frozen
         int bob = Math.round((float) Math.sin(time * 0.08f) * 3.0f);
-        blitWhole(graphics, MAIN_LOGO, logoX, logoY + bob, logoW, logoH);
+        if (showLogo && logoAlpha > 0.01f) {
+            graphics.blit(RenderPipelines.GUI_TEXTURED, MAIN_LOGO, logoX, logoY + bob, 0.0f, 0.0f,
+                    logoW, logoH, logoW, logoH, logoW, logoH, ARGB.white(logoAlpha));
+        }
 
         // Emerge from black
         int black = (int) (0xFF * (1.0f - eased));
         if (black > 0) {
             graphics.fill(-100, -100, this.width + 100, this.height + 100, black << 24);
         }
+    }
+
+    /** 0 inside a stretch of the video where the logo hides, rising to 1 over {@link #LOGO_FADE_SECONDS} around it. */
+    private float logoAlpha(float seconds) {
+        float alpha = 1.0f;
+        for (float[] range : hideLogoRanges) {
+            float distance = seconds < range[0] ? range[0] - seconds : seconds > range[1] ? seconds - range[1] : 0.0f;
+            alpha = Math.min(alpha, distance / LOGO_FADE_SECONDS);
+        }
+        return Math.max(0.0f, Math.min(1.0f, alpha));
     }
 
     /** Draws the whole texture stretched to the given size. */

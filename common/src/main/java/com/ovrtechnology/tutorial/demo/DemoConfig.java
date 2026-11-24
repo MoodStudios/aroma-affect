@@ -46,6 +46,22 @@ public final class DemoConfig {
      */
     private boolean showPlayDemo = false;
 
+    /**
+     * Where the start screen puts the video: "column" (on the left, next to the logo), "background"
+     * (the whole screen, logo and button on top) or "auto" (column for a vertical video, background
+     * for a horizontal one).
+     */
+    private String idleVideoLayout = "auto";
+
+    /** Whether the Aroma Affect logo is drawn over a background video. Off leaves only the Start button. */
+    private boolean idleVideoShowLogo = true;
+
+    /**
+     * Stretches of the video, in seconds from its start, during which the logo over a background video
+     * fades out so the video's own title shows, for example "0-1.2, 17.8-21". Empty keeps the logo up.
+     */
+    private String idleVideoHideLogo = "";
+
     private DemoConfig() {
     }
 
@@ -87,6 +103,34 @@ public final class DemoConfig {
 
     public boolean showPlayDemo() {
         return showPlayDemo;
+    }
+
+    /** "column", "background" or "auto". */
+    public String idleVideoLayout() {
+        String value = idleVideoLayout == null ? "" : idleVideoLayout.trim().toLowerCase(java.util.Locale.ROOT);
+        return value.equals("column") || value.equals("background") ? value : "auto";
+    }
+
+    public boolean idleVideoShowLogo() {
+        return idleVideoShowLogo;
+    }
+
+    /** The stretches of {@link #idleVideoHideLogo} as {start, end} pairs in seconds; bad entries are skipped. */
+    public java.util.List<float[]> idleVideoHideLogoRanges() {
+        java.util.List<float[]> ranges = new java.util.ArrayList<>();
+        if (idleVideoHideLogo == null) return ranges;
+        for (String part : idleVideoHideLogo.split(",")) {
+            String[] ends = part.trim().split("-");
+            if (ends.length != 2) continue;
+            try {
+                float start = Float.parseFloat(ends[0].trim());
+                float end = Float.parseFloat(ends[1].trim());
+                if (end > start) ranges.add(new float[]{start, end});
+            } catch (NumberFormatException ignored) {
+                // a typo in one stretch leaves the others working
+            }
+        }
+        return ranges;
     }
 
     private static int clamp(int value, int min, int max) {
