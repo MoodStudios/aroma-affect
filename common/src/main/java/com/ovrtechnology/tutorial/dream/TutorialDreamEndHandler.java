@@ -197,6 +197,8 @@ public final class TutorialDreamEndHandler {
                 TutorialDreamOverlayNetworking.sendClearOverlay(player);
                 // Activate scent counter HUD (tracks unique scents from this point)
                 com.ovrtechnology.network.TutorialScentCounterNetworking.sendActivate(player, 16);
+                // Same free area as the Walkaround: the tools were already given when waking up
+                com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.onArrive(player, false);
                 AromaAffect.LOGGER.info("Dream sequence completed for player {}, scent counter activated", player.getName().getString());
                 return true; // Remove from active sequences
             }

@@ -27,6 +27,12 @@ public final class TutorialScentCounterHud {
     private static final int PADDING_Y = 6;
 
     private static final int COLOR_TEXT = 0xFFFFFFFF;
+    private static final int COLOR_GLOW = 0xFFE9B83C;
+
+    // A new scent pops the box, flashes a glow around it and floats a "+1" below it
+    private static final long BUMP_MS = 1100;
+    private static int shownCount = 0;
+    private static long bumpStartMs = 0;
     private static final int COLOR_COUNT = com.ovrtechnology.tutorial.ui.VanillaPanel.TITLE_COLOR;
     private static final int COLOR_COMPLETE = 0xFF55FF55;
 
@@ -81,6 +87,36 @@ public final class TutorialScentCounterHud {
         int alpha = (int) (opacity * 255);
         if (alpha < 4) return;
 
+        long now = System.currentTimeMillis();
+        if (count > shownCount) {
+            bumpStartMs = now;
+            minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                    net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP, 1.3f, 0.6f));
+        }
+        shownCount = count;
+        float bump = bumpStartMs == 0 ? 1.0f : Math.min(1.0f, (now - bumpStartMs) / (float) BUMP_MS);
+
+        float centerX = x + boxWidth / 2.0f;
+        float centerY = y + boxHeight / 2.0f;
+        boolean bumping = bump < 1.0f;
+        if (bumping) {
+            // Grows and settles back in the first half; the glow and the "+1" last the whole bump
+            float pop = (float) Math.sin(Math.PI * Math.min(1.0f, bump * 2.0f));
+            float scale = 1.0f + 0.22f * pop;
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(centerX, centerY);
+            guiGraphics.pose().scale(scale, scale);
+            guiGraphics.pose().translate(-centerX, -centerY);
+
+            float glow = (1.0f - bump) * (1.0f - bump) * opacity;
+            int glowAlpha = (int) (glow * 0xC0);
+            for (int ring = 3; ring >= 1; ring--) {
+                int ringAlpha = glowAlpha / (ring + 1);
+                guiGraphics.fill(x - ring, y - ring, x + boxWidth + ring, y + boxHeight + ring,
+                        (ringAlpha << 24) | (COLOR_GLOW & 0x00FFFFFF));
+            }
+        }
+
         com.ovrtechnology.tutorial.ui.VanillaPanel.draw(guiGraphics, x, y, x + boxWidth, y + boxHeight, opacity);
 
         // Text: "Scent Counter: " in white
@@ -93,6 +129,20 @@ public final class TutorialScentCounterHud {
 
         guiGraphics.drawString(font, label, textX, textY, textColor, true);
         guiGraphics.drawString(font, value, textX + labelWidth, textY, countColor, true);
+
+        if (bumping) {
+            guiGraphics.pose().popMatrix();
+
+            // "+1" drifting down from under the number
+            float fade = 1.0f - bump;
+            int plusAlpha = (int) (fade * opacity * 0xFF);
+            if (plusAlpha > 4) {
+                String plus = "+1";
+                int plusX = textX + labelWidth + (valueWidth - font.width(plus)) / 2;
+                int plusY = y + boxHeight + 3 + (int) (bump * 10);
+                guiGraphics.drawString(font, plus, plusX, plusY, (plusAlpha << 24) | (COLOR_GLOW & 0x00FFFFFF), true);
+            }
+        }
     }
 
 }

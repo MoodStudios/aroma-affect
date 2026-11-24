@@ -242,6 +242,7 @@ public final class TutorialModule {
 
         // Initialize demo timer (15 min countdown)
         com.ovrtechnology.tutorial.demo.DemoTimerHandler.init();
+        com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.init();
 
         // Initialize daylight handler (keeps tutorial always at daytime)
         TutorialDaylightHandler.init();

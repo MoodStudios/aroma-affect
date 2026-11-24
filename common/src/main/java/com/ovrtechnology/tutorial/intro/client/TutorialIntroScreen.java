@@ -3,6 +3,7 @@ package com.ovrtechnology.tutorial.intro.client;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialIntroNetworking;
 import com.ovrtechnology.trigger.config.ClientConfig;
+import com.ovrtechnology.tutorial.demo.DemoConfig;
 import com.ovrtechnology.tutorial.demo.DemoIdleVideo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -13,6 +14,17 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * Start screen of the station.
+ * <p>
+ * Without a video: the Aroma Affect logo in the middle with the button under it, over the intro flight.
+ * With a video ({@link DemoIdleVideo}): the video in a column on the left, sized to keep its proportions
+ * (a vertical video fills the height), the OVR logo on top of it, and the logo and the button centered
+ * in the rest of the screen.
+ * <p>
+ * The station shows a single Start button that goes to the free walkaround; the guided demo comes back
+ * next to it with {@code showPlayDemo} in the demo config.
+ */
 public class TutorialIntroScreen extends Screen {
 
     private static final ResourceLocation MAIN_LOGO =
@@ -21,31 +33,37 @@ public class TutorialIntroScreen extends Screen {
     private static final ResourceLocation PARTNER_LOGO =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "textures/gui/guide/ovr_logo.png");
 
-    // Logo actual: 735x659 pixels
-    private static final int LOGO_TEX_WIDTH = 735;
-    private static final int LOGO_TEX_HEIGHT = 659;
+    private static final float LOGO_ASPECT = 735.0f / 659.0f;
+    private static final float PARTNER_ASPECT = 881.0f / 396.0f;
     private static final int LOGO_WIDTH = 180;
-    private static final int LOGO_HEIGHT = (int) (LOGO_WIDTH * ((float) LOGO_TEX_HEIGHT / LOGO_TEX_WIDTH)); // ~161
-
-    // Partner logo: 881x396 -> display 70x31
     private static final int PARTNER_WIDTH = 70;
-    private static final int PARTNER_HEIGHT = 31;
+
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
+    private static final int BUTTON_SPACING = 6;
     private static final int GAP = 12;
-    private static final int VIDEO_BUTTON_MARGIN = 28;
+
+    /** The video column takes at most this share of the screen width. */
+    private static final float MAX_VIDEO_SHARE = 0.45f;
+    /** Proportions assumed for the column until the first frame says otherwise. */
+    private static final float DEFAULT_VIDEO_ASPECT = 9.0f / 16.0f;
 
     // Fade-in animation: 1.5 seconds = 30 ticks
     private static final int FADE_IN_TICKS = 30;
 
-    // Animation state
     private int ticksOpen = 0;
-    private Button playDemoButton;
+    private Button primaryButton;
     private Button walkaroundButton;
 
-    // Looping video behind the buttons, when the station has one in its game folder
+    // Looping video in the left column, when the station has one in its game folder
     private DemoIdleVideo video;
     private boolean videoChecked = false;
+    private float laidOutAspect = -1.0f;
+
+    // Current layout, in GUI pixels
+    private int videoX, videoY, videoW, videoH;
+    private int columnW;
+    private int logoX, logoY, logoW, logoH;
 
     public TutorialIntroScreen() {
         super(Component.literal("Tutorial Intro"));
@@ -55,45 +73,86 @@ public class TutorialIntroScreen extends Screen {
     protected void init() {
         super.init();
 
-        // Two buttons side by side
-        int buttonSpacing = 10;
-        int totalButtonsWidth = BUTTON_WIDTH * 2 + buttonSpacing;
-        int totalHeight = LOGO_HEIGHT + GAP + BUTTON_HEIGHT;
-        int topY = (this.height - totalHeight) / 2;
-        int buttonY = topY + LOGO_HEIGHT + GAP;
-
         if (!videoChecked) {
             videoChecked = true;
             video = DemoIdleVideo.openIfPresent();
         }
-        if (video != null) {
-            // The video carries the branding: buttons go to the bottom, out of its way
-            buttonY = this.height - VIDEO_BUTTON_MARGIN - BUTTON_HEIGHT;
+
+        if (DemoConfig.get().showPlayDemo()) {
+            primaryButton = Button.builder(Component.literal("§l PLAY DEMO"), btn -> onPlayDemoClicked())
+                    .size(BUTTON_WIDTH, BUTTON_HEIGHT).build();
+            walkaroundButton = Button.builder(Component.literal("§f§l WALKAROUND"), btn -> onWalkaroundClicked())
+                    .size(BUTTON_WIDTH, BUTTON_HEIGHT).build();
+        } else {
+            primaryButton = Button.builder(Component.literal("§l START"), btn -> onWalkaroundClicked())
+                    .size(BUTTON_WIDTH, BUTTON_HEIGHT).build();
+            walkaroundButton = null;
         }
 
-        int leftButtonX = (this.width - totalButtonsWidth) / 2;
-        int rightButtonX = leftButtonX + BUTTON_WIDTH + buttonSpacing;
-
-        // PLAY DEMO button (starts tutorial)
-        playDemoButton = Button.builder(
-                Component.literal("\u00a7l PLAY DEMO"),
-                btn -> onPlayDemoClicked()
-        ).bounds(leftButtonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
-
-        // WALKAROUND button (free exploration)
-        walkaroundButton = Button.builder(
-                Component.literal("\u00a7f\u00a7l WALKAROUND"),
-                btn -> onWalkaroundClicked()
-        ).bounds(rightButtonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
-
         // Buttons start invisible, fade in with the rest
-        playDemoButton.active = false;
-        playDemoButton.visible = false;
-        walkaroundButton.active = false;
-        walkaroundButton.visible = false;
+        for (Button button : buttons()) {
+            button.active = false;
+            button.visible = false;
+            addRenderableWidget(button);
+        }
 
-        addRenderableWidget(playDemoButton);
-        addRenderableWidget(walkaroundButton);
+        layout();
+    }
+
+    private Button[] buttons() {
+        return walkaroundButton == null ? new Button[]{primaryButton} : new Button[]{primaryButton, walkaroundButton};
+    }
+
+    /** Places the video column, the logo and the buttons for the current screen and video. */
+    private void layout() {
+        int areaX = 0;
+        int areaW = this.width;
+
+        columnW = 0;
+        videoW = videoH = 0;
+        if (video != null) {
+            float aspect = video.aspect() > 0 ? video.aspect() : DEFAULT_VIDEO_ASPECT;
+            laidOutAspect = aspect;
+            int maxW = Math.round(this.width * MAX_VIDEO_SHARE);
+            videoH = this.height;
+            videoW = Math.round(videoH * aspect);
+            if (videoW > maxW) {
+                videoW = maxW;
+                videoH = Math.round(videoW / aspect);
+            }
+            videoX = 0;
+            videoY = (this.height - videoH) / 2;
+            columnW = videoW;
+            areaX = columnW;
+            areaW = this.width - columnW;
+        }
+
+        boolean stacked = walkaroundButton != null && (video != null || areaW < BUTTON_WIDTH * 2 + 30);
+        int buttonW = Math.min(BUTTON_WIDTH, areaW - 20);
+        int buttonsH = stacked ? BUTTON_HEIGHT * 2 + BUTTON_SPACING : BUTTON_HEIGHT;
+
+        // The logo takes what is left, without growing past its usual size by much
+        int maxLogoH = this.height - buttonsH - GAP - 40;
+        logoW = Math.min(Math.round(LOGO_WIDTH * 1.25f), Math.round(areaW * 0.7f));
+        logoW = Math.max(40, Math.min(logoW, Math.round(maxLogoH * LOGO_ASPECT)));
+        logoH = Math.round(logoW / LOGO_ASPECT);
+
+        int totalH = logoH + GAP + buttonsH;
+        logoX = areaX + (areaW - logoW) / 2;
+        logoY = (this.height - totalH) / 2;
+        int buttonY = logoY + logoH + GAP;
+
+        if (walkaroundButton == null) {
+            primaryButton.setRectangle(buttonW, BUTTON_HEIGHT, areaX + (areaW - buttonW) / 2, buttonY);
+        } else if (stacked) {
+            int x = areaX + (areaW - buttonW) / 2;
+            primaryButton.setRectangle(buttonW, BUTTON_HEIGHT, x, buttonY);
+            walkaroundButton.setRectangle(buttonW, BUTTON_HEIGHT, x, buttonY + BUTTON_HEIGHT + BUTTON_SPACING);
+        } else {
+            int x = areaX + (areaW - (BUTTON_WIDTH * 2 + 10)) / 2;
+            primaryButton.setRectangle(BUTTON_WIDTH, BUTTON_HEIGHT, x, buttonY);
+            walkaroundButton.setRectangle(BUTTON_WIDTH, BUTTON_HEIGHT, x + BUTTON_WIDTH + 10, buttonY);
+        }
     }
 
     @Override
@@ -102,21 +161,20 @@ public class TutorialIntroScreen extends Screen {
         ticksOpen++;
 
         if (video != null && video.isBroken()) {
-            // The file cannot be played: back to the screen without video, buttons under the logo
+            // The file cannot be played: back to the screen without video
             video.close();
             video = null;
-            this.rebuildWidgets();
+            layout();
+        } else if (video != null && video.aspect() > 0 && Math.abs(video.aspect() - laidOutAspect) > 0.001f) {
+            // First frame: the column takes the real proportions of the video
+            layout();
         }
 
         // Enable buttons after fade-in completes
         if (ticksOpen >= FADE_IN_TICKS) {
-            if (playDemoButton != null) {
-                playDemoButton.active = true;
-                playDemoButton.visible = true;
-            }
-            if (walkaroundButton != null) {
-                walkaroundButton.active = true;
-                walkaroundButton.visible = true;
+            for (Button button : buttons()) {
+                button.active = true;
+                button.visible = true;
             }
         }
     }
@@ -133,58 +191,40 @@ public class TutorialIntroScreen extends Screen {
 
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        if (video != null && video.render(graphics, this.width, this.height)) {
-            // Darken the strip under the buttons so they read over any footage
-            int stripTop = this.height - VIDEO_BUTTON_MARGIN - BUTTON_HEIGHT - 24;
-            graphics.fillGradient(0, stripTop, this.width, this.height, 0x00000000, 0xC0000000);
+        float time = ticksOpen + partialTick;
+        float fade = Math.min(1.0f, time / FADE_IN_TICKS);
+        float eased = fade * fade * (3.0f - 2.0f * fade);
 
-            // Same emerge-from-black as the screen without video
-            float fade = Math.min(1.0f, (ticksOpen + partialTick) / FADE_IN_TICKS);
-            int black = (int) (0xFF * (1.0f - fade * fade * (3.0f - 2.0f * fade)));
-            if (black > 0) {
-                graphics.fill(0, 0, this.width, this.height, black << 24);
+        // The intro flight shows through, darkened, behind the logo
+        graphics.fill(-100, -100, this.width + 100, this.height + 100, 0xAA << 24);
+
+        if (video != null) {
+            graphics.fill(0, 0, columnW, this.height, 0xFF000000);
+            if (video.render(graphics, videoX, videoY, videoW, videoH)) {
+                // A thin edge between the column and the rest, and a shade at the top so the logo reads
+                graphics.fill(columnW, 0, columnW + 1, this.height, 0x40FFFFFF);
+                graphics.fillGradient(0, 0, columnW, 48, 0x90000000, 0x00000000);
             }
-            return;
-        }
-
-        // Calculate fade progress (0.0 to 1.0) with smoothstep
-        float fadeProgress = Math.min(1.0f, (ticksOpen + partialTick) / FADE_IN_TICKS);
-        float alpha = fadeProgress * fadeProgress * (3.0f - 2.0f * fadeProgress);
-
-        // During fade-in: start fully black (0xFF) and transition to target overlay (0xAA)
-        // This creates a "emerge from black" effect that naturally reveals the logo
-        int overlayAlpha;
-        if (alpha < 1.0f) {
-            // Lerp from fully opaque (0xFF) to target (0xAA)
-            overlayAlpha = (int) (0xFF - (0xFF - 0xAA) * alpha) & 0xFF;
+            int partnerW = Math.max(50, Math.min(110, Math.round(columnW * 0.55f)));
+            blitWhole(graphics, PARTNER_LOGO, 8, 8, partnerW, Math.round(partnerW / PARTNER_ASPECT));
         } else {
-            overlayAlpha = 0xAA;
+            blitWhole(graphics, PARTNER_LOGO, 10, 10, PARTNER_WIDTH, Math.round(PARTNER_WIDTH / PARTNER_ASPECT));
         }
-        int overlayColor = (overlayAlpha << 24);
-        graphics.fill(-100, -100, this.width + 100, this.height + 100, overlayColor);
 
-        // Don't render content until fade has started enough
-        if (alpha < 0.05f) return;
+        // The logo floats gently, so the screen never looks frozen
+        int bob = Math.round((float) Math.sin(time * 0.08f) * 3.0f);
+        blitWhole(graphics, MAIN_LOGO, logoX, logoY + bob, logoW, logoH);
 
-        int totalHeight = LOGO_HEIGHT + GAP + BUTTON_HEIGHT;
-        int logoY = (this.height - totalHeight) / 2;
-        int logoX = (this.width - LOGO_WIDTH) / 2;
+        // Emerge from black
+        int black = (int) (0xFF * (1.0f - eased));
+        if (black > 0) {
+            graphics.fill(-100, -100, this.width + 100, this.height + 100, black << 24);
+        }
+    }
 
-        // Logo (rendered behind overlay — becomes visible as overlay fades from black to semi-transparent)
-        // Scale the logo to fit LOGO_WIDTH x LOGO_HEIGHT
-        float scale = (float) LOGO_WIDTH / LOGO_TEX_WIDTH;
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(logoX, logoY);
-        graphics.pose().scale(scale, scale);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, MAIN_LOGO,
-                0, 0, 0.0f, 0.0f,
-                LOGO_TEX_WIDTH, LOGO_TEX_HEIGHT, LOGO_TEX_WIDTH, LOGO_TEX_HEIGHT);
-        graphics.pose().popMatrix();
-
-        // Partner logo (top-left corner)
-        graphics.blit(RenderPipelines.GUI_TEXTURED, PARTNER_LOGO,
-                10, 10, 0.0f, 0.0f,
-                PARTNER_WIDTH, PARTNER_HEIGHT, PARTNER_WIDTH, PARTNER_HEIGHT);
+    /** Draws the whole texture stretched to the given size. */
+    private static void blitWhole(GuiGraphics graphics, ResourceLocation texture, int x, int y, int w, int h) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0f, 0.0f, w, h, w, h);
     }
 
     @Override

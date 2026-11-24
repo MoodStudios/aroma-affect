@@ -228,6 +228,7 @@ public class ResetSubCommand implements TutorialSubCommand {
 
         // 3d. Reset popup zone seen state (allows popups to show again)
         com.ovrtechnology.tutorial.popupzone.TutorialPopupZoneHandler.clearPlayer(player.getUUID());
+        com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.resetPlayer(player.getUUID());
 
         // 3e. Deactivate scent counter HUD
         com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);

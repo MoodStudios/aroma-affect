@@ -40,6 +40,12 @@ public final class DemoConfig {
     /** Frame rate of {@code aromaaffect_idle_video.mjpeg}, the video behind the start screen. */
     private int idleVideoFps = 30;
 
+    /**
+     * Whether the start screen offers the guided demo next to the free walkaround. Off by default:
+     * the station shows a single Start button that drops the visitor into the free area.
+     */
+    private boolean showPlayDemo = false;
+
     private DemoConfig() {
     }
 
@@ -77,6 +83,10 @@ public final class DemoConfig {
 
     public int idleVideoFps() {
         return clamp(idleVideoFps, 1, 60);
+    }
+
+    public boolean showPlayDemo() {
+        return showPlayDemo;
     }
 
     private static int clamp(int value, int min, int max) {

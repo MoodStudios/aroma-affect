@@ -313,6 +313,7 @@ public final class TutorialJoinHandler {
         TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
         TutorialBossAreaHandler.clearAllBosses();
         TutorialPopupZoneHandler.clearPlayer(playerId);
+        com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.resetPlayer(playerId);
         com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
         com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(playerId);
 
@@ -396,6 +397,7 @@ public final class TutorialJoinHandler {
         TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
         TutorialBossAreaHandler.clearAllBosses();
         TutorialPopupZoneHandler.clearPlayer(playerId);
+        com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.resetPlayer(playerId);
         com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
         com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(playerId);
 
@@ -512,6 +514,8 @@ public final class TutorialJoinHandler {
                 // Activate scent counter HUD for walkaround mode
                 com.ovrtechnology.network.TutorialScentCounterNetworking.sendActivate(player, 16);
                 AromaAffect.LOGGER.info("Scent counter activated for walkaround player {}", player.getName().getString());
+                // Pickaxe for the ores, the cake, the guide and the first hint
+                com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.onArrive(player, true);
         });
     }
 
@@ -573,6 +577,7 @@ public final class TutorialJoinHandler {
         TutorialBossAreaManager.get(level).resetPlayerTriggers(playerId);
         TutorialBossAreaHandler.clearAllBosses();
         TutorialPopupZoneHandler.clearPlayer(playerId);
+        com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.resetPlayer(playerId);
         com.ovrtechnology.network.TutorialScentCounterNetworking.sendDeactivate(player);
         com.ovrtechnology.network.TutorialScentCounterNetworking.deactivateClient();
         com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(playerId);

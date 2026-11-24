@@ -139,13 +139,26 @@ public final class DemoAutopilot {
                     sessionsStarted++;
                     AromaAffect.LOGGER.info(TAG + "session {} starts, will end by {}", sessionsStarted, ending());
                     sessionRunning = true;
-                    TutorialIntroNetworking.sendPlayDemoToServer(mc.player.registryAccess());
-                    mc.setScreen(null);
+                    if (DemoWalkaroundCheck.enabled()) {
+                        // The button a visitor sees: START, or WALKAROUND when the demo is shown too
+                        pressFirstButton(mc, DemoConfig.get().showPlayDemo() ? 1 : 0);
+                    } else {
+                        TutorialIntroNetworking.sendPlayDemoToServer(mc.player.registryAccess());
+                        mc.setScreen(null);
+                    }
                 }
             }
             case PLAYING -> {
                 if (stageTicks == 60) {
                     shot(mc, "playing");
+                }
+                if (DemoWalkaroundCheck.enabled()) {
+                    DemoIdleHandler.poke();
+                    if (DemoWalkaroundCheck.tick(mc, stageTicks, name -> shot(mc, name)) && !endDemoSent) {
+                        endDemoSent = true;
+                        TutorialFinishNetworking.sendEndDemoToServer(mc.player.registryAccess());
+                    }
+                    return;
                 }
                 if (DemoFinalAreaCheck.enabled()) {
                     DemoIdleHandler.poke();
@@ -237,6 +250,22 @@ public final class DemoAutopilot {
             }
         }
         AromaAffect.LOGGER.error(TAG + "FAILED: no active \"{}\" button on the screen", label);
+    }
+
+    private static void pressFirstButton(Minecraft mc, int index) {
+        int seen = 0;
+        if (mc.screen != null) {
+            for (GuiEventListener child : mc.screen.children()) {
+                if (child instanceof Button button && button.active) {
+                    if (seen++ == index) {
+                        AromaAffect.LOGGER.info(TAG + "pressing \"{}\"", button.getMessage().getString());
+                        button.onPress(new MouseButtonInfo(0, 0));
+                        return;
+                    }
+                }
+            }
+        }
+        AromaAffect.LOGGER.error(TAG + "FAILED: no active button {} on the start screen", index);
     }
 
     private static void shot(Minecraft mc, String name) {

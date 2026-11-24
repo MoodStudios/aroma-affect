@@ -86,12 +86,25 @@ public final class DemoIdleVideo implements AutoCloseable {
         return broken;
     }
 
+    /** Width over height of the video, or 0 until the first frame is ready. */
+    public float aspect() {
+        return texture == null || height == 0 ? 0.0f : (float) width / height;
+    }
+
     /**
      * Draws the current frame over the whole screen, cropping the sides or the top and bottom
      * to keep its proportions. Returns false until the first frame is ready.
      */
     public boolean render(GuiGraphics graphics, int screenWidth, int screenHeight) {
-        if (broken) {
+        return render(graphics, 0, 0, screenWidth, screenHeight);
+    }
+
+    /**
+     * Draws the current frame filling the given box, cropping the sides or the top and bottom
+     * to keep its proportions. Returns false until the first frame is ready.
+     */
+    public boolean render(GuiGraphics graphics, int x, int y, int boxWidth, int boxHeight) {
+        if (broken || boxWidth <= 0 || boxHeight <= 0) {
             return false;
         }
         Frame frame = pending.getAndSet(null);
@@ -113,7 +126,7 @@ public final class DemoIdleVideo implements AutoCloseable {
         }
 
         float videoAspect = (float) width / height;
-        float screenAspect = (float) screenWidth / screenHeight;
+        float screenAspect = (float) boxWidth / boxHeight;
         float u0 = 0.0f, u1 = 1.0f, v0 = 0.0f, v1 = 1.0f;
         if (videoAspect > screenAspect) {
             float visible = screenAspect / videoAspect;
@@ -124,7 +137,7 @@ public final class DemoIdleVideo implements AutoCloseable {
             v0 = (1.0f - visible) / 2.0f;
             v1 = 1.0f - v0;
         }
-        graphics.blit(TEXTURE, 0, 0, screenWidth, screenHeight, u0, u1, v0, v1);
+        graphics.blit(TEXTURE, x, y, x + boxWidth, y + boxHeight, u0, u1, v0, v1);
         return true;
     }
 

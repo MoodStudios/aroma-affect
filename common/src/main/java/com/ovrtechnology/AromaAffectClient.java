@@ -83,12 +83,6 @@ public final class AromaAffectClient {
         // Initialize tutorial dream overlay renderer
         TutorialDreamOverlayClient.init();
 
-        // Initialize tutorial popup HUD overlay
-        TutorialPopupHudOverlay.init();
-
-        // Initialize tutorial scent counter HUD
-        TutorialScentCounterHud.init();
-
         // Initialize diamond text hologram renderer
         DiamondTextHologram.init();
 
@@ -143,6 +137,11 @@ public final class AromaAffectClient {
 
         // Initialize general scent puff overlay (Omara Device, etc.)
         ScentPuffOverlay.init();
+
+        // The popup and the scent counter register after the scent masks so they are drawn on top of
+        // the colored border, which covers the corners they sit in
+        TutorialPopupHudOverlay.init();
+        TutorialScentCounterHud.init();
 
         // Initialize OVR WebSocket client for scent hardware integration
         // The connection is optional - the mod works without it
