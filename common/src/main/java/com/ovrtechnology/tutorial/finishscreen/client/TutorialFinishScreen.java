@@ -75,6 +75,7 @@ public class TutorialFinishScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        hideHud();
 
         int buttonX = (this.width - BUTTON_WIDTH) / 2;
         int buttonY = this.height - BUTTON_HEIGHT - 10;
@@ -279,6 +280,27 @@ public class TutorialFinishScreen extends Screen {
         int thanksTextX = (this.width - thanksTextWidth) / 2;
         int thanksTextY = this.height - BUTTON_HEIGHT - 22;
         graphics.drawString(Minecraft.getInstance().font, thanksText, thanksTextX, thanksTextY, 0xFFFFFFFF, true);
+    }
+
+    /** hideGui as it was before this screen hid the HUD, to put back when it closes. */
+    private Boolean hudHiddenBefore = null;
+
+    private void hideHud() {
+        // The HUD would show through: hearts under "Thanks for playing" and a scent mask
+        // (Machina's dark purple edge looks like the player is dying)
+        if (hudHiddenBefore == null && this.minecraft != null) {
+            hudHiddenBefore = this.minecraft.options.hideGui;
+            this.minecraft.options.hideGui = true;
+        }
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        if (hudHiddenBefore != null && this.minecraft != null) {
+            this.minecraft.options.hideGui = hudHiddenBefore;
+            hudHiddenBefore = null;
+        }
     }
 
     @Override
