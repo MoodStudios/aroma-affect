@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
@@ -177,12 +178,21 @@ public final class TutorialWaypointAreaHandler {
             return;
         }
 
-        // Check if player is inside the area
+        // Check if player is inside the area. A player who already carries the iron Oliver asks for at the
+        // end of the mine trail counts as arrived, so mining it early and walking back still opens the trade.
         BlockPos playerPos = player.blockPosition();
-        if (waypoint.isInsideArea(playerPos)) {
+        if (waypoint.isInsideArea(playerPos) || hasIronForTrade(player, activeWaypointId)) {
             // Player reached the destination!
             onPlayerReachedArea(player, waypoint);
         }
+    }
+
+    private static final String FIND_IRON_WAYPOINT = "find_iron";
+    private static final int IRON_FOR_TRADE = 3;
+
+    private static boolean hasIronForTrade(ServerPlayer player, String waypointId) {
+        return FIND_IRON_WAYPOINT.equals(waypointId)
+                && player.getInventory().countItem(Items.IRON_INGOT) >= IRON_FOR_TRADE;
     }
 
     /**

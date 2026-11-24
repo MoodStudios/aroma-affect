@@ -10,6 +10,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.item.Items;
 
@@ -26,6 +29,7 @@ public final class TutorialHorseFeedHandler {
     private static boolean initialized = false;
     private static final long COOLDOWN_MS = 5000;
     private static final Map<UUID, Long> lastTriggerTime = new HashMap<>();
+    private static final Map<UUID, Long> lastCatTriggerTime = new HashMap<>();
 
     private TutorialHorseFeedHandler() {}
 
@@ -37,6 +41,15 @@ public final class TutorialHorseFeedHandler {
             if (!(player instanceof ServerPlayer serverPlayer)) return EventResult.pass();
             if (!(serverPlayer.level() instanceof ServerLevel level)) return EventResult.pass();
             if (!TutorialModule.isActive(level)) return EventResult.pass();
+
+            // Petting a cat → Kindred
+            if (entity instanceof Cat) {
+                if (hand == InteractionHand.MAIN_HAND) {
+                    petCat(serverPlayer, level, entity);
+                }
+                return EventResult.pass();
+            }
+
             if (!(entity instanceof Horse)) return EventResult.pass();
 
             var stack = player.getItemInHand(hand);
@@ -71,5 +84,25 @@ public final class TutorialHorseFeedHandler {
         });
 
         AromaAffect.LOGGER.debug("Tutorial horse feed handler initialized");
+    }
+
+    public static void resetAll() {
+        lastTriggerTime.clear();
+        lastCatTriggerTime.clear();
+    }
+
+    private static void petCat(ServerPlayer player, ServerLevel level, Entity cat) {
+        UUID playerId = player.getUUID();
+        long now = System.currentTimeMillis();
+        Long lastTime = lastCatTriggerTime.get(playerId);
+        if (lastTime != null && now - lastTime < COOLDOWN_MS) return;
+        lastCatTriggerTime.put(playerId, now);
+
+        level.playSound(null, cat.getX(), cat.getY(), cat.getZ(),
+                SoundEvents.CAT_PURR, SoundSource.NEUTRAL, 1.0f, 1.0f);
+        level.sendParticles(ParticleTypes.HEART,
+                cat.getX(), cat.getY() + 0.7, cat.getZ(),
+                3, 0.2, 0.2, 0.2, 0.0);
+        TutorialScentZoneNetworking.sendScentTrigger(player, "Kindred", 1.0, "cat_pet");
     }
 }

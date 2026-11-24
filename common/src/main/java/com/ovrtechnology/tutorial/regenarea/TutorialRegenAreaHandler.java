@@ -182,6 +182,14 @@ public final class TutorialRegenAreaHandler {
                 isSearchDiamondZone = SearchDiamondZoneHandler.canPlayerBreakAt(serverPlayer, pos, serverLevel);
             }
 
+            // Ores in the final area give their scent when mined but stay in place: the area is a thin
+            // layer over the void, so a mined ore would leave a hole to fall through
+            if (areaOpt.isEmpty() && player instanceof ServerPlayer miner
+                    && com.ovrtechnology.tutorial.demo.DemoFinalArea.isMinableOre(serverLevel, pos, state)) {
+                com.ovrtechnology.tutorial.demo.DemoFinalArea.mineOre(serverLevel, pos, state, miner);
+                return EventResult.interruptFalse();
+            }
+
             // If NOT in regen area AND NOT the flower AND NOT in SearchDiamond zone -> BLOCK DESTRUCTION
             if (areaOpt.isEmpty() && !isFlowerPos && !isSearchDiamondZone) {
                 // If player has active SearchDiamond session but is outside the zone, show helpful message

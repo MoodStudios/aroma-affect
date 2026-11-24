@@ -15,7 +15,8 @@
     "TitleScreenMixin",
     "MouseHandlerMixin",
     "PauseScreenMixin",
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "CameraMixin"
   ],
   "mixins": [
     "SnifferTamingMixin",

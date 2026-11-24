@@ -26,11 +26,8 @@ public final class TutorialScentCounterHud {
     private static final int PADDING_X = 10;
     private static final int PADDING_Y = 6;
 
-    // Colors (OVR purple theme)
-    private static final int COLOR_BG = 0xCC0B0D12;
-    private static final int COLOR_BORDER = 0xFFA890F0;
-    private static final int COLOR_TEXT = 0xFFE8E8E8;
-    private static final int COLOR_COUNT = 0xFFA890F0;
+    private static final int COLOR_TEXT = 0xFFFFFFFF;
+    private static final int COLOR_COUNT = com.ovrtechnology.tutorial.ui.VanillaPanel.TITLE_COLOR;
     private static final int COLOR_COMPLETE = 0xFF55FF55;
 
     private TutorialScentCounterHud() {
@@ -84,15 +81,7 @@ public final class TutorialScentCounterHud {
         int alpha = (int) (opacity * 255);
         if (alpha < 4) return;
 
-        // Background
-        int bgAlpha = (int) (opacity * 0xCC);
-        int bgColor = (bgAlpha << 24) | (COLOR_BG & 0x00FFFFFF);
-        guiGraphics.fill(x, y, x + boxWidth, y + boxHeight, bgColor);
-
-        // Border
-        int borderAlpha = (int) (opacity * 0xFF);
-        int borderColor = (borderAlpha << 24) | (COLOR_BORDER & 0x00FFFFFF);
-        drawBorder(guiGraphics, x, y, x + boxWidth, y + boxHeight, borderColor);
+        com.ovrtechnology.tutorial.ui.VanillaPanel.draw(guiGraphics, x, y, x + boxWidth, y + boxHeight, opacity);
 
         // Text: "Scent Counter: " in white
         int textAlpha = (int) (opacity * 0xFF);
@@ -106,10 +95,4 @@ public final class TutorialScentCounterHud {
         guiGraphics.drawString(font, value, textX + labelWidth, textY, countColor, true);
     }
 
-    private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
-        guiGraphics.fill(left, top, right, top + 1, color);
-        guiGraphics.fill(left, bottom - 1, right, bottom, color);
-        guiGraphics.fill(left, top, left + 1, bottom, color);
-        guiGraphics.fill(right - 1, top, right, bottom, color);
-    }
 }

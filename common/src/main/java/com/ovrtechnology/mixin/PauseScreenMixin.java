@@ -55,8 +55,21 @@ public abstract class PauseScreenMixin extends Screen {
                         Minecraft.getInstance().disconnect(new TitleScreen(), false);
                     }
             ).bounds(centerX - buttonW / 2, y, buttonW, 20).build());
+        } else if (DemoWorldManager.isStationSession()) {
+            // Lets a visitor leave before the time runs out: shows the end screen, which starts the next game
+            this.addRenderableWidget(Button.builder(
+                    Component.literal("End Demo"),
+                    btn -> {
+                        btn.active = false;
+                        Minecraft mc = Minecraft.getInstance();
+                        if (mc.player != null) {
+                            com.ovrtechnology.network.TutorialFinishNetworking.sendEndDemoToServer(mc.player.registryAccess());
+                        }
+                        mc.setScreen(null);
+                    }
+            ).bounds(centerX - buttonW / 2, y, buttonW, 20).build());
         }
-        // Play mode: only Back to Game (F6 is the secret reset)
+        // F6 is still the staff shortcut for an immediate new game
     }
 
     @Inject(method = "init", at = @At("HEAD"))

@@ -23,6 +23,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -116,6 +118,18 @@ public final class TutorialAnimationHandler {
     }
 
     /**
+     * Stops every active animation of every level without completing it. An animation left
+     * behind by a stopped server would stay "active" for ever and could not be played again.
+     *
+     * @return number of animations stopped
+     */
+    public static int stopAllActiveAnimations() {
+        int count = activeAnimations.size();
+        activeAnimations.clear();
+        return count;
+    }
+
+    /**
      * Starts playing an animation.
      *
      * @param level       the server level
@@ -157,6 +171,7 @@ public final class TutorialAnimationHandler {
         int maxZ = Math.max(corner1.getZ(), corner2.getZ());
 
         Map<BlockPos, String> snapshot = new HashMap<>();
+        boolean hasLogs = false;
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
@@ -164,6 +179,7 @@ public final class TutorialAnimationHandler {
                     BlockState state = level.getBlockState(pos);
                     if (!state.isAir()) {
                         snapshot.put(pos, TutorialAnimationManager.serializeBlockState(state));
+                        hasLogs |= state.is(BlockTags.LOGS);
                     }
                 }
             }
@@ -176,7 +192,8 @@ public final class TutorialAnimationHandler {
                 corner1,
                 corner2,
                 layers,
-                level
+                level,
+                hasLogs
         );
         activeAnimations.put(animationId, active);
 
@@ -191,7 +208,7 @@ public final class TutorialAnimationHandler {
         double cx = (corner1.getX() + corner2.getX()) / 2.0 + 0.5;
         double cy = (corner1.getY() + corner2.getY()) / 2.0 + 0.5;
         double cz = (corner1.getZ() + corner2.getZ()) / 2.0 + 0.5;
-        playStartSound(level, animation.getType(), cx, cy, cz);
+        playStartSound(level, animation.getType(), hasLogs, cx, cy, cz);
 
         // Trigger Smoky scent for the first_mine explosion
         if ("first_mine".equals(animationId)) {
@@ -434,10 +451,14 @@ public final class TutorialAnimationHandler {
     }
 
     private static void processLayer(ServerLevel level, ActiveAnimation active, List<BlockPos> positions) {
+        SoundType material = null;
         for (BlockPos pos : positions) {
             BlockState state = level.getBlockState(pos);
             if (state.isAir()) {
                 continue;
+            }
+            if (material == null) {
+                material = state.getSoundType();
             }
 
             // Spawn block break particles before removing
@@ -456,13 +477,14 @@ public final class TutorialAnimationHandler {
         }
 
         // Spawn type-specific particles
-        spawnTypeParticles(level, active.type, positions);
+        spawnTypeParticles(level, active.type, active.woodPile, positions);
 
         // Play type-specific sound
-        playTypeSound(level, active, positions);
+        playTypeSound(level, active, material, positions);
     }
 
-    private static void spawnTypeParticles(ServerLevel level, TutorialAnimationType type, List<BlockPos> positions) {
+    private static void spawnTypeParticles(ServerLevel level, TutorialAnimationType type, boolean woodPile,
+                                           List<BlockPos> positions) {
         if (positions.isEmpty()) {
             return;
         }
@@ -480,12 +502,14 @@ public final class TutorialAnimationHandler {
 
         switch (type) {
             case WALL_BREAK -> {
-                // Explosion + campfire smoke + purple dust
-                level.sendParticles(
-                        ParticleTypes.EXPLOSION,
-                        avgX, avgY, avgZ,
-                        2, 0.5, 0.5, 0.5, 0.0
-                );
+                // Explosion + campfire smoke + purple dust. A pile of logs is chopped, not blown up
+                if (!woodPile) {
+                    level.sendParticles(
+                            ParticleTypes.EXPLOSION,
+                            avgX, avgY, avgZ,
+                            2, 0.5, 0.5, 0.5, 0.0
+                    );
+                }
                 level.sendParticles(
                         ParticleTypes.CAMPFIRE_COSY_SMOKE,
                         avgX, avgY, avgZ,
@@ -531,7 +555,8 @@ public final class TutorialAnimationHandler {
         }
     }
 
-    private static void playTypeSound(ServerLevel level, ActiveAnimation active, List<BlockPos> positions) {
+    private static void playTypeSound(ServerLevel level, ActiveAnimation active, SoundType material,
+                                      List<BlockPos> positions) {
         if (positions.isEmpty()) {
             return;
         }
@@ -542,12 +567,17 @@ public final class TutorialAnimationHandler {
         double cz = (active.corner1.getZ() + active.corner2.getZ()) / 2.0 + 0.5;
 
         switch (active.type) {
-            case WALL_BREAK -> level.playSound(
-                    null, cx, cy, cz,
-                    SoundEvents.GENERIC_EXPLODE,
-                    SoundSource.BLOCKS,
-                    0.8f, 0.9f + level.getRandom().nextFloat() * 0.2f
-            );
+            case WALL_BREAK -> {
+                // The blocks going away are what is heard: wood for logs, stone for rock
+                if (material != null) {
+                    level.playSound(
+                            null, cx, cy, cz,
+                            material.getBreakSound(),
+                            SoundSource.BLOCKS,
+                            1.0f, material.getPitch() * (0.75f + level.getRandom().nextFloat() * 0.2f)
+                    );
+                }
+            }
             case DOOR_OPEN -> level.playSound(
                     null, cx, cy, cz,
                     SoundEvents.PISTON_EXTEND,
@@ -566,15 +596,21 @@ public final class TutorialAnimationHandler {
     /**
      * Plays a dramatic sound when an animation starts.
      */
-    private static void playStartSound(ServerLevel level, TutorialAnimationType type,
+    private static void playStartSound(ServerLevel level, TutorialAnimationType type, boolean woodPile,
                                         double cx, double cy, double cz) {
         switch (type) {
             case WALL_BREAK -> {
-                // TNT fuse hiss + big explosion
-                level.playSound(null, cx, cy, cz,
-                        SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.5f, 1.0f);
-                level.playSound(null, cx, cy, cz,
-                        SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.2f, 0.7f);
+                if (woodPile) {
+                    // Logs: no blast, the chopping of each layer is the sound
+                    level.playSound(null, cx, cy, cz,
+                            SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1.0f, 0.8f);
+                } else {
+                    // TNT fuse hiss + one blast, kept low so it does not startle on headphones
+                    level.playSound(null, cx, cy, cz,
+                            SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 0.6f, 1.0f);
+                    level.playSound(null, cx, cy, cz,
+                            SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 0.4f, 0.8f);
+                }
             }
             case DOOR_OPEN -> {
                 // Iron door creak + piston
@@ -763,18 +799,21 @@ public final class TutorialAnimationHandler {
         final BlockPos corner2;
         final List<List<BlockPos>> layers;
         final ServerLevel level;
+        /** The blocks to remove include logs, so it plays as chopping instead of an explosion. */
+        final boolean woodPile;
         int currentLayer;
         int tickCounter;
 
         ActiveAnimation(String animationId, TutorialAnimationType type,
                         BlockPos corner1, BlockPos corner2,
-                        List<List<BlockPos>> layers, ServerLevel level) {
+                        List<List<BlockPos>> layers, ServerLevel level, boolean woodPile) {
             this.animationId = animationId;
             this.type = type;
             this.corner1 = corner1;
             this.corner2 = corner2;
             this.layers = layers;
             this.level = level;
+            this.woodPile = woodPile;
             this.currentLayer = 0;
             this.tickCounter = 0;
         }

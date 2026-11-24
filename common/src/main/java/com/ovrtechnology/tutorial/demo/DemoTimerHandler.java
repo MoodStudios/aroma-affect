@@ -14,14 +14,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 15-minute countdown timer displayed as a boss bar.
+ * Optional session countdown displayed as a boss bar. Its length comes from {@link DemoConfig};
+ * with no limit set there is no countdown and nothing cuts a session short.
  * Starts when the player enters Play Demo or Walkaround.
- * When time runs out, shows the finish screen (QR codes) without "Continue" button.
+ * When time runs out, shows the end screen (QR codes), which then starts the next game.
  */
 public final class DemoTimerHandler {
 
     private static boolean initialized = false;
-    private static final int TOTAL_SECONDS = 15 * 60; // 15 minutes
 
     private static final Map<UUID, TimerState> activeTimers = new ConcurrentHashMap<>();
 
@@ -59,7 +59,7 @@ public final class DemoTimerHandler {
                     }
 
                     state.bossBar.setName(Component.literal("§d§l" + timeStr));
-                    state.bossBar.setProgress(Math.max(0f, (float) state.ticksRemaining / (TOTAL_SECONDS * 20)));
+                    state.bossBar.setProgress(Math.max(0f, (float) state.ticksRemaining / state.totalTicks));
                     state.bossBar.setColor(color);
                 }
 
@@ -75,22 +75,27 @@ public final class DemoTimerHandler {
     }
 
     /**
-     * Starts the 15-minute timer for a player.
+     * Starts the session timer for a player.
      */
     public static void startTimer(ServerPlayer player) {
         // Remove any existing timer
         stopTimer(player);
 
+        int totalSeconds = DemoConfig.get().sessionSeconds();
+        if (totalSeconds <= 0) {
+            AromaAffect.LOGGER.info("Demo session started for player {} with no time limit", player.getName().getString());
+            return;
+        }
         ServerBossEvent bossBar = new ServerBossEvent(
-                Component.literal("§d§l15:00"),
+                Component.literal(String.format("§d§l%02d:%02d", totalSeconds / 60, totalSeconds % 60)),
                 BossEvent.BossBarColor.PURPLE,
                 BossEvent.BossBarOverlay.PROGRESS
         );
         bossBar.addPlayer(player);
         bossBar.setProgress(1.0f);
 
-        activeTimers.put(player.getUUID(), new TimerState(bossBar, TOTAL_SECONDS * 20));
-        AromaAffect.LOGGER.info("Demo timer started for player {} (15 minutes)", player.getName().getString());
+        activeTimers.put(player.getUUID(), new TimerState(bossBar, totalSeconds * 20));
+        AromaAffect.LOGGER.info("Demo timer started for player {} ({} seconds)", player.getName().getString(), totalSeconds);
     }
 
     /**
@@ -101,6 +106,13 @@ public final class DemoTimerHandler {
         if (state != null) {
             state.bossBar.removeAllPlayers();
         }
+    }
+
+    /**
+     * Forgets every countdown. For when the server they ran on is gone.
+     */
+    public static void clearAll() {
+        activeTimers.clear();
     }
 
     /**
@@ -115,6 +127,15 @@ public final class DemoTimerHandler {
         // Show finish screen (QR codes) — time expired version (no continue button)
         com.ovrtechnology.network.TutorialFinishNetworking.sendOpenFinish(player, true);
         AromaAffect.LOGGER.info("Demo timer expired for player {} — showing finish screen", player.getName().getString());
+    }
+
+    /**
+     * Ends the session now, as if the time had run out. Used when the player chooses to leave early.
+     */
+    public static void endSession(ServerPlayer player) {
+        stopTimer(player);
+        com.ovrtechnology.network.TutorialFinishNetworking.sendOpenFinish(player, true);
+        AromaAffect.LOGGER.info("Player {} ended the demo early", player.getName().getString());
     }
 
     /**
@@ -137,11 +158,13 @@ public final class DemoTimerHandler {
 
     private static class TimerState {
         final ServerBossEvent bossBar;
+        final int totalTicks;
         int ticksRemaining;
 
-        TimerState(ServerBossEvent bossBar, int ticksRemaining) {
+        TimerState(ServerBossEvent bossBar, int totalTicks) {
             this.bossBar = bossBar;
-            this.ticksRemaining = ticksRemaining;
+            this.totalTicks = totalTicks;
+            this.ticksRemaining = totalTicks;
         }
     }
 }

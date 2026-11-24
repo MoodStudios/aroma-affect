@@ -339,6 +339,20 @@ public final class TutorialNoseEquipHandler {
         }
     }
 
+    /**
+     * Drops every action that is still waiting. They hold the world and the player of the
+     * server that scheduled them, so they must never run on another server.
+     *
+     * @return number of actions dropped
+     */
+    public static int cancelDelayedActions() {
+        synchronized (delayedActions) {
+            int count = delayedActions.size();
+            delayedActions.clear();
+            return count;
+        }
+    }
+
     private static void processDelayedActions() {
         List<Runnable> toRun = new ArrayList<>();
         synchronized (delayedActions) {

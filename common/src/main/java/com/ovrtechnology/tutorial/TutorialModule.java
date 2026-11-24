@@ -259,8 +259,46 @@ public final class TutorialModule {
             }
         });
 
+        // A demo station runs many servers in one launch of the game, a new one per visitor.
+        // Whatever the previous one left half done holds its world, and the next server would
+        // pick it up in its first ticks: reading a stopped world from another thread never
+        // returns, and an animation left "active" could not be played again.
+        LifecycleEvent.SERVER_STOPPED.register(server -> clearServerState());
+        LifecycleEvent.SERVER_BEFORE_START.register(server -> clearServerState());
+
         initialized = true;
         AromaAffect.LOGGER.info("Tutorial Module initialized successfully");
+    }
+
+    /** Drops the unfinished work of a server that is gone. */
+    private static void clearServerState() {
+        int delayed = com.ovrtechnology.tutorial.noseequip.TutorialNoseEquipHandler.cancelDelayedActions();
+        int animations = TutorialAnimationHandler.stopAllActiveAnimations();
+        int regens = com.ovrtechnology.tutorial.regenarea.TutorialRegenAreaHandler.cancelAll();
+        int cinematics = TutorialCinematicHandler.clearAll();
+        int endings = TutorialDreamEndHandler.clearAll();
+        SearchDiamondZoneHandler.resetAll();
+        com.ovrtechnology.tutorial.demo.DemoTimerHandler.clearAll();
+
+        // Every visitor plays on the same account, so what these remember about "the player" would
+        // be taken for the next visitor's: a scent fired on the start screen, a zone that stays quiet
+        TutorialScentZoneHandler.resetAll();
+        TutorialItemUseHandler.resetAll();
+        TutorialItemPickupHandler.resetAll();
+        TutorialBlockMineHandler.resetAll();
+        TutorialRainHandler.resetAll();
+        TutorialWaterHandler.resetAll();
+        TutorialHorseFeedHandler.resetAll();
+        com.ovrtechnology.tutorial.demo.DemoOmaraGate.reset();
+        com.ovrtechnology.tutorial.demo.DemoFinalArea.reset();
+        TutorialMusicZoneHandler.clearAll();
+        com.ovrtechnology.tutorial.portal.TutorialPortalHandler.clearAllCooldowns();
+
+        if (delayed + animations + regens + cinematics + endings > 0) {
+            AromaAffect.LOGGER.info("Dropped unfinished work of the previous world: {} delayed actions, {} animations, "
+                            + "{} block regenerations, {} cinematics, {} ending sequences",
+                    delayed, animations, regens, cinematics, endings);
+        }
     }
 
     /**

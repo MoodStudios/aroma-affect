@@ -63,6 +63,18 @@ public final class TutorialCinematicHandler {
     }
 
     /**
+     * Forgets every cinematic in progress. For when the server they ran on is gone.
+     *
+     * @return number of cinematics forgotten
+     */
+    public static int clearAll() {
+        int count = activeCinematics.size();
+        activeCinematics.clear();
+        loopingCinematics.clear();
+        return count;
+    }
+
+    /**
      * Initializes the cinematic handler.
      */
     public static void init() {

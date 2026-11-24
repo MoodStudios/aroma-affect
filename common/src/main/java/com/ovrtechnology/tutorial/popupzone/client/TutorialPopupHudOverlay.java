@@ -32,10 +32,8 @@ public final class TutorialPopupHudOverlay {
     private static final int ICON_SIZE = 10;
 
     // Colors
-    private static final int COLOR_BG = 0xCC0B0D12;
-    private static final int COLOR_BORDER = 0xFFA890F0; // OVR Purple
-    private static final int COLOR_TEXT = 0xFFE8E8E8;
-    private static final int COLOR_ICON = 0xFFA890F0;
+    private static final int COLOR_TEXT = 0xFFFFFFFF;
+    private static final int COLOR_ICON = com.ovrtechnology.tutorial.ui.VanillaPanel.TITLE_COLOR;
 
     private TutorialPopupHudOverlay() {
     }
@@ -91,26 +89,15 @@ public final class TutorialPopupHudOverlay {
         int x = MARGIN_X;
         int y = MARGIN_Y;
 
-        // Background with alpha
-        int bgAlpha = (int) (opacity * 0xCC);
-        int bgColor = (bgAlpha << 24) | (COLOR_BG & 0x00FFFFFF);
-        guiGraphics.fill(x, y, x + boxWidth, y + boxHeight, bgColor);
+        com.ovrtechnology.tutorial.ui.VanillaPanel.draw(guiGraphics, x, y, x + boxWidth, y + boxHeight, opacity);
 
-        // Border with alpha
-        int borderAlpha = (int) (opacity * 0xFF);
-        int borderColor = (borderAlpha << 24) | (COLOR_BORDER & 0x00FFFFFF);
-        drawBorder(guiGraphics, x, y, x + boxWidth, y + boxHeight, borderColor);
-
-        // Info icon "i" in a circle
+        // "i" marker in the vanilla title colour
         int iconX = x + PADDING;
         int iconY = y + PADDING;
         int iconAlpha = (int) (opacity * 0xFF);
         int iconColor = (iconAlpha << 24) | (COLOR_ICON & 0x00FFFFFF);
-
-        // Draw circle-ish background for icon
         int iconCenterX = iconX + ICON_SIZE / 2;
         int iconCenterY = iconY + ICON_SIZE / 2;
-        guiGraphics.fill(iconX, iconY, iconX + ICON_SIZE, iconY + ICON_SIZE, (iconAlpha / 3 << 24) | (COLOR_ICON & 0x00FFFFFF));
         guiGraphics.drawString(font, "i", iconCenterX - 2, iconCenterY - 4, iconColor, true);
 
         // Draw text lines
@@ -123,12 +110,5 @@ public final class TutorialPopupHudOverlay {
             guiGraphics.drawString(font, line, textX, textY, textColor, true);
             textY += lineHeight;
         }
-    }
-
-    private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
-        guiGraphics.fill(left, top, right, top + 1, color);
-        guiGraphics.fill(left, bottom - 1, right, bottom, color);
-        guiGraphics.fill(left, top, left + 1, bottom, color);
-        guiGraphics.fill(right - 1, top, right, bottom, color);
     }
 }

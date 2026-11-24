@@ -25,9 +25,9 @@ public final class TutorialWaypointRenderer {
     // Rendering configuration
     private static final double PULSE_SPEED = 12.0;             // Blocks per second
     private static final double PULSE_LENGTH = 6.0;             // Length of the glowing pulse
-    private static final int PULSE_PARTICLES_PER_BLOCK = 4;     // Density of pulse particles
+    private static final int PULSE_PARTICLES_PER_BLOCK = 2;     // Density of pulse particles
     private static final double RENDER_DISTANCE_SQ = 80 * 80;   // Max render distance squared
-    private static final int TICK_INTERVAL = 1;                 // Render every tick for smoother animation
+    private static final int TICK_INTERVAL = 2;                 // Every other tick: dust lives long enough to keep the line continuous
     private static final double ARC_HEIGHT = 1.2;               // Height of arc above ground
     private static final int CURVE_SEGMENTS = 10;               // Segments per waypoint for smooth curves
 
@@ -191,6 +191,9 @@ public final class TutorialWaypointRenderer {
             Vec3 start = pathPoints.get(i);
             Vec3 end = pathPoints.get(i + 1);
             double segmentLength = start.distanceTo(end);
+            if (segmentLength < 1.0e-4) {
+                continue; // repeated point: t would be 0/0
+            }
 
             double segmentStart = accumulatedDistance;
             double segmentEnd = accumulatedDistance + segmentLength;

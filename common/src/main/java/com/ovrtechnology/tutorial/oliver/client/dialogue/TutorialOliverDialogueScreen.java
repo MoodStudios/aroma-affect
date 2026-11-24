@@ -43,12 +43,8 @@ public final class TutorialOliverDialogueScreen extends Screen {
     private static final int PORTRAIT_WIDTH = 90;
     private static final float PORTRAIT_Y_OFFSET = 0.35F;
 
-    // Pink theme colors (matching OVR branding)
-    private static final int COLOR_BOX_BG = 0xCC0B0D12;
-    private static final int COLOR_HEADER_BG = 0xE0141620;
-    private static final int COLOR_BORDER = 0xFFFF69B4;  // Pink border
-    private static final int COLOR_TEXT = 0xFFE8E8E8;
-    private static final int COLOR_HEADER_TEXT = 0xFFFF69B4;  // Pink header
+    private static final int COLOR_TEXT = 0xFFFFFFFF;
+    private static final int COLOR_HEADER_TEXT = com.ovrtechnology.tutorial.ui.VanillaPanel.TITLE_COLOR;
 
     private static final float DEFAULT_CHARACTERS_PER_SECOND = 30.0F;
 
@@ -317,12 +313,7 @@ public final class TutorialOliverDialogueScreen extends Screen {
         int bottom = this.height - BOX_MARGIN;
         int top = bottom - BOX_HEIGHT;
 
-        // Draw dialogue box background
-        guiGraphics.fill(left, top, right, bottom, COLOR_BOX_BG);
-        guiGraphics.fill(left, top, right, top + HEADER_HEIGHT, COLOR_HEADER_BG);
-
-        // Draw pink border
-        drawBorder(guiGraphics, left, top, right, bottom, COLOR_BORDER);
+        com.ovrtechnology.tutorial.ui.VanillaPanel.draw(guiGraphics, left, top, right, bottom);
 
         // Draw header with Oliver's name
         int headerTextX = left + PADDING;
@@ -529,13 +520,6 @@ public final class TutorialOliverDialogueScreen extends Screen {
         return Component.literal(content);
     }
 
-
-    private static void drawBorder(GuiGraphics guiGraphics, int left, int top, int right, int bottom, int color) {
-        guiGraphics.fill(left, top, right, top + 1, color);
-        guiGraphics.fill(left, bottom - 1, right, bottom, color);
-        guiGraphics.fill(left, top, left + 1, bottom, color);
-        guiGraphics.fill(right - 1, top, right, bottom, color);
-    }
 
     private static int countCodepoints(FormattedCharSequence sequence) {
         int[] count = {0};

@@ -18,6 +18,7 @@ import java.util.UUID;
  * Detects when a player consumes/uses specific items and triggers scents.
  * - Honey Bottle → Sweet
  * - Apple (near horse) → Barnyard
+ * - Sweet berries picked from a bush → Evergreen
  */
 public final class TutorialItemUseHandler {
 
@@ -34,6 +35,8 @@ public final class TutorialItemUseHandler {
     private static final Map<UUID, Long> lastFlintTrigger = new HashMap<>();
     private static final Map<UUID, Long> lastCookedTrigger = new HashMap<>();
     private static final Map<UUID, Long> lastRawMeatTrigger = new HashMap<>();
+    private static final Map<UUID, Integer> lastBerryCount = new HashMap<>();
+    private static final Map<UUID, Long> lastBerryTrigger = new HashMap<>();
 
     private TutorialItemUseHandler() {}
 
@@ -76,6 +79,15 @@ public final class TutorialItemUseHandler {
         if (prevFlintDmg >= 0 && currentFlintDmg > prevFlintDmg) {
             // Durability damage increased = was used
             triggerWithCooldown(player, playerId, lastFlintTrigger, "Smoky", "flint_use");
+        }
+
+        // --- Sweet berries picked from a bush → Evergreen ---
+        int currentBerries = countItem(player, Items.SWEET_BERRIES);
+        int prevBerries = lastBerryCount.getOrDefault(playerId, -1);
+        lastBerryCount.put(playerId, currentBerries);
+
+        if (prevBerries >= 0 && currentBerries > prevBerries) {
+            triggerWithCooldown(player, playerId, lastBerryTrigger, "Evergreen", "berry_pick");
         }
 
         // --- Cooked food appears in inventory → Savory Spice ---
@@ -169,6 +181,8 @@ public final class TutorialItemUseHandler {
         lastFlintTrigger.remove(playerId);
         lastCookedTrigger.remove(playerId);
         lastRawMeatTrigger.remove(playerId);
+        lastBerryCount.remove(playerId);
+        lastBerryTrigger.remove(playerId);
     }
 
     public static void resetAll() {
@@ -180,5 +194,7 @@ public final class TutorialItemUseHandler {
         lastFlintTrigger.clear();
         lastCookedTrigger.clear();
         lastRawMeatTrigger.clear();
+        lastBerryCount.clear();
+        lastBerryTrigger.clear();
     }
 }

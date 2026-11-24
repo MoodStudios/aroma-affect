@@ -27,6 +27,9 @@ public abstract class TitleScreenMixin extends Screen {
     @Unique
     private Button aromaaffect$playButton = null;
 
+    @Unique
+    private Button aromaaffect$quitButton = null;
+
     protected TitleScreenMixin(Component title) {
         super(title);
     }
@@ -60,11 +63,13 @@ public abstract class TitleScreenMixin extends Screen {
         ).bounds(centerX - buttonW / 2, buttonY, buttonW, 20).build();
         this.addRenderableWidget(aromaaffect$playButton);
 
-        // "Quit Game" button below
-        this.addRenderableWidget(Button.builder(
+        // "Quit Game" button below. Staff only: it shows while Left Shift is held, like Edit Template
+        aromaaffect$quitButton = Button.builder(
                 Component.literal("Quit Game"),
                 btn -> Minecraft.getInstance().stop()
-        ).bounds(centerX - buttonW / 2, buttonY + 26, buttonW, 20).build());
+        ).bounds(centerX - buttonW / 2, buttonY + 26, buttonW, 20).build();
+        aromaaffect$quitButton.visible = false;
+        this.addRenderableWidget(aromaaffect$quitButton);
     }
 
     @Inject(method = "render", at = @At("TAIL"))
@@ -82,6 +87,9 @@ public abstract class TitleScreenMixin extends Screen {
             } else {
                 aromaaffect$playButton.setMessage(Component.literal("Play"));
             }
+            if (aromaaffect$quitButton != null) {
+                aromaaffect$quitButton.visible = shiftDown;
+            }
         }
     }
 
@@ -89,6 +97,7 @@ public abstract class TitleScreenMixin extends Screen {
     private void aromaaffect$resetFlag(CallbackInfo ci) {
         aromaaffect$buttonsReplaced = false;
         aromaaffect$playButton = null;
+        aromaaffect$quitButton = null;
         // Clean up previous demo session when returning to title screen
         DemoWorldManager.runPendingCleanup();
         // Auto-start new game if requested

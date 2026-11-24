@@ -3,6 +3,7 @@ package com.ovrtechnology.network;
 import com.ovrtechnology.AromaAffect;
 import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,6 +12,9 @@ public final class TutorialFinishNetworking {
 
     private static final ResourceLocation FINISH_OPEN_PACKET =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_finish_open");
+
+    private static final ResourceLocation END_DEMO_PACKET =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_demo_end");
 
     private static boolean initialized = false;
 
@@ -26,6 +30,14 @@ public final class TutorialFinishNetworking {
                     boolean expired = buf.readBoolean();
                     context.queue(() -> openFinishOnClient(expired));
                 });
+
+        // C2S: the player chose "End Demo" in the pause menu
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, END_DEMO_PACKET,
+                (buf, context) -> context.queue(() -> {
+                    if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+                        com.ovrtechnology.tutorial.demo.DemoTimerHandler.endSession(serverPlayer);
+                    }
+                }));
 
         AromaAffect.LOGGER.debug("Tutorial finish networking initialized");
     }
@@ -45,6 +57,14 @@ public final class TutorialFinishNetworking {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.registryAccess());
         buf.writeBoolean(timeExpired);
         NetworkManager.sendToPlayer(player, FINISH_OPEN_PACKET, buf);
+    }
+
+    /**
+     * Client sends this to the server when the player ends the demo before the time runs out.
+     */
+    public static void sendEndDemoToServer(RegistryAccess registryAccess) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess);
+        NetworkManager.sendToServer(END_DEMO_PACKET, buf);
     }
 
     private static void openFinishOnClient(boolean timeExpired) {

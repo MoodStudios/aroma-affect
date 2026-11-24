@@ -1,6 +1,8 @@
 package com.ovrtechnology.tutorial.finishscreen.client;
 
 import com.ovrtechnology.AromaAffect;
+import com.ovrtechnology.tutorial.demo.DemoConfig;
+import com.ovrtechnology.tutorial.demo.DemoWorldManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -34,6 +36,9 @@ public class TutorialFinishScreen extends Screen {
 
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
+    private static final int CONTINUE_WIDTH = 170;
+    private static final int START_OVER_WIDTH = 110;
+    private static final int BUTTON_GAP = 4;
 
     // Fade-in animation: 1.5 seconds = 30 ticks
     private static final int FADE_IN_TICKS = 30;
@@ -41,6 +46,9 @@ public class TutorialFinishScreen extends Screen {
     // Animation state
     private int ticksOpen = 0;
     private Button thanksButton;
+    private Button newGameButton;
+    private Button startOverButton;
+    private boolean restartRequested = false;
 
     private static boolean timeExpired = false;
 
@@ -49,34 +57,67 @@ public class TutorialFinishScreen extends Screen {
     }
 
     /**
-     * Sets whether this screen was triggered by timer expiration.
-     * When true, the "Continue" button is hidden — player must wait for moderator F6.
+     * Sets whether the session is over: the time ran out or the player ended the demo.
+     * When true there is no "Continue" button. On a demo station the screen offers a new game
+     * and starts one by itself after {@link DemoConfig#finishScreenSeconds()}.
      */
     public static void setTimeExpired(boolean expired) {
         timeExpired = expired;
+    }
+
+    public static boolean isTimeExpired() {
+        return timeExpired;
     }
 
     @Override
     protected void init() {
         super.init();
 
+        int buttonX = (this.width - BUTTON_WIDTH) / 2;
+        int buttonY = this.height - BUTTON_HEIGHT - 10;
+
         if (timeExpired) {
-            // No continue button — time's up, moderator must press F6
+            // Session over: no way back into the world. A station starts the next game from here;
+            // without a template (dev world) it stays up until F6, as before.
+            if (DemoWorldManager.isStationSession()) {
+                newGameButton = Button.builder(
+                        newGameLabel(),
+                        btn -> requestRestart()
+                ).bounds(buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
+                newGameButton.active = false;
+                newGameButton.visible = false;
+                addRenderableWidget(newGameButton);
+            }
             return;
         }
 
-        int buttonX = (this.width - BUTTON_WIDTH) / 2;
-        int buttonY = this.height - BUTTON_HEIGHT - 10;
+        // The route is done and the visitor may keep exploring. On a station the next visitor
+        // may be the one looking at this screen, so it also offers a fresh game.
+        boolean station = DemoWorldManager.isStationSession();
+        int continueWidth = station ? CONTINUE_WIDTH : BUTTON_WIDTH;
+        int continueX = station
+                ? (this.width - CONTINUE_WIDTH - BUTTON_GAP - START_OVER_WIDTH) / 2
+                : buttonX;
 
         thanksButton = Button.builder(
                 Component.literal("Continue discovering scents"),
                 btn -> this.onClose()
-        ).bounds(buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
+        ).bounds(continueX, buttonY, continueWidth, BUTTON_HEIGHT).build();
 
         thanksButton.active = false;
         thanksButton.visible = false;
 
         addRenderableWidget(thanksButton);
+
+        if (station) {
+            startOverButton = Button.builder(
+                    Component.literal("Start a new game"),
+                    btn -> requestRestart()
+            ).bounds(continueX + CONTINUE_WIDTH + BUTTON_GAP, buttonY, START_OVER_WIDTH, BUTTON_HEIGHT).build();
+            startOverButton.active = false;
+            startOverButton.visible = false;
+            addRenderableWidget(startOverButton);
+        }
     }
 
     @Override
@@ -86,10 +127,41 @@ public class TutorialFinishScreen extends Screen {
 
         // Enable button after fade-in completes
         if (ticksOpen >= FADE_IN_TICKS && thanksButton != null) {
-            thanksButton.active = true;
+            thanksButton.active = !restartRequested;
             thanksButton.visible = true;
         }
+        if (ticksOpen >= FADE_IN_TICKS && startOverButton != null) {
+            startOverButton.active = !restartRequested;
+            startOverButton.visible = true;
+        }
 
+        if (newGameButton != null) {
+            if (ticksOpen >= FADE_IN_TICKS && !restartRequested) {
+                newGameButton.active = true;
+                newGameButton.visible = true;
+            }
+            newGameButton.setMessage(newGameLabel());
+            if (secondsUntilRestart() <= 0) {
+                requestRestart();
+            }
+        }
+    }
+
+    private int secondsUntilRestart() {
+        return DemoConfig.get().finishScreenSeconds() - ticksOpen / 20;
+    }
+
+    private Component newGameLabel() {
+        return Component.literal("Start a new game (" + Math.max(0, secondsUntilRestart()) + ")");
+    }
+
+    private void requestRestart() {
+        if (restartRequested) return;
+        restartRequested = true;
+        if (newGameButton != null) {
+            newGameButton.active = false;
+        }
+        DemoWorldManager.restartSession();
     }
 
     @Override
@@ -178,7 +250,7 @@ public class TutorialFinishScreen extends Screen {
 
     @Override
     public void onClose() {
-        if (timeExpired) {
+        if (timeExpired || restartRequested) {
             return;
         }
         super.onClose();

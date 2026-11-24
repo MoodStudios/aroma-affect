@@ -3,6 +3,7 @@ package com.ovrtechnology.tutorial.intro.client;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialIntroNetworking;
 import com.ovrtechnology.trigger.config.ClientConfig;
+import com.ovrtechnology.tutorial.demo.DemoIdleVideo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -32,6 +33,7 @@ public class TutorialIntroScreen extends Screen {
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 20;
     private static final int GAP = 12;
+    private static final int VIDEO_BUTTON_MARGIN = 28;
 
     // Fade-in animation: 1.5 seconds = 30 ticks
     private static final int FADE_IN_TICKS = 30;
@@ -40,6 +42,10 @@ public class TutorialIntroScreen extends Screen {
     private int ticksOpen = 0;
     private Button playDemoButton;
     private Button walkaroundButton;
+
+    // Looping video behind the buttons, when the station has one in its game folder
+    private DemoIdleVideo video;
+    private boolean videoChecked = false;
 
     public TutorialIntroScreen() {
         super(Component.literal("Tutorial Intro"));
@@ -55,6 +61,16 @@ public class TutorialIntroScreen extends Screen {
         int totalHeight = LOGO_HEIGHT + GAP + BUTTON_HEIGHT;
         int topY = (this.height - totalHeight) / 2;
         int buttonY = topY + LOGO_HEIGHT + GAP;
+
+        if (!videoChecked) {
+            videoChecked = true;
+            video = DemoIdleVideo.openIfPresent();
+        }
+        if (video != null) {
+            // The video carries the branding: buttons go to the bottom, out of its way
+            buttonY = this.height - VIDEO_BUTTON_MARGIN - BUTTON_HEIGHT;
+        }
+
         int leftButtonX = (this.width - totalButtonsWidth) / 2;
         int rightButtonX = leftButtonX + BUTTON_WIDTH + buttonSpacing;
 
@@ -85,6 +101,13 @@ public class TutorialIntroScreen extends Screen {
         super.tick();
         ticksOpen++;
 
+        if (video != null && video.isBroken()) {
+            // The file cannot be played: back to the screen without video, buttons under the logo
+            video.close();
+            video = null;
+            this.rebuildWidgets();
+        }
+
         // Enable buttons after fade-in completes
         if (ticksOpen >= FADE_IN_TICKS) {
             if (playDemoButton != null) {
@@ -99,7 +122,31 @@ public class TutorialIntroScreen extends Screen {
     }
 
     @Override
+    public void removed() {
+        if (video != null) {
+            video.close();
+            video = null;
+        }
+        videoChecked = false;
+        super.removed();
+    }
+
+    @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (video != null && video.render(graphics, this.width, this.height)) {
+            // Darken the strip under the buttons so they read over any footage
+            int stripTop = this.height - VIDEO_BUTTON_MARGIN - BUTTON_HEIGHT - 24;
+            graphics.fillGradient(0, stripTop, this.width, this.height, 0x00000000, 0xC0000000);
+
+            // Same emerge-from-black as the screen without video
+            float fade = Math.min(1.0f, (ticksOpen + partialTick) / FADE_IN_TICKS);
+            int black = (int) (0xFF * (1.0f - fade * fade * (3.0f - 2.0f * fade)));
+            if (black > 0) {
+                graphics.fill(0, 0, this.width, this.height, black << 24);
+            }
+            return;
+        }
+
         // Calculate fade progress (0.0 to 1.0) with smoothstep
         float fadeProgress = Math.min(1.0f, (ticksOpen + partialTick) / FADE_IN_TICKS);
         float alpha = fadeProgress * fadeProgress * (3.0f - 2.0f * fadeProgress);

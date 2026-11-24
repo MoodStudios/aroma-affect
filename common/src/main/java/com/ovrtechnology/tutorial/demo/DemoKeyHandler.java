@@ -32,8 +32,7 @@ public final class DemoKeyHandler {
 
             if (pressed && !wasPressed) {
                 // Set flags — MinecraftMixin will process disconnect at top of next runTick
-                DemoWorldManager.scheduleNewGame();
-                DemoWorldManager.scheduleDisconnect();
+                DemoWorldManager.restartSession();
             }
 
             wasPressed = pressed;

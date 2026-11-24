@@ -77,6 +77,15 @@ public final class TutorialOliverDialogueClient {
         if (forced) {
             forcedDialogueCount++;
         }
+        // Oliver asks about the smoke after the mine explosion; the explosion's own puff ends as he speaks
+        if (forced && "oliver_path_opened".equals(dialogueId)) {
+            triggerScent("Smoky", 100);
+        }
+        // Oliver asks about the metal in the air as the dragon fight starts; the room's own Machina zone
+        // is off to the side and many players never walk into it. Boss dialogues are not sent as forced
+        if ("boss_dragon_enter".equals(dialogueId)) {
+            triggerScent("Machina", 100);
+        }
 
         AromaAffect.LOGGER.info("[DialogueClient] Opening dialogue '{}' for Oliver entityId={}", dialogueId, entityId);
         minecraft.setScreen(new TutorialOliverDialogueScreen(oliver, dialogueId, hasTrade, tradeId));
@@ -103,11 +112,15 @@ public final class TutorialOliverDialogueClient {
      * Triggers the Kindred scent on the OVR hardware with visual feedback.
      */
     private static void triggerKindredScent() {
+        triggerScent("Kindred", 200); // 10 seconds
+    }
+
+    private static void triggerScent(String scentName, int durationTicks) {
         ScentTrigger trigger = ScentTrigger.create(
-                "Kindred",
+                scentName,
                 ScentTriggerSource.CUSTOM_EVENT,
                 ScentPriority.HIGH,
-                200,  // 10 seconds
+                durationTicks,
                 1.0
         );
         boolean triggered = ScentTriggerManager.getInstance().trigger(trigger);
@@ -115,12 +128,12 @@ public final class TutorialOliverDialogueClient {
         if (triggered) {
             // Show border overlay (respects user config)
             if (ClientConfig.getInstance().isPassivePuffOverlay()) {
-                ScentPuffOverlay.onScentPuff("Kindred", 1.0);
+                ScentPuffOverlay.onScentPuff(scentName, 1.0);
             }
 
             // Chat message disabled for PAX demo
         }
 
-        AromaAffect.LOGGER.info("[DialogueClient] Triggered Kindred scent (sent: {})", triggered);
+        AromaAffect.LOGGER.info("[DialogueClient] Triggered {} scent (sent: {})", scentName, triggered);
     }
 }

@@ -248,9 +248,9 @@ public final class TutorialPortalHandler {
 
         // Departure particles — vortex pulling in
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, srcX, srcY + 1.0, srcZ,
-                80, 0.5, 1.0, 0.5, 0.15);
+                30, 0.5, 1.0, 0.5, 0.15);
         level.sendParticles(ParticleTypes.PORTAL, srcX, srcY + 1, srcZ,
-                100, 1.5, 1.5, 1.5, 1.0);
+                40, 1.5, 1.5, 1.5, 1.0);
         spawnTeleportParticles(level, srcX, srcY, srcZ);
 
         // Apply darkness for the dimensional crossing
@@ -262,9 +262,9 @@ public final class TutorialPortalHandler {
             level.playSound(null, srcX, srcY, srcZ,
                     SoundEvents.END_PORTAL_SPAWN, SoundSource.AMBIENT, 0.8f, 0.8f);
             level.sendParticles(ParticleTypes.SMOKE, srcX, srcY + 0.5, srcZ,
-                    60, 1.0, 0.5, 1.0, 0.05);
+                    25, 1.0, 0.5, 1.0, 0.05);
             level.sendParticles(ParticleTypes.WITCH, srcX, srcY + 1.0, srcZ,
-                    40, 0.5, 1.0, 0.5, 0.1);
+                    15, 0.5, 1.0, 0.5, 0.1);
         });
 
         // ── TICK 15: Atmospheric sound during white hold ──
@@ -281,7 +281,6 @@ public final class TutorialPortalHandler {
 
             // Teleport Oliver along with the player
             if (oliver != null) {
-                spawnTeleportParticles(level, oliver.getX(), oliver.getY(), oliver.getZ());
                 double oliverDestX = dest.getX() + 2.5;
                 double oliverDestY = dest.getY();
                 double oliverDestZ = dest.getZ() + 0.5;
@@ -293,11 +292,11 @@ public final class TutorialPortalHandler {
 
             // Massive arrival particles
             level.sendParticles(ParticleTypes.END_ROD, dstX, dstY + 1.5, dstZ,
-                    80, 2.0, 2.5, 2.0, 0.1);
+                    25, 2.0, 2.5, 2.0, 0.1);
             level.sendParticles(ParticleTypes.REVERSE_PORTAL, dstX, dstY + 1.0, dstZ,
-                    120, 2.0, 1.5, 2.0, 0.2);
+                    40, 2.0, 1.5, 2.0, 0.2);
             level.sendParticles(ParticleTypes.ENCHANT, dstX, dstY + 0.5, dstZ,
-                    50, 2.0, 0.5, 2.0, 0.5);
+                    20, 2.0, 0.5, 2.0, 0.5);
             level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, dstX, dstY + 0.2, dstZ,
                     15, 1.5, 0.1, 1.5, 0.02);
 
@@ -378,8 +377,8 @@ public final class TutorialPortalHandler {
      * Spawns purple spiral particles for teleport effect.
      */
     private static void spawnTeleportParticles(ServerLevel level, double x, double y, double z) {
-        // Double helix spiral particles
-        for (int i = 0; i < 40; i++) {
+        // Double helix spiral, every third step: each call is its own packet
+        for (int i = 0; i < 40; i += 3) {
             double angle = (Math.PI * 4 * i) / 40; // 2 full rotations
             double radius = 0.6 + (i * 0.02);
             double py = y + (i * 0.06);
@@ -390,7 +389,7 @@ public final class TutorialPortalHandler {
             level.sendParticles(
                     PURPLE_PARTICLE,
                     px1, py, pz1,
-                    2,
+                    1,
                     0.05, 0.05, 0.05,
                     0.01
             );
@@ -401,7 +400,7 @@ public final class TutorialPortalHandler {
             level.sendParticles(
                     PURPLE_PARTICLE,
                     px2, py, pz2,
-                    2,
+                    1,
                     0.05, 0.05, 0.05,
                     0.01
             );
@@ -411,7 +410,7 @@ public final class TutorialPortalHandler {
         level.sendParticles(
                 PURPLE_PARTICLE,
                 x, y + 1.0, z,
-                30,
+                12,
                 0.3, 0.5, 0.3,
                 0.1
         );
@@ -420,7 +419,7 @@ public final class TutorialPortalHandler {
         level.sendParticles(
                 ParticleTypes.END_ROD,
                 x, y + 1.0, z,
-                15,
+                8,
                 0.4, 0.6, 0.4,
                 0.05
         );

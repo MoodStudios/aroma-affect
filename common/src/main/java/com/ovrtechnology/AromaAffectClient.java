@@ -101,6 +101,13 @@ public final class AromaAffectClient {
         // Initialize F6 = New Game hotkey
         com.ovrtechnology.tutorial.demo.DemoKeyHandler.init();
 
+        // Initialize the idle restart of the demo station
+        com.ovrtechnology.tutorial.demo.DemoIdleHandler.init();
+        dev.architectury.event.events.client.ClientTickEvent.CLIENT_POST.register(
+                com.ovrtechnology.tutorial.demo.DemoWorldManager::tickRecovery);
+        com.ovrtechnology.tutorial.demo.DemoAutopilot.init();
+        com.ovrtechnology.tutorial.cinematic.client.CinematicCameraSmoother.init();
+
         // Initialize Sniffer menu screen
         SnifferMenuRegistry.initClient();
 

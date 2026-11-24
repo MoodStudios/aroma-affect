@@ -36,6 +36,8 @@ public final class TutorialBlockMineHandler {
             Map.entry("minecraft:deepslate_diamond_ore", "Terra Silva"),
             Map.entry("minecraft:emerald_ore", "Terra Silva"),
             Map.entry("minecraft:deepslate_emerald_ore", "Terra Silva"),
+            Map.entry("minecraft:redstone_ore", "Machina"),
+            Map.entry("minecraft:deepslate_redstone_ore", "Machina"),
             Map.entry("minecraft:nether_gold_ore", "Smoky")
     );
 

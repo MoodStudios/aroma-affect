@@ -63,6 +63,13 @@ public final class ScentPuffOverlay {
         initialized = true;
 
         ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> render(graphics));
+        // Oliver's dialogue often opens on the same tick as the puff (boss rooms, mine explosion) and its
+        // blurred background hides the HUD, so the mask is drawn again on top of that screen
+        ClientGuiEvent.RENDER_POST.register((screen, graphics, mouseX, mouseY, delta) -> {
+            if (screen instanceof com.ovrtechnology.tutorial.oliver.client.dialogue.TutorialOliverDialogueScreen) {
+                render(graphics);
+            }
+        });
         AromaAffect.LOGGER.info("ScentPuffOverlay initialized");
     }
 

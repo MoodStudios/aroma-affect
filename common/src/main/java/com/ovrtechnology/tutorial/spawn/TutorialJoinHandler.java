@@ -352,7 +352,7 @@ public final class TutorialJoinHandler {
         // Activate first waypoint
         activateFirstWaypoint(player, level);
 
-        // Start 15-minute demo timer
+        // Start the session countdown, if the station has a time limit
         com.ovrtechnology.tutorial.demo.DemoTimerHandler.startTimer(player);
 
         AromaAffect.LOGGER.info("Player {} started tutorial (PLAY DEMO) - full reset performed", player.getName().getString());
@@ -426,7 +426,7 @@ public final class TutorialJoinHandler {
             performWalkaroundTeleport(player, level, walkaroundSpawn);
         }
 
-        // Start 15-minute demo timer
+        // Start the session countdown, if the station has a time limit
         com.ovrtechnology.tutorial.demo.DemoTimerHandler.startTimer(player);
 
         // No intro sequence or waypoints for walkaround - just free exploration

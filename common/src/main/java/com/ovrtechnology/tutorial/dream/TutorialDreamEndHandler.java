@@ -51,6 +51,17 @@ public final class TutorialDreamEndHandler {
     private TutorialDreamEndHandler() {
     }
 
+    /**
+     * Forgets every ending sequence in progress. For when the server they ran on is gone.
+     *
+     * @return number of sequences forgotten
+     */
+    public static int clearAll() {
+        int count = activeSequences.size();
+        activeSequences.clear();
+        return count;
+    }
+
     public static void init() {
         if (initialized) {
             return;
@@ -275,6 +286,7 @@ public final class TutorialDreamEndHandler {
         // Clear inventory, keeping only the Dimensional Nose (HEAD slot preserved automatically)
         com.ovrtechnology.tutorial.trade.TutorialTradeHandler.clearInventoryKeeping(
                 player, java.util.Set.of("dimensional_nose", "blaze_nose"));
+        com.ovrtechnology.tutorial.demo.DemoFinalArea.giveTools(player);
 
         // Open self-dialogue: the player "talks to themselves" realizing it was a dream
         String dialogueId = "dream_end_wakeup";

@@ -51,6 +51,8 @@ public final class TutorialScentCounterNetworking {
                 }
         );
 
+        com.ovrtechnology.tutorial.demo.DemoOmaraGate.init();
+
         AromaAffect.LOGGER.debug("Tutorial scent counter networking initialized");
     }
 
@@ -58,6 +60,9 @@ public final class TutorialScentCounterNetworking {
      * Activates the scent counter for a player.
      */
     public static void sendActivate(ServerPlayer player, int maxScents) {
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
+            com.ovrtechnology.tutorial.demo.DemoOmaraGate.lock(level);
+        }
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(
                 Unpooled.buffer(), player.registryAccess());
         buf.writeBoolean(true);
@@ -100,7 +105,11 @@ public final class TutorialScentCounterNetworking {
      * Adds it to the detected set if the counter is active.
      */
     private static boolean allScentsVictoryFired = false;
+    private static boolean allScentsMessagePending = false;
     private static long allScentsVictoryScheduledAt = 0;
+
+    /** Gap between the last scent found and the Sweet victory puff, so the two do not blend. */
+    private static final long VICTORY_PUFF_DELAY_MS = 4000;
 
     public static void onScentTriggered(String scentName) {
         if (!clientCounterActive) return;
@@ -111,37 +120,47 @@ public final class TutorialScentCounterNetworking {
         clientDetectedScents.add(scentName);
         boolean isComplete = clientDetectedScents.size() >= clientMaxScents;
 
-        // Schedule victory 10 seconds after discovering all scents
+        // The achievement shows on the next tick; the Sweet puff follows a few seconds later
         if (!wasComplete && isComplete && !allScentsVictoryFired) {
-            allScentsVictoryScheduledAt = System.currentTimeMillis() + 10000;
+            allScentsMessagePending = true;
+            allScentsVictoryScheduledAt = System.currentTimeMillis() + VICTORY_PUFF_DELAY_MS;
         }
     }
 
     /**
-     * Called every client tick to check if the delayed victory should fire.
+     * Called every client tick: shows the achievement as soon as the last scent is found,
+     * then fires the delayed Sweet puff.
      */
     public static void tickClient() {
+        if (clientCounterActive) {
+            com.ovrtechnology.tutorial.demo.DemoOmaraGate.tickClient(getClientDetectedCount(), clientMaxScents);
+        }
+
+        if (allScentsMessagePending) {
+            allScentsMessagePending = false;
+            com.ovrtechnology.tutorial.demo.DemoOmaraGate.sendUnlock();
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.player != null) {
+                mc.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal(
+                                "§6§l✦ Congratulations! §eYou discovered all " + clientMaxScents + " scents! ✦"),
+                        false);
+                mc.player.playSound(net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
+            }
+        }
+
         if (allScentsVictoryFired || allScentsVictoryScheduledAt == 0) return;
         if (System.currentTimeMillis() < allScentsVictoryScheduledAt) return;
 
         allScentsVictoryFired = true;
         allScentsVictoryScheduledAt = 0;
 
-        // Fire Sweet scent + victory sound + congratulations message
         try {
             var trigger = com.ovrtechnology.trigger.ScentTrigger.create(
                     "Sweet", com.ovrtechnology.trigger.ScentTriggerSource.CUSTOM_EVENT,
                     com.ovrtechnology.trigger.ScentPriority.HIGH, 200, 1.0);
             com.ovrtechnology.trigger.ScentTriggerManager.getInstance().trigger(trigger);
             com.ovrtechnology.trigger.client.ScentPuffOverlay.onScentPuff("Sweet", 1.0);
-
-            var mc = net.minecraft.client.Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§6§l✦ Congratulations! §eYou discovered all 16 scents! ✦"),
-                        false);
-                mc.player.playSound(net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
-            }
         } catch (Exception e) {
             com.ovrtechnology.AromaAffect.LOGGER.error("Failed to fire all-scents victory", e);
         }
@@ -155,6 +174,7 @@ public final class TutorialScentCounterNetworking {
         clientCounterActive = false;
         clientDetectedScents.clear();
         allScentsVictoryFired = false;
+        allScentsMessagePending = false;
         allScentsVictoryScheduledAt = 0;
     }
 }
