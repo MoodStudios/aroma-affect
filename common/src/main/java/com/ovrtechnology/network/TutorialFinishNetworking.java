@@ -16,7 +16,16 @@ public final class TutorialFinishNetworking {
     private static final ResourceLocation END_DEMO_PACKET =
             ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_demo_end");
 
+    private static final ResourceLocation CONTINUE_PACKET =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_demo_continue");
+
+    private static final ResourceLocation TIMER_PACKET =
+            ResourceLocation.fromNamespaceAndPath(AromaAffect.MOD_ID, "tutorial_demo_timer");
+
     private static boolean initialized = false;
+
+    /** Client-side: seconds left in the session as last sent by the server, 0 when there is no countdown. */
+    private static volatile int clientSecondsLeft = 0;
 
     private TutorialFinishNetworking() {}
 
@@ -39,6 +48,21 @@ public final class TutorialFinishNetworking {
                     }
                 }));
 
+        // C2S: the player chose "Continue playing" on the end screen
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, CONTINUE_PACKET,
+                (buf, context) -> context.queue(() -> {
+                    if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+                        com.ovrtechnology.tutorial.demo.DemoTimerHandler.continueSession(serverPlayer);
+                    }
+                }));
+
+        // S2C: seconds left in the session, for the HUD
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, TIMER_PACKET,
+                (buf, context) -> {
+                    int seconds = buf.readVarInt();
+                    context.queue(() -> clientSecondsLeft = seconds);
+                });
+
         AromaAffect.LOGGER.debug("Tutorial finish networking initialized");
     }
 
@@ -51,7 +75,8 @@ public final class TutorialFinishNetworking {
 
     /**
      * Server sends this to a player to open the finish screen.
-     * @param timeExpired if true, hides the "Continue" button (timer ran out)
+     * @param timeExpired true when the session is over (time ran out or End Demo): the screen
+     *                    offers to keep playing with a new countdown or to start the next game
      */
     public static void sendOpenFinish(ServerPlayer player, boolean timeExpired) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.registryAccess());
@@ -65,6 +90,32 @@ public final class TutorialFinishNetworking {
     public static void sendEndDemoToServer(RegistryAccess registryAccess) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess);
         NetworkManager.sendToServer(END_DEMO_PACKET, buf);
+    }
+
+    /**
+     * Client sends this when the visitor chooses to keep playing after the time ran out.
+     */
+    public static void sendContinueToServer(RegistryAccess registryAccess) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess);
+        NetworkManager.sendToServer(CONTINUE_PACKET, buf);
+    }
+
+    /**
+     * Server tells the player how many seconds the session has left; 0 hides the countdown.
+     */
+    public static void sendTimer(ServerPlayer player, int secondsLeft) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.registryAccess());
+        buf.writeVarInt(Math.max(0, secondsLeft));
+        NetworkManager.sendToPlayer(player, TIMER_PACKET, buf);
+    }
+
+    public static int getClientSecondsLeft() {
+        return clientSecondsLeft;
+    }
+
+    /** Client-side: forget the countdown, for when the client leaves the world. */
+    public static void clearClientTimer() {
+        clientSecondsLeft = 0;
     }
 
     private static void openFinishOnClient(boolean timeExpired) {

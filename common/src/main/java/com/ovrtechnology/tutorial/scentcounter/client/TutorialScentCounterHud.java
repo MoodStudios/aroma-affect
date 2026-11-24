@@ -44,11 +44,13 @@ public final class TutorialScentCounterHud {
         initialized = true;
 
         ClientGuiEvent.RENDER_HUD.register((guiGraphics, tickCounter) -> {
-            renderCounter(guiGraphics);
+            int bottom = renderCounter(guiGraphics);
+            renderTimer(guiGraphics, bottom);
         });
     }
 
-    private static void renderCounter(GuiGraphics guiGraphics) {
+    /** Draws the counter and returns the y just below it, or 0 when nothing was drawn. */
+    private static int renderCounter(GuiGraphics guiGraphics) {
         boolean active = TutorialScentCounterNetworking.isClientCounterActive();
 
         // Animate opacity
@@ -58,10 +60,10 @@ public final class TutorialScentCounterHud {
             opacity = Math.max(0.0f, opacity - FADE_SPEED);
         }
 
-        if (opacity <= 0.0f) return;
+        if (opacity <= 0.0f) return 0;
 
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen != null) return;
+        if (minecraft.screen != null) return 0;
 
         Font font = minecraft.font;
 
@@ -85,7 +87,7 @@ public final class TutorialScentCounterHud {
         int y = MARGIN_Y;
 
         int alpha = (int) (opacity * 255);
-        if (alpha < 4) return;
+        if (alpha < 4) return 0;
 
         long now = System.currentTimeMillis();
         if (count > shownCount) {
@@ -133,16 +135,61 @@ public final class TutorialScentCounterHud {
         if (bumping) {
             guiGraphics.pose().popMatrix();
 
-            // "+1" drifting down from under the number
+            // "+1" drifting down from under the number, or out to the left when the
+            // countdown sits under the counter
             float fade = 1.0f - bump;
             int plusAlpha = (int) (fade * opacity * 0xFF);
             if (plusAlpha > 4) {
                 String plus = "+1";
-                int plusX = textX + labelWidth + (valueWidth - font.width(plus)) / 2;
-                int plusY = y + boxHeight + 3 + (int) (bump * 10);
+                boolean timerBelow = com.ovrtechnology.network.TutorialFinishNetworking.getClientSecondsLeft() > 0;
+                int plusX = timerBelow
+                        ? x - font.width(plus) - 4 - (int) (bump * 10)
+                        : textX + labelWidth + (valueWidth - font.width(plus)) / 2;
+                int plusY = timerBelow ? textY : y + boxHeight + 3 + (int) (bump * 10);
                 guiGraphics.drawString(font, plus, plusX, plusY, (plusAlpha << 24) | (COLOR_GLOW & 0x00FFFFFF), true);
             }
         }
+        return y + boxHeight;
     }
 
+    private static final int COLOR_TIME = 0xFFFFFFFF;
+    private static final int COLOR_TIME_LOW = 0xFFFFD84A;
+    private static final int COLOR_TIME_LAST = 0xFFFF5555;
+    private static final int TIMER_GAP = 4;
+
+    /**
+     * Session countdown, right under the counter (or in its place when the counter is off).
+     * It used to be a boss bar at the top, where the hint popups covered it.
+     */
+    private static void renderTimer(GuiGraphics guiGraphics, int counterBottom) {
+        int secondsLeft = com.ovrtechnology.network.TutorialFinishNetworking.getClientSecondsLeft();
+        if (secondsLeft <= 0) return;
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.screen != null) return;
+        Font font = minecraft.font;
+
+        String label = "Time left: ";
+        String value = String.format("%d:%02d", secondsLeft / 60, secondsLeft % 60);
+        int valueColor = secondsLeft <= 60 ? COLOR_TIME_LAST : secondsLeft <= 180 ? COLOR_TIME_LOW : COLOR_TIME;
+        // The last ten seconds blink
+        if (secondsLeft <= 10 && (System.currentTimeMillis() / 400) % 2 == 0) {
+            valueColor = COLOR_TIME;
+        }
+
+        int labelWidth = font.width(label);
+        // Width of the widest time this countdown shows, so the box doesn't twitch every second
+        int valueWidth = font.width(secondsLeft >= 600 ? "00:00" : "0:00");
+        int boxWidth = PADDING_X * 2 + labelWidth + valueWidth;
+        int boxHeight = PADDING_Y * 2 + font.lineHeight;
+
+        int x = guiGraphics.guiWidth() - boxWidth - MARGIN_X;
+        int y = counterBottom > 0 ? counterBottom + TIMER_GAP : MARGIN_Y;
+
+        com.ovrtechnology.tutorial.ui.VanillaPanel.draw(guiGraphics, x, y, x + boxWidth, y + boxHeight, 1.0f);
+        int textX = x + PADDING_X;
+        int textY = y + PADDING_Y;
+        guiGraphics.drawString(font, label, textX, textY, COLOR_TEXT, true);
+        guiGraphics.drawString(font, value, textX + labelWidth + valueWidth - font.width(value), textY, valueColor, true);
+    }
 }

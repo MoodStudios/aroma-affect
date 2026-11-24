@@ -83,6 +83,7 @@ public final class TutorialJoinHandler {
             TutorialNoseEquipHandler.onPlayerLeave(player.getUUID());
             // Reset scent counter client state (critical for singleplayer where JVM is shared)
             com.ovrtechnology.network.TutorialScentCounterNetworking.deactivateClient();
+            com.ovrtechnology.network.TutorialFinishNetworking.clearClientTimer();
             // Reset finish zone trigger tracking
             com.ovrtechnology.tutorial.finishscreen.TutorialFinishZoneHandler.resetPlayer(player.getUUID());
             // End SearchDiamond session and regenerate zone

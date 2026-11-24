@@ -3,21 +3,20 @@ package com.ovrtechnology.tutorial.demo;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.tutorial.TutorialModule;
 import dev.architectury.event.events.common.TickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
+import com.ovrtechnology.network.TutorialFinishNetworking;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.BossEvent;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Optional session countdown displayed as a boss bar. Its length comes from {@link DemoConfig};
- * with no limit set there is no countdown and nothing cuts a session short.
+ * Optional session countdown, shown on the HUD under the scent counter. Its length comes from
+ * {@link DemoConfig}; with no limit set there is no countdown and nothing cuts a session short.
  * Starts when the player enters Play Demo or Walkaround.
- * When time runs out, shows the end screen (QR codes), which then starts the next game.
+ * When time runs out, shows the end screen, where the visitor can keep playing with a new
+ * countdown or leave it to start the next game.
  */
 public final class DemoTimerHandler {
 
@@ -41,32 +40,14 @@ public final class DemoTimerHandler {
 
                 state.ticksRemaining--;
 
-                // Update boss bar every 20 ticks (1 second)
-                if (state.ticksRemaining % 20 == 0 || state.ticksRemaining <= 0) {
-                    int secondsLeft = Math.max(0, state.ticksRemaining / 20);
-                    int minutes = secondsLeft / 60;
-                    int seconds = secondsLeft % 60;
-                    String timeStr = String.format("%02d:%02d", minutes, seconds);
-
-                    // Color changes as time runs low
-                    BossEvent.BossBarColor color;
-                    if (secondsLeft <= 60) {
-                        color = BossEvent.BossBarColor.RED;
-                    } else if (secondsLeft <= 180) {
-                        color = BossEvent.BossBarColor.YELLOW;
-                    } else {
-                        color = BossEvent.BossBarColor.PURPLE;
-                    }
-
-                    state.bossBar.setName(Component.literal("§d§l" + timeStr));
-                    state.bossBar.setProgress(Math.max(0f, (float) state.ticksRemaining / state.totalTicks));
-                    state.bossBar.setColor(color);
+                // The HUD shows whole seconds, so once a second is enough
+                if (state.ticksRemaining % 20 == 0 && state.ticksRemaining > 0) {
+                    TutorialFinishNetworking.sendTimer(player, state.ticksRemaining / 20);
                 }
 
-                // Time's up
                 if (state.ticksRemaining <= 0) {
-                    onTimeUp(player);
                     activeTimers.remove(player.getUUID());
+                    onTimeUp(player);
                 }
             }
         });
@@ -86,26 +67,26 @@ public final class DemoTimerHandler {
             AromaAffect.LOGGER.info("Demo session started for player {} with no time limit", player.getName().getString());
             return;
         }
-        ServerBossEvent bossBar = new ServerBossEvent(
-                Component.literal(String.format("§d§l%02d:%02d", totalSeconds / 60, totalSeconds % 60)),
-                BossEvent.BossBarColor.PURPLE,
-                BossEvent.BossBarOverlay.PROGRESS
-        );
-        bossBar.addPlayer(player);
-        bossBar.setProgress(1.0f);
-
-        activeTimers.put(player.getUUID(), new TimerState(bossBar, totalSeconds * 20));
+        activeTimers.put(player.getUUID(), new TimerState(totalSeconds * 20));
+        TutorialFinishNetworking.sendTimer(player, totalSeconds);
         AromaAffect.LOGGER.info("Demo timer started for player {} ({} seconds)", player.getName().getString(), totalSeconds);
     }
 
     /**
-     * Stops the timer for a player.
+     * Stops the timer for a player. Sends nothing: it also runs while the player disconnects,
+     * and the client forgets the countdown when it leaves the world.
      */
     public static void stopTimer(ServerPlayer player) {
-        TimerState state = activeTimers.remove(player.getUUID());
-        if (state != null) {
-            state.bossBar.removeAllPlayers();
-        }
+        if (player == null) return;
+        activeTimers.remove(player.getUUID());
+    }
+
+    /**
+     * "Continue playing" on the end screen: the same visitor keeps going with a full new countdown.
+     */
+    public static void continueSession(ServerPlayer player) {
+        startTimer(player);
+        AromaAffect.LOGGER.info("Player {} kept playing after the end screen", player.getName().getString());
     }
 
     /**
@@ -119,13 +100,9 @@ public final class DemoTimerHandler {
      * Called when the timer reaches zero.
      */
     private static void onTimeUp(ServerPlayer player) {
-        TimerState state = activeTimers.get(player.getUUID());
-        if (state != null) {
-            state.bossBar.removeAllPlayers();
-        }
-
-        // Show finish screen (QR codes) — time expired version (no continue button)
-        com.ovrtechnology.network.TutorialFinishNetworking.sendOpenFinish(player, true);
+        TutorialFinishNetworking.sendTimer(player, 0);
+        // End screen for a session that is over: keep playing or hand the station to the next visitor
+        TutorialFinishNetworking.sendOpenFinish(player, true);
         AromaAffect.LOGGER.info("Demo timer expired for player {} — showing finish screen", player.getName().getString());
     }
 
@@ -134,7 +111,8 @@ public final class DemoTimerHandler {
      */
     public static void endSession(ServerPlayer player) {
         stopTimer(player);
-        com.ovrtechnology.network.TutorialFinishNetworking.sendOpenFinish(player, true);
+        TutorialFinishNetworking.sendTimer(player, 0);
+        TutorialFinishNetworking.sendOpenFinish(player, true);
         AromaAffect.LOGGER.info("Player {} ended the demo early", player.getName().getString());
     }
 
@@ -152,18 +130,15 @@ public final class DemoTimerHandler {
         TimerState state = activeTimers.get(player.getUUID());
         if (state != null) {
             state.ticksRemaining = 200; // 10 seconds left
+            TutorialFinishNetworking.sendTimer(player, 10);
             AromaAffect.LOGGER.info("Timer skipped for player {}", player.getName().getString());
         }
     }
 
     private static class TimerState {
-        final ServerBossEvent bossBar;
-        final int totalTicks;
         int ticksRemaining;
 
-        TimerState(ServerBossEvent bossBar, int totalTicks) {
-            this.bossBar = bossBar;
-            this.totalTicks = totalTicks;
+        TimerState(int totalTicks) {
             this.ticksRemaining = totalTicks;
         }
     }

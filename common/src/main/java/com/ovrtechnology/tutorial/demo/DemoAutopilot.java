@@ -45,6 +45,8 @@ public final class DemoAutopilot {
     private static Stage stage = Stage.BOOT;
     private static int stageTicks = 0;
     private static boolean endDemoSent = false;
+    /** In a TIME_UP session, "Continue playing" was pressed once already. */
+    private static boolean keptPlaying = false;
     private static Vec3 lastCameraPosition = null;
     private static int introFrames = 0;
     private static int introFramesMoved = 0;
@@ -84,10 +86,21 @@ public final class DemoAutopilot {
     }
 
     private static Ending ending() {
+        // AROMAAFFECT_DEMO_ENDING=TIME_UP (or another ending) makes every session end that way
+        String forced = System.getenv("AROMAAFFECT_DEMO_ENDING");
+        if (forced != null && !forced.isBlank()) {
+            try {
+                return Ending.valueOf(forced.trim().toUpperCase(java.util.Locale.ROOT));
+            } catch (IllegalArgumentException ignored) {
+                // unknown name: the usual rotation
+            }
+        }
         return Ending.values()[(sessionsStarted - 1) % Ending.values().length];
     }
 
     private static void tick(Minecraft mc) {
+        // The test window usually sits in the background; a station's never does
+        mc.options.pauseOnLostFocus = false;
         if (mc.player == null) {
             sessionRunning = false;
         }
@@ -149,9 +162,10 @@ public final class DemoAutopilot {
                         return;
                     }
                     sessionsStarted++;
+                    keptPlaying = false;
                     AromaAffect.LOGGER.info(TAG + "session {} starts, will end by {}", sessionsStarted, ending());
                     sessionRunning = true;
-                    if (DemoWalkaroundCheck.enabled()) {
+                    if (DemoWalkaroundCheck.enabled() || System.getenv("AROMAAFFECT_DEMO_ENDING") != null) {
                         // The button a visitor sees: START, or WALKAROUND when the demo is shown too
                         pressFirstButton(mc, DemoConfig.get().showPlayDemo() ? 1 : 0);
                     } else {
@@ -228,6 +242,13 @@ public final class DemoAutopilot {
             case FINISH -> {
                 if (stageTicks == 50) {
                     shot(mc, "finish");
+                }
+                // Time up: the first time keep playing (a new countdown), the second time leave the
+                // screen alone so it starts the next game by itself
+                if (ending() == Ending.TIME_UP && TutorialFinishScreen.isTimeExpired() && !keptPlaying
+                        && stageTicks == 80) {
+                    keptPlaying = true;
+                    pressButton(mc, "Continue playing");
                 }
                 if (ending() == Ending.ROUTE_DONE && !TutorialFinishScreen.isTimeExpired()) {
                     DemoIdleHandler.poke();

@@ -39,6 +39,8 @@ public class TutorialFinishScreen extends Screen {
     private static final int CONTINUE_WIDTH = 170;
     private static final int START_OVER_WIDTH = 110;
     private static final int BUTTON_GAP = 4;
+    private static final int KEEP_PLAYING_WIDTH = 140;
+    private static final int NEW_GAME_WIDTH = 140;
 
     // Fade-in animation: 1.5 seconds = 30 ticks
     private static final int FADE_IN_TICKS = 30;
@@ -48,6 +50,7 @@ public class TutorialFinishScreen extends Screen {
     private Button thanksButton;
     private Button newGameButton;
     private Button startOverButton;
+    private Button keepPlayingButton;
     private boolean restartRequested = false;
 
     private static boolean timeExpired = false;
@@ -58,8 +61,8 @@ public class TutorialFinishScreen extends Screen {
 
     /**
      * Sets whether the session is over: the time ran out or the player ended the demo.
-     * When true there is no "Continue" button. On a demo station the screen offers a new game
-     * and starts one by itself after {@link DemoConfig#finishScreenSeconds()}.
+     * When true the screen offers "Continue playing" (a new countdown in the same world) and, on a
+     * demo station, a new game, which it starts by itself after {@link DemoConfig#finishScreenSeconds()}.
      */
     public static void setTimeExpired(boolean expired) {
         timeExpired = expired;
@@ -77,13 +80,24 @@ public class TutorialFinishScreen extends Screen {
         int buttonY = this.height - BUTTON_HEIGHT - 10;
 
         if (timeExpired) {
-            // Session over: no way back into the world. A station starts the next game from here;
-            // without a template (dev world) it stays up until F6, as before.
-            if (DemoWorldManager.isStationSession()) {
+            // Session over. The visitor can keep playing with a new countdown; on a station the
+            // screen also offers the next game and starts it by itself if nobody chooses.
+            // Without a template (dev world) there is no new game: only "Continue playing".
+            boolean station = DemoWorldManager.isStationSession();
+            int rowWidth = station ? KEEP_PLAYING_WIDTH + BUTTON_GAP + NEW_GAME_WIDTH : KEEP_PLAYING_WIDTH;
+            int rowX = (this.width - rowWidth) / 2;
+            keepPlayingButton = Button.builder(
+                    Component.literal("Continue playing"),
+                    btn -> requestKeepPlaying()
+            ).bounds(rowX, buttonY, KEEP_PLAYING_WIDTH, BUTTON_HEIGHT).build();
+            keepPlayingButton.active = false;
+            keepPlayingButton.visible = false;
+            addRenderableWidget(keepPlayingButton);
+            if (station) {
                 newGameButton = Button.builder(
                         newGameLabel(),
                         btn -> requestRestart()
-                ).bounds(buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build();
+                ).bounds(rowX + KEEP_PLAYING_WIDTH + BUTTON_GAP, buttonY, NEW_GAME_WIDTH, BUTTON_HEIGHT).build();
                 newGameButton.active = false;
                 newGameButton.visible = false;
                 addRenderableWidget(newGameButton);
@@ -135,6 +149,11 @@ public class TutorialFinishScreen extends Screen {
             startOverButton.visible = true;
         }
 
+        if (keepPlayingButton != null && ticksOpen >= FADE_IN_TICKS) {
+            keepPlayingButton.active = !restartRequested;
+            keepPlayingButton.visible = true;
+        }
+
         if (newGameButton != null) {
             if (ticksOpen >= FADE_IN_TICKS && !restartRequested) {
                 newGameButton.active = true;
@@ -161,7 +180,21 @@ public class TutorialFinishScreen extends Screen {
         if (newGameButton != null) {
             newGameButton.active = false;
         }
+        if (keepPlayingButton != null) {
+            keepPlayingButton.active = false;
+        }
         DemoWorldManager.restartSession();
+    }
+
+    /** Back into the same world; the server starts a new countdown. */
+    private void requestKeepPlaying() {
+        if (restartRequested) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            com.ovrtechnology.network.TutorialFinishNetworking.sendContinueToServer(mc.player.registryAccess());
+        }
+        timeExpired = false;
+        super.onClose();
     }
 
     @Override
