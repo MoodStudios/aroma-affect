@@ -100,7 +100,7 @@ final class DemoWalkaroundCheck {
                 shot.accept("walk_kitchen");
             }
             case 360 -> onServer(server, player ->
-                    player.teleportTo(level(player), 77.5, 20, -235.5, Set.of(), -90.0F, 15.0F, false));
+                    player.teleportTo(level(player), 77.5, standingY(level(player), 77, -236, 20), -235.5, Set.of(), -90.0F, 15.0F, false));
             case 400 -> {
                 countBeforeHorse = TutorialScentCounterNetworking.getClientDetectedCount();
                 check("stable hint is showing", TutorialPopupNetworking.getClientPopupText().contains("horse"));
@@ -133,6 +133,18 @@ final class DemoWalkaroundCheck {
     private static List<Villager> guides(ServerLevel level) {
         return level.getEntitiesOfClass(Villager.class, new AABB(new BlockPos(23, 20, -256)).inflate(16),
                 v -> v.getTags().contains("aromaaffect_scent_guide"));
+    }
+
+    /** First height from {@code fromY} up with room to stand, so a teleport never lands inside a wall. */
+    private static int standingY(ServerLevel level, int x, int z, int fromY) {
+        for (int y = fromY; y < fromY + 16; y++) {
+            BlockPos feet = new BlockPos(x, y, z);
+            if (level.getBlockState(feet).getCollisionShape(level, feet).isEmpty()
+                    && level.getBlockState(feet.above()).getCollisionShape(level, feet.above()).isEmpty()) {
+                return y;
+            }
+        }
+        return fromY;
     }
 
     private static ServerLevel level(ServerPlayer player) {
