@@ -19,8 +19,8 @@ import net.minecraft.resources.ResourceLocation;
  * <p>
  * Without a video: the Aroma Affect logo in the middle with the button under it, over the intro flight.
  * With a video ({@link DemoIdleVideo}): the video in a column on the left, sized to keep its proportions
- * (a vertical video fills the height), the OVR logo on top of it, and the logo and the button centered
- * in the rest of the screen.
+ * (a vertical video fills the height), and the logo and the button centered in the rest of the screen.
+ * The OVR logo comes inside the video, so it is only drawn here when there is no video.
  * <p>
  * The station shows a single Start button that goes to the free walkaround; the guided demo comes back
  * next to it with {@code showPlayDemo} in the demo config.
@@ -201,12 +201,9 @@ public class TutorialIntroScreen extends Screen {
         if (video != null) {
             graphics.fill(0, 0, columnW, this.height, 0xFF000000);
             if (video.render(graphics, videoX, videoY, videoW, videoH)) {
-                // A thin edge between the column and the rest, and a shade at the top so the logo reads
+                // A thin edge between the column and the rest
                 graphics.fill(columnW, 0, columnW + 1, this.height, 0x40FFFFFF);
-                graphics.fillGradient(0, 0, columnW, 48, 0x90000000, 0x00000000);
             }
-            int partnerW = Math.max(50, Math.min(110, Math.round(columnW * 0.55f)));
-            blitWhole(graphics, PARTNER_LOGO, 8, 8, partnerW, Math.round(partnerW / PARTNER_ASPECT));
         } else {
             blitWhole(graphics, PARTNER_LOGO, 10, 10, PARTNER_WIDTH, Math.round(PARTNER_WIDTH / PARTNER_ASPECT));
         }

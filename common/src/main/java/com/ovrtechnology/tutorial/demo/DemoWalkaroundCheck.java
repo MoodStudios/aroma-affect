@@ -83,10 +83,19 @@ final class DemoWalkaroundCheck {
                 });
             }
             case 306 -> shot.accept("walk_cake_bump");
+            case 320 -> onServer(server, player -> {
+                BlockPos stove = new BlockPos(18, 22, -243);
+                BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(stove), Direction.EAST, stove, false);
+                player.gameMode.useItemOn(player, level(player), player.getMainHandItem(), InteractionHand.MAIN_HAND, hit);
+                check("stove is lit", DemoWalkaroundGuide.isStoveLit(level(player)));
+            });
             case 330 -> {
                 check("cake found a scent", TutorialScentCounterNetworking.getClientDetectedCount() > countBeforeCake
                         || countBeforeCake >= 16);
+                check("cake and stove found two scents", TutorialScentCounterNetworking.getClientDetectedCount() >= countBeforeCake + 2
+                        || countBeforeCake >= 15);
                 check("kitchen hint is showing", TutorialPopupNetworking.getClientPopupText().contains("cake"));
+                check("no furnace screen", mc.screen == null);
                 onServer(server, player -> check("cake is still whole", level(player).getBlockState(CAKE).is(Blocks.CAKE)));
                 shot.accept("walk_kitchen");
             }

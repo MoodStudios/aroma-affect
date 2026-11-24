@@ -20,7 +20,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
@@ -31,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Guidance for the free area (Walkaround, and the end of the guided demo, which wakes up in the same place):
  * a hint when the player walks up to something that gives a scent, a hint on arrival, a guide villager
- * that gives a hint every time it is clicked, and a cake in the house kitchen that smells sweet.
+ * that gives a hint every time it is clicked, and a cake and a stove in the house kitchen that give scents.
  * <p>
  * Everything here is placed by code, so the template map does not have to change.
  */
@@ -46,7 +48,7 @@ public final class DemoWalkaroundGuide {
     /** Shown while the player is inside the area, in this order of priority. */
     private static final List<Hint> AREA_HINTS = List.of(
             Hint.of("kitchen", 18, 20, -243, 35, 26, -238,
-                    "Something sweet is on the kitchen counter. Right click the cake!"),
+                    "Right click the cake on the counter, then light the stove in the corner. Something smells good!"),
             Hint.of("beef", 4, 17, -246, 14, 26, -228,
                     "Grab the raw beef from the chest and cook it in the furnace. Right click to open them."),
             Hint.of("stable", 70, 17, -251, 84, 28, -228,
@@ -69,6 +71,7 @@ public final class DemoWalkaroundGuide {
     private static final List<String> GUIDE_HINTS = List.of(
             "There are 16 scents around here. Each new one adds to the counter at the top right.",
             "Something sweet is waiting in the kitchen of the big house.",
+            "Feeling cold? Light the stove in the kitchen and get cozy.",
             "The horses at the stable love apples. There is a chest full of them right next to them.",
             "Raw beef is in a chest by the furnace, west of the big house. Cook it!",
             "Mine the ores with your pickaxe. Different rocks smell different.",
@@ -83,6 +86,9 @@ public final class DemoWalkaroundGuide {
     private static final float GUIDE_YAW = 23.0f;
     private static final String GUIDE_TAG = "aromaaffect_scent_guide";
     private static final long CAKE_COOLDOWN_MS = 5000;
+    /** Furnace on the kitchen counter, used as the stove. */
+    private static final BlockPos STOVE_POS = new BlockPos(18, 22, -243);
+    private static final int STOVE_LIT_TICKS = 20 * 12;
 
     private static final int CHECK_INTERVAL = 10;
     private static final String TIMED = "#timed";
@@ -96,6 +102,9 @@ public final class DemoWalkaroundGuide {
     private static final Map<UUID, Long> timedUntil = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> nextGuideHint = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> lastCake = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> lastStove = new ConcurrentHashMap<>();
+    /** Server tick at which the stove goes out, or -1 when it is out. */
+    private static long stoveOutAt = -1;
 
     private DemoWalkaroundGuide() {
     }
@@ -106,6 +115,11 @@ public final class DemoWalkaroundGuide {
 
         TickEvent.SERVER_POST.register(server -> {
             serverTicks++;
+            if (stoveOutAt >= 0 && serverTicks >= stoveOutAt) {
+                stoveOutAt = -1;
+                ServerLevel overworld = server.overworld();
+                if (TutorialModule.isActive(overworld)) setStoveLit(overworld, false);
+            }
             if (++tickCounter < CHECK_INTERVAL) return;
             tickCounter = 0;
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -118,16 +132,23 @@ public final class DemoWalkaroundGuide {
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, direction) -> {
             if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.PASS;
             if (!(serverPlayer.level() instanceof ServerLevel level) || !TutorialModule.isActive(level)) return InteractionResult.PASS;
-            if (hand != InteractionHand.MAIN_HAND || !pos.equals(CAKE_POS) || !level.getBlockState(pos).is(Blocks.CAKE)) {
-                return InteractionResult.PASS;
+            if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
+            if (pos.equals(CAKE_POS) && level.getBlockState(pos).is(Blocks.CAKE)) {
+                smellCake(serverPlayer, level);
+                // The cake stays whole for the next bite and the next visitor
+                return InteractionResult.SUCCESS;
             }
-            smellCake(serverPlayer, level);
-            // The cake stays whole for the next bite and the next visitor
-            return InteractionResult.SUCCESS;
+            if (pos.equals(STOVE_POS) && level.getBlockState(pos).is(Blocks.FURNACE)) {
+                lightStove(serverPlayer, level);
+                // Lit by hand, no furnace screen
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.PASS;
         });
 
         BlockEvent.BREAK.register((level, pos, state, player, xp) ->
-                pos.equals(CAKE_POS) && state.is(Blocks.CAKE) ? EventResult.interruptFalse() : EventResult.pass());
+                (pos.equals(CAKE_POS) && state.is(Blocks.CAKE)) || pos.equals(STOVE_POS)
+                        ? EventResult.interruptFalse() : EventResult.pass());
 
         InteractionEvent.INTERACT_ENTITY.register((player, entity, hand) -> {
             if (!entity.getTags().contains(GUIDE_TAG)) return EventResult.pass();
@@ -149,6 +170,8 @@ public final class DemoWalkaroundGuide {
             DemoFinalArea.giveTools(player);
         }
         placeCake(level);
+        stoveOutAt = -1;
+        setStoveLit(level, false);
         ensureGuide(level);
         showTimed(player, START_HINT, START_HINT_TICKS);
     }
@@ -158,6 +181,7 @@ public final class DemoWalkaroundGuide {
         timedUntil.remove(playerId);
         nextGuideHint.remove(playerId);
         lastCake.remove(playerId);
+        lastStove.remove(playerId);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -223,6 +247,35 @@ public final class DemoWalkaroundGuide {
         if (last != null && now - last < CAKE_COOLDOWN_MS) return;
         lastCake.put(player.getUUID(), now);
         TutorialScentZoneNetworking.sendScentTrigger(player, "Sweet", 1.0, "kitchen_cake");
+    }
+
+    private static void lightStove(ServerPlayer player, ServerLevel level) {
+        setStoveLit(level, true);
+        stoveOutAt = serverTicks + STOVE_LIT_TICKS;
+        level.playSound(null, STOVE_POS, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.6f, 1.2f);
+        level.playSound(null, STOVE_POS, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0f, 1.0f);
+        level.sendParticles(ParticleTypes.FLAME,
+                STOVE_POS.getX() + 0.5, STOVE_POS.getY() + 0.4, STOVE_POS.getZ() + 0.5, 8, 0.2, 0.15, 0.2, 0.01);
+        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                STOVE_POS.getX() + 0.5, STOVE_POS.getY() + 1.0, STOVE_POS.getZ() + 0.5, 2, 0.1, 0.1, 0.1, 0.01);
+
+        long now = System.currentTimeMillis();
+        Long last = lastStove.get(player.getUUID());
+        if (last != null && now - last < CAKE_COOLDOWN_MS) return;
+        lastStove.put(player.getUUID(), now);
+        TutorialScentZoneNetworking.sendScentTrigger(player, "Savory Spice", 1.0, "kitchen_stove");
+    }
+
+    private static void setStoveLit(ServerLevel level, boolean lit) {
+        BlockState state = level.getBlockState(STOVE_POS);
+        if (state.is(Blocks.FURNACE) && state.getValue(AbstractFurnaceBlock.LIT) != lit) {
+            level.setBlock(STOVE_POS, state.setValue(AbstractFurnaceBlock.LIT, lit), 3);
+        }
+    }
+
+    static boolean isStoveLit(ServerLevel level) {
+        BlockState state = level.getBlockState(STOVE_POS);
+        return state.is(Blocks.FURNACE) && state.getValue(AbstractFurnaceBlock.LIT);
     }
 
     private static void ensureGuide(ServerLevel level) {
