@@ -83,7 +83,7 @@ final class DemoWalkaroundCheck {
                 }
             });
             case 190 -> {
-                check("guide hint is showing", TutorialPopupNetworking.getClientPopupText().startsWith("Scent Guide"));
+                check("guide hint is showing", TutorialPopupNetworking.getClientPopupText().startsWith("Aroma Guide"));
                 check("no trading screen", mc.screen == null);
                 check("standing by the guide gives no scent",
                         !TutorialScentCounterNetworking.getClientDetectedScents().contains("Kindred"));

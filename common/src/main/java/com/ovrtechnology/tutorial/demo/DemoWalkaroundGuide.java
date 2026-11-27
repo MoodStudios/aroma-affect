@@ -1,5 +1,6 @@
 package com.ovrtechnology.tutorial.demo;
 
+import com.ovrtechnology.tutorial.oliver.TutorialOliverEntity;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.resources.ResourceLocation;
 import com.ovrtechnology.AromaAffect;
@@ -65,7 +66,7 @@ public final class DemoWalkaroundGuide {
 
     private static final String START_HINT =
             "Find all 16 scents! Open chests, use what you find and explore. "
-                    + "Switch items with 1-9 or the mouse wheel. Talk to the Scent Guide for hints.";
+                    + "Switch items with 1-9 or the mouse wheel. The Aroma Guide follows you: right click it for hints.";
     private static final int START_HINT_TICKS = 240;
     private static final int GUIDE_HINT_TICKS = 180;
 
@@ -128,7 +129,8 @@ public final class DemoWalkaroundGuide {
     private static final Map<String, String> BIOME_SCENTS = Map.of(
             "minecraft:beach", "Beach",
             "minecraft:desert", "Desert",
-            "minecraft:swamp", "Petrichor");
+            "minecraft:swamp", "Petrichor",
+            "minecraft:jungle", "Citrus");
     private static final Map<UUID, String> lastBiome = new ConcurrentHashMap<>();
     /** Server tick at which the stove goes out, or -1 when it is out. */
     private static long stoveOutAt = -1;
@@ -215,7 +217,7 @@ public final class DemoWalkaroundGuide {
         placeCake(level);
         stoveOutAt = -1;
         setStoveLit(level, false);
-        ensureGuide(level);
+        ensureGuide(level).setFollowing(player);
         showTimed(player, START_HINT, START_HINT_TICKS);
     }
 
@@ -329,31 +331,41 @@ public final class DemoWalkaroundGuide {
         return state.is(Blocks.FURNACE) && state.getValue(AbstractFurnaceBlock.LIT);
     }
 
-    private static void ensureGuide(ServerLevel level) {
+    /**
+     * The guide is the tutorial's Aroma Guide (Oliver), following the player around the free area so
+     * the hints for the closest missing scent can be asked anywhere. An Oliver isn't a plain villager,
+     * so passive mode doesn't take standing next to it for Kindred.
+     */
+    private static TutorialOliverEntity ensureGuide(ServerLevel level) {
         level.getChunk(GUIDE_POS);
-        AABB around = new AABB(GUIDE_POS).inflate(32);
-        boolean present = !level.getEntitiesOfClass(Villager.class, around, v -> v.getTags().contains(GUIDE_TAG)).isEmpty();
-        if (present) return;
+        AABB around = new AABB(GUIDE_POS).inflate(48);
+        TutorialOliverEntity guide = null;
+        for (Villager villager : level.getEntitiesOfClass(Villager.class, around, v -> v.getTags().contains(GUIDE_TAG))) {
+            if (villager instanceof TutorialOliverEntity oliver && guide == null) {
+                guide = oliver;
+            } else {
+                // The plain villager of earlier builds, or a second guide
+                villager.discard();
+            }
+        }
+        if (guide != null) return guide;
 
-        Villager guide = new Villager(EntityType.VILLAGER, level);
+        guide = new TutorialOliverEntity(com.ovrtechnology.tutorial.oliver.TutorialOliverRegistry.TUTORIAL_OLIVER.get(), level);
         guide.snapTo(GUIDE_POS.getX() + 0.5, GUIDE_POS.getY(), GUIDE_POS.getZ() + 0.5, GUIDE_YAW, 0.0f);
         guide.setYHeadRot(GUIDE_YAW);
         guide.setYBodyRot(GUIDE_YAW);
-        guide.setNoAi(true);
-        guide.setInvulnerable(true);
-        guide.setSilent(true);
+        guide.setHomePos(GUIDE_POS, GUIDE_YAW);
         guide.setPersistenceRequired();
-        guide.setCustomName(Component.literal("Scent Guide"));
-        guide.setCustomNameVisible(true);
         guide.addTag(GUIDE_TAG);
         level.addFreshEntity(guide);
-        AromaAffect.LOGGER.info("Scent Guide placed at {}", GUIDE_POS);
+        AromaAffect.LOGGER.info("Aroma Guide placed at {}", GUIDE_POS);
+        return guide;
     }
 
     private static void talkToGuide(ServerPlayer player, Entity guide) {
         player.level().playSound(null, guide.getX(), guide.getY(), guide.getZ(),
                 SoundEvents.VILLAGER_YES, SoundSource.NEUTRAL, 1.0f, 1.0f);
-        showTimed(player, "Scent Guide: " + guideHint(player), GUIDE_HINT_TICKS);
+        showTimed(player, "Aroma Guide: " + guideHint(player), GUIDE_HINT_TICKS);
     }
 
     /**
