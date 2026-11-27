@@ -80,6 +80,8 @@ public final class TutorialWaypointRenderer {
             return;
         }
 
+        // The same path redrawn from where the player is now: the pulse carries on instead of restarting
+        boolean sameWaypoint = id.equals(activeWaypointId);
         activeWaypointId = id;
 
         // Convert to Vec3 and generate smooth curve
@@ -91,7 +93,9 @@ public final class TutorialWaypointRenderer {
         // Generate interpolated path using Catmull-Rom spline
         pathPoints = generateSmoothPath(controlPoints);
         totalPathLength = calculatePathLength(pathPoints);
-        pulseProgress = 0.0;
+        if (!sameWaypoint) {
+            pulseProgress = 0.0;
+        }
 
         // Set the hologram target to the endpoint
         if (!pathPoints.isEmpty()) {

@@ -204,7 +204,19 @@ final class DemoWalkaroundCheck {
                         level(player).getBlockState(new BlockPos(-12, 22, -264)).isAir()));
                 shot.accept("tour_end");
             }
+            // Walk away from where the room opened: the trail has to follow
             if (t == TOUR.length * TOUR_STEP + 100) {
+                onServer(server, player -> {
+                    ServerLevel level = level(player);
+                    player.teleportTo(level, 60.5, standingY(level, 60, -282, 20), -281.5, Set.of(), 90.0F, 20.0F, false);
+                });
+            }
+            if (t == TOUR.length * TOUR_STEP + 180) {
+                check("trail is showing after walking away",
+                        com.ovrtechnology.tutorial.waypoint.client.TutorialWaypointRenderer.hasActiveWaypoint());
+                shot.accept("trail_after_moving");
+            }
+            if (t == TOUR.length * TOUR_STEP + 200) {
                 AromaAffect.LOGGER.info(failures == 0 ? TAG + "TOUR PASSED" : TAG + "TOUR FAILED: {} checks", failures);
                 return true;
             }

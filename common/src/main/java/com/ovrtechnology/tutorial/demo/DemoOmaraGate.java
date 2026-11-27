@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,6 +57,12 @@ public final class DemoOmaraGate {
     /** Player being guided to the open room, or null. */
     private static UUID guidedPlayer = null;
     private static int guideTicks = 0;
+    /** Where the trail was last drawn from. */
+    private static BlockPos routedFrom = null;
+    /** Redraw the trail once the player is this far from where it was drawn from. */
+    private static final double REROUTE_DISTANCE_SQ = 3 * 3;
+    /** Never added to the world: only used to find a walkable route for the trail. */
+    private static net.minecraft.world.entity.Mob pathfinder = null;
 
     private DemoOmaraGate() {
     }
@@ -80,10 +87,12 @@ public final class DemoOmaraGate {
                 return;
             }
             BlockPos end = ROOM_PATH.get(ROOM_PATH.size() - 1);
-            if (player.level().dimension() == Level.OVERWORLD
-                    && player.distanceToSqr(end.getX() + 0.5, end.getY(), end.getZ() + 0.5) <= ROOM_ARRIVAL_DISTANCE_SQ) {
+            if (player.level().dimension() != Level.OVERWORLD || !(player.level() instanceof ServerLevel level)) return;
+            if (player.distanceToSqr(end.getX() + 0.5, end.getY(), end.getZ() + 0.5) <= ROOM_ARRIVAL_DISTANCE_SQ) {
                 guidedPlayer = null;
                 TutorialWaypointNetworking.sendClearToPlayer(player);
+            } else if (routedFrom == null || player.blockPosition().distSqr(routedFrom) >= REROUTE_DISTANCE_SQ) {
+                sendTrail(player, level);
             }
         });
     }
@@ -111,10 +120,7 @@ public final class DemoOmaraGate {
         player.sendSystemMessage(Component.literal(
                 "§d§lThe Omara room is open! §dFollow the trail to the hill next to the rain machine."));
 
-        List<BlockPos> path = new java.util.ArrayList<>();
-        path.add(player.blockPosition());
-        path.addAll(ROOM_PATH);
-        TutorialWaypointNetworking.sendWaypointToPlayer(player, ROOM_PATH_ID, path);
+        sendTrail(player, level);
         guidedPlayer = player.getUUID();
         guideTicks = 0;
         AromaAffect.LOGGER.info("All 16 scents found, Omara room opened");
@@ -124,6 +130,49 @@ public final class DemoOmaraGate {
     public static void reset() {
         unlocked = false;
         guidedPlayer = null;
+        routedFrom = null;
+        pathfinder = null;
+    }
+
+    /** Draws the trail to the room from where the player stands now. */
+    private static void sendTrail(ServerPlayer player, ServerLevel level) {
+        routedFrom = player.blockPosition();
+        List<BlockPos> route = route(level, routedFrom);
+        List<BlockPos> path = new ArrayList<>(route);
+        path.addAll(ROOM_PATH);
+        AromaAffect.LOGGER.info("Omara room trail from {} ({} route points{})", routedFrom.toShortString(),
+                route.size(), route.size() > 1 ? "" : ", straight line");
+        TutorialWaypointNetworking.sendWaypointToPlayer(player, ROOM_PATH_ID, path);
+    }
+
+    /**
+     * A walkable route from {@code start} to the tunnel mouth, found the way a mob finds its way,
+     * so the trail goes around the hills and houses instead of through them. A few points of it
+     * are enough for the curve the trail draws; without a route it is a straight line.
+     */
+    private static List<BlockPos> route(ServerLevel level, BlockPos start) {
+        List<BlockPos> points = new ArrayList<>();
+        points.add(start);
+        try {
+            if (pathfinder == null || pathfinder.level() != level) {
+                pathfinder = net.minecraft.world.entity.EntityType.ZOMBIE.create(level,
+                        net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                if (pathfinder == null) return points;
+                var range = pathfinder.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE);
+                if (range != null) range.setBaseValue(160);
+            }
+            pathfinder.setPos(start.getX() + 0.5, start.getY(), start.getZ() + 0.5);
+            pathfinder.setOnGround(true);
+            pathfinder.getNavigation().stop();
+            net.minecraft.world.level.pathfinder.Path path = pathfinder.getNavigation().createPath(ROOM_PATH.get(0), 1);
+            if (path == null || !path.canReach()) return points;
+            for (int i = 4; i < path.getNodeCount() - 1; i += 4) {
+                points.add(path.getNodePos(i));
+            }
+        } catch (RuntimeException e) {
+            AromaAffect.LOGGER.warn("No route for the Omara room trail: {}", e.toString());
+        }
+        return points;
     }
 
     private static Iterable<BlockPos> wall() {
