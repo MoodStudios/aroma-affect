@@ -85,6 +85,10 @@ final class DemoWalkaroundCheck {
             case 190 -> {
                 check("guide hint is showing", TutorialPopupNetworking.getClientPopupText().startsWith("Scent Guide"));
                 check("no trading screen", mc.screen == null);
+                check("standing by the guide gives no scent",
+                        !TutorialScentCounterNetworking.getClientDetectedScents().contains("Kindred"));
+                check("guide hint is about a missing scent", TutorialPopupNetworking.getClientPopupText().contains("scents left"));
+                AromaAffect.LOGGER.info(TAG + "guide said: {}", TutorialPopupNetworking.getClientPopupText());
                 shot.accept("walk_guide");
             }
             case 260 -> onServer(server, player ->

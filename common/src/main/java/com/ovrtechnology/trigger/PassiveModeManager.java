@@ -546,6 +546,8 @@ public final class PassiveModeManager {
             // Find entities of the target type
             var entities = level.getEntities(player, searchBox, entity ->
                 entity.getType() == targetType && entity.isAlive()
+                    // The demo's Scent Guide is a villager, but talking to it should not count as a scent
+                    && !(entity.hasCustomName() && "Scent Guide".equals(entity.getCustomName().getString()))
             );
 
             if (!entities.isEmpty()) {

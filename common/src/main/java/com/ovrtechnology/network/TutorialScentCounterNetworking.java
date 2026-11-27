@@ -124,7 +124,9 @@ public final class TutorialScentCounterNetworking {
         if (clientDetectedScents.size() >= clientMaxScents) return;
 
         boolean wasComplete = clientDetectedScents.size() >= clientMaxScents;
-        clientDetectedScents.add(scentName);
+        if (clientDetectedScents.add(scentName)) {
+            com.ovrtechnology.tutorial.demo.DemoWalkaroundGuide.reportFound(scentName);
+        }
         boolean isComplete = clientDetectedScents.size() >= clientMaxScents;
 
         // The achievement shows on the next tick; the Sweet puff follows a few seconds later

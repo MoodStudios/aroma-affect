@@ -1,5 +1,7 @@
 package com.ovrtechnology.tutorial.demo;
 
+import dev.architectury.networking.NetworkManager;
+import net.minecraft.resources.ResourceLocation;
 import com.ovrtechnology.AromaAffect;
 import com.ovrtechnology.network.TutorialPopupNetworking;
 import com.ovrtechnology.network.TutorialScentZoneNetworking;
@@ -67,19 +69,34 @@ public final class DemoWalkaroundGuide {
     private static final int START_HINT_TICKS = 240;
     private static final int GUIDE_HINT_TICKS = 180;
 
-    /** What the guide says, one per click, starting over after the last. */
-    private static final List<String> GUIDE_HINTS = List.of(
-            "There are 16 scents around here. Each new one adds to the counter at the top right.",
-            "Something sweet is waiting in the kitchen of the big house.",
-            "Feeling cold? Light the stove in the kitchen and get cozy.",
-            "The horses at the stable love apples. There is a chest full of them right next to them.",
-            "Raw beef is in a chest by the furnace, west of the big house. Cook it!",
-            "Mine the ores with your pickaxe. Different rocks smell different.",
-            "Bees make honey. Find the honey bottles and take a sip.",
-            "The cat in the little house would love some attention.",
-            "Look for the chest by the campfire. A flint & steel makes things smoky.",
-            "Not every scent is in a chest: walk by the water, the flowers, the trees and the snow."
+    /** One hint per scent: where to find it and what to do there. The guide only gives the ones still missing. */
+    private record ScentHint(String scent, BlockPos at, String text) {}
+
+    private static final List<ScentHint> SCENT_HINTS = List.of(
+            new ScentHint("Sweet", new BlockPos(22, 22, -239), "Something sweet is on the kitchen counter of the big house. Right click the cake!"),
+            new ScentHint("Savory Spice", new BlockPos(18, 22, -243), "Light the stove in the kitchen of the big house and get cozy."),
+            new ScentHint("Timber", new BlockPos(9, 21, -243), "Wooden chests smell of timber. Walk up to one and look at it."),
+            new ScentHint("Barnyard", new BlockPos(77, 20, -235), "The horses at the stable love apples. Grab one from the chest and feed them."),
+            new ScentHint("Kindred", new BlockPos(44, 20, -223), "The cat in the little house would love some attention. Right click it."),
+            new ScentHint("Smoky", new BlockPos(-7, 19, -273), "Find the lava, or the flint & steel in the chest by the campfire."),
+            new ScentHint("Machina", new BlockPos(8, 20, -293), "Mine the red redstone ore with your pickaxe."),
+            new ScentHint("Terra Silva", new BlockPos(-2, 21, -290), "Mine the iron, gold or coal ores with your pickaxe."),
+            new ScentHint("Evergreen", new BlockPos(-6, 21, -251), "Look for the foxes among the trees, or pick some sweet berries."),
+            new ScentHint("Floral", new BlockPos(56, 20, -233), "Pick some flowers from the meadow."),
+            new ScentHint("Marine", new BlockPos(25, 19, -276), "Go touch the water."),
+            new ScentHint("Beach", new BlockPos(18, 20, -276), "Walk on the sand of the beach by the water."),
+            new ScentHint("Winter", new BlockPos(60, 20, -282), "Feeling warm? Find the snow, where the polar bears live."),
+            new ScentHint("Petrichor", new BlockPos(54, 20, -222), "Walk into the swamp."),
+            new ScentHint("Citrus", new BlockPos(18, 20, -204), "Visit the jungle, where the pandas and parrots are."),
+            new ScentHint("Desert", new BlockPos(-2, 23, -212), "Walk into the desert by the path.")
     );
+
+    private static final ResourceLocation FOUND_PACKET =
+            ResourceLocation.fromNamespaceAndPath(com.ovrtechnology.AromaAffect.MOD_ID, "demo_scent_found");
+    /** Scents each player has found, as their counter reports them. */
+    private static final Map<UUID, java.util.Set<String>> found = new ConcurrentHashMap<>();
+    /** How many times each player has asked the guide since the last scent; picks the hint. */
+    private static final Map<UUID, Integer> guideTurn = new ConcurrentHashMap<>();
 
     private static final BlockPos CAKE_POS = new BlockPos(22, 22, -239);
     private static final BlockPos GUIDE_POS = new BlockPos(23, 20, -256);
@@ -100,7 +117,6 @@ public final class DemoWalkaroundGuide {
     /** Area hint id, {@link #TIMED}, or nothing when no popup of ours is up. */
     private static final Map<UUID, String> shown = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> timedUntil = new ConcurrentHashMap<>();
-    private static final Map<UUID, Integer> nextGuideHint = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> lastCake = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> lastStove = new ConcurrentHashMap<>();
 
@@ -123,6 +139,18 @@ public final class DemoWalkaroundGuide {
     public static void init() {
         if (initialized) return;
         initialized = true;
+
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, FOUND_PACKET, (buf, context) -> {
+            String scent = buf.readUtf();
+            context.queue(() -> {
+                if (context.getPlayer() instanceof ServerPlayer player) {
+                    if (found.computeIfAbsent(player.getUUID(), id -> ConcurrentHashMap.newKeySet()).add(scent)) {
+                        // The next question starts again from the closest one still missing
+                        guideTurn.remove(player.getUUID());
+                    }
+                }
+            });
+        });
 
         TickEvent.SERVER_POST.register(server -> {
             serverTicks++;
@@ -183,6 +211,7 @@ public final class DemoWalkaroundGuide {
         if (giveTools) {
             DemoFinalArea.giveTools(player);
         }
+        found.remove(player.getUUID());
         placeCake(level);
         stoveOutAt = -1;
         setStoveLit(level, false);
@@ -193,7 +222,8 @@ public final class DemoWalkaroundGuide {
     public static void resetPlayer(UUID playerId) {
         shown.remove(playerId);
         timedUntil.remove(playerId);
-        nextGuideHint.remove(playerId);
+        found.remove(playerId);
+        guideTurn.remove(playerId);
         lastCake.remove(playerId);
         lastStove.remove(playerId);
         lastBiome.remove(playerId);
@@ -321,11 +351,57 @@ public final class DemoWalkaroundGuide {
     }
 
     private static void talkToGuide(ServerPlayer player, Entity guide) {
-        int index = nextGuideHint.getOrDefault(player.getUUID(), 0);
-        nextGuideHint.put(player.getUUID(), (index + 1) % GUIDE_HINTS.size());
-
         player.level().playSound(null, guide.getX(), guide.getY(), guide.getZ(),
                 SoundEvents.VILLAGER_YES, SoundSource.NEUTRAL, 1.0f, 1.0f);
-        showTimed(player, "Scent Guide: " + GUIDE_HINTS.get(index), GUIDE_HINT_TICKS);
+        showTimed(player, "Scent Guide: " + guideHint(player), GUIDE_HINT_TICKS);
+    }
+
+    /**
+     * A hint for the closest scent the player hasn't found yet, with which way to go. Talking
+     * again right away gives the next closest one, so a player stuck on one can ask for another.
+     */
+    private static String guideHint(ServerPlayer player) {
+        java.util.Set<String> have = found.getOrDefault(player.getUUID(), java.util.Set.of());
+        List<ScentHint> missing = new java.util.ArrayList<>();
+        for (ScentHint hint : SCENT_HINTS) {
+            if (!have.contains(hint.scent())) missing.add(hint);
+        }
+        if (missing.isEmpty()) {
+            return "You found all 16 scents! The Omara room is open, follow the trail.";
+        }
+        BlockPos here = player.blockPosition();
+        missing.sort(java.util.Comparator.comparingDouble(h -> h.at().distSqr(here)));
+        int index = guideTurn.merge(player.getUUID(), 1, Integer::sum) - 1;
+        ScentHint hint = missing.get(index % missing.size());
+        String left = missing.size() == 1 ? "Just one scent left: " : missing.size() + " scents left. ";
+        return left + hint.scent() + ": " + hint.text() + " " + direction(here, hint.at());
+    }
+
+    /** "About 40 blocks to the north-east", or "Right around here." */
+    private static String direction(BlockPos from, BlockPos to) {
+        double dx = to.getX() - from.getX();
+        double dz = to.getZ() - from.getZ();
+        int distance = (int) Math.round(Math.sqrt(dx * dx + dz * dz));
+        if (distance < 8) return "It's right around here.";
+        // Minecraft: north is -Z, east is +X
+        String[] names = {"east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"};
+        double angle = Math.toDegrees(Math.atan2(dz, dx));
+        int octant = (int) Math.round(angle / 45.0);
+        String way = names[((octant % 8) + 8) % 8];
+        return "About " + (distance + 4) / 5 * 5 + " blocks to the " + way + ".";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Client side
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Tells the server the player's counter found a new scent, so the guide knows what is left. */
+    public static void reportFound(String scent) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.getConnection() == null || mc.level == null) return;
+        net.minecraft.network.RegistryFriendlyByteBuf buf = new net.minecraft.network.RegistryFriendlyByteBuf(
+                io.netty.buffer.Unpooled.buffer(), mc.level.registryAccess());
+        buf.writeUtf(scent);
+        NetworkManager.sendToServer(FOUND_PACKET, buf);
     }
 }
