@@ -50,6 +50,9 @@ final class DemoWalkaroundCheck {
         MinecraftServer server = mc.getSingleplayerServer();
         if (server == null || mc.player == null) return false;
 
+        if (System.getenv("AROMAAFFECT_DEMO_SURVEY") != null && ticks >= TOUR_START) {
+            return tour(mc, server, ticks - TOUR_START, shot);
+        }
         switch (ticks) {
             case 100 -> onServer(server, player -> {
                 // Every scent zone in the world and how far it is from where the walkaround starts
@@ -60,6 +63,7 @@ final class DemoWalkaroundCheck {
                             zone.getRadiusZ(), zone.isEnabled(), (int) Math.sqrt(zone.getPosition().distSqr(player.blockPosition())));
                 }
                 AromaAffect.LOGGER.info(TAG + "player at {}", player.blockPosition().toShortString());
+                if (System.getenv("AROMAAFFECT_DEMO_SURVEY") != null) survey(level, player.blockPosition());
             });
             case 140 -> {
                 check("scent counter is on", TutorialScentCounterNetworking.isClientCounterActive());
@@ -133,6 +137,7 @@ final class DemoWalkaroundCheck {
                 } else {
                     AromaAffect.LOGGER.error(TAG + "FAILED: {} checks", failures);
                 }
+                if (System.getenv("AROMAAFFECT_DEMO_SURVEY") != null) return false;
                 return true;
             }
             default -> { }
@@ -155,6 +160,132 @@ final class DemoWalkaroundCheck {
             }
         }
         return fromY;
+    }
+
+    private static final int TOUR_START = 500;
+    private static final int TOUR_STEP = 100;
+
+    /** Name, where to look and stand next to; one stop per scent source the survey found. */
+    private static final Object[][] TOUR = {
+            {"Timber (chest)", 9, 21, -243},
+            {"Savory Spice (llama)", -7, 20, -234},
+            {"Evergreen (fox)", -6, 21, -251},
+            {"Smoky (lava, quartz)", -7, 19, -273},
+            {"Machina (redstone)", 8, 20, -293},
+            {"Terra Silva (ores)", -2, 21, -290},
+            {"Marine (water)", 25, 19, -276},
+            {"Beach (biome)", 18, 20, -276},
+            {"Winter (snowy plains, polar bear)", 60, 20, -282},
+            {"Sweet (honey)", 49, 21, -267},
+            {"Floral (flowers)", 56, 20, -233},
+            {"Petrichor (swamp)", 54, 20, -222},
+            {"Kindred (cat)", 44, 20, -223},
+            {"Barnyard (farm animals)", 79, 20, -247},
+            {"Citrus (jungle, pandas)", 18, 20, -204},
+            {"Desert (scent zone by the path)", -4, 23, -212},
+    };
+
+    /** Walks the free area stop by stop and logs what the counter picked up at each one. */
+    private static boolean tour(Minecraft mc, MinecraftServer server, int t, java.util.function.Consumer<String> shot) {
+        DemoIdleHandler.poke();
+        int stop = t / TOUR_STEP;
+        if (stop >= TOUR.length) {
+            if (t == TOUR.length * TOUR_STEP) {
+                java.util.List<String> found = TutorialScentCounterNetworking.getClientDetectedScents();
+                java.util.List<String> missing = new java.util.ArrayList<>();
+                for (String scent : com.ovrtechnology.trigger.config.ScentTriggerConfigLoader.VALID_OVR_SCENTS) {
+                    if (!found.contains(scent)) missing.add(scent);
+                }
+                AromaAffect.LOGGER.info(TAG + "tour: {} of 16 found {}, missing {}", found.size(), found, missing);
+                check("the tour found all 16 scents", missing.isEmpty());
+            }
+            if (t == TOUR.length * TOUR_STEP + 80) {
+                onServer(server, player -> check("Omara room opened",
+                        level(player).getBlockState(new BlockPos(-12, 22, -264)).isAir()));
+                shot.accept("tour_end");
+            }
+            if (t == TOUR.length * TOUR_STEP + 100) {
+                AromaAffect.LOGGER.info(failures == 0 ? TAG + "TOUR PASSED" : TAG + "TOUR FAILED: {} checks", failures);
+                return true;
+            }
+            return false;
+        }
+        int at = t % TOUR_STEP;
+        Object[] s = TOUR[stop];
+        int x = (int) s[1], y = (int) s[2], z = (int) s[3];
+        if (at == 0) {
+            onServer(server, player -> {
+                ServerLevel level = level(player);
+                // Two blocks east of the source, facing it
+                int standX = x + 2;
+                int standY = standingY(level, standX, z, y);
+                player.teleportTo(level, standX + 0.5, standY, z + 0.5, Set.of(), 90.0F, 20.0F, false);
+            });
+        }
+        if (at == TOUR_STEP - 2) {
+            onServer(server, player -> AromaAffect.LOGGER.info(TAG + "tour stop {} standing at {} in {}", stop + 1,
+                    player.blockPosition().toShortString(),
+                    level(player).getBiome(player.blockPosition()).unwrapKey().map(k -> k.location().toString()).orElse("?")));
+        }
+        if (at == TOUR_STEP - 1) {
+            AromaAffect.LOGGER.info(TAG + "tour stop {}: {} -> counter {} {}", stop + 1, s[0],
+                    TutorialScentCounterNetworking.getClientDetectedCount(), TutorialScentCounterNetworking.getClientDetectedScents());
+        }
+        return false;
+    }
+
+    /**
+     * Which scents the free area can give through passive mode: every block, biome and mob with a
+     * scent within reach of the start, with how many there are and the nearest one.
+     */
+    private static void survey(ServerLevel level, BlockPos center) {
+        int radius = 90;
+        java.util.Map<String, String> blockScent = new java.util.HashMap<>();
+        for (var t : com.ovrtechnology.trigger.config.ScentTriggerConfigLoader.getAllBlockTriggers()) {
+            blockScent.put(t.getBlockId(), t.getScentName());
+        }
+        java.util.Map<String, int[]> found = new java.util.TreeMap<>();
+        java.util.Map<String, BlockPos> nearest = new java.util.HashMap<>();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = center.getX() - radius; x <= center.getX() + radius; x++) {
+            for (int z = center.getZ() - radius; z <= center.getZ() + radius; z++) {
+                for (int y = center.getY() - 15; y <= center.getY() + 25; y++) {
+                    pos.set(x, y, z);
+                    String id = net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                            .getKey(level.getBlockState(pos).getBlock()).toString();
+                    String scent = blockScent.get(id);
+                    if (scent == null) continue;
+                    String key = scent + " <- block " + id;
+                    found.computeIfAbsent(key, k -> new int[1])[0]++;
+                    BlockPos best = nearest.get(key);
+                    if (best == null || pos.distSqr(center) < best.distSqr(center)) nearest.put(key, pos.immutable());
+                }
+                if (x % 6 == 0 && z % 6 == 0) {
+                    pos.set(x, center.getY(), z);
+                    String biome = level.getBiome(pos).unwrapKey().map(k -> k.location().toString()).orElse("?");
+                    var trigger = com.ovrtechnology.trigger.config.ScentTriggerConfigLoader.getBiomeTrigger(biome);
+                    String key = trigger.map(t -> t.getScentName()).orElse("(none)") + " <- biome " + biome;
+                    found.computeIfAbsent(key, k -> new int[1])[0]++;
+                    BlockPos best = nearest.get(key);
+                    if (best == null || pos.distSqr(center) < best.distSqr(center)) nearest.put(key, pos.immutable());
+                }
+            }
+        }
+        for (var entity : level.getEntities((net.minecraft.world.entity.Entity) null,
+                new AABB(center).inflate(radius), e -> true)) {
+            String type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
+            var trigger = com.ovrtechnology.trigger.config.ScentTriggerConfigLoader.getMobTrigger(type);
+            if (trigger.isEmpty()) continue;
+            String key = trigger.get().getScentName() + " <- mob " + type;
+            found.computeIfAbsent(key, k -> new int[1])[0]++;
+            BlockPos best = nearest.get(key);
+            if (best == null || entity.blockPosition().distSqr(center) < best.distSqr(center)) nearest.put(key, entity.blockPosition());
+        }
+        for (var entry : found.entrySet()) {
+            BlockPos best = nearest.get(entry.getKey());
+            AromaAffect.LOGGER.info(TAG + "survey {} x{} nearest {} dist {}", entry.getKey(), entry.getValue()[0],
+                    best.toShortString(), (int) Math.sqrt(best.distSqr(center)));
+        }
     }
 
     private static ServerLevel level(ServerPlayer player) {

@@ -83,6 +83,12 @@ public final class DemoIdleHandler {
     }
 
     private static void tick(Minecraft mc) {
+        // Advancement and recipe toasts sat over the scent counter and the timer ("Isn't It Iron
+        // Pick" right as the walkaround starts); a station shows none
+        if (mc.player != null && DemoWorldManager.isStationSession()) {
+            mc.getToastManager().clear();
+        }
+
         // Read the devices every tick, counting or not, so the first tick that counts
         // compares against the present and not against a state from minutes ago
         boolean input = hadInput(mc);

@@ -96,6 +96,13 @@ public final class TutorialScentCounterNetworking {
         return clientMaxScents;
     }
 
+    /** The scents found so far, in the order they were found. */
+    public static java.util.List<String> getClientDetectedScents() {
+        synchronized (clientDetectedScents) {
+            return new java.util.ArrayList<>(clientDetectedScents);
+        }
+    }
+
     public static int getClientDetectedCount() {
         return Math.min(clientDetectedScents.size(), clientMaxScents);
     }

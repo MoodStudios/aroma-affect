@@ -103,6 +103,17 @@ public final class DemoWalkaroundGuide {
     private static final Map<UUID, Integer> nextGuideHint = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> lastCake = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> lastStove = new ConcurrentHashMap<>();
+
+    /**
+     * Scents that only the biome gives in the free area. Passive mode lets nearby water, animals
+     * and blocks win over the biome, so on their own these never played (Marine on the beach, the
+     * llamas in the desert): walking into the biome gives the scent directly.
+     */
+    private static final Map<String, String> BIOME_SCENTS = Map.of(
+            "minecraft:beach", "Beach",
+            "minecraft:desert", "Desert",
+            "minecraft:swamp", "Petrichor");
+    private static final Map<UUID, String> lastBiome = new ConcurrentHashMap<>();
     /** Server tick at which the stove goes out, or -1 when it is out. */
     private static long stoveOutAt = -1;
 
@@ -166,6 +177,9 @@ public final class DemoWalkaroundGuide {
      */
     public static void onArrive(ServerPlayer player, boolean giveTools) {
         if (!(player.level() instanceof ServerLevel level)) return;
+        // No "<player> has made the advancement ..." in the chat of a station
+        level.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_ANNOUNCE_ADVANCEMENTS)
+                .set(false, level.getServer());
         if (giveTools) {
             DemoFinalArea.giveTools(player);
         }
@@ -182,6 +196,7 @@ public final class DemoWalkaroundGuide {
         nextGuideHint.remove(playerId);
         lastCake.remove(playerId);
         lastStove.remove(playerId);
+        lastBiome.remove(playerId);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -194,6 +209,12 @@ public final class DemoWalkaroundGuide {
                 clear(player);
             }
             return;
+        }
+
+        String biome = level.getBiome(player.blockPosition()).unwrapKey()
+                .map(key -> key.location().toString()).orElse("");
+        if (!biome.equals(lastBiome.put(id, biome)) && BIOME_SCENTS.containsKey(biome)) {
+            TutorialScentZoneNetworking.sendScentTrigger(player, BIOME_SCENTS.get(biome), 1.0, "biome_" + biome);
         }
 
         Hint here = null;
