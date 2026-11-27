@@ -51,6 +51,16 @@ final class DemoWalkaroundCheck {
         if (server == null || mc.player == null) return false;
 
         switch (ticks) {
+            case 100 -> onServer(server, player -> {
+                // Every scent zone in the world and how far it is from where the walkaround starts
+                ServerLevel level = level(player);
+                for (var zone : com.ovrtechnology.tutorial.scentzone.TutorialScentZoneManager.getAllZones(level)) {
+                    AromaAffect.LOGGER.info(TAG + "zone {} scent={} at {} r={}/{}/{} enabled={} dist={}", zone.getId(),
+                            zone.getScentName(), zone.getPosition().toShortString(), zone.getRadiusX(), zone.getRadiusY(),
+                            zone.getRadiusZ(), zone.isEnabled(), (int) Math.sqrt(zone.getPosition().distSqr(player.blockPosition())));
+                }
+                AromaAffect.LOGGER.info(TAG + "player at {}", player.blockPosition().toShortString());
+            });
             case 140 -> {
                 check("scent counter is on", TutorialScentCounterNetworking.isClientCounterActive());
                 check("start hint is showing", TutorialPopupNetworking.hasClientPopup());
